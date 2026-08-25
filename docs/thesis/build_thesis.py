@@ -1,6 +1,6 @@
 """Generates the thesis document with the formatting UBT requires.
 
-The formatting rules are not negotiable and are easy to break by hand -- three
+The formatting rules are not negotiable and are easy to break by hand: three
 page-numbering regimes, a font rule per heading level, a line-spacing minimum.
 Encoding them here means the document cannot drift out of compliance: rebuild
 and it is correct again.
@@ -8,7 +8,7 @@ and it is correct again.
     python docs/thesis/build_thesis.py
 
 Content lives in CONTENT below, so prose can be edited without touching layout
-code. After the skeleton is handed over, further editing happens in Word --
+code. After the skeleton is handed over, further editing happens in Word;
 rerunning this script overwrites the file.
 """
 
@@ -34,6 +34,21 @@ OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.d
 # Anything the author still has to supply is marked so it cannot be missed
 # during a final read-through.
 TODO = "[PLOTËSO]"
+
+
+def _set_properties(doc: Document) -> None:
+    """Fill in the document properties Word shows under File > Info.
+
+    python-docx starts from a blank template whose author is the library
+    itself, and Word surfaces that string in the properties pane and in a
+    printed footer if one is ever added.
+    """
+    properties = doc.core_properties
+    properties.author = AUTHOR
+    properties.last_modified_by = AUTHOR
+    properties.title = TITLE_SQ
+    properties.subject = "Punim diplome, Universiteti për Biznes dhe Teknologji"
+    properties.comments = ""
 
 
 # ----------------------------------------------------------------------
@@ -285,6 +300,7 @@ def build_remaining_chapters(doc: Document) -> None:
 
 def build() -> str:
     doc = Document()
+    _set_properties(doc)
     configure_styles(doc)
 
     # --- Section 1: cover pages, unnumbered -----------------------------

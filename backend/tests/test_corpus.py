@@ -3,7 +3,7 @@
 Two of these guard against silent data loss rather than a crash. A sample whose
 path escapes the corpus root would read an arbitrary file, and a coverage
 figure computed from paths the filesystem quietly refuses would understate the
-usable ground truth -- both produce numbers that look fine and are wrong.
+usable ground truth; both produce numbers that look fine and are wrong.
 """
 
 from __future__ import annotations

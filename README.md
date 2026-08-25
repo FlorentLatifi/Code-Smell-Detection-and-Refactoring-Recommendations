@@ -1,6 +1,6 @@
 # Code Smell Detection and Refactoring Recommendations
 
-Punim diplome — Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
+Punim diplome Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
 Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2023/2024 · Dorëzimi: 2026
 
 Sistem që analizon projekte **Java**, detekton *code smells* me tri qasje të pavarura
@@ -54,16 +54,16 @@ ruff check . && ruff format --check . && mypy && pytest -q --cov
 
 Konfigurimi i të gjitha mjeteve është i përqendruar në `backend/pyproject.toml`.
 `mypy` punon në modalitet **strict**, dhe paralajmërimet e testeve trajtohen si
-gabime — një `DeprecationWarning` nga tree-sitter është pikërisht sinjali që
+gabime: një `DeprecationWarning` nga tree-sitter është pikërisht sinjali që
 kalon pa u vënë re derisa një përditësim e prish parser-in.
 
 ## Dokumentimi i procesit
 
 | Skedari | Roli |
 |---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Si punojmë — arkitektura, invariantet, kriteret e përfundimit |
+| [`docs/ENGINEERING.md`](docs/ENGINEERING.md) | Si punojmë: arkitektura, invariantet, kriteret e përfundimit |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Çka ndërtohet dhe në çfarë radhe, me rreziqet |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Pse — regjistri i vendimeve, lëndë e parë për Kapitullin 4 |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Pse: regjistri i vendimeve, lëndë e parë për Kapitullin 4 |
 
 ## Referencat metodologjike
 

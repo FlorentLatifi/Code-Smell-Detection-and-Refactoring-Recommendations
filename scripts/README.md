@@ -1,7 +1,7 @@
 # scripts/
 
 Pikënisjet e eksperimenteve. Çdo numër që përfundon në Kapitullin 5 duhet të
-prodhohet nga një skript këtu — asnjë nga një sesion interaktiv, asnjë me kopjim
+prodhohet nga një skript këtu, asnjë nga një sesion interaktiv, asnjë me kopjim
 me dorë.
 
 ## Rregullat

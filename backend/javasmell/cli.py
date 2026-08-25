@@ -1,7 +1,7 @@
 """Command-line front-end.
 
 Exists ahead of the web interface so the analysis core can be run against real
-repositories -- and so the experiment scripts for the Results chapter have a
+repositories, and so the experiment scripts for the Results chapter have a
 scriptable entry point that does not depend on the API being up.
 
     python -m javasmell path/to/java/project
@@ -68,7 +68,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.out:
         with Path(args.out).open("w", encoding="utf-8", newline="") as stream:
             _emit(args.format, project, smells, stream)
-        # Reported only after the file closed cleanly -- claiming a write that
+        # Reported only after the file closed cleanly; claiming a write that
         # raised half way through would be worse than saying nothing.
         print(f"Wrote {args.out}", file=sys.stderr)
     else:

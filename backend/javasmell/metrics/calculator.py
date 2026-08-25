@@ -2,9 +2,9 @@
 
 Two families are implemented:
 
-* the **CK suite** (Chidamber & Kemerer, 1994) -- WMC, DIT, NOC, CBO, RFC, LCOM;
-* the **detection-strategy metrics** of Lanza & Marinescu (2006) -- ATFD, LAA,
-  FDP, TCC, WOC, NOAV -- which the rule-based detectors in
+* the **CK suite** (Chidamber & Kemerer, 1994): WMC, DIT, NOC, CBO, RFC, LCOM;
+* the **detection-strategy metrics** of Lanza & Marinescu (2006): ATFD, LAA,
+  FDP, TCC, WOC and NOAV, which the rule-based detectors in
   :mod:`javasmell.detectors` are built from.
 
 Every metric is computed from the syntactic facts the parser collected, never
@@ -82,13 +82,13 @@ def _is_accessor_name(name: str) -> bool:
 
 
 # ----------------------------------------------------------------------
-# Step 1 -- resolve what each method touches, now that the class is known
+# Step 1: resolve what each method touches, now that the class is known
 # ----------------------------------------------------------------------
 def resolve_accesses(cls: ClassInfo, project_types: set[str] | None = None) -> None:
     """Split every access a method makes into *own* and *foreign*.
 
     A bare name is an own-field access only when it matches a declared field
-    and is not shadowed by a local or parameter -- which is exactly Java's own
+    and is not shadowed by a local or parameter, which is exactly Java's own
     scoping rule, and the reason ``declared_locals`` is collected up front.
 
     ``project_types`` restricts foreign data to classes belonging to the
@@ -118,7 +118,7 @@ def resolve_accesses(cls: ClassInfo, project_types: set[str] | None = None) -> N
                 continue
             if project_types is not None:
                 # Membership in the project is the precise filter, so the
-                # name-based blocklist must not override it -- a project class
+                # name-based blocklist must not override it; a project class
                 # really called `E` or `Set` is still foreign data.
                 if receiver_type not in project_types:
                     continue
@@ -134,7 +134,7 @@ def _resolve_receiver_type(
     """Best-effort type of a receiver expression.
 
     Only single-identifier receivers are resolved. Chained expressions such as
-    ``a.b().c()`` are skipped rather than guessed -- a wrong type would corrupt
+    ``a.b().c()`` are skipped rather than guessed; a wrong type would corrupt
     FDP, and an omission only makes the metric conservative.
     """
     receiver = receiver.strip()
@@ -151,7 +151,7 @@ def _resolve_receiver_type(
 
 
 # ----------------------------------------------------------------------
-# Step 2 -- per-method metrics
+# Step 2: per-method metrics
 # ----------------------------------------------------------------------
 def compute_method_metrics(cls: ClassInfo, method: MethodInfo) -> dict[str, float]:
     """Fill and return ``method.metrics`` (CC/MLOC/NP came from the parser)."""
@@ -161,7 +161,7 @@ def compute_method_metrics(cls: ClassInfo, method: MethodInfo) -> dict[str, floa
 
     method.metrics["ATFD"] = float(atfd)
     method.metrics["FDP"] = float(len({t for t, _ in method.foreign_accesses}))
-    # LAA -- Locality of Attribute Accesses. A method that reads mostly other
+    # LAA: Locality of Attribute Accesses. A method that reads mostly other
     # objects' data (LAA well below 1) is the signature of Feature Envy.
     method.metrics["LAA"] = 1.0 if total_attribute_accesses == 0 else own / total_attribute_accesses
     method.metrics["NOAV"] = float(len(method.declared_locals) + total_attribute_accesses)
@@ -172,7 +172,7 @@ def compute_method_metrics(cls: ClassInfo, method: MethodInfo) -> dict[str, floa
 
 
 # ----------------------------------------------------------------------
-# Step 3 -- per-class metrics
+# Step 3: per-class metrics
 # ----------------------------------------------------------------------
 def compute_class_metrics(cls: ClassInfo) -> dict[str, float]:
     methods = cls.methods
@@ -223,7 +223,7 @@ def _tight_class_cohesion(cls: ClassInfo) -> float:
     """TCC (Bieman & Kang, 1995): share of visible method pairs that are connected.
 
     Two methods are *directly connected* when they access at least one instance
-    field in common. Constructors are excluded -- they touch every field by
+    field in common. Constructors are excluded: they touch every field by
     definition and would make any class look cohesive.
     """
     visible = [m for m in cls.instance_methods if m.is_public]
@@ -289,7 +289,7 @@ def _weight_of_class(cls: ClassInfo) -> float:
     """WOC: share of public members that actually do something.
 
     A class whose public surface is nothing but getters and setters scores near
-    zero -- the defining property of a Data Class.
+    zero, the defining property of a Data Class.
     """
     public_methods = [m for m in cls.methods if m.is_public and not m.is_constructor]
     public_fields = [f for f in cls.fields if f.is_public and not f.is_constant]
@@ -301,7 +301,7 @@ def _weight_of_class(cls: ClassInfo) -> float:
 
 
 # ----------------------------------------------------------------------
-# Step 4 -- metrics that need the whole project
+# Step 4: metrics that need the whole project
 # ----------------------------------------------------------------------
 def compute_inheritance_metrics(project: ProjectModel) -> None:
     """DIT and NOC, resolved against the classes present in the project.

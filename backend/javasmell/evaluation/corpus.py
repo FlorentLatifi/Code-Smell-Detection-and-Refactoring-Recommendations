@@ -6,7 +6,7 @@ which reads it months later. Keeping the layout in one place means a rename
 cannot leave the two disagreeing silently.
 
 The manifest is not bookkeeping for its own sake. Some of MLCQ's 522 published
-repositories no longer resolve -- deleted, renamed, or made private since 2020 --
+repositories no longer resolve (deleted, renamed, or made private since 2020),
 and the fraction that could not be retrieved is a stated limitation of the
 study, so it has to be recorded as it happens rather than reconstructed later.
 """
@@ -38,7 +38,7 @@ def long_path(path: Path) -> Path:
     inside the analysed projects reach 174 characters on their own, on top of
     whatever the checkout root costs. The failure mode is quiet and misleading
     -- ``FileNotFoundError`` on a file that is plainly there, or ``is_file()``
-    simply returning False -- so every filesystem access below the corpus root
+    simply returning False, so every filesystem access below the corpus root
     goes through here.
 
     Lifting the limit system-wide instead would need administrator rights and

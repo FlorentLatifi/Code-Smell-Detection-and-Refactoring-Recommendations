@@ -4,7 +4,7 @@ The CLI is not a convenience wrapper: it is the entry point the experiment
 scripts for the Results chapter run against, so a silent change to its output
 format would corrupt the data behind the thesis rather than merely annoy a
 user. The contract worth pinning down is therefore the *shape* of each output
--- exit codes, CSV header, JSON keys -- not the prose of the readable report.
+(exit codes, CSV header, JSON keys), not the prose of the readable report.
 """
 
 from __future__ import annotations

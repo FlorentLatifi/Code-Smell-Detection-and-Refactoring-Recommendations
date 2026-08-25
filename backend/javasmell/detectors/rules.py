@@ -2,7 +2,7 @@
 
 Each detector is a direct transcription of a published strategy. Where a
 strategy is composed of several conditions joined by AND, all of them must
-hold -- that conjunction is what keeps the false-positive rate down compared
+hold; that conjunction is what keeps the false-positive rate down compared
 with single-metric thresholding, and is the reason this approach is worth
 measuring against the machine-learning one.
 
@@ -113,7 +113,7 @@ def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
         )
 
     The disjunction lets a larger data holder qualify only if its exposed
-    surface is correspondingly larger -- otherwise every small value object
+    surface is correspondingly larger; otherwise every small value object
     would be flagged.
     """
     if _skip(cls):
