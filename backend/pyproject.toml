@@ -1,0 +1,67 @@
+# Tooling configuration for the analysis backend.
+#
+# Consolidated here rather than spread across pytest.ini / setup.cfg / .ruff.toml
+# so that there is one place to look when a check fails in CI.
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# Warnings are failures: a DeprecationWarning from tree-sitter is exactly the
+# kind of signal that goes unnoticed until an upgrade breaks the parser.
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["javasmell"]
+branch = true
+
+[tool.coverage.report]
+# Detection logic must be exercised; a metric that no test reaches is a metric
+# whose value in the thesis nobody has checked.
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:", "raise NotImplementedError"]
+
+[tool.ruff]
+line-length = 100  # chosen to match the existing code (longest line: 99)
+target-version = "py313"
+extend-exclude = [".venv", "tests/fixtures"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # import sorting
+    "UP",       # pyupgrade
+    "B",        # bugbear: mutable defaults, loop-variable capture, ...
+    "C4",       # comprehension clarity
+    "SIM",      # simplifiable constructs
+    "RET",      # return-flow consistency
+    "PTH",      # prefer pathlib over os.path
+    "RUF",      # ruff's own checks
+]
+ignore = [
+    # The metric formulas read closer to their published definitions with the
+    # published names (WMC, TCC, ATFD), which are not snake_case.
+    "N806",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests state expected values as literals on purpose; that is the point of a
+# hand-derived expectation.
+"tests/*" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["javasmell"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["javasmell"]
+strict = true
+# Detection code reads metrics out of plain dicts; requiring an explicit
+# annotation on every local would add noise without adding safety.
+allow_redefinition = false
+warn_unreachable = true
+pretty = true
+
+[[tool.mypy.overrides]]
+# tree-sitter-java ships no type information.
+module = ["tree_sitter_java"]
+ignore_missing_imports = true

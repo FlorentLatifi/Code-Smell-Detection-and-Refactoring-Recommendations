@@ -1,0 +1,57 @@
+name: CI
+
+# Every push is checked, not just pull requests: this repository is worked on
+# directly on `main`, so a push is the only moment a regression can be caught
+# before it becomes the state the thesis is written against.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend (lint, types, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # Pinned to the version used locally; a metric that silently changes
+          # value across interpreter versions would invalidate published results.
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      - name: Type check
+        run: mypy
+
+      - name: Tests
+        run: pytest -q --cov --cov-report=term-missing
+
+  # The analysed language must be present for the refactoring engine's
+  # verification step (Phase 3). Kept as a separate, cheap job so that a JDK
+  # problem is distinguishable from a Python one at a glance.
+  toolchain:
+    name: Java toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: javac -version
