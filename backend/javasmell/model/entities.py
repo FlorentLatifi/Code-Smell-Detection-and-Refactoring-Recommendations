@@ -103,8 +103,8 @@ class MethodInfo:
     def is_accessor(self) -> bool:
         """Getter/setter heuristic used by WOC and the Data Class detector.
 
-        Name prefix alone is not enough -- ``getConnectionOrFail`` may hold real
-        logic -- so the body must also be trivial (a handful of lines).
+        Name prefix alone is not enough: ``getConnectionOrFail`` may hold real
+        logic, so the body must also be trivial (a handful of lines).
         """
         if self.is_constructor:
             return False
@@ -152,6 +152,11 @@ class CompilationUnit:
     package: str
     imports: list[str]
     classes: list[ClassInfo]
+    # tree-sitter recovers from syntax it cannot parse instead of failing, so a
+    # file may yield a plausible but incomplete class list. Real corpora contain
+    # such files: Hadoop's Hamlet.java uses `_` as a method name, illegal since
+    # Java 9, and a silently truncated parse would look like a missing entity.
+    has_syntax_errors: bool = False
 
 
 @dataclass

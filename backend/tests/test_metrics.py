@@ -1,7 +1,7 @@
 """Metric tests.
 
 Every expected value below is derived by hand from the fixture, not captured
-from a previous run -- a snapshot test would happily lock in a wrong formula.
+from a previous run; a snapshot test would happily lock in a wrong formula.
 The derivation is written next to each assertion so the numbers can be checked
 against the definitions in Chidamber & Kemerer (1994) and Lanza & Marinescu
 (2006) without re-reading the implementation.
@@ -160,7 +160,7 @@ def test_cohesive_class_has_no_lcom_penalty():
 
 
 # ----------------------------------------------------------------------
-# Foreign data -- the basis of Feature Envy detection
+# Foreign data: the basis of Feature Envy detection
 # ----------------------------------------------------------------------
 def test_feature_envy_signature(project):
     printer = find_class(project, "InvoicePrinter")
@@ -313,3 +313,64 @@ def test_varargs_parameter_is_counted():
     project = analyze_source(source)
     total = find_method(find_class(project, "Sample"), "total")
     assert total.metrics["NP"] == 2.0
+
+
+# ----------------------------------------------------------------------
+# Fields the language declares on your behalf
+#
+# None of these three appear as a `field_declaration` in the parse tree, so
+# each needs the modifiers Java grants it implicitly. Getting that wrong is not
+# cosmetic: `is_constant` decides whether a field counts towards NOPA and WOC,
+# which is what the Data Class detector reads.
+# ----------------------------------------------------------------------
+def test_enum_members_are_measured():
+    source = """
+    public enum Planet {
+        MERCURY(3.3e23), VENUS(4.87e24);
+        private final double mass;
+        Planet(double mass) { this.mass = mass; }
+        public double mass() { return mass; }
+    }
+    """
+    planet = find_class(analyze_source(source), "Planet")
+    # MERCURY and VENUS are fields of type Planet (JLS 8.9.3), plus `mass`.
+    assert planet.metrics["NOF"] == 3.0
+    # NOM excludes constructors, so only mass().
+    assert planet.metrics["NOM"] == 1.0
+    # WMC counts the constructor too: CC 1 each, neither branches.
+    assert planet.metrics["WMC"] == 2.0
+    # A constant is public but not "public attribute"; NOPA stays 0.
+    assert planet.metrics["NOPA"] == 0.0
+    assert all(f.is_constant for f in planet.fields if f.name in {"MERCURY", "VENUS"})
+
+
+def test_interface_constants_are_fields():
+    source = """
+    interface Repository {
+        int MAX_RESULTS = 100;
+        void save(String key);
+        default boolean isEmpty() { return true; }
+    }
+    """
+    repo = find_class(analyze_source(source), "Repository")
+    assert repo.metrics["NOF"] == 1.0
+    assert repo.metrics["NOM"] == 2.0
+    # JLS 9.3: implicitly public static final, so a constant and not an attribute.
+    assert repo.metrics["NOPA"] == 0.0
+    assert repo.fields[0].is_constant
+
+
+def test_record_components_are_fields():
+    source = """
+    public record Money(long amount, String currency) {
+        public Money plus(Money other) { return new Money(amount + other.amount, currency); }
+    }
+    """
+    money = find_class(analyze_source(source), "Money")
+    # JLS 8.10.3: the header declares one private final field per component.
+    assert money.metrics["NOF"] == 2.0
+    assert [f.name for f in money.fields] == ["amount", "currency"]
+    assert money.metrics["NOM"] == 1.0
+    # Private, so no public attribute; final but not static, so not a constant.
+    assert money.metrics["NOPA"] == 0.0
+    assert not any(f.is_constant for f in money.fields)

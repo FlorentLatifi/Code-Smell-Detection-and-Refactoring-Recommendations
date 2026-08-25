@@ -5,7 +5,7 @@ syntax (records, sealed types, switch expressions, lambdas) and over a
 JavaParser sidecar because it needs no JVM at analysis time.
 
 The parser is deliberately *not* a full symbol resolver. It records what each
-method syntactically touches -- bare names, ``this.x``, ``receiver.member`` --
+method syntactically touches (bare names, ``this.x``, ``receiver.member``),
 and leaves interpretation to :mod:`javasmell.metrics`, where the declaring
 class is known. That is enough for every metric in Lanza & Marinescu's
 detection strategies and avoids building a type system.
@@ -34,6 +34,13 @@ TYPE_DECLARATIONS = {
     "enum_declaration": "enum",
     "record_declaration": "record",
 }
+
+# Three kinds of field never appear as a `field_declaration` in the parse
+# tree, so the modifiers Java gives them implicitly have to be supplied here:
+# enum constants (JLS 8.9.3) and interface fields (JLS 9.3) are public static
+# final, and a record component (JLS 8.10.3) becomes a private final field.
+IMPLICIT_CONSTANT_MODIFIERS = frozenset({"public", "static", "final"})
+RECORD_COMPONENT_MODIFIERS = frozenset({"private", "final"})
 
 # Statements that open a new indentation level, for max-nesting-depth.
 NESTING_NODES = {
@@ -91,7 +98,13 @@ class JavaParser:
                 imports.append(ctx.text(child).removeprefix("import").strip(" ;\n\t"))
 
         classes = [_build_class(node, ctx, package, path) for node in _iter_type_declarations(root)]
-        return CompilationUnit(file_path=path, package=package, imports=imports, classes=classes)
+        return CompilationUnit(
+            file_path=path,
+            package=package,
+            imports=imports,
+            classes=classes,
+            has_syntax_errors=root.has_error,
+        )
 
 
 class _Context:
@@ -164,6 +177,23 @@ def _type_name(node: Node | None, ctx: _Context) -> str:
     return ctx.text(node).strip()
 
 
+def _iter_body_members(body: Node) -> Iterator[Node]:
+    """Yield a type body's declarations, flattening the enum wrapper.
+
+    An ``enum_body`` does not hold its members directly: the constants come
+    first and everything else is packed into a single ``enum_body_declarations``
+    node. Walking the body's children naively therefore finds no fields and no
+    methods at all, which silently gives every enum in the corpus zero for
+    every size, complexity and cohesion metric, and makes MLCQ samples that
+    live inside an enum impossible to match.
+    """
+    for member in body.named_children:
+        if member.type == "enum_body_declarations":
+            yield from member.named_children
+        else:
+            yield member
+
+
 def _build_class(node: Node, ctx: _Context, package: str, path: str) -> ClassInfo:
     name_node = node.child_by_field_name("name")
     name = ctx.text(name_node) if name_node else "<anonymous>"
@@ -180,13 +210,17 @@ def _build_class(node: Node, ctx: _Context, package: str, path: str) -> ClassInf
             if descendant.type == "type_list":
                 interfaces = [_type_name(t, ctx) for t in descendant.named_children]
 
-    body = node.child_by_field_name("body")
-    fields: list[FieldInfo] = []
+    fields: list[FieldInfo] = _build_record_components(node, ctx)
     methods: list[MethodInfo] = []
+    body = node.child_by_field_name("body")
     if body is not None:
-        for member in body.named_children:
+        for member in _iter_body_members(body):
             if member.type == "field_declaration":
                 fields.extend(_build_fields(member, ctx))
+            elif member.type == "constant_declaration":
+                fields.extend(_build_fields(member, ctx, IMPLICIT_CONSTANT_MODIFIERS))
+            elif member.type == "enum_constant":
+                fields.append(_build_enum_constant(member, ctx, name))
             elif member.type in {"method_declaration", "constructor_declaration"}:
                 methods.append(_build_method(member, ctx, name))
 
@@ -206,10 +240,17 @@ def _build_class(node: Node, ctx: _Context, package: str, path: str) -> ClassInf
     )
 
 
-def _build_fields(node: Node, ctx: _Context) -> list[FieldInfo]:
-    """One declaration can introduce several fields: ``int a, b;``."""
+def _build_fields(
+    node: Node, ctx: _Context, implicit: frozenset[str] = frozenset()
+) -> list[FieldInfo]:
+    """One declaration can introduce several fields: ``int a, b;``.
+
+    ``implicit`` carries modifiers the language grants without writing them,
+    which matters because ``is_constant`` decides whether a field counts
+    towards NOPA and WOC.
+    """
     type_name = _type_name(node.child_by_field_name("type"), ctx)
-    modifiers = _modifiers(node, ctx)
+    modifiers = _modifiers(node, ctx) | implicit
     result = []
     for child in node.named_children:
         if child.type != "variable_declarator":
@@ -226,6 +267,50 @@ def _build_fields(node: Node, ctx: _Context) -> list[FieldInfo]:
             )
         )
     return result
+
+
+def _build_enum_constant(node: Node, ctx: _Context, enum_name: str) -> FieldInfo:
+    """An enum constant is a field of the enum's own type (JLS 8.9.3).
+
+    Its type being the enum itself is what keeps it out of CBO, which already
+    discards self-references.
+    """
+    name_node = node.child_by_field_name("name")
+    return FieldInfo(
+        name=ctx.text(name_node) if name_node else "<unnamed>",
+        type_name=enum_name,
+        modifiers=IMPLICIT_CONSTANT_MODIFIERS,
+        line=node.start_point[0] + 1,
+    )
+
+
+def _build_record_components(node: Node, ctx: _Context) -> list[FieldInfo]:
+    """A record's header declares private final fields (JLS 8.10.3).
+
+    Without them a record measures as a class with no state at all, which is
+    precisely backwards: a record is the canonical data holder.
+    """
+    if node.type != "record_declaration":
+        return []
+    params = node.child_by_field_name("parameters")
+    if params is None:
+        return []
+    components = []
+    for param in params.named_children:
+        if param.type != "formal_parameter":
+            continue
+        pname = param.child_by_field_name("name")
+        if pname is None:
+            continue
+        components.append(
+            FieldInfo(
+                name=ctx.text(pname),
+                type_name=_type_name(param.child_by_field_name("type"), ctx),
+                modifiers=RECORD_COMPONENT_MODIFIERS,
+                line=param.start_point[0] + 1,
+            )
+        )
+    return components
 
 
 def _build_method(node: Node, ctx: _Context, class_name: str) -> MethodInfo:
@@ -406,4 +491,4 @@ def iter_java_files(root: str) -> Iterator[str]:
         dirnames[:] = [d for d in dirnames if d not in skip]
         for filename in filenames:
             if filename.endswith(".java"):
-                yield os.path.join(dirpath, filename)  # noqa: PTH118 -- stays with os.walk
+                yield os.path.join(dirpath, filename)  # noqa: PTH118, stays with os.walk
