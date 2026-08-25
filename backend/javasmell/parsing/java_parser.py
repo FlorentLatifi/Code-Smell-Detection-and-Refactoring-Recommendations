@@ -14,7 +14,8 @@ detection strategies and avoids building a type system.
 from __future__ import annotations
 
 import os
-from typing import Iterator, Optional
+from collections.abc import Iterator
+from pathlib import Path
 
 import tree_sitter_java as tsjava
 from tree_sitter import Language, Node, Parser
@@ -72,15 +73,13 @@ class JavaParser:
     # Entry points
     # ------------------------------------------------------------------
     def parse_file(self, path: str) -> CompilationUnit:
-        with open(path, "rb") as handle:
-            source = handle.read()
+        source = Path(path).read_bytes()
         return self.parse_source(source, path)
 
-    def parse_source(self, source, path: str = "<memory>") -> CompilationUnit:
-        if isinstance(source, str):
-            source = source.encode("utf-8")
-        tree = self._parser.parse(source)
-        ctx = _Context(source)
+    def parse_source(self, source: str | bytes, path: str = "<memory>") -> CompilationUnit:
+        raw = source.encode("utf-8") if isinstance(source, str) else source
+        tree = self._parser.parse(raw)
+        ctx = _Context(raw)
         root = tree.root_node
 
         package = ""
@@ -91,13 +90,8 @@ class JavaParser:
             elif child.type == "import_declaration":
                 imports.append(ctx.text(child).removeprefix("import").strip(" ;\n\t"))
 
-        classes = [
-            _build_class(node, ctx, package, path)
-            for node in _iter_type_declarations(root)
-        ]
-        return CompilationUnit(
-            file_path=path, package=package, imports=imports, classes=classes
-        )
+        classes = [_build_class(node, ctx, package, path) for node in _iter_type_declarations(root)]
+        return CompilationUnit(file_path=path, package=package, imports=imports, classes=classes)
 
 
 class _Context:
@@ -108,9 +102,7 @@ class _Context:
         self.lines = source.decode("utf-8", errors="replace").splitlines()
 
     def text(self, node: Node) -> str:
-        return self.source[node.start_byte : node.end_byte].decode(
-            "utf-8", errors="replace"
-        )
+        return self.source[node.start_byte : node.end_byte].decode("utf-8", errors="replace")
 
     def loc(self, node: Node) -> int:
         """Effective lines of code: blank, brace-only and comment lines excluded."""
@@ -123,7 +115,7 @@ class _Context:
                 if "*/" in line:
                     in_block_comment = False
                 continue
-            if not line or line in {"{", "}", "});", "}"}:
+            if not line or line in {"{", "}", "});"}:
                 continue
             if line.startswith("//"):
                 continue
@@ -158,7 +150,7 @@ def _modifiers(node: Node, ctx: _Context) -> frozenset[str]:
     return frozenset()
 
 
-def _type_name(node: Optional[Node], ctx: _Context) -> str:
+def _type_name(node: Node | None, ctx: _Context) -> str:
     """Erase generics and array brackets: ``List<Item>[]`` becomes ``List``."""
     if node is None:
         return "void"
@@ -244,9 +236,7 @@ def _build_method(node: Node, ctx: _Context, class_name: str) -> MethodInfo:
     parameters = _build_parameters(node, ctx)
     method = MethodInfo(
         name=name,
-        return_type=(
-            None if is_constructor else _type_name(node.child_by_field_name("type"), ctx)
-        ),
+        return_type=(None if is_constructor else _type_name(node.child_by_field_name("type"), ctx)),
         parameters=parameters,
         modifiers=_modifiers(node, ctx),
         start_line=node.start_point[0] + 1,
@@ -295,9 +285,7 @@ def _build_parameters(node: Node, ctx: _Context) -> list[ParameterInfo]:
                 ptype = param.named_children[0]
         if pname is None:
             continue
-        parameters.append(
-            ParameterInfo(name=ctx.text(pname), type_name=_type_name(ptype, ctx))
-        )
+        parameters.append(ParameterInfo(name=ctx.text(pname), type_name=_type_name(ptype, ctx)))
     return parameters
 
 
@@ -324,9 +312,7 @@ def _collect_body(body: Node, ctx: _Context, method: MethodInfo) -> None:
             if declared is not None:
                 var = ctx.text(declared)
                 method.declared_locals.add(var)
-                method.local_var_types[var] = _type_name(
-                    node.child_by_field_name("type"), ctx
-                )
+                method.local_var_types[var] = _type_name(node.child_by_field_name("type"), ctx)
 
         elif kind == "catch_formal_parameter":
             declared = node.child_by_field_name("name")
@@ -341,9 +327,7 @@ def _collect_body(body: Node, ctx: _Context, method: MethodInfo) -> None:
                 if receiver.type == "this":
                     method.this_accesses.add(member_name)
                 else:
-                    method.qualified_field_accesses.add(
-                        (ctx.text(receiver), member_name)
-                    )
+                    method.qualified_field_accesses.add((ctx.text(receiver), member_name))
 
         elif kind == "method_invocation":
             receiver = node.child_by_field_name("object")
@@ -375,7 +359,13 @@ def _cyclomatic_complexity(body: Node) -> int:
             complexity += 1
         elif kind == "switch_label":
             # `default` is the fall-through path, not a decision.
-            label = node.text.decode("utf-8", errors="replace").strip()
+            #
+            # ``Node.text`` is optional in tree-sitter's API and returning None
+            # here would abort the whole run, since analyze_path only skips
+            # files on OSError. A label we cannot read is far more likely to be
+            # one of many `case`s than the single `default`, so it counts.
+            raw = node.text
+            label = raw.decode("utf-8", errors="replace").strip() if raw else ""
             if not label.startswith("default"):
                 complexity += 1
         elif kind == "binary_expression":
@@ -400,9 +390,15 @@ def _max_nesting(body: Node) -> int:
 
 
 def iter_java_files(root: str) -> Iterator[str]:
-    """Every ``.java`` file under ``root``, skipping build and VCS output."""
+    """Every ``.java`` file under ``root``, skipping build and VCS output.
+
+    ``os.walk`` is used rather than ``Path.rglob`` on purpose: assigning to
+    ``dirnames`` prunes a directory *before* it is descended into, so a real
+    repository's ``.git`` and ``node_modules`` are never traversed. ``rglob``
+    offers no way to prune and would have to visit and discard them.
+    """
     skip = {".git", "target", "build", "out", "bin", "node_modules", ".idea", ".venv"}
-    if os.path.isfile(root):
+    if Path(root).is_file():
         if root.endswith(".java"):
             yield root
         return
@@ -410,4 +406,4 @@ def iter_java_files(root: str) -> Iterator[str]:
         dirnames[:] = [d for d in dirnames if d not in skip]
         for filename in filenames:
             if filename.endswith(".java"):
-                yield os.path.join(dirpath, filename)
+                yield os.path.join(dirpath, filename)  # noqa: PTH118 -- stays with os.walk
