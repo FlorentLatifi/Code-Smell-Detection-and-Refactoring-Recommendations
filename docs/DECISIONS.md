@@ -1,7 +1,7 @@
 # Regjistri i vendimeve
 
 Çdo vendim teknik me pasoja, i shkruar kur merret. Ky skedar është lënda e parë e
-**Kapitullit 4 (Metodologjia)** — mbrojtja e një zgjedhjeje tre muaj më vonë, nga
+**Kapitullit 4 (Metodologjia)**; mbrojtja e një zgjedhjeje tre muaj më vonë, nga
 kujtesa, është ku humbin pikët.
 
 Formati: konteksti → vendimi → alternativat → pasojat. Një vendim i ndryshuar nuk
@@ -27,10 +27,12 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-15 | Agregimi i etiketave: mesatare e rrumbullakosur lart, e ndërrueshme | 2026-08-25 | aktiv |
 | VD-16 | Korpusi me depo të plota, jo me skedarë të veçuar | 2026-08-25 | aktiv |
 | VD-17 | Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem | 2026-08-25 | aktiv |
+| VD-18 | Fushat që Java i deklaron në heshtje maten si fusha | 2026-08-25 | aktiv |
+| VD-19 | Përputhja MLCQ↔entitet ankorohet te rreshtat, verifikohet me emrin | 2026-08-25 | aktiv |
 
 ---
 
-### VD-01 — Java si gjuhë e vetme e analizuar
+### VD-01: Java si gjuhë e vetme e analizuar
 
 **Konteksti.** Detektimi i code smells varet nga metrika objekt-orientuara që
 supozojnë klasa, trashëgimi dhe fusha.
@@ -46,7 +48,7 @@ dhe raportohet te "kufizimet".
 
 ---
 
-### VD-02 — tree-sitter si front-end analizues
+### VD-02: tree-sitter si front-end analizues
 
 **Konteksti.** Nevojitet një pemë analize e saktë për Java-n moderne, pa varësi
 nga JVM-ja gjatë analizës.
@@ -64,7 +66,7 @@ Marinescu dhe shmang ndërtimin e një sistemi tipash.
 
 ---
 
-### VD-03 — Pa LLM në rrugën e produktit
+### VD-03: Pa LLM në rrugën e produktit
 
 **Konteksti.** Rekomandimet e refaktorimit mund të gjenerohen nga një model
 gjuhësor. API-të me pagesë janë të përjashtuara (kosto), dhe një model lokal mbi
@@ -75,14 +77,14 @@ katalogut të Fowler-it.
 
 **Alternativat.** API e paguar; model lokal i kuantizuar; qasje hibride.
 
-**Pasojat.** Dalja është e riprodhueshme dhe e verifikueshme me `javac` — një
+**Pasojat.** Dalja është e riprodhueshme dhe e verifikueshme me `javac`: një
 pretendim empirik shumë më i fortë se "modeli propozoi diçka që duket mirë".
 Komisioni mund ta ekzekutojë sistemin pa asnjë çelës. Kufizim: mbulohen vetëm
 transformimet e implementuara, jo çdo rishkrim i mundshëm.
 
 ---
 
-### VD-04 — Tri qasje të pavarura dhe të krahasueshme
+### VD-04: Tri qasje të pavarura dhe të krahasueshme
 
 **Konteksti.** Një punim diplome ka nevojë për një pyetje kërkimore, jo vetëm për
 një vegël.
@@ -95,17 +97,17 @@ input.
 zezë, pa gjurmueshmëri).
 
 **Pasojat.** Krahasimi A vs B është kontributi kryesor empirik. Kërkon që të dyja
-qasjet të ndajnë të njëjtën shkallë ashpërsie dhe të njëjtat entitete — prandaj
+qasjet të ndajnë të njëjtën shkallë ashpërsie dhe të njëjtat entitete, prandaj
 VD-06 dhe përputhësi i Fazës 1.
 
 ---
 
-### VD-05 — MLCQ si e vërtetë bazë
+### VD-05: MLCQ si e vërtetë bazë
 
 **Konteksti.** ML-ja kërkon etiketa; vlerësimi i Qasjes A kërkon një referencë të
 pavarur nga vetë rregullat tona.
 
-**Vendimi.** MLCQ (Madeyski & Lewowski, 2020) — mostra Java të etiketuara nga
+**Vendimi.** MLCQ (Madeyski & Lewowski, 2020): mostra Java të etiketuara nga
 zhvillues profesionistë, për Blob, Data Class, Long Method dhe Feature Envy.
 
 **Alternativat.** Etiketim manual (i pamundur në shkallë brenda afatit);
@@ -114,19 +116,19 @@ referencë (do të matte pajtimin me atë vegël, jo saktësinë).
 
 **Pasojat.** Katër smells kanë vlerësim sasior; katër të tjerët e implementuar
 (Large Class, Brain Method, Long Parameter List, Deep Nesting) raportohen vetëm
-në mënyrë përshkruese, dhe kjo thuhet hapur. MLCQ nuk përmban kod — korpusi duhet
+në mënyrë përshkruese, dhe kjo thuhet hapur. MLCQ nuk përmban kod; korpusi duhet
 materializuar nga GitHub, me humbjen e pashmangshme të depove të fshira, e cila
 raportohet si kufizim i studimit.
 
 ---
 
-### VD-06 — Ashpërsia derivohet nga teprica, në shkallën e MLCQ
+### VD-06: Ashpërsia derivohet nga teprica, në shkallën e MLCQ
 
 **Konteksti.** Ashpërsia e caktuar në mënyrë arbitrare ("God Class = gjithmonë
 kritike") nuk mbrohet dot.
 
-**Vendimi.** `Severity` merr vlerat `minor/major/critical` — pikërisht shkalla e
-MLCQ — dhe llogaritet si mesatare e tepricës mbi pragje, e kufizuar në 5× që një
+**Vendimi.** `Severity` merr vlerat `minor/major/critical` (pikërisht shkalla e
+MLCQ) dhe llogaritet si mesatare e tepricës mbi pragje, e kufizuar në 5× që një
 metrikë ekstreme të mos e ngrejë vetëm një rast të butë.
 
 **Alternativat.** Ashpërsi fikse për smell; ashpërsi e mësuar nga ML-ja.
@@ -137,7 +139,7 @@ analizës së ndjeshmërisë në Fazën 5.
 
 ---
 
-### VD-07 — Pragjet të centralizuara dhe të citueshme
+### VD-07: Pragjet të centralizuara dhe të citueshme
 
 **Konteksti.** Pragjet e shpërndara nëpër kod nuk mund as të mbrohen as të
 variohen.
@@ -150,7 +152,7 @@ alternative; ngrirja pengon që një fshirje ta ndotë bazën me të cilën krah
 
 ---
 
-### VD-08 — Detektorët kthejnë kushtet, jo boolean
+### VD-08: Detektorët kthejnë kushtet, jo boolean
 
 **Konteksti.** Një vegël që thotë vetëm "kjo klasë ka erë" nuk ndihmon askënd.
 
@@ -163,7 +165,7 @@ plotësisht e justifikuar.
 
 ---
 
-### VD-09 — Large Class e ndarë nga God Class
+### VD-09: Large Class e ndarë nga God Class
 
 **Konteksti.** Të dyja kanë të bëjnë me madhësinë e klasës.
 
@@ -176,7 +178,7 @@ Class trajtohet si sinjal i veçantë, jo si i njëjti smell.
 
 ---
 
-### VD-10 — Python për backend-in që analizon Java
+### VD-10: Python për backend-in që analizon Java
 
 **Konteksti.** Sistemi analizon Java; nuk rrjedh që duhet shkruar në Java.
 
@@ -186,12 +188,12 @@ Class trajtohet si sinjal i veçantë, jo si i njëjti smell.
 hibrid Java-analizë + Python-ML.
 
 **Pasojat.** scikit-learn dhe pandas janë të disponueshme drejtpërdrejt, pa urë
-ndër-gjuhëshe — vendimtare për Shtyllën B. `javac` përdoret vetëm si nënproces
+ndër-gjuhëshe, vendimtare për Shtyllën B. `javac` përdoret vetëm si nënproces
 verifikimi, që është një sipërfaqe e vogël dhe e kontrolluar.
 
 ---
 
-### VD-11 — Refuzimi është rezultat i saktë i refaktorimit
+### VD-11: Refuzimi është rezultat i saktë i refaktorimit
 
 **Konteksti.** Një transformim mbi kod të huaj mund ta prishë atë kur parakushtet
 nuk verifikohen.
@@ -208,7 +210,7 @@ refuzimit bëhet vetë një rezultat interesant i punimit.
 
 ---
 
-### VD-12 — Ndarje sipas depos në vlerësimin ML
+### VD-12: Ndarje sipas depos në vlerësimin ML
 
 **Konteksti.** MLCQ përmban shumë mostra nga e njëjta depo, me stil dhe konventa
 të përbashkëta.
@@ -217,17 +219,17 @@ të përbashkëta.
 në trajnim dhe testim. Farë e fiksuar.
 
 **Alternativat.** Ndarje e rastësishme sipas rreshtave (jep numra dukshëm më të
-mirë — dhe të pavlefshëm).
+mirë, dhe të pavlefshëm).
 
 **Pasojat.** Rezultate më modeste por të vërteta, që matin përgjithësimin te një
-projekt i panjohur — pikërisht ai është përdorimi real i veglës.
+projekt i panjohur; pikërisht ai është përdorimi real i veglës.
 
 ---
 
-### VD-13 — Punimi gjenerohet me kod, jo formatohet me dorë
+### VD-13: Punimi gjenerohet me kod, jo formatohet me dorë
 
 **Konteksti.** Shablloni i UBT-së ka tri regjime numërimi faqesh, rregulla fonti
-për nivel titulli dhe hapësirë rreshtash minimale — të lehta për t'u prishur me
+për nivel titulli dhe hapësirë rreshtash minimale, të lehta për t'u prishur me
 redaktim manual.
 
 **Vendimi.** `docs/thesis/build_thesis.py` e ndërton dokumentin me `python-docx`;
@@ -235,16 +237,16 @@ përmbajtja qëndron e ndarë nga paraqitja.
 
 **Pasojat.** Përputhshmëria me shabllonin rifitohet me një ekzekutim. Kufizim i
 rëndësishëm: pas dorëzimit të skeletit, redaktimi kalon në Word dhe rikthimi i
-skriptit e mbishkruan skedarin — pra në atë pikë skripti dhe dokumenti duhet të
+skriptit e mbishkruan skedarin, pra në atë pikë skripti dhe dokumenti duhet të
 konsiderohen të shkëputur, ose përmbajtja të mbahet e sinkronizuar në `CONTENT`.
 
 ---
 
-### VD-14 — Portë cilësie e detyrueshme para shkrimit të kodit kritik
+### VD-14: Portë cilësie e detyrueshme para shkrimit të kodit kritik
 
 **Konteksti.** Kodi kryesor (motori i refaktorimit, harness-i i vlerësimit) ende
 nuk është shkruar. Vendosja e kontrolleve automatike *pasi* të shkruhet do të
-thoshte t'i zbatosh mbi disa mijëra rreshta njëherësh — çka zakonisht përfundon
+thoshte t'i zbatosh mbi disa mijëra rreshta njëherësh, çka zakonisht përfundon
 me çaktivizimin e tyre.
 
 **Vendimi.** `ruff` (lint + format), `mypy --strict`, `pytest-cov` dhe GitHub
@@ -256,8 +258,8 @@ Python-i pinohet në 3.13 edhe në CI.
 
 **Pasojat.** Kostoja u pagua menjëherë dhe u kthye po aq shpejt: kontrollet
 zbuluan një defekt që rrëzonte tërë analizën e një projekti (`Node.text` mund të
-jetë `None`), një element të dyfishtë në filtrin e LOC-ut, dhe faktin që `cli.py` —
-pikënisja e eksperimenteve — nuk kishte asnjë test. Kufizim i pranuar: `ruff format`
+jetë `None`), një element të dyfishtë në filtrin e LOC-ut, dhe faktin që `cli.py`,
+pikënisja e eksperimenteve, nuk kishte asnjë test. Kufizim i pranuar: `ruff format`
 i shpërthen listat e kolonave CSV një-për-rresht, çka është më pak e lexueshme se
 rreshtimi tabelar; pranohet si kompromis dhe pastrohet në Fazën 4, kur API-ja t'i
 ripërdorë ato kolona si konstante të përbashkët.
@@ -267,7 +269,7 @@ mes versioneve të interpretuesit do t'i bënte të pariprodhueshme numrat e pub
 
 ---
 
-### VD-15 — Agregimi i etiketave: mesatare e rrumbullakosur lart, e ndërrueshme
+### VD-15: Agregimi i etiketave: mesatare e rrumbullakosur lart, e ndërrueshme
 
 **Konteksti.** MLCQ nuk publikon etiketa, publikon **rishikime**. Çdo mostër u
 vlerësua në mënyrë të pavarur nga disa zhvillues profesionistë, dhe ata nuk
@@ -280,7 +282,7 @@ të vetme e përcakton vetë të vërtetën bazë ndaj së cilës matet gjithçk
 (`Aggregation`), me `MEAN` si parazgjedhje: mesatarja e rangjeve ordinale,
 e rrumbullakosur **gjysma lart**.
 
-**Alternativat.** Vota e shumicës — e papërdorshme këtu, sepse rasti dominues
+**Alternativat.** Vota e shumicës: e papërdorshme këtu, sepse rasti dominues
 janë saktësisht **dy** rishikues (3511 nga 4747 mostra), ku një mospajtim nuk ka
 shumicë. `MAX` (mjafton një rishikues) fryn pozitivet; `MIN` i fsheh; `UNANIMOUS`
 i heq krejt mospajtimet dhe humb 26% të të dhënave.
@@ -288,15 +290,15 @@ i heq krejt mospajtimet dhe humb 26% të të dhënave.
 **Pasojat.** Barazimi 0.5 (p.sh. `none` + `minor`) shkon te etiketa më e rëndë,
 pra një erë që një rishikues e pa nuk fshihet. Kujdes teknik i regjistruar:
 `round()` i Python-it është rrumbullakosje bankare dhe do ta çonte barazimin
-**poshtë**, drejt "pa erë" — e kundërta e qëllimit; prandaj llogaritja bëhet
+**poshtë**, drejt "pa erë", e kundërta e qëllimit; prandaj llogaritja bëhet
 shprehimisht me `+ 0.5`. Të katër strategjitë duhet të raportohen në analizën e
 ndjeshmërisë së Fazës 5, sepse kjo zgjedhje lëviz çdo numër të Kapitullit 5.
 
 ---
 
-### VD-16 — Korpusi me depo të plota, jo me skedarë të veçuar
+### VD-16: Korpusi me depo të plota, jo me skedarë të veçuar
 
-**Konteksti.** MLCQ jep depo, commit, shteg dhe rang rreshtash — jo kod. Zgjidhja
+**Konteksti.** MLCQ jep depo, commit, shteg dhe rang rreshtash, jo kod. Zgjidhja
 më e lirë do të ishte të merret vetëm skedari ku ndodhet mostra: 4560 skedarë në
 vend të 522 depove.
 
@@ -310,7 +312,7 @@ depove të zgjedhura sipas madhësisë.
 Në një "projekt" me një skedar, ATFD-ja do të numëronte vetëm qasjet brenda po atij
 skedari, do të binte pothuajse në zero, dhe God Class me Feature Envy nuk do të
 aktivizoheshin pothuajse kurrë. Recall-i i matur do të përshkruante korpusin, jo
-detektorët — një artefakt që do ta zhvlerësonte tërë Kapitullin 5.
+detektorët, një artefakt që do ta zhvlerësonte tërë Kapitullin 5.
 
 Kostoja u verifikua para vendimit, jo u hamendësua. Madhësia e depove sipas GitHub
 API-së projekton ~125 GB, por ai numër përfshin tërë historinë; tarball-i i një
@@ -323,11 +325,11 @@ regjistrohen në `manifest.json` dhe raportohen si kufizim i studimit.
 
 ---
 
-### VD-17 — Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem
+### VD-17: Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem
 
 **Konteksti.** Nxjerrja e korpusit dështoi me `FileNotFoundError` mbi skedarë që
 sapo ishin shkruar. Shkaku: `LongPathsEnabled = 0` në këtë makinë, rrënja e
-projektit zë 97 karaktere, dhe pemët e paketave Java shkojnë deri në 174 — pra
+projektit zë 97 karaktere, dhe pemët e paketave Java shkojnë deri në 174, pra
 mbi kufirin 260 të Windows-it. Shtegu më i gjatë real i vërejtur: **278 karaktere**.
 
 **Vendimi.** Çdo qasje në sistemin e skedarëve nën rrënjën e korpusit kalon nëpër
@@ -335,11 +337,87 @@ mbi kufirin 260 të Windows-it. Shtegu më i gjatë real i vërejtur: **278 kara
 
 **Alternativat.** Aktivizimi i `LongPathsEnabled` në regjistër (kërkon të drejta
 administratori dhe e bën korpusin të riprodhueshëm vetëm në një makinë të
-konfiguruar ashtu); zhvendosja e projektit në një shteg të shkurtër (e brishtë —
+konfiguruar ashtu); zhvendosja e projektit në një shteg të shkurtër (e brishtë:
 mjafton një pemë pak më e thellë për ta rikthyer problemin).
 
 **Pasojat.** Sistemi punon në çdo makinë Windows pa konfigurim paraprak. Mënyra e
-dështimit ishte e heshtur dhe mashtruese — `is_file()` thjesht kthen `False` mbi
-një skedar që ekziston — çka do të kishte nënvlerësuar mbulimin e të vërtetës bazë
+dështimit ishte e heshtur dhe mashtruese: `is_file()` thjesht kthen `False` mbi
+një skedar që ekziston, çka do të kishte nënvlerësuar mbulimin e të vërtetës bazë
 pa dhënë asnjë gabim; prandaj ekziston një test i dedikuar me shteg mbi 260
 karaktere.
+
+---
+
+### VD-18: Fushat që Java i deklaron në heshtje maten si fusha
+
+**Konteksti.** Gjatë ndërtimit të përputhësit MLCQ↔entitet dolën mostra që nuk
+lidheshin me asnjë metodë. Shkaku nuk ishte përputhësi. Te tree-sitter, anëtarët
+e një `enum`-i nuk qëndrojnë drejtpërdrejt në `enum_body`, por brenda një nyjeje
+të vetme `enum_body_declarations`, dhe parser-i ynë lexonte vetëm fëmijët e
+drejtpërdrejtë. Rrjedhimisht **çdo enum në korpus dilte me zero fusha dhe zero
+metoda**: NOM, NOF, WMC, LCOM dhe TCC të gjitha zero, dhe asnjë detektim i
+mundshëm. E njëjta klasë problemi doli edhe dy herë të tjera. Fushat e një
+`interface`-i vijnë si `constant_declaration`, jo `field_declaration`, ndërsa
+komponentët e një `record`-i qëndrojnë në kokën e deklarimit, jo në trup.
+
+**Vendimi.** Të treja lexohen si fusha, me modifikuesit që gjuha ua jep pa i
+shkruar: konstantet e enum-it janë `public static final` të tipit të vetë
+enum-it (JLS 8.9.3), fushat e interface-it `public static final` (JLS 9.3), dhe
+komponentët e record-it `private final` (JLS 8.10.3).
+
+**Alternativat.** Të lexohen vetëm metodat e enum-it dhe konstantet të lihen
+jashtë, por atëherë `enum E { A, B }` dhe klasa ekuivalente e shkruar me dorë
+maten ndryshe pa asnjë arsye. Ose të mbetej gjendja e mëparshme dhe mostrat
+brenda enum-eve të hiqeshin nga vlerësimi, çka do ta ulte mbulimin dhe do t'i
+linte metrikat e çdo enum-i të gabuara edhe në vetë produktin.
+
+**Pasojat.** Numri i mostrave të lidhura u rrit nga 1257 në 1666 mbi të njëjtin
+korpus, dhe dështimet e emrit ranë nga 14 në 3. `is_constant` mbetet vendimtar:
+duke qenë se konstantet janë të tilla, NOPA dhe WOC nuk preken, pra detektori i
+Data Class-it nuk fillon të shënojë enum-e. Tipi i një konstanteje enum është
+vetë enum-i, që CBO-ja tashmë e përjashton si vetë-referencë. Metrikat e
+enum-eve, interface-ave dhe record-eve **ndryshojnë vlerë** ndaj gjendjes së
+mëparshme, por asnjë numër nuk ishte publikuar ende dhe vlera e mëparshme ishte
+zero, pra kjo është korrigjim defekti dhe jo ricaktim pragu.
+
+Mbetet e njohur dhe jashtë fushëveprimit: metodat brenda klasave anonime
+(`new Runnable() { ... }`) nuk modelohen. Janë 7 nga 4295 mostrat e disponueshme.
+
+---
+
+### VD-19: Përputhja MLCQ↔entitet ankorohet te rreshtat, verifikohet me emrin
+
+**Konteksti.** Plani e quajti këtë hapin me rrezikun e vërtetë të Fazës 1. MLCQ
+e identifikon entitetin me `code_name`, dhe ajo fushë nuk ka një format por
+katër: `a.b.C` për tipat, `a.b.C#m` për shumicën e metodave, `a.b.C.m` për çdo
+konstruktor dhe për 333 metoda të zakonshme përveç tyre, secili opsionalisht i
+ndjekur nga `" int|String"`. Katër rreshta kanë edhe segment tipi bosh
+(`a.b..m`). Mbingarkesat dhe klasat e brendshme dukeshin si problem që kërkon
+zgjidhje simbolesh.
+
+**Vendimi.** Ankora është **rangu i rreshtave**, ndërsa emri i thjeshtë përdoret
+vetëm si verifikim. Përputhja pranohet kur `start_line`, `end_line` dhe emri i
+fundit përputhen të tria; çdo mospërputhje raportohet si `MatchOutcome` i veçantë
+dhe nuk detyrohet të bëhet përputhje.
+
+Vendimi u mor pas matjes, jo para saj. Mbi mostrat e materializuara, rangjet e
+MLCQ-së përputhen saktësisht me parser-in për **791 nga 791 klasa** dhe **871 nga
+875 metoda**, ndërsa emrat përputhen shumë më rrallë.
+
+**Alternativat.** Përputhje sipas emrit të plotë me zgjidhje simbolesh, e cila
+kërkon pikërisht zgjidhësin që `ENGINEERING.md` §2 e ndalon te `parsing/`, për një
+përfitim prej rreth 0.3%. Ose përputhje sipas emrit me tolerancë rreshtash, e
+cila pranon mbingarkesën fqinje kur emri përsëritet: gabimi që prodhon numra
+plotësisht të besueshëm dhe plotësisht të rremë.
+
+**Pasojat.** Dy ambiguitetet që plani i listoi si rreziqe zhduken pa kosto, sepse
+dy mbingarkesa nuk fillojnë dot në të njëjtin rresht, as një klasë e brendshme
+dhe ajo që e mbyll. Rasti kur vërtet fillojnë në një rresht raportohet si
+`AMBIGUOUS`. Mbi korpusin e plotë (499 depo nga 522, me 4295 mostra që kanë burim):
+**99.8%** lidhen me entitetin e tyre, 4286 nga 4295. I njëjti raport doli edhe kur
+korpusi ishte një e katërta e kësaj, çka tregon se numri mat përputhësin dhe jo
+gjendjen e shkarkimit. Dështimet janë 7 metoda brenda klasave anonime dhe 2 nga
+një skedar i vetëm që gramatika nuk e lexon dot:
+`Hamlet.java` i Hadoop-it përdor `_` si emër metode, i palejueshëm që nga Java 9.
+Prandaj `CompilationUnit` mban `has_syntax_errors`; pa të, kufizimi i front-end-it
+tonë do t'i ngarkohej të vërtetës bazë.
