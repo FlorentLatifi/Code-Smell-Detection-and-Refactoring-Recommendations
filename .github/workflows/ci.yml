@@ -36,6 +36,14 @@ jobs:
       - name: Format check
         run: ruff format --check .
 
+      # The experiment scripts live outside the package but produce the numbers
+      # in the Results chapter, so they are held to the same standard.
+      - name: Lint experiment scripts
+        working-directory: .
+        run: |
+          ruff check scripts --config backend/pyproject.toml
+          ruff format --check scripts --config backend/pyproject.toml
+
       - name: Type check
         run: mypy
 
