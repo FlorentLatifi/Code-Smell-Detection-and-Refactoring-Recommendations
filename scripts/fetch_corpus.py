@@ -1,6 +1,6 @@
 """Materialise the MLCQ corpus: one source tree per reviewed repository.
 
-MLCQ publishes labels, not code -- each sample points at a GitHub repository, a
+MLCQ publishes labels, not code: each sample points at a GitHub repository, a
 commit and a line range. This script fetches the tree at that exact commit and
 keeps only the ``.java`` files, which is what the analysis needs and a small
 fraction of what the archive contains.
@@ -92,7 +92,7 @@ def _extract_java(archive: Path, destination: Path) -> tuple[int, int]:
 
     Archive members are attacker-controlled input in the general case, so each
     destination is resolved and checked to be inside the target directory
-    before anything is written -- the tar equivalent of zip-slip. GitHub's
+    before anything is written: the tar equivalent of zip-slip. GitHub's
     archives also wrap everything in a ``{name}-{sha}/`` directory, which is
     stripped so that paths line up with the repository-relative paths MLCQ
     publishes.
@@ -149,11 +149,17 @@ def fetch_one(sample: Sample, out_root: Path, timeout: int, max_mb: int) -> Repo
         except urllib.error.HTTPError as exc:
             status.reason = f"HTTP {exc.code}"  # 404: repository or commit is gone
             return status
-        except (urllib.error.URLError, TimeoutError) as exc:
-            status.reason = f"network: {exc.__class__.__name__}"
-            return status
         except ValueError as exc:
             status.reason = str(exc)
+            return status
+        except OSError as exc:
+            # Deliberately broad. `URLError` only wraps what goes wrong before
+            # the response arrives; a connection reset *while streaming the
+            # body* surfaces as a plain ConnectionResetError, which is what
+            # ended a 133-repository run. Every one of these is transient and
+            # is retried on the next run, since the manifest records the
+            # repository as not done.
+            status.reason = f"download: {exc.__class__.__name__}"
             return status
 
         try:
@@ -204,7 +210,20 @@ def main(argv: list[str] | None = None) -> int:
             skipped += 1
             continue
 
-        status = fetch_one(sample, args.out, args.timeout, args.max_archive_mb)
+        try:
+            status = fetch_one(sample, args.out, args.timeout, args.max_archive_mb)
+        except Exception as exc:
+            # A fetch runs unattended for hours over hundreds of repositories.
+            # Whatever one of them manages to raise, losing the other four
+            # hundred to it is never the right outcome: record it, keep going,
+            # and let the re-run retry it.
+            status = RepoStatus(
+                repository=sample.repository,
+                commit_hash=sample.commit_hash,
+                directory=repo_dirname(sample),
+                ok=False,
+                reason=f"unexpected: {exc.__class__.__name__}",
+            )
         manifest.record(status)
         manifest.save(args.out)
 
@@ -219,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             failed += 1
-            print(f"[{index}/{len(ordered)}] {label}: FAILED -- {status.reason}", flush=True)
+            print(f"[{index}/{len(ordered)}] {label}: FAILED ({status.reason})", flush=True)
 
         time.sleep(PAUSE_BETWEEN_REPOS_S)
 
