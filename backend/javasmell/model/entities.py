@@ -8,7 +8,6 @@ parser) can be plugged in without touching the metrics.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 ACCESSOR_PREFIXES = ("get", "set", "is", "has")
 
@@ -49,7 +48,7 @@ class MethodInfo:
     """
 
     name: str
-    return_type: Optional[str]
+    return_type: str | None
     parameters: list[ParameterInfo]
     modifiers: frozenset[str]
     start_line: int
@@ -121,7 +120,7 @@ class ClassInfo:
     package: str
     file_path: str
     modifiers: frozenset[str]
-    superclass: Optional[str]
+    superclass: str | None
     interfaces: list[str]
     fields: list[FieldInfo]
     methods: list[MethodInfo]
@@ -166,7 +165,7 @@ class ProjectModel:
     def classes(self) -> list[ClassInfo]:
         return [c for u in self.units for c in u.classes]
 
-    def class_by_name(self, name: str) -> Optional[ClassInfo]:
+    def class_by_name(self, name: str) -> ClassInfo | None:
         """Look up by simple or qualified name.
 
         Simple names are ambiguous across packages; the first match wins, which

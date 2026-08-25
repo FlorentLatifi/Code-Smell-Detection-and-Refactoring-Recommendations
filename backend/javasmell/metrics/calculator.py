@@ -14,23 +14,64 @@ metrics are requested.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from itertools import combinations
-from typing import Iterable, Optional
 
 from javasmell.model.entities import ClassInfo, MethodInfo, ProjectModel
 
 # Primitive and ubiquitous JDK types are noise in a coupling count: every class
 # touches String and int, so including them would flatten the metric.
 IGNORED_TYPES = {
-    "void", "int", "long", "short", "byte", "char", "boolean", "float", "double",
-    "Integer", "Long", "Short", "Byte", "Character", "Boolean", "Float", "Double",
-    "String", "StringBuilder", "Object", "Number", "Math", "System", "Class",
-    "List", "ArrayList", "Map", "HashMap", "Set", "HashSet", "Collection",
-    "Optional", "Stream", "Exception", "RuntimeException", "Throwable", "Error",
-    "Iterator", "Iterable", "Comparable", "Runnable", "Thread",
+    "void",
+    "int",
+    "long",
+    "short",
+    "byte",
+    "char",
+    "boolean",
+    "float",
+    "double",
+    "Integer",
+    "Long",
+    "Short",
+    "Byte",
+    "Character",
+    "Boolean",
+    "Float",
+    "Double",
+    "String",
+    "StringBuilder",
+    "Object",
+    "Number",
+    "Math",
+    "System",
+    "Class",
+    "List",
+    "ArrayList",
+    "Map",
+    "HashMap",
+    "Set",
+    "HashSet",
+    "Collection",
+    "Optional",
+    "Stream",
+    "Exception",
+    "RuntimeException",
+    "Throwable",
+    "Error",
+    "Iterator",
+    "Iterable",
+    "Comparable",
+    "Runnable",
+    "Thread",
     # Conventional generic type-parameter names. Only consulted when the set of
     # project types is unknown; otherwise project membership decides.
-    "T", "E", "K", "V", "R", "U",
+    "T",
+    "E",
+    "K",
+    "V",
+    "R",
+    "U",
 }
 
 ACCESSOR_PREFIXES = ("get", "set", "is", "has")
@@ -43,7 +84,7 @@ def _is_accessor_name(name: str) -> bool:
 # ----------------------------------------------------------------------
 # Step 1 -- resolve what each method touches, now that the class is known
 # ----------------------------------------------------------------------
-def resolve_accesses(cls: ClassInfo, project_types: Optional[set[str]] = None) -> None:
+def resolve_accesses(cls: ClassInfo, project_types: set[str] | None = None) -> None:
     """Split every access a method makes into *own* and *foreign*.
 
     A bare name is an own-field access only when it matches a declared field
@@ -89,7 +130,7 @@ def resolve_accesses(cls: ClassInfo, project_types: Optional[set[str]] = None) -
 
 def _resolve_receiver_type(
     receiver: str, method: MethodInfo, field_types: dict[str, str]
-) -> Optional[str]:
+) -> str | None:
     """Best-effort type of a receiver expression.
 
     Only single-identifier receivers are resolved. Chained expressions such as
@@ -122,9 +163,7 @@ def compute_method_metrics(cls: ClassInfo, method: MethodInfo) -> dict[str, floa
     method.metrics["FDP"] = float(len({t for t, _ in method.foreign_accesses}))
     # LAA -- Locality of Attribute Accesses. A method that reads mostly other
     # objects' data (LAA well below 1) is the signature of Feature Envy.
-    method.metrics["LAA"] = (
-        1.0 if total_attribute_accesses == 0 else own / total_attribute_accesses
-    )
+    method.metrics["LAA"] = 1.0 if total_attribute_accesses == 0 else own / total_attribute_accesses
     method.metrics["NOAV"] = float(len(method.declared_locals) + total_attribute_accesses)
     method.metrics["CINT"] = float(
         len({t for t, _ in method.qualified_accesses}) + len(method.unqualified_calls)
@@ -143,22 +182,16 @@ def compute_class_metrics(cls: ClassInfo) -> dict[str, float]:
     cls.metrics["NOF"] = float(len(cls.fields))
     cls.metrics["CLOC"] = float(_class_loc(cls))
     cls.metrics["WMC"] = float(sum(m.metrics.get("CC", 1.0) for m in methods))
-    cls.metrics["AMW"] = (
-        cls.metrics["WMC"] / len(methods) if methods else 0.0
-    )
+    cls.metrics["AMW"] = cls.metrics["WMC"] / len(methods) if methods else 0.0
     cls.metrics["MAXCC"] = float(max((m.metrics.get("CC", 1.0) for m in methods), default=0.0))
     cls.metrics["TCC"] = _tight_class_cohesion(cls)
     cls.metrics["LCOM"] = _lcom_ck(cls)
     cls.metrics["LCOM3"] = _lcom_henderson_sellers(cls)
-    cls.metrics["ATFD"] = float(
-        len({access for m in methods for access in m.foreign_accesses})
-    )
+    cls.metrics["ATFD"] = float(len({access for m in methods for access in m.foreign_accesses}))
     cls.metrics["CBO"] = float(len(_coupled_types(cls)))
     cls.metrics["RFC"] = _response_for_class(cls)
     cls.metrics["WOC"] = _weight_of_class(cls)
-    cls.metrics["NOPA"] = float(
-        len([f for f in cls.fields if f.is_public and not f.is_constant])
-    )
+    cls.metrics["NOPA"] = float(len([f for f in cls.fields if f.is_public and not f.is_constant]))
     cls.metrics["NOAM"] = float(len([m for m in methods if m.is_accessor]))
     return cls.metrics
 
@@ -197,9 +230,7 @@ def _tight_class_cohesion(cls: ClassInfo) -> float:
     if len(visible) < 2:
         return 1.0
     pairs = list(combinations(visible, 2))
-    connected = sum(
-        1 for a, b in pairs if a.own_field_accesses & b.own_field_accesses
-    )
+    connected = sum(1 for a, b in pairs if a.own_field_accesses & b.own_field_accesses)
     return connected / len(pairs)
 
 
@@ -228,9 +259,7 @@ def _lcom_henderson_sellers(cls: ClassInfo) -> float:
     m_count, f_count = len(methods), len(fields)
     if m_count <= 1 or f_count == 0:
         return 0.0
-    accesses_per_field = [
-        sum(1 for m in methods if f.name in m.own_field_accesses) for f in fields
-    ]
+    accesses_per_field = [sum(1 for m in methods if f.name in m.own_field_accesses) for f in fields]
     mean_access = sum(accesses_per_field) / f_count
     return (mean_access - m_count) / (1 - m_count)
 
@@ -282,7 +311,7 @@ def compute_inheritance_metrics(project: ProjectModel) -> None:
     """
     by_name = {c.name: c for c in project.classes}
 
-    children: dict[str, int] = {name: 0 for name in by_name}
+    children: dict[str, int] = dict.fromkeys(by_name, 0)
     for cls in project.classes:
         if cls.superclass in children:
             children[cls.superclass] += 1
@@ -322,6 +351,21 @@ def compute_all(project: ProjectModel) -> ProjectModel:
 def metric_names() -> Iterable[str]:
     """Column order used by the CSV export and the ML feature matrix."""
     return (
-        "CLOC", "NOM", "NOF", "WMC", "AMW", "MAXCC", "TCC", "LCOM", "LCOM3",
-        "ATFD", "CBO", "RFC", "WOC", "NOPA", "NOAM", "DIT", "NOC",
+        "CLOC",
+        "NOM",
+        "NOF",
+        "WMC",
+        "AMW",
+        "MAXCC",
+        "TCC",
+        "LCOM",
+        "LCOM3",
+        "ATFD",
+        "CBO",
+        "RFC",
+        "WOC",
+        "NOPA",
+        "NOAM",
+        "DIT",
+        "NOC",
     )

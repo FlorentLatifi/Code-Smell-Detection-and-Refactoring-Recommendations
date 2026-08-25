@@ -12,11 +12,11 @@ together with the measured values, so that three things become possible:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
+from typing import Any
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     """Ordinal severity.
 
     The scale deliberately matches the MLCQ data set (Madeyski & Lewowski,
@@ -69,7 +69,7 @@ class Smell:
     end_line: int
     conditions: list[Condition]
     refactorings: list[str]
-    method: Optional[str] = None
+    method: str | None = None
     metrics: dict[str, float] = field(default_factory=dict)
 
     @property
@@ -99,7 +99,7 @@ class Smell:
     def rationale(self) -> str:
         return " and ".join(c.describe() for c in self.conditions)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialisation used by the HTTP API and the CSV export."""
         return {
             "smell_type": self.smell_type,

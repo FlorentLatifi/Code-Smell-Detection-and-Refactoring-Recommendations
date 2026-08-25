@@ -9,13 +9,13 @@ against the definitions in Chidamber & Kemerer (1994) and Lanza & Marinescu
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import pytest
 
 from javasmell.analysis import analyze_path, analyze_source
 
-FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURES = str(Path(__file__).parent / "fixtures")
 
 
 @pytest.fixture(scope="module")

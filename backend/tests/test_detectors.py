@@ -11,7 +11,7 @@ has a negative twin that changes exactly one condition.
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import pytest
 
@@ -20,7 +20,7 @@ from javasmell.detectors.base import Severity
 from javasmell.detectors.rules import detect_all, detect_in_class
 from javasmell.detectors.thresholds import Thresholds
 
-FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")
+FIXTURES = str(Path(__file__).parent / "fixtures")
 
 
 @pytest.fixture(scope="module")

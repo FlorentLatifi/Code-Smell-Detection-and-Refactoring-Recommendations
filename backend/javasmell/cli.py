@@ -15,11 +15,15 @@ import csv
 import json
 import sys
 from collections import Counter
+from pathlib import Path
+from typing import TextIO
 
 from javasmell.analysis import analyze_path
+from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import detect_all
 from javasmell.detectors.thresholds import DEFAULT
 from javasmell.metrics.calculator import metric_names
+from javasmell.model.entities import ProjectModel
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
 
@@ -42,9 +46,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="minor",
         help="Hide findings below this severity",
     )
-    parser.add_argument(
-        "--smell", action="append", help="Only report this smell type (repeatable)"
-    )
+    parser.add_argument("--smell", action="append", help="Only report this smell type (repeatable)")
     return parser
 
 
@@ -63,24 +65,29 @@ def main(argv: list[str] | None = None) -> int:
         wanted = set(args.smell)
         smells = [s for s in smells if s.smell_type in wanted]
 
-    stream = open(args.out, "w", encoding="utf-8", newline="") if args.out else sys.stdout
-    try:
-        if args.format == "json":
-            json.dump([s.to_dict() for s in smells], stream, indent=2)
-        elif args.format == "csv":
-            _write_smell_csv(stream, smells)
-        elif args.format == "metrics":
-            _write_metric_csv(stream, project)
-        else:
-            _write_report(stream, project, smells)
-    finally:
-        if args.out:
-            stream.close()
-            print(f"Wrote {args.out}", file=sys.stderr)
+    if args.out:
+        with Path(args.out).open("w", encoding="utf-8", newline="") as stream:
+            _emit(args.format, project, smells, stream)
+        # Reported only after the file closed cleanly -- claiming a write that
+        # raised half way through would be worse than saying nothing.
+        print(f"Wrote {args.out}", file=sys.stderr)
+    else:
+        _emit(args.format, project, smells, sys.stdout)
     return 0
 
 
-def _write_report(stream, project, smells) -> None:
+def _emit(fmt: str, project: ProjectModel, smells: list[Smell], stream: TextIO) -> None:
+    if fmt == "json":
+        json.dump([s.to_dict() for s in smells], stream, indent=2)
+    elif fmt == "csv":
+        _write_smell_csv(stream, smells)
+    elif fmt == "metrics":
+        _write_metric_csv(stream, project)
+    else:
+        _write_report(stream, project, smells)
+
+
+def _write_report(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
     files = len(project.units)
     classes = len(project.classes)
     methods = sum(len(c.methods) for c in project.classes)
@@ -98,8 +105,7 @@ def _write_report(stream, project, smells) -> None:
     print(
         "  "
         + "  ".join(
-            f"{name}={by_severity.get(name, 0)}"
-            for name in ("critical", "major", "minor")
+            f"{name}={by_severity.get(name, 0)}" for name in ("critical", "major", "minor")
         ),
         file=stream,
     )
@@ -113,25 +119,42 @@ def _write_report(stream, project, smells) -> None:
         print(file=stream)
 
 
-def _write_smell_csv(stream, smells) -> None:
+def _write_smell_csv(stream: TextIO, smells: list[Smell]) -> None:
     writer = csv.writer(stream)
     writer.writerow(
         [
-            "smell_type", "severity", "score", "package", "class", "method",
-            "file", "start_line", "end_line", "rationale", "refactorings",
+            "smell_type",
+            "severity",
+            "score",
+            "package",
+            "class",
+            "method",
+            "file",
+            "start_line",
+            "end_line",
+            "rationale",
+            "refactorings",
         ]
     )
     for s in smells:
         writer.writerow(
             [
-                s.smell_type, s.severity.value, round(s.score, 3), s.package,
-                s.class_name, s.method or "", s.file_path, s.start_line,
-                s.end_line, s.rationale, "|".join(s.refactorings),
+                s.smell_type,
+                s.severity.value,
+                round(s.score, 3),
+                s.package,
+                s.class_name,
+                s.method or "",
+                s.file_path,
+                s.start_line,
+                s.end_line,
+                s.rationale,
+                "|".join(s.refactorings),
             ]
         )
 
 
-def _write_metric_csv(stream, project) -> None:
+def _write_metric_csv(stream: TextIO, project: ProjectModel) -> None:
     """The per-class feature matrix that the ML stage will train on."""
     columns = list(metric_names())
     writer = csv.writer(stream)
@@ -139,7 +162,10 @@ def _write_metric_csv(stream, project) -> None:
     for cls in project.classes:
         writer.writerow(
             [
-                cls.package, cls.name, cls.file_path, cls.start_line,
+                cls.package,
+                cls.name,
+                cls.file_path,
+                cls.start_line,
                 *[round(cls.metrics.get(name, 0.0), 4) for name in columns],
             ]
         )

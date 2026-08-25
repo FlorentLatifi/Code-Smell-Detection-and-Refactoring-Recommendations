@@ -12,8 +12,6 @@ this keeps the whole pass linear in the size of the project.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from javasmell.detectors.base import Condition, Smell
 from javasmell.detectors.thresholds import DEFAULT, Thresholds
 from javasmell.model.entities import ClassInfo, MethodInfo, ProjectModel
@@ -42,9 +40,7 @@ def _skip(cls: ClassInfo) -> bool:
     return cls.kind in {"interface", "enum"}
 
 
-def _class_smell(
-    cls: ClassInfo, smell_type: str, conditions: list[Condition]
-) -> Smell:
+def _class_smell(cls: ClassInfo, smell_type: str, conditions: list[Condition]) -> Smell:
     return Smell(
         smell_type=smell_type,
         scope="class",
@@ -80,7 +76,7 @@ def _method_smell(
 # ----------------------------------------------------------------------
 # Class-level strategies
 # ----------------------------------------------------------------------
-def detect_god_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell]:
+def detect_god_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """God Class (Lanza & Marinescu, p. 80).
 
         WMC >= VERY_HIGH  AND  TCC < ONE_THIRD  AND  ATFD > FEW
@@ -107,7 +103,7 @@ def detect_god_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell]
     )
 
 
-def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell]:
+def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """Data Class (Lanza & Marinescu, p. 88).
 
         WOC < ONE_THIRD  AND  (
@@ -131,9 +127,7 @@ def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell
     if woc >= t.data_class_woc:
         return None
     small_interface = exposed > t.data_class_public_members and wmc < t.data_class_wmc_low
-    large_interface = (
-        exposed > t.data_class_public_members_many and wmc < t.data_class_wmc_high
-    )
+    large_interface = exposed > t.data_class_public_members_many and wmc < t.data_class_wmc_high
     if not (small_interface or large_interface):
         return None
 
@@ -150,7 +144,7 @@ def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell
     )
 
 
-def detect_large_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smell]:
+def detect_large_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """Large Class (Fowler): size alone, without the cohesion evidence.
 
     Reported separately from God Class on purpose. A class can be long and
@@ -176,7 +170,7 @@ def detect_large_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Optional[Smel
 # ----------------------------------------------------------------------
 def detect_feature_envy(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
-) -> Optional[Smell]:
+) -> Smell | None:
     """Feature Envy (Lanza & Marinescu, p. 84).
 
         ATFD > FEW  AND  LAA < ONE_THIRD  AND  FDP <= FEW
@@ -204,9 +198,7 @@ def detect_feature_envy(
     )
 
 
-def detect_long_method(
-    cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
-) -> Optional[Smell]:
+def detect_long_method(cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """Long Method (Fowler): effective lines of code past the threshold.
 
     Comment and blank lines are already excluded by the parser's LOC counter,
@@ -225,7 +217,7 @@ def detect_long_method(
 
 def detect_brain_method(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
-) -> Optional[Smell]:
+) -> Smell | None:
     """Brain Method (Lanza & Marinescu, p. 92).
 
         LOC > HIGH/2  AND  CC >= threshold  AND  MAXNESTING >= 3
@@ -260,7 +252,7 @@ def detect_brain_method(
 
 def detect_long_parameter_list(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
-) -> Optional[Smell]:
+) -> Smell | None:
     """Long Parameter List (Fowler)."""
     np = method.metrics.get("NP", 0.0)
     if np <= t.long_parameter_list_np:
@@ -275,7 +267,7 @@ def detect_long_parameter_list(
 
 def detect_deep_nesting(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
-) -> Optional[Smell]:
+) -> Smell | None:
     """Deeply nested control flow.
 
     Not in Fowler's catalogue under this name, but it is the condition that
@@ -306,9 +298,7 @@ METHOD_DETECTORS = (
 def detect_in_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> list[Smell]:
     smells = [s for detector in CLASS_DETECTORS if (s := detector(cls, t))]
     for method in cls.methods:
-        smells.extend(
-            s for detector in METHOD_DETECTORS if (s := detector(cls, method, t))
-        )
+        smells.extend(s for detector in METHOD_DETECTORS if (s := detector(cls, method, t)))
     return smells
 
 
