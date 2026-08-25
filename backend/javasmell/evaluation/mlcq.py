@@ -50,7 +50,7 @@ CSV_DELIMITER = ";"
 class Aggregation(StrEnum):
     """How several reviewers' severities collapse into one label.
 
-    ``MEAN`` is the default. Majority voting -- the obvious first choice -- is
+    ``MEAN`` is the default. Majority voting (the obvious first choice) is
     undefined for the case that dominates this data set: 3511 of 4747
     multiply-reviewed samples have exactly two reviewers, so a disagreement has
     no majority to find. Rounding the mean half *up* resolves those ties toward
@@ -83,9 +83,7 @@ class Sample:
     """One reviewed code entity, with every review it received.
 
     ``start_line``/``end_line`` are the reliable way to find this entity in the
-    source: ``code_name`` appears in three different shapes across the data set
-    (``Class``, ``Class#method``, ``Class.constructor``), whereas the line range
-    is always present and always means the same thing.
+    source; ``code_name`` is not (see :attr:`simple_name`).
     """
 
     sample_id: str
@@ -103,6 +101,21 @@ class Sample:
     def detector_name(self) -> str:
         """The name this project's detectors use for the same smell."""
         return SMELL_TO_DETECTOR[self.smell]
+
+    @property
+    def simple_name(self) -> str:
+        """The bare entity name: no package, no owner, no parameter list.
+
+        ``code_name`` is not one format but four, and which one appears carries
+        no information we can use: ``a.b.C`` for types, ``a.b.C#m`` for most
+        methods, ``a.b.C.m`` for every constructor and for 333 ordinary methods
+        besides, each optionally followed by ``" int|String"``. Four rows even
+        have an empty type segment (``a.b..m``), where the extraction tool
+        evidently gave up. Only the final segment is dependable, which is why
+        matching is anchored on the line range and uses the name to verify.
+        """
+        head, _, _ = self.code_name.partition(" ")
+        return head.replace("#", ".").rpartition(".")[2]
 
     @property
     def owner_and_name(self) -> tuple[str, str]:
@@ -136,7 +149,7 @@ class Sample:
         if how is Aggregation.UNANIMOUS:
             return ranks[0] if self.is_unanimous else None
         # Mean, rounded half up. Python's round() is banker's rounding, which
-        # would send a 0.5 tie *down* to "no smell" -- the opposite of intent.
+        # would send a 0.5 tie *down* to "no smell", the opposite of intent.
         return int(sum(ranks) / len(ranks) + 0.5)
 
     def is_smelly(self, how: Aggregation = Aggregation.MEAN) -> bool | None:

@@ -1,0 +1,57 @@
+{
+  "by_entity_type": {
+    "class": {
+      "matched": 2109,
+      "no_file": 230,
+      "span_mismatch": 1
+    },
+    "function": {
+      "matched": 2177,
+      "no_entity": 7,
+      "no_file": 245,
+      "syntax_errors": 1
+    }
+  },
+  "by_smell": {
+    "blob": {
+      "matched": 1333,
+      "no_file": 150,
+      "span_mismatch": 1
+    },
+    "data class": {
+      "matched": 776,
+      "no_file": 80
+    },
+    "feature envy": {
+      "matched": 772,
+      "no_entity": 1,
+      "no_file": 87,
+      "syntax_errors": 1
+    },
+    "long method": {
+      "matched": 1405,
+      "no_entity": 6,
+      "no_file": 158
+    }
+  },
+  "corpus_coverage": {
+    "repositories_available": 499,
+    "repositories_total": 522,
+    "samples_available": 4295,
+    "samples_total": 4770
+  },
+  "environment": {
+    "commit": "0c7d6e1f8510123e8fa7c9556e93580468c4fd3d",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "match_rate": 0.8985,
+  "match_rate_of_available": 0.9979,
+  "outcomes": {
+    "matched": 4286,
+    "no_entity": 7,
+    "no_file": 475,
+    "span_mismatch": 1,
+    "syntax_errors": 1
+  }
+}
