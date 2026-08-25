@@ -77,26 +77,43 @@ pas saj ndryshon çdo numër i publikuar.
 
 Pjesa më e nënvlerësuar e projektit. Ka tri nën-probleme, secili real:
 
-**1.1 Marrja e MLCQ**
+**Gjendja:** 1.1 dhe 1.2 të përfunduara më 2026-08-25; 1.3 dhe 1.4 në radhë.
+
+Çka dihet tani me siguri, nga vetë të dhënat e shkarkuara:
+
+| Fakti | Vlera |
+|---|---|
+| Rishikime / mostra unike | 14 739 / 4 770 |
+| Depo / commit-e (një commit për depo) | 522 / 522 |
+| Skedarë unikë që përmbajnë mostra | 4 560 |
+| Smells të mbuluara | blob, data class, long method, feature envy |
+| Shpërndarja e ashpërsisë | none 11 448 · minor 1 787 · major 1 129 · critical 375 |
+| **Mospajtim mes rishikuesve** | **25.9%** (dhe 25.6% edhe për "a ka erë fare") |
+| Mostra me saktësisht 2 rishikues | 3 511 nga 4 747 |
+
+Çekuilibri (78% `none`) dhe mospajtimi janë të dy material i detyrueshëm për
+Kapitullin 5, jo pengesa për t'u zbutur në heshtje.
+
+**1.1 Marrja e MLCQ** ✅
 Dataset-i vjen si CSV nga Zenodo (licencë e hapur) dhe përmban rishikime nga
 zhvillues profesionistë për katër smells — Blob, Data Class, Long Method,
 Feature Envy — me ashpërsi `none/minor/major/critical`. Çdo rresht tregon
 depon GitHub, commit-in dhe entitetin. Kodi *nuk* është brenda dataset-it.
 
-**1.2 Materializimi i korpusit**
+**1.2 Materializimi i korpusit** ✅
 Skript që për çdo mostër merr skedarin e duhur në commit-in e duhur dhe e ruan
 lokalisht në `data/corpus/`. Kërkesat: cache i pandryshueshëm (shkarko një herë),
 punë inkrementale, tolerancë ndaj dështimeve, dhe **raport mbulimi** — sa përqind
 e mostrave u zgjidhën dhe sa u humbën sepse depoja s'ekziston më. Ai numër hyn në
 punim si kufizim i studimit, nuk fshihet.
 
-**1.3 Përputhja MLCQ ↔ modeli ynë**
+**1.3 Përputhja MLCQ ↔ modeli ynë** ⬜ hapi tjetër
 Ky është problemi i vërtetë. MLCQ e identifikon entitetin me emër klase ose me
 nënshkrim metode; ne duhet ta lidhim me `ClassInfo`/`MethodInfo` tonë. Mospërputhjet
 (klasa të brendshme, mbingarkesa, emra të plotë vs të thjeshtë) prodhojnë ose
 mostra të humbura ose përputhje të gabuara. Nevojiten teste për vetë matcher-in.
 
-**1.4 Vlerësimi i Qasjes A**
+**1.4 Vlerësimi i Qasjes A** ⬜
 `scripts/evaluate_rules.py` → precision, recall, F1 dhe MCC për çdo smell, matricë
 konfuze, dhe ndarje sipas ashpërsisë (a i kapim rastet *critical* më mirë se
 *minor*?). Rezultatet në `data/results/`.

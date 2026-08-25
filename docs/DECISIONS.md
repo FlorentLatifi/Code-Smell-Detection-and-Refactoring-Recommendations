@@ -24,6 +24,9 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-12 | Ndarje sipas depos në vlerësimin ML | 2026-08-25 | aktiv |
 | VD-13 | Punimi gjenerohet me kod, jo formatohet me dorë | 2026-08-25 | aktiv |
 | VD-14 | Portë cilësie e detyrueshme para shkrimit të kodit kritik | 2026-08-25 | aktiv |
+| VD-15 | Agregimi i etiketave: mesatare e rrumbullakosur lart, e ndërrueshme | 2026-08-25 | aktiv |
+| VD-16 | Korpusi me depo të plota, jo me skedarë të veçuar | 2026-08-25 | aktiv |
+| VD-17 | Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem | 2026-08-25 | aktiv |
 
 ---
 
@@ -261,3 +264,82 @@ ripërdorë ato kolona si konstante të përbashkët.
 
 Pinimi i Python 3.13 nuk është pedanteri: një metrikë që ndryshon vlerë në heshtje
 mes versioneve të interpretuesit do t'i bënte të pariprodhueshme numrat e publikuar.
+
+---
+
+### VD-15 — Agregimi i etiketave: mesatare e rrumbullakosur lart, e ndërrueshme
+
+**Konteksti.** MLCQ nuk publikon etiketa, publikon **rishikime**. Çdo mostër u
+vlerësua në mënyrë të pavarur nga disa zhvillues profesionistë, dhe ata nuk
+pajtohen aq shpesh sa kjo të mbetet detaj teknik: nga 4747 mostra me më shumë se
+një rishikues, **25.9% mbajnë më shumë se një ashpërsi**, dhe **25.6% nuk pajtohen
+as për pyetjen binare** nëse era ekziston fare. Kthimi i rishikimeve në një etiketë
+të vetme e përcakton vetë të vërtetën bazë ndaj së cilës matet gjithçka.
+
+**Vendimi.** Agregimi është strategji e deklaruar dhe e ndërrueshme
+(`Aggregation`), me `MEAN` si parazgjedhje: mesatarja e rangjeve ordinale,
+e rrumbullakosur **gjysma lart**.
+
+**Alternativat.** Vota e shumicës — e papërdorshme këtu, sepse rasti dominues
+janë saktësisht **dy** rishikues (3511 nga 4747 mostra), ku një mospajtim nuk ka
+shumicë. `MAX` (mjafton një rishikues) fryn pozitivet; `MIN` i fsheh; `UNANIMOUS`
+i heq krejt mospajtimet dhe humb 26% të të dhënave.
+
+**Pasojat.** Barazimi 0.5 (p.sh. `none` + `minor`) shkon te etiketa më e rëndë,
+pra një erë që një rishikues e pa nuk fshihet. Kujdes teknik i regjistruar:
+`round()` i Python-it është rrumbullakosje bankare dhe do ta çonte barazimin
+**poshtë**, drejt "pa erë" — e kundërta e qëllimit; prandaj llogaritja bëhet
+shprehimisht me `+ 0.5`. Të katër strategjitë duhet të raportohen në analizën e
+ndjeshmërisë së Fazës 5, sepse kjo zgjedhje lëviz çdo numër të Kapitullit 5.
+
+---
+
+### VD-16 — Korpusi me depo të plota, jo me skedarë të veçuar
+
+**Konteksti.** MLCQ jep depo, commit, shteg dhe rang rreshtash — jo kod. Zgjidhja
+më e lirë do të ishte të merret vetëm skedari ku ndodhet mostra: 4560 skedarë në
+vend të 522 depove.
+
+**Vendimi.** Shkarkohet pema e plotë e burimit në commit-in e saktë, duke ruajtur
+vetëm skedarët `.java`.
+
+**Alternativat.** Vetëm skedari i mostrës; vetëm paketa përreth; një nënbashkësi
+depove të zgjedhura sipas madhësisë.
+
+**Pasojat.** ATFD, DIT, NOC dhe CBO përkufizohen kundrejt tipave **të projektit**.
+Në një "projekt" me një skedar, ATFD-ja do të numëronte vetëm qasjet brenda po atij
+skedari, do të binte pothuajse në zero, dhe God Class me Feature Envy nuk do të
+aktivizoheshin pothuajse kurrë. Recall-i i matur do të përshkruante korpusin, jo
+detektorët — një artefakt që do ta zhvlerësonte tërë Kapitullin 5.
+
+Kostoja u verifikua para vendimit, jo u hamendësua. Madhësia e depove sipas GitHub
+API-së projekton ~125 GB, por ai numër përfshin tërë historinë; tarball-i i një
+commit-i të vetëm doli **2–18%** e saj, pra projeksioni real është rreth **12–15 GB**
+shkarkim dhe shumë më pak në disk. Prandaj nuk u desh të sakrifikohet mbulimi.
+
+Shkarkimi renditet sipas numrit të mostrave për depo, që një ekzekutim i ndërprerë
+të lërë gjithsesi nënbashkësinë më të dobishme. Depot që nuk zgjidhen më
+regjistrohen në `manifest.json` dhe raportohen si kufizim i studimit.
+
+---
+
+### VD-17 — Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem
+
+**Konteksti.** Nxjerrja e korpusit dështoi me `FileNotFoundError` mbi skedarë që
+sapo ishin shkruar. Shkaku: `LongPathsEnabled = 0` në këtë makinë, rrënja e
+projektit zë 97 karaktere, dhe pemët e paketave Java shkojnë deri në 174 — pra
+mbi kufirin 260 të Windows-it. Shtegu më i gjatë real i vërejtur: **278 karaktere**.
+
+**Vendimi.** Çdo qasje në sistemin e skedarëve nën rrënjën e korpusit kalon nëpër
+`long_path()`, që shton prefiksin `\?\`.
+
+**Alternativat.** Aktivizimi i `LongPathsEnabled` në regjistër (kërkon të drejta
+administratori dhe e bën korpusin të riprodhueshëm vetëm në një makinë të
+konfiguruar ashtu); zhvendosja e projektit në një shteg të shkurtër (e brishtë —
+mjafton një pemë pak më e thellë për ta rikthyer problemin).
+
+**Pasojat.** Sistemi punon në çdo makinë Windows pa konfigurim paraprak. Mënyra e
+dështimit ishte e heshtur dhe mashtruese — `is_file()` thjesht kthen `False` mbi
+një skedar që ekziston — çka do të kishte nënvlerësuar mbulimin e të vërtetës bazë
+pa dhënë asnjë gabim; prandaj ekziston një test i dedikuar me shteg mbi 260
+karaktere.
