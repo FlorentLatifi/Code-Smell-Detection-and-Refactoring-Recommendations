@@ -18,7 +18,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
 | Testet | ✅ 124 kalojnë | vlera të derivuara me dorë |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
-| ML (B) | ⬜ bosh | `javasmell/ml/` |
+| ML (B) | 🟡 makineria gati | 4 modele, ndarje sipas depos, pret tabelën e veçorive |
 | Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` — **rreziku më i madh tani** |
 | API | ⬜ bosh | `javasmell/api/` |
 | Frontend | ⬜ s'ekziston | |
@@ -206,7 +206,89 @@ komandë. Këtu fillon të mbushet Kapitulli 5.
 
 ## Faza 2: Detektimi me Machine Learning (javët 3–4)
 
-Vektori i veçorive ekziston tashmë: `python -m javasmell <path> --format metrics`.
+**Gjendja:** makineria e ndërtuar dhe e testuar; pret tabelën e veçorive.
+
+Doli një parakusht që plani nuk e kishte parë: trajnimi kërkon metrikat për secilën
+mostër të MLCQ-së, pra pikërisht të njëjtin kalim 95-minutësh mbi korpusin. Po ashtu
+edhe fshirja e pragjeve e Fazës 5. Prandaj kalimi u nda nga konsumatorët e tij
+(VD-23): `build_dataset.py` e bën një herë dhe shkruan `mlcq_dataset.csv`, i cili
+komitohet; `train_models.py` dhe fshirja e lexojnë atë në sekonda.
+
+Rrjedhimisht `evaluate_rules.py` dhe `build_dataset.py` ndajnë një lak të vetëm mbi
+korpusin (`evaluation/walk.py`). Nxjerrja u verifikua duke krahasuar daljen para dhe
+pas mbi 25 depo: **identike bajt për bajt**.
+
+Ndërtuar dhe testuar:
+
+- `ml/features.py` — tabela → matrica, me rreshtat pa etiketë të hedhur njësoj si te
+  `scoring.score`, jo të lexuar si negativë
+- `ml/training.py` — katër modelet (VD-24), parashikime jashtë-fold-it mbi
+  `GroupKFold` sipas depos (VD-12), permutation importance, kappa e Cohen-it
+- `scripts/train_models.py` — eksperimenti, me daljen te `ml_evaluation.json`
+
+Provë mbi 25 depo (numra zhurmë, vetëm për të provuar makinerinë): baseline-i i
+shumicës nuk ndez kurrë, siç duhet; dhe veçoritë që modelet zgjodhën janë ato që
+përdorin vetë strategjitë — `m_MLOC` e para për long method, `m_LAA` te feature
+envy, `c_NOAM` te data class. Nëse kjo qëndron mbi korpusin e plotë, është
+nënkapitulli që plani parashikonte.
+
+Gjatë provës doli një defekt që do ta kishte prishur në heshtje tabelën A↔B:
+lexuesi krahasonte me `"True"` ndërsa shkruesi nxjerr `"1"`, pra pajtimi dilte zero
+kudo — dhe zero duket si gjetje, jo si defekt. Kodimi u centralizua (VD-25).
+
+**Rezultatet (2026-08-26, tabela e plotë: 4534 rreshta, 522 depo):**
+
+| Erë | A: F1 | A: MCC | B: modeli | B: F1 | B: MCC | MCC |
+|---|---|---|---|---|---|---|
+| blob | 0.178 | 0.232 | gradient boosting | 0.618 | 0.488 | **2.1×** |
+| data class | 0.251 | 0.275 | gradient boosting | 0.609 | 0.500 | **1.8×** |
+| feature envy | 0.268 | 0.271 | gradient boosting | 0.696 | 0.669 | **2.5×** |
+| long method | 0.586 | 0.581 | random forest | 0.756 | 0.713 | **1.2×** |
+
+Baseline-i i shumicës nuk ndez asnjëherë për asnjë erë — recall 0, MCC i
+papërcaktuar — pra çdo shifër më sipër është mësim i vërtetë, jo çekuilibër i
+shfrytëzuar.
+
+**Ku pajtohen dhe ku jo:**
+
+| Erë | κ | të dy | vetëm A | vetëm B | asnjë |
+|---|---|---|---|---|---|
+| blob | 0.143 | 39 | 4 | **329** | 1032 |
+| data class | 0.227 | 30 | 7 | **144** | 639 |
+| feature envy | 0.230 | 12 | 13 | 54 | 742 |
+| long method | 0.575 | 105 | 4 | 126 | 1239 |
+
+`vetëm B` tejkalon `vetëm A` kudo, shpesh me një rend madhësie: modeli pothuajse e
+përfshin rregullin. Përjashtimi është feature envy, ku rregulli kap 13 raste që
+modeli i humb — pjesa relativisht më e madhe, dhe e vetmja ku bashkimi i dy qasjeve
+do të kishte kuptim praktik.
+
+**Gjetja që lidh të dy qasjet.** Veçoritë që modelet zgjodhën:
+
+| Erë | Tri kryesoret |
+|---|---|
+| long method | **m_MLOC**, m_NOAV, m_CC |
+| feature envy | m_MLOC, m_NOAV, **m_FDP** (pastaj **m_ATFD**) |
+| data class | c_CLOC, **c_WOC**, c_CBO |
+| blob | c_CLOC, c_NOF, c_NOAM |
+
+ATFD dhe FDP janë fjalë për fjalë në strategjinë e Feature Envy; WOC është zemra e
+Data Class. Pra modelet i rizbuluan disa nga metrikat e Lanza & Marinescu-t pa i
+ditur. Por te `blob`, **TCC dhe WMC nuk hyjnë fare në gjashtëshen kryesore** — pikërisht
+kushtet e kohezionit dhe të kompleksitetit mbi të cilat është ndërtuar God Class.
+Kjo përputhet me VD-22, ku shtimi i Large Class e dyfishoi recall-in: ajo që
+rishikuesit e MLCQ-së e quajnë "blob" shpjegohet më mirë me madhësi sesa me kushtin
+e kohezionit të strategjisë së botuar. Kjo është një gjetje, jo një dobësi e matjes.
+
+**Kufizim i njohur.** Tabela e veçorive u ndërtua pas rregullimit të prerjes së
+drejtorive; `rules_evaluation.json` i paraprin atij. Bashkimi A↔B punon mbi
+prerjen (n = 1404/820/821/1474). Rregullimi ktheu 15 nga 20 mostrat e humbura;
+5 mbeten, 4 prej tyre nën `generated-src/` (segmenti nuk është saktësisht `src`)
+dhe një nën një drejtori projekti të nivelit të parë të quajtur `build/`. Kjo është
+0.09% e rreshtave. Numrat e Qasjes A rigjenerohen kur `evaluate_rules.py` të lexojë
+tabelën e veçorive në vend që ta rimasë korpusin.
+
+Mbetet: modeli i serializuar, dhe kalimi i `evaluate_rules.py` te tabela.
 
 - **Baseline i detyrueshëm**: klasifikues shumicë + regresion logjistik. Pa këtë,
   një F1 prej 0.85 nuk do të thotë asgjë; mund ta japë edhe hamendja.

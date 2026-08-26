@@ -515,3 +515,94 @@ implementoi.
 me madhësi të thjeshtë dhe sa kërkon kushtin e kohezionit. Për tri erërat e tjera
 harta mbetet një-me-një; `long method` s'ka nevojë për variant sepse Brain Method
 (LOC > 35) është nënbashkësi e rreptë e Long Method (LOC > 30).
+
+---
+
+### VD-23: Tabela e veçorive ndërtohet një herë dhe komitohet
+
+**Konteksti.** Matja e korpusit kushton ~95 minuta: 690 mijë skedarë `.java`, të
+gjithë të domosdoshëm sepse ATFD, CBO, DIT dhe TCC përcaktohen kundrejt tipave të
+tjerë të projektit (VD-16). Tri gjëra kanë nevojë për saktësisht të njëjtat matje:
+trajnimi i Qasjes B, fshirja e pragjeve e Kapitullit 5, dhe ripikëzimi i Qasjes A
+pas çdo ndryshimi në detektorë. Me dizajnin e mëparshëm secila do ta paguante
+koston nga e para.
+
+**Vendimi.** Një skript i vetëm, `build_dataset.py`, e bën kalimin e shtrenjtë dhe
+shkruan `data/results/mlcq_dataset.csv`: një rresht për mostër, me etiketat e
+rishikuesve pranë 26 metrikave të matura. Skedari **komitohet**.
+
+Pragjet nuk hyjnë fare në atë kalim — ato veprojnë vetëm në detektim — ndaj
+fshirja e tyre bëhet duke rirendur detektorët mbi rreshtat e ruajtur. Përveç
+metrikave, rreshti mban edhe `kind`, `is_constructor` dhe `is_accessor`, të vetmet
+fusha jo-metrike që rregullat lexojnë; pra rreshti përmban gjithçka që detektori
+sheh.
+
+**Alternativat.** Rillogaritja për çdo eksperiment: e ndershme por e pamundur në
+praktikë, sepse një fshirje me k konfigurime do të kushtonte k×95 minuta dhe
+thjesht nuk do të bëhej. Cache binar (pickle/parquet): më i shpejtë por i palexueshëm
+nga një anëtar komisioni dhe i lidhur me versionin e bibliotekës.
+
+**Pasojat.** Kushti i riprodhueshmërisë forcohet: çdo numër i Qasjes B dhe i
+analizës së ndjeshmërisë rigjenerohet nga një CSV prej ~2 MB, pa korpusin 4.4 GB
+dhe pa 95 minutat. Në këmbim, tabela duhet rindërtuar sa herë ndryshon një metrikë
+ose parser-i, dhe ai rindërtim duhet kujtuar; prandaj `test_dataset` dështon nëse
+kalkulatori prodhon një metrikë që tabela nuk e ka.
+
+---
+
+### VD-24: Katër modele, pa rrjeta neurale, me baseline të detyrueshëm
+
+**Konteksti.** Qasja B duhet të jetë e krahasueshme me Qasjen A dhe e mbrojtshme
+para komisionit, jo thjesht e saktë.
+
+**Vendimi.** Katër modele: klasifikuesi i shumicës, regresioni logjistik, Random
+Forest dhe Gradient Boosting. Pa rrjeta neurale.
+
+Baseline-i i shumicës **raportohet gjithmonë**. Mbi një bashkësi ku 78% e
+etiketave janë `none`, një F1 mbresëlënës mund të arrihet pa mësuar asgjë, dhe i
+vetmi mjet që e dallon këtë është të parit se sa merr parashikimi i klasës
+shumicë mbi po atë ndarje.
+
+Modelet që dinë të shprehin peshë klase marrin `class_weight="balanced"`.
+Mbi-mostrimi i pakicës do t'i dyfishonte rreshtat përtej kufirit të fold-it dhe do
+ta prishte në heshtje grupimin e VD-12.
+
+Modelet e nivelit të metodës shohin edhe metrikat e klasës që i mban. Feature Envy
+është pikërisht pohim për **marrëdhënien** mes një metode dhe klasës së saj, dhe
+një metodë e gjatë brenda një God Class nuk është e njëjta vëzhgim me një brenda
+një ndihmësi të vogël.
+
+**Alternativat.** Një rrjetë neurale: dataset-i është i vogël, veçoritë tabelare,
+dhe interpretueshmëria vlen më shumë se një pikë F1 — komisioni do të pyesë *pse*
+ndezi modeli. Vetëm metrikat e metodës për erërat e metodave: e thjeshtë, por e bën
+Feature Envy të pashprehshme.
+
+**Pasojat.** Rëndësia e veçorive matet me permutation importance mbi fold-in e
+mbajtur jashtë, jo me rëndësinë e papastërtisë që një pyll e jep falas: kjo e fundit
+anon nga veçoritë me kardinalitet të lartë, pra nga çdo numërim i pakufizuar si CLOC
+ose WMC, dhe pikërisht ai anim do ta bënte të pakuptimtë pyetjen nëse ML-ja zgjodhi
+metrikat që përdorin strategjitë e Lanza & Marinescu.
+
+---
+
+### VD-25: A dhe B piketohen nga i njëjti kod
+
+**Konteksti.** Krahasimi A kundrejt B është një nga kontributet e punimit. Nëse
+secila qasje e llogarit vetë precizionin, tabela krahason dy përkufizime, jo dy
+qasje.
+
+**Vendimi.** Të dyja kalojnë nëpër `scoring.confusion`. Modelet prodhojnë
+parashikime **jashtë-fold-it** mbi një ndarje të grupuar sipas depos, pra çdo
+mostër parashikohet saktësisht një herë nga një model që nuk e ka parë kurrë
+projektin e saj — e njëjta formë që prodhojnë detektorët, dhe kusht që të dyja të
+krahasohen mostër për mostër e jo vetëm përmbledhje me përmbledhje.
+
+Pajtimi raportohet me kappa-n e Cohen-it plus të katër qelizat. Dy detektorë që
+pothuajse kurrë s'ndezin pajtohen mbi 90% të një bashkësie ku 78% e etiketave janë
+`none` pa mësuar asgjë nga njëri-tjetri; pyetja që ka vlerë nuk është sa shpesh
+pajtohen A dhe B, por çka kap secila **vetëm**.
+
+**Pasojat.** Kodimi i verdiktit në CSV u centralizua pasi një lexues që hamendësoi
+`"True"` kundrejt një shkruesi që nxjerr `"1"` prodhoi një tabelë pajtimi krejt me
+zero — dhe një tabelë me zero duket si gjetje, jo si defekt. Tani `decode_verdict`
+pranon të dyja drejtshkrimet dhe e ndal ekzekutimin për çdo gjë tjetër.
