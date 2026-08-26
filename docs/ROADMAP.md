@@ -4,23 +4,24 @@
 Rregullat se *si* punojmë janë në [`ENGINEERING.md`](ENGINEERING.md); arsyet e vendimeve
 janë në [`DECISIONS.md`](DECISIONS.md).
 
-## Gjendja aktuale (verifikuar më 2026-08-25)
+## Gjendja aktuale (verifikuar më 2026-08-26)
 
 | Komponenti | Gjendja | Vërejtje |
 |---|---|---|
-| Parser Java (tree-sitter) | ✅ i plotë | 413 rreshta, mbulon record/enum/interface |
+| Parser Java (tree-sitter) | ✅ i plotë | mbulon record/enum/interface |
 | Modeli i entiteteve | ✅ i plotë | `ClassInfo`, `MethodInfo`, `FieldInfo` |
-| Metrikat (CK + strategji) | ✅ 17 klasë / 9 metodë | një kalim për klasë |
+| Metrikat (CK + strategji) | ✅ 17 klasë / 9 metodë | një kalim për klasë; LOC-u i unifikuar (VD-21) |
 | Detektorët me rregulla (A) | ✅ 8 smells | me `Condition` dhe ashpërsi të derivuar |
 | CLI | ✅ text/json/csv/metrics | pikënisje për eksperimentet |
+| Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
-| Testet | ✅ 89 kalojnë, mbulim 92% | vlera të derivuara me dorë |
+| Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
+| Testet | ✅ 124 kalojnë | vlera të derivuara me dorë |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ⬜ bosh | `javasmell/ml/` |
-| Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` |
+| Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` — **rreziku më i madh tani** |
 | API | ⬜ bosh | `javasmell/api/` |
 | Frontend | ⬜ s'ekziston | |
-| Harness vlerësimi | ⬜ s'ekziston | **rreziku më i madh** |
 | Punimi | 🟡 skeleti + Kapitulli 1 | `docs/thesis/build_thesis.py` |
 
 Afati: ~12 javë deri te dorëzimi (~nëntor 2026).
@@ -64,13 +65,15 @@ dhe më e lehtë për ta shkurtuar nëse ngushtohet koha.
 4. Ristrukturim i `main()`: `Wrote <file>` raportohet vetëm pasi skedari mbyllet
    pa gabim, jo në `finally` ku dilte edhe kur shkrimi dështonte.
 
-**Mbetet e hapur (vendim i autorit):** bashkësia `{"{", "}", "});"}` që përjashton
-rreshtat pa logjikë nga LOC-u nuk përmban `"};"`: mbyllja e një klase anonime
-ose e një inicializuesi vargu. Përfshirja do të ishte në përputhje me qëllimin e
-deklaruar të metrikës, por **ndryshon vlerat e matura** të MLOC/CLOC dhe rrjedhimisht
-detektimet e Long Method dhe Large Class. Nuk e preka njëanshmërisht (shih
-`ENGINEERING.md` §3.2). Momenti i duhur për ta vendosur është **para** Fazës 1, sepse
-pas saj ndryshon çdo numër i publikuar.
+**E mbyllur më 2026-08-26 (VD-21).** Pyetja e hapur ishte nëse rreshta si `};`
+duhet të përjashtoheshin nga LOC-u. Kontrolli nxori diçka më të rëndë: ekzistonin
+**dy implementime** të LOC-ut dhe kishin devijuar — `java_parser.loc()` (MLOC)
+përjashtonte `{`, `}` dhe `});`, ndërsa `calculator._class_loc()` (CLOC)
+përjashtonte vetëm `{` dhe `}`. Tani ka një implementim të vetëm, `effective_loc`,
+me rregull të parimtë: një rresht i përbërë vetëm nga ndarësa strukturorë nuk është
+pohim. Ndikimi u mat para ndryshimit — 0.32% e rreshtave në një mostër prej 30
+depove, dhe **zero** në fikstuarat e testeve, prandaj asnjë vlerë e derivuar me dorë
+nuk u prek.
 
 ---
 
@@ -78,9 +81,11 @@ pas saj ndryshon çdo numër i publikuar.
 
 Pjesa më e nënvlerësuar e projektit. Ka tri nën-probleme, secili real:
 
-**Gjendja:** 1.1, 1.2 dhe 1.3 të përfunduara më 2026-08-25; 1.4 në radhë.
-Korpusi është shkarkuar i plotë: 499 depo nga 522 dhe 4295 nga 4770 mostra (90.0%),
-4.4 GB dhe 689 233 skedarë `.java`. Të 23 depot e mbetura kthejnë HTTP 404.
+**Gjendja:** 1.1–1.4 të përfunduara më 2026-08-26.
+Korpusi është shkarkuar i plotë: **512 depo nga 522** dhe **4549 nga 4770 mostra
+(95.4%)**. Mbulimi u rrit nga 90.0% pasi u ndoqën zhvendosjet e depove me
+verifikim të commit-it (VD-20); 10 depo me 152 mostra mbeten të humbura
+përfundimisht dhe hyjnë në punim si kufizim i studimit.
 
 Çka dihet tani me siguri, nga vetë të dhënat e shkarkuara:
 
@@ -93,9 +98,9 @@ Korpusi është shkarkuar i plotë: 499 depo nga 522 dhe 4295 nga 4770 mostra (9
 | Shpërndarja e ashpërsisë | none 11 448 · minor 1 787 · major 1 129 · critical 375 |
 | **Mospajtim mes rishikuesve** | **25.9%** (dhe 25.6% edhe për "a ka erë fare") |
 | Mostra me saktësisht 2 rishikues | 3 511 nga 4 747 |
-| Depo të materializuara | 499 nga 522 (95.6%) |
-| Mostra me burim në disk | 4 295 nga 4 770 (90.0%) |
-| Mostra të lidhura me një entitet | 4 286 nga 4 295 (99.8%) |
+| Depo të materializuara | 512 nga 522 (98.1%) |
+| Mostra me burim në disk | 4 549 nga 4 770 (95.4%) |
+| Mostra të lidhura me një entitet | 4 539 nga 4 549 (99.8%) |
 
 Çekuilibri (78% `none`) dhe mospajtimi janë të dy material i detyrueshëm për
 Kapitullin 5, jo pengesa për t'u zbutur në heshtje.
@@ -132,12 +137,69 @@ ka zhvendosur te organizata të reja, dhe vetëm ato kushtojnë 337 nga 406 most
 humbura. Mbetet vendim i hapur nëse ndjekja e zhvendosjes e ruan vlefshmërinë e së
 vërtetës bazë.
 
-**1.4 Vlerësimi i Qasjes A** ⬜ hapi tjetër
-`scripts/evaluate_rules.py` → precision, recall, F1 dhe MCC për çdo smell, matricë
-konfuze, dhe ndarje sipas ashpërsisë (a i kapim rastet *critical* më mirë se
-*minor*?). Rezultatet në `data/results/`.
+**1.4 Vlerësimi i Qasjes A** ✅
+`scripts/evaluate_rules.py` prodhon precision, recall, F1, MCC dhe matricën
+konfuze për çdo smell, plus dy ndarje që një F1 i vetëm i fsheh: **recall sipas
+ashpërsisë** (a i kapim rastet *critical* më mirë se *minor*?) dhe **ndjeshmëria
+ndaj agregimit** të mospajtimit mes rishikuesve (mean/max/min/unanimous). Për
+`blob` raportohen dy variante sipas VD-22. Rezultatet: `data/results/rules_evaluation.json`
+dhe `rules_evaluation_samples.csv`, ky i fundit me një rresht për mostër që çdo
+qelizë e tabelës të ndiqet deri te kodi.
 
-**Kriteri i daljes:** numra realë të Qasjes A mbi MLCQ, të riprodhueshëm me një
+Logjika e pikëzimit rri te `evaluation/scoring.py`, jo te skripti, dhe testohet me
+matrica të punuara me dorë. Analiza kërkon depon e plotë, jo vetëm skedarët e
+mostruar: ATFD, CBO, DIT dhe TCC përcaktohen kundrejt tipave të tjerë (VD-16).
+
+Gjatë kësaj pune doli një defekt i dytë i klasës "një skedar rrëzon gjithçka":
+`_iter_type_declarations` ishte rekursiv, dhe një zinxhir prej ~1000 konkatenimesh
+— një rresht Java, por 1000 nivele pemë — e kalonte kufirin e rekursionit. Meqë
+`analyze_path` kap vetëm `OSError`, ai skedar rrëzonte analizën e çdo depoje pas tij.
+Kalimi tani është iterativ, me renditjen e ruajtur dhe të fiksuar me test.
+
+**Rezultatet e para (2026-08-26, 4519 mostra të vlerësuara):**
+
+| Erë | Varianti | P | R | F1 | MCC | pozitivë |
+|---|---|---|---|---|---|---|
+| blob | God Class | 0.814 | 0.100 | 0.178 | 0.232 | 350 |
+| blob | + Large Class | 0.720 | 0.257 | 0.379 | 0.340 | 350 |
+| data class | strategjia | 0.757 | 0.150 | 0.251 | 0.275 | 186 |
+| long method | strategjia | 0.872 | 0.442 | 0.586 | 0.581 | 215 |
+| feature envy | strategjia | 0.520 | 0.181 | 0.268 | 0.271 | 72 |
+
+Modeli është i qartë dhe i njëjtë kudo: **precizion i lartë, recall i ulët.** Kur
+strategjitë e Lanza & Marinescu ndezin, kanë kryesisht të drejtë (P 0.72–0.87), por
+i humbin shumicën e rasteve që rishikuesit i shënojnë. Ky është rezultat për t'u
+raportuar, jo për t'u zbutur (`ENGINEERING.md` §3.4).
+
+Por recall-i i përgjithshëm e fsheh gjysmën e historisë. I ndarë sipas ashpërsisë
+që caktuan rishikuesit, detektimi **degradon me hijeshi** — i kap rastet e rënda
+shumë më mirë se ato të lehtat:
+
+| Erë | Varianti | recall te `major` | recall te `minor` |
+|---|---|---|---|
+| long method | strategjia | **23/24 (95.8%)** | 72/191 (37.7%) |
+| blob | + Large Class | 12/20 (60.0%) | 78/330 (23.6%) |
+| blob | God Class | 1/20 (5.0%) | 34/330 (10.3%) |
+| feature envy | strategjia | 3/7 (42.9%) | 10/64 (15.6%) |
+| data class | strategjia | 6/16 (37.5%) | 22/169 (13.0%) |
+
+Ky është pikërisht dallimi që një F1 i vetëm e bën të padukshëm, dhe arsyeja pse
+`recall_by_severity` raportohet gjithmonë. Një mjet që gjen 96% të metodave të gjata
+vërtet problematike është i dobishëm edhe kur recall-i i tij i përgjithshëm është 0.44.
+
+VD-22 u vërtetua i dobishëm menjëherë: shtimi i Large Class te `blob` e më se
+dyfishon recall-in (0.100 → 0.257) dhe e ngre MCC-në (0.232 → 0.340) me kosto të
+matur precizioni (0.814 → 0.720). Pra një pjesë e mirë e asaj që rishikuesit e
+quajnë "blob" është thjesht madhësi.
+
+**Kufizim i njohur i këtyre numrave.** Ata u prodhuan para se të rregullohej
+prerja e drejtorive: `iter_java_files` priste `target`, `build`, `out` dhe `bin` në
+çdo thellësi, edhe kur ishin paketa burimore nën një rrënjë `src`. U mat: prek 0.1%
+të skedarëve dhe 20 nga 4539 mostrat e përputhura (0.44%). Rregullimi është i
+komituar dhe i testuar; numrat rigjenerohen në ekzekutimin e ardhshëm dhe pritet të
+lëvizin në shifrën e tretë dhjetore, pa ndryshuar asnjë përfundim.
+
+**Kriteri i daljes:** ✅ numra realë të Qasjes A mbi MLCQ, të riprodhueshëm me një
 komandë. Këtu fillon të mbushet Kapitulli 5.
 
 ---

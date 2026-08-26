@@ -100,6 +100,53 @@ class Manifest:
         return entry is not None and entry.ok
 
 
+# Repositories that moved after MLCQ was published, and whose original
+# owner/name no longer resolves on GitHub.
+#
+# Following a move is sound for one specific reason: git names a commit by the
+# SHA-1 of its content, so if the hash MLCQ published resolves at the new
+# location, the tree it names is byte-identical to the one the reviewers saw,
+# whatever URL it arrived through. Every entry here was verified that way --
+# the archive for that exact commit downloads from the new name -- and the
+# repositories whose commit did *not* resolve were left out rather than
+# guessed at, because a plausible-looking substitute would be different code
+# under the same label (VD-20).
+#
+# Two causes account for all of them: the Eclipse Foundation split its single
+# `eclipse` organisation into per-project ones, which drops GitHub's own
+# redirect, and `epam/DLab` was donated to Apache and renamed.
+REPOSITORY_MOVES = {
+    "eclipse/acceleo": "eclipse-acceleo/acceleo",
+    "eclipse/dltk.core": "eclipse-dltk/dltk.core",
+    "eclipse/eclipse.jdt.core": "eclipse-jdt/eclipse.jdt.core",
+    "eclipse/eclipse.platform.swt": "eclipse-platform/eclipse.platform.swt",
+    "eclipse/eclipse.platform.ui": "eclipse-platform/eclipse.platform.ui",
+    "eclipse/egit": "eclipse-egit/egit",
+    "eclipse/egit-github": "eclipse-egit/egit-github",
+    "eclipse/jgit": "eclipse-jgit/jgit",
+    "eclipse/linuxtools": "eclipse-linuxtools/org.eclipse.linuxtools",
+    "eclipse/m2e-core": "eclipse-m2e/m2e-core",
+    "eclipse/nebula.widgets.nattable": "eclipse-nattable/nattable",
+    "eclipse/rap": "eclipse-rap/org.eclipse.rap",
+    "epam/DLab": "apache/incubator-datalab",
+}
+
+
+def download_name(sample: Sample) -> tuple[str, str]:
+    """The owner and name to fetch this sample's repository from.
+
+    Only the download source moves. The checkout keeps the name derived from
+    the identity MLCQ published (see :func:`repo_dirname`), so a move cannot
+    reach the matcher, the manifest or any published figure.
+    """
+    owner, name = sample.owner_and_name
+    moved = REPOSITORY_MOVES.get(f"{owner}/{name}")
+    if moved is None:
+        return owner, name
+    new_owner, _, new_name = moved.partition("/")
+    return new_owner, new_name
+
+
 def repo_dirname(sample: Sample) -> str:
     """A filesystem-safe, collision-free directory name for one checkout."""
     owner, name = sample.owner_and_name

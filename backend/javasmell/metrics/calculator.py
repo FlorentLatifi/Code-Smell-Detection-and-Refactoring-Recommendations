@@ -18,6 +18,7 @@ from collections.abc import Iterable
 from itertools import combinations
 
 from javasmell.model.entities import ClassInfo, MethodInfo, ProjectModel
+from javasmell.parsing.java_parser import effective_loc
 
 # Primitive and ubiquitous JDK types are noise in a coupling count: every class
 # touches String and int, so including them would flatten the metric.
@@ -180,7 +181,7 @@ def compute_class_metrics(cls: ClassInfo) -> dict[str, float]:
 
     cls.metrics["NOM"] = float(len(non_ctor))
     cls.metrics["NOF"] = float(len(cls.fields))
-    cls.metrics["CLOC"] = float(_class_loc(cls))
+    cls.metrics["CLOC"] = float(effective_loc(cls.source_lines))
     cls.metrics["WMC"] = float(sum(m.metrics.get("CC", 1.0) for m in methods))
     cls.metrics["AMW"] = cls.metrics["WMC"] / len(methods) if methods else 0.0
     cls.metrics["MAXCC"] = float(max((m.metrics.get("CC", 1.0) for m in methods), default=0.0))
@@ -194,29 +195,6 @@ def compute_class_metrics(cls: ClassInfo) -> dict[str, float]:
     cls.metrics["NOPA"] = float(len([f for f in cls.fields if f.is_public and not f.is_constant]))
     cls.metrics["NOAM"] = float(len([m for m in methods if m.is_accessor]))
     return cls.metrics
-
-
-def _class_loc(cls: ClassInfo) -> int:
-    count = 0
-    in_block_comment = False
-    for raw in cls.source_lines:
-        line = raw.strip()
-        if in_block_comment:
-            if "*/" in line:
-                in_block_comment = False
-            continue
-        if not line or line in {"{", "}"}:
-            continue
-        if line.startswith("//"):
-            continue
-        if line.startswith("/*"):
-            if "*/" not in line:
-                in_block_comment = True
-            continue
-        if line.startswith("*"):
-            continue
-        count += 1
-    return count
 
 
 def _tight_class_cohesion(cls: ClassInfo) -> float:

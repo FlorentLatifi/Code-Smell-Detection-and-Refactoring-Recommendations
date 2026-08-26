@@ -421,3 +421,97 @@ një skedar i vetëm që gramatika nuk e lexon dot:
 `Hamlet.java` i Hadoop-it përdor `_` si emër metode, i palejueshëm që nga Java 9.
 Prandaj `CompilationUnit` mban `has_syntax_errors`; pa të, kufizimi i front-end-it
 tonë do t'i ngarkohej të vërtetës bazë.
+
+---
+
+### VD-20: Depot e zhvendosura ndiqen, por vetëm kur commit-i zgjidhet
+
+**Konteksti.** 23 nga 522 depot e MLCQ-së kthenin HTTP 404 dhe kushtonin 406
+mostra. Humbja nuk ishte e rastësishme: 15 prej tyre ishin `eclipse/*` dhe vetëm
+ato bartnin 337 mostra. Një humbje e përqendruar në një organizatë nuk është
+thjesht korpus më i vogël, është **anshmëri sistematike**: kodi i Eclipse-it do të
+zhdukej pothuajse tërësisht nga vlerësimi.
+
+**Vendimi.** Ndiqet zhvendosja, por një depo e re pranohet **vetëm nëse zgjidhet
+commit-i i saktë që publikoi MLCQ**. Harta qëndron si konstante e komituar te
+`evaluation/corpus.py::REPOSITORY_MOVES`.
+
+Arsyeja pse kjo nuk e cenon të vërtetën bazë është një veti e git-it, jo një
+supozim yni: **commit-i emërtohet me SHA-1 të përmbajtjes së tij**. Nëse hash-i
+zgjidhet te vendndodhja e re, pema që ai emërton është bit-për-bit e njëjtë me atë
+që panë rishikuesit, pavarësisht URL-së nga ku erdhi. Prandaj kriteri i pranimit
+është verifikim, jo besim.
+
+**Alternativat.** Ta pranonim depon me emër të ngjashëm pa verifikuar commit-in:
+kjo do të fuste kod *të ndryshëm* nën të njëjtën etiketë, gabimi më i keq i
+mundshëm në një vlerësim. Ose ta raportonim mbulimin 90% si kufizim dhe të mos
+bënim asgjë: e ndershme, por e pranon anshmërinë ndaj Eclipse-it pa nevojë.
+
+**Pasojat.** 13 depo u rikuperuan me **254 mostra**; mbulimi shkon nga 90.0% në
+95.4%. Dy shkaqe i shpjegojnë të gjitha: Eclipse Foundation e ndau organizatën e
+vetme `eclipse` në organizata për projekt (çka e humb ridrejtimin e vetë GitHub-it),
+dhe `epam/DLab` iu dhurua Apache-s dhe u riemërtua. Depot ku commit-i **nuk** u
+zgjidh nuk u zëvendësuan me hamendje: mbeten 10 depo dhe 152 mostra (3.2%) të
+humbura përfundimisht, dhe ky numër hyn në punim si kufizim i studimit.
+
+Zhvendosja prek vetëm burimin e shkarkimit. `repo_dirname` mbetet i lidhur me
+identitetin që publikoi MLCQ, prandaj asnjë shifër e publikuar dhe asnjë përputhje
+nuk varet nga harta; kjo veti mbrohet me test.
+
+---
+
+### VD-21: LOC-u është numërim logjik, me një implementim të vetëm
+
+**Konteksti.** Plani e mbante hapur pyetjen nëse rreshtat si `};` duhet të
+përjashtoheshin nga LOC-u. Kontrolli i kodit nxori diçka më të rëndë se pyetja:
+ekzistonin **dy implementime** të "lines of code" dhe ato kishin devijuar.
+`java_parser.loc()` (MLOC) përjashtonte `{`, `}` dhe `});`; `calculator._class_loc()`
+(CLOC) përjashtonte vetëm `{` dhe `}`. Pra një metodë dhe klasa që e mban atë e
+matnin të njëjtin burim me rregulla të ndryshme, ndërsa të dyja ushqenin detektorë
+madhësie.
+
+**Vendimi.** Një implementim i vetëm, `parsing.java_parser.effective_loc`, i
+përdorur edhe nga MLOC edhe nga CLOC, me rregull të parimtë në vend të një liste
+formash: **një rresht i përbërë vetëm nga ndarësa strukturorë (`{}()[];,`) nuk
+është pohim dhe nuk numërohet.** Ky është dallimi që Park (1992, SEI
+CMU/SEI-92-TR-020) bën mes rreshtave fizikë dhe pohimeve logjike.
+
+**Alternativat.** Ta zgjeronim listën me `};` dhe `});`: e njëjta qasje ad-hoc që
+sapo kishte devijuar, dhe që do të devijonte prapë te forma e parë e paparashikuar
+(`}));` ekziston vërtet në korpus). Ose të mos preknim asgjë: kjo do ta linte
+MLOC-un dhe CLOC-un të papajtueshëm në çdo numër të Kapitullit 5.
+
+**Pasojat.** Ndikimi u mat para se të ndryshohej kodi. Në një mostër prej 30 depove
+(1 349 531 rreshta jo-bosh), rregulli i ri shton 0.32% rreshta të përjashtuar, të
+përqendruar te `});` (1615), `};` (1311) dhe `);` (533). Në fikstuarat e testeve
+ndikimi është **zero**, prandaj asnjë pritshmëri ekzistuese e derivuar me dorë nuk
+u riderivua — një ndryshim në ato vlera do të kishte kërkuar rinumërim me dorë,
+kurrse rregullim të vlerës që të kalojë testi (`ENGINEERING.md` §5). Rregulli i ri
+është fiksuar me teste të veta, përfshirë rastin `} else {`, që nuk guxon të bjerë.
+
+---
+
+### VD-22: `blob` krahasohet me God Class, madhësia raportohet si variant
+
+**Konteksti.** MLCQ jep të vërtetë bazë për `blob`, ndërsa VD-09 i ndau
+qëllimisht God Class (strategjia e Lanza & Marinescu: WMC, TCC, ATFD) nga Large
+Class (vetëm madhësia: CLOC, NOM). Kundër cilës prej tyre matet `blob`?
+
+**Vendimi.** Matja parësore është kundër **God Class** të vetëm. Bashkimi
+`GodClass ∪ LargeClass` raportohet si variant ndjeshmërie, jo si rezultat kryesor.
+
+Arsyeja është se pyetja që punimi i bën vetes duhet të jetë e përgjigjshme:
+*sa mirë e riprodhon një strategji e publikuar gjykimin e zhvilluesve profesionistë?*
+Bashkimi nuk është strategji e publikuar, është konstrukt yni, dhe si i tillë i
+takon kolonës së variantit.
+
+**Alternativat.** Bashkimi si matje parësore: ka gjasa të ngrejë recall-in, por
+shkrin dy detektorë që VD-09 i ndau me arsye dhe e bën numrin të pakrahasueshëm me
+literaturën. Ose vetëm Large Class: e braktis fare strategjinë që projekti e
+implementoi.
+
+**Pasojat.** Tabela e Kapitullit 5 mban dy rreshta për `blob`. Dallimi mes tyre
+është vetë një gjetje: tregon sa nga ajo që rishikuesit e quajnë "blob" shpjegohet
+me madhësi të thjeshtë dhe sa kërkon kushtin e kohezionit. Për tri erërat e tjera
+harta mbetet një-me-një; `long method` s'ka nevojë për variant sepse Brain Method
+(LOC > 35) është nënbashkësi e rreptë e Long Method (LOC > 30).

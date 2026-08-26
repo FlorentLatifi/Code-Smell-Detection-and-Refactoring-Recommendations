@@ -22,8 +22,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import platform
-import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -39,6 +37,7 @@ from javasmell.evaluation.matcher import (  # noqa: E402
     summarise,
 )
 from javasmell.evaluation.mlcq import Sample, load_samples  # noqa: E402
+from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.model.entities import ProjectModel  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 
@@ -69,25 +68,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--corpus", type=Path, default=DEFAULT_CORPUS)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     return parser
-
-
-def environment() -> dict[str, str]:
-    """What a third party needs in order to get these numbers again."""
-    try:
-        commit = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-            check=False,
-        ).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        commit = ""
-    return {
-        "python": platform.python_version(),
-        "platform": platform.platform(),
-        "commit": commit,
-    }
 
 
 def model_for(corpus: Corpus, samples: list[Sample]) -> ProjectModel:

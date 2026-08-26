@@ -1,56 +1,56 @@
 {
   "by_entity_type": {
     "class": {
-      "matched": 2109,
-      "no_file": 230,
+      "matched": 2233,
+      "no_file": 106,
       "span_mismatch": 1
     },
     "function": {
-      "matched": 2177,
-      "no_entity": 7,
-      "no_file": 245,
+      "matched": 2306,
+      "no_entity": 8,
+      "no_file": 115,
       "syntax_errors": 1
     }
   },
   "by_smell": {
     "blob": {
-      "matched": 1333,
-      "no_file": 150,
+      "matched": 1410,
+      "no_file": 73,
       "span_mismatch": 1
     },
     "data class": {
-      "matched": 776,
-      "no_file": 80
+      "matched": 823,
+      "no_file": 33
     },
     "feature envy": {
-      "matched": 772,
+      "matched": 823,
       "no_entity": 1,
-      "no_file": 87,
+      "no_file": 36,
       "syntax_errors": 1
     },
     "long method": {
-      "matched": 1405,
-      "no_entity": 6,
-      "no_file": 158
+      "matched": 1483,
+      "no_entity": 7,
+      "no_file": 79
     }
   },
   "corpus_coverage": {
-    "repositories_available": 499,
+    "repositories_available": 512,
     "repositories_total": 522,
-    "samples_available": 4295,
+    "samples_available": 4549,
     "samples_total": 4770
   },
   "environment": {
-    "commit": "0c7d6e1f8510123e8fa7c9556e93580468c4fd3d",
+    "commit": "883a9fb48d422b723ad3faa28b74900f184b5d04",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
-  "match_rate": 0.8985,
-  "match_rate_of_available": 0.9979,
+  "match_rate": 0.9516,
+  "match_rate_of_available": 0.9978,
   "outcomes": {
-    "matched": 4286,
-    "no_entity": 7,
-    "no_file": 475,
+    "matched": 4539,
+    "no_entity": 8,
+    "no_file": 221,
     "span_mismatch": 1,
     "syntax_errors": 1
   }

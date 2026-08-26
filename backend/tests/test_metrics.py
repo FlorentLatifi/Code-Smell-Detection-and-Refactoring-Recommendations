@@ -9,11 +9,13 @@ against the definitions in Chidamber & Kemerer (1994) and Lanza & Marinescu
 
 from __future__ import annotations
 
+import pathlib
 from pathlib import Path
 
 import pytest
 
 from javasmell.analysis import analyze_path, analyze_source
+from javasmell.parsing.java_parser import effective_loc, iter_java_files
 
 FIXTURES = str(Path(__file__).parent / "fixtures")
 
@@ -374,3 +376,133 @@ def test_record_components_are_fields():
     # Private, so no public attribute; final but not static, so not a constant.
     assert money.metrics["NOPA"] == 0.0
     assert not any(f.is_constant for f in money.fields)
+
+
+# ----------------------------------------------------------------------
+# Effective LOC: one rule, shared by MLOC and CLOC
+# ----------------------------------------------------------------------
+
+LAMBDA_SOURCE = """class Runner {
+    void go() {
+        run(() -> {
+            step();
+        });
+    }
+}
+"""
+
+
+def test_delimiter_only_lines_are_not_statements():
+    """Counted by hand, line by line.
+
+    `void go() {`, `run(() -> {` and `step();` carry logic: three lines.
+    `});` and the two bare `}` close constructs that earlier lines already
+    opened, so under Park's logical-statement view they are not statements.
+    """
+    cls = find_class(analyze_source(LAMBDA_SOURCE), "Runner")
+    assert find_method(cls, "go").metrics["MLOC"] == 3
+    # The class adds only its own `class Runner {` header to those three.
+    assert cls.metrics["CLOC"] == 4
+
+
+def test_mloc_and_cloc_apply_the_same_rule():
+    """Regression: the two counts once disagreed on `});`.
+
+    MLOC excluded it and CLOC did not, so a method and its enclosing class
+    measured the same source differently while both fed size detectors.
+    """
+    cls = find_class(analyze_source(LAMBDA_SOURCE), "Runner")
+    method = find_method(cls, "go")
+    # The class is the method plus exactly one more line of logic: its header.
+    assert cls.metrics["CLOC"] - method.metrics["MLOC"] == 1
+
+
+@pytest.mark.parametrize("line", ["}", "{", "};", "});", ");", "},", ")", ";", "}));"])
+def test_a_line_of_pure_delimiters_counts_as_nothing(line):
+    assert effective_loc([line]) == 0
+
+
+@pytest.mark.parametrize("line", ["} else {", "return x;", "}; // note", "int[] a = {1};"])
+def test_a_line_with_any_content_counts(line):
+    """`} else {` is the case that must not be swallowed: it carries control flow."""
+    assert effective_loc([line]) == 1
+
+
+def test_comments_and_blanks_are_still_excluded():
+    lines = ["// a", "", "  ", "/* block", "   still block", "*/", "int x = 1;"]
+    assert effective_loc(lines) == 1
+
+
+# ----------------------------------------------------------------------
+# Walking the syntax tree without recursing
+# ----------------------------------------------------------------------
+
+
+def test_a_deeply_nested_expression_does_not_overflow_the_stack():
+    """Syntax-tree depth is not bounded by how the source looks.
+
+    1200 concatenations are one line of Java and 1200 levels of left-nested
+    `binary_expression`. Walking that by recursion exhausted Python's stack,
+    and since analyze_path only skips a file on OSError, the RecursionError
+    aborted every repository after the one that contained such a file.
+    """
+    source = "class Deep { String s = " + " + ".join(['"a"'] * 1200) + "; }"
+    project = analyze_source(source)
+    assert [c.name for c in project.classes] == ["Deep"]
+
+
+def test_nested_types_are_reported_in_source_order():
+    """Pre-order: a type, then its own nested types, then its later siblings.
+
+    Worth pinning because the iterative walk has to reverse each batch of
+    children to reproduce the order recursion gave for free.
+    """
+    source = """
+    class Outer {
+      class A { class A1 {} class A2 {} }
+      class B { class B1 {} }
+      class C {}
+    }
+    """
+    project = analyze_source(source)
+    assert [c.name for c in project.classes] == ["Outer", "A", "A1", "A2", "B", "B1", "C"]
+
+
+# ----------------------------------------------------------------------
+# Which files the walk picks up
+# ----------------------------------------------------------------------
+
+
+def test_build_output_is_skipped_but_a_package_of_the_same_name_is_not(tmp_path):
+    """`target`, `build`, `out` and `bin` are both output dirs and package names.
+
+    Maven writes to `<module>/target/`; Eclipse writes to `<project>/bin/`.
+    Neither sits under `src/`. A package always does, and MLCQ reviewed real
+    classes in packages named exactly these -- org.eclipse.tycho.p2.target and
+    com.google.caliper.runner.target among them -- so pruning by name alone
+    dropped source that had been reviewed.
+    """
+    written = {
+        "src/main/java/com/acme/target/Kept.java",  # a package called target
+        "src/main/java/com/acme/build/Kept.java",  # a package called build
+        "src/out/Kept.java",
+        "target/classes/Generated.java",  # genuine Maven output
+        "bin/Compiled.java",  # genuine Eclipse output
+        "node_modules/dep/Bundled.java",
+        "src/main/java/com/acme/Plain.java",
+    }
+    for relative in written:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("class C {}", encoding="utf-8")
+
+    found = {
+        str(pathlib.Path(f).relative_to(tmp_path)).replace("\\", "/")
+        for f in iter_java_files(str(tmp_path))
+    }
+    assert found == {
+        "src/main/java/com/acme/target/Kept.java",
+        "src/main/java/com/acme/build/Kept.java",
+        "src/out/Kept.java",
+        "src/main/java/com/acme/Plain.java",
+    }

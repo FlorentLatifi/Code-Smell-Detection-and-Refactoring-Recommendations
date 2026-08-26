@@ -14,7 +14,7 @@ detection strategies and avoids building a type system.
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 import tree_sitter_java as tsjava
@@ -107,6 +107,49 @@ class JavaParser:
         )
 
 
+# Characters that only delimit structure. A line made of nothing else closes
+# something opened on an earlier line -- `};` ending an anonymous class,
+# `});` ending a lambda argument, `);` ending a wrapped call -- and adds no
+# logic that the opening line did not already contribute.
+STRUCTURAL_CHARS = frozenset("{}()[];,")
+
+
+def effective_loc(lines: Iterable[str]) -> int:
+    """Count the lines in ``lines`` that carry logic.
+
+    This is a *logical* line count rather than a physical one, in the sense
+    Park (1992, SEI CMU/SEI-92-TR-020) separates the two: blank lines,
+    comments, and lines consisting only of delimiters are not statements and
+    are not counted.
+
+    There is exactly one implementation because there were briefly two, and
+    they drifted: the method-level count excluded ``});`` while the class-level
+    one did not, so MLOC and CLOC were measuring subtly different things while
+    both fed size-based detectors. Any future refinement of "what counts as a
+    line" therefore has to happen here, where both callers see it.
+    """
+    count = 0
+    in_block_comment = False
+    for raw in lines:
+        line = raw.strip()
+        if in_block_comment:
+            if "*/" in line:
+                in_block_comment = False
+            continue
+        if not line or not (set(line) - STRUCTURAL_CHARS):
+            continue
+        if line.startswith("//"):
+            continue
+        if line.startswith("/*"):
+            if "*/" not in line:
+                in_block_comment = True
+            continue
+        if line.startswith("*"):
+            continue
+        count += 1
+    return count
+
+
 class _Context:
     """Shared source text plus the line-based helpers the builders need."""
 
@@ -118,40 +161,33 @@ class _Context:
         return self.source[node.start_byte : node.end_byte].decode("utf-8", errors="replace")
 
     def loc(self, node: Node) -> int:
-        """Effective lines of code: blank, brace-only and comment lines excluded."""
+        """Effective lines of code spanned by ``node``."""
         start, end = node.start_point[0], node.end_point[0]
-        count = 0
-        in_block_comment = False
-        for raw in self.lines[start : end + 1]:
-            line = raw.strip()
-            if in_block_comment:
-                if "*/" in line:
-                    in_block_comment = False
-                continue
-            if not line or line in {"{", "}", "});"}:
-                continue
-            if line.startswith("//"):
-                continue
-            if line.startswith("/*"):
-                if "*/" not in line:
-                    in_block_comment = True
-                continue
-            if line.startswith("*"):
-                continue
-            count += 1
-        return count
+        return effective_loc(self.lines[start : end + 1])
 
 
 def _iter_type_declarations(node: Node) -> Iterator[Node]:
-    """Yield every type declaration, including nested ones.
+    """Yield every type declaration, including nested ones, in source order.
 
     Nested and inner classes are reported as separate classes: a God Class
     hiding inside an outer class should still be found.
+
+    The walk keeps its own stack rather than recursing. Syntax-tree depth is
+    not bounded by how the source *looks*: a chain of a few hundred string
+    concatenations is one deeply left-nested `binary_expression`, and real
+    generated code contains them. Recursing here overflowed Python's stack on
+    the corpus, and because ``analyze_path`` only skips a file on ``OSError``,
+    one such file aborted the analysis of every repository after it rather
+    than just its own.
     """
-    for child in node.named_children:
-        if child.type in TYPE_DECLARATIONS:
-            yield child
-        yield from _iter_type_declarations(child)
+    stack = list(reversed(node.named_children))
+    while stack:
+        current = stack.pop()
+        if current.type in TYPE_DECLARATIONS:
+            yield current
+        # Reversed, so that popping restores source order: pre-order, with a
+        # node's own children visited before its later siblings.
+        stack.extend(reversed(current.named_children))
 
 
 def _modifiers(node: Node, ctx: _Context) -> frozenset[str]:
@@ -474,6 +510,15 @@ def _max_nesting(body: Node) -> int:
     return deepest
 
 
+# Never a Java package, so safe to prune wherever it appears.
+ALWAYS_SKIP = frozenset({".git", "node_modules", ".idea", ".venv"})
+
+# Build-output names that are also legal package names; see iter_java_files.
+BUILD_OUTPUT = frozenset({"target", "build", "out", "bin"})
+
+SOURCE_ROOT = "src"
+
+
 def iter_java_files(root: str) -> Iterator[str]:
     """Every ``.java`` file under ``root``, skipping build and VCS output.
 
@@ -481,14 +526,26 @@ def iter_java_files(root: str) -> Iterator[str]:
     ``dirnames`` prunes a directory *before* it is descended into, so a real
     repository's ``.git`` and ``node_modules`` are never traversed. ``rglob``
     offers no way to prune and would have to visit and discard them.
+
+    ``target``, ``build``, ``out`` and ``bin`` are pruned only outside a source
+    root, because they are build-output directory names *and* perfectly ordinary
+    Java package names. Pruning them everywhere silently dropped real source:
+    ``.../src/main/java/org/eclipse/tycho/p2/target/`` and
+    ``.../com/google/caliper/runner/target/`` are packages, not output. Since a
+    build directory never sits under ``src/`` and a package always does, that one
+    test separates them.
     """
-    skip = {".git", "target", "build", "out", "bin", "node_modules", ".idea", ".venv"}
     if Path(root).is_file():
         if root.endswith(".java"):
             yield root
         return
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in skip]
+        inside_source = SOURCE_ROOT in Path(dirpath).relative_to(root).parts
+        dirnames[:] = [
+            d
+            for d in dirnames
+            if d not in ALWAYS_SKIP and not (d in BUILD_OUTPUT and not inside_source)
+        ]
         for filename in filenames:
             if filename.endswith(".java"):
                 yield os.path.join(dirpath, filename)  # noqa: PTH118, stays with os.walk

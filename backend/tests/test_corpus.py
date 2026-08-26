@@ -13,9 +13,11 @@ from dataclasses import replace
 import pytest
 
 from javasmell.evaluation.corpus import (
+    REPOSITORY_MOVES,
     Corpus,
     Manifest,
     RepoStatus,
+    download_name,
     long_path,
     repo_dirname,
 )
@@ -152,3 +154,39 @@ def test_failed_repositories_are_retried_not_skipped(tmp_path):
 
 def test_missing_manifest_loads_as_empty(tmp_path):
     assert Manifest.load(tmp_path).entries == {}
+
+
+def test_download_name_passes_through_a_repository_that_never_moved() -> None:
+    sample = make_sample(repository="git@github.com:apache/hive.git")
+    assert download_name(sample) == ("apache", "hive")
+
+
+def test_download_name_follows_a_recorded_move() -> None:
+    """eclipse/jgit is unreachable; the same commit is served by eclipse-jgit."""
+    sample = make_sample(repository="git@github.com:eclipse/jgit.git")
+    assert download_name(sample) == ("eclipse-jgit", "jgit")
+
+
+def test_a_move_may_change_the_repository_name_too() -> None:
+    """epam/DLab was donated to Apache and renamed on the way."""
+    sample = make_sample(repository="git@github.com:epam/DLab.git")
+    assert download_name(sample) == ("apache", "incubator-datalab")
+
+
+def test_a_move_does_not_change_where_the_checkout_lives() -> None:
+    """The layout stays keyed to the identity MLCQ published.
+
+    If a move reached ``repo_dirname``, every already-fetched repository would
+    have to be re-downloaded and the matcher would look in the wrong place, so
+    this is the property that keeps the map from touching any published figure.
+    """
+    sample = make_sample(repository="git@github.com:eclipse/jgit.git", commit="abcdef0123456789")
+    assert repo_dirname(sample) == "eclipse__jgit__abcdef012345"
+
+
+def test_every_recorded_move_is_well_formed() -> None:
+    """Each entry is ``owner/name`` on both sides and actually changes something."""
+    for original, moved in REPOSITORY_MOVES.items():
+        assert original.count("/") == 1, original
+        assert moved.count("/") == 1, moved
+        assert original != moved, original

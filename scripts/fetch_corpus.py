@@ -37,6 +37,7 @@ from javasmell.evaluation.corpus import (  # noqa: E402
     Corpus,
     Manifest,
     RepoStatus,
+    download_name,
     long_path,
     repo_dirname,
 )
@@ -132,7 +133,7 @@ def _extract_java(archive: Path, destination: Path) -> tuple[int, int]:
 
 
 def fetch_one(sample: Sample, out_root: Path, timeout: int, max_mb: int) -> RepoStatus:
-    owner, name = sample.owner_and_name
+    owner, name = download_name(sample)
     directory = out_root / repo_dirname(sample)
     url = CODELOAD.format(owner=owner, name=name, commit=sample.commit_hash)
     status = RepoStatus(
