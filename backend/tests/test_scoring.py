@@ -21,6 +21,8 @@ from javasmell.evaluation.scoring import (
     Prediction,
     SmellIndex,
     confusion,
+    decode_verdict,
+    encode_verdict,
     recall_by_severity,
     score,
 )
@@ -237,3 +239,31 @@ def test_only_blob_carries_a_size_variant() -> None:
     """
     assert VARIANTS["blob"]["with_size"] == ("GodClass", "LargeClass")
     assert [s for s, v in VARIANTS.items() if len(v) > 1] == ["blob"]
+
+
+# ----------------------------------------------------------------------
+# The CSV verdict contract
+# ----------------------------------------------------------------------
+
+
+def test_a_verdict_survives_a_round_trip_through_the_csv():
+    assert decode_verdict(encode_verdict(True)) is True
+    assert decode_verdict(encode_verdict(False)) is False
+
+
+def test_both_spellings_of_a_verdict_are_understood():
+    """The file holds "1"/"0"; a reader that assumed str(bool) must still work."""
+    assert decode_verdict("1") is True
+    assert decode_verdict("True") is True
+    assert decode_verdict("0") is False
+    assert decode_verdict("False") is False
+
+
+def test_an_unrecognised_verdict_stops_the_run():
+    """Silently reading it as False would report that no detector ever fired.
+
+    That is the failure mode this pair exists to prevent: a comparison table of
+    zeros looks like a result, not like a bug.
+    """
+    with pytest.raises(ValueError, match="not a detector verdict"):
+        decode_verdict("yes")

@@ -209,3 +209,27 @@ def recall_by_severity(
         }
         for label, hits in sorted(buckets.items())
     }
+
+
+# ----------------------------------------------------------------------
+# The CSV encoding of a verdict
+# ----------------------------------------------------------------------
+# Both directions live here because they are one contract. A reader that
+# guessed "True" against a writer emitting "1" is not a crash: it silently
+# reports that the detectors never fired, which reads as a finding rather than
+# a bug. Decoding accepts either spelling and refuses anything else, so a
+# changed format stops the run instead of zeroing a comparison table.
+_TRUE = frozenset({"1", "True", "true"})
+_FALSE = frozenset({"0", "False", "false"})
+
+
+def encode_verdict(fired: bool) -> str:
+    return "1" if fired else "0"
+
+
+def decode_verdict(raw: str) -> bool:
+    if raw in _TRUE:
+        return True
+    if raw in _FALSE:
+        return False
+    raise ValueError(f"not a detector verdict: {raw!r}")

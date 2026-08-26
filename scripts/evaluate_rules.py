@@ -34,11 +34,9 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
-from javasmell.analysis import analyze_path  # noqa: E402
 from javasmell.detectors.rules import detect_all  # noqa: E402
 from javasmell.detectors.thresholds import DEFAULT, Thresholds  # noqa: E402
 from javasmell.evaluation.corpus import Corpus  # noqa: E402
-from javasmell.evaluation.matcher import ProjectIndex  # noqa: E402
 from javasmell.evaluation.mlcq import Aggregation, Sample, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import (  # noqa: E402
@@ -46,9 +44,11 @@ from javasmell.evaluation.scoring import (  # noqa: E402
     VARIANTS,
     Prediction,
     SmellIndex,
+    encode_verdict,
     recall_by_severity,
     score,
 )
+from javasmell.evaluation.walk import AnalysedRepository, iter_repositories  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
 DEFAULT_CORPUS = Path("data/corpus")
@@ -79,65 +79,57 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--corpus", type=Path, default=DEFAULT_CORPUS)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument(
-        "--limit", type=int, default=0, help="Only score this many repositories (trial run)"
+        "--limit",
+        type=int,
+        default=0,
+        help="Only score this many repositories (trial run)",
     )
     parser.add_argument("--quiet", action="store_true", help="No per-repository progress")
     return parser
 
 
-def evaluate_repository(
-    corpus: Corpus, samples: list[Sample], thresholds: Thresholds
-) -> tuple[list[Prediction], dict[str, int]]:
-    """Analyse one repository whole and score every sample that lands in it."""
-    unreached: dict[str, int] = defaultdict(int)
-    present = [s for s in samples if corpus.has_source(s)]
-    if not present:
-        unreached["no_file"] += len(samples)
-        return [], dict(unreached)
+def score_repository(analysed: AnalysedRepository, thresholds: Thresholds) -> list[Prediction]:
+    """Read each sample's verdict off one detection pass over the repository.
 
-    project = analyze_path(corpus.analysable_root(present[0]))
-    index = ProjectIndex(project)
-    smells = SmellIndex(detect_all(project, thresholds))
-
+    The detectors run once for the whole project rather than once per sample:
+    most repositories contribute a handful of samples but thousands of classes,
+    and detect_all is cheap only when it is not repeated.
+    """
+    if not analysed.matched:
+        return []
+    smells = SmellIndex(detect_all(analysed.project, thresholds))
     predictions: list[Prediction] = []
-    for sample in samples:
-        if not corpus.has_source(sample):
-            unreached["no_file"] += 1
-            continue
-        match = index.match(sample)
-        if not match.ok or match.cls is None:
-            unreached[match.outcome.value] += 1
-            continue
-        entity_line = match.cls.start_line if match.method is None else match.method.start_line
+    for resolved in analysed.matched:
+        entity_line = (
+            resolved.cls.start_line if resolved.method is None else resolved.method.start_line
+        )
         fired = {
-            name: smells.fired(match.cls.file_path, entity_line, detectors)
-            for name, detectors in VARIANTS[sample.smell].items()
+            name: smells.fired(resolved.cls.file_path, entity_line, detectors)
+            for name, detectors in VARIANTS[resolved.sample.smell].items()
         }
-        predictions.append(Prediction(sample=sample, fired=fired))
-    return predictions, dict(unreached)
+        predictions.append(Prediction(sample=resolved.sample, fired=fired))
+    return predictions
 
 
 def evaluate(
-    corpus: Corpus, samples: list[Sample], thresholds: Thresholds, limit: int, quiet: bool
+    corpus: Corpus,
+    samples: list[Sample],
+    thresholds: Thresholds,
+    limit: int,
+    quiet: bool,
 ) -> tuple[list[Prediction], dict[str, int]]:
-    by_repo: dict[str, list[Sample]] = defaultdict(list)
-    for sample in samples:
-        by_repo[sample.repository].append(sample)
-
-    repositories = sorted(by_repo)
-    if limit:
-        repositories = repositories[:limit]
-
     predictions: list[Prediction] = []
     unreached: dict[str, int] = defaultdict(int)
-    for number, repository in enumerate(repositories, 1):
-        got, missed = evaluate_repository(corpus, by_repo[repository], thresholds)
+    for analysed in iter_repositories(corpus, samples, limit):
+        got = score_repository(analysed, thresholds)
         predictions.extend(got)
-        for reason, count in missed.items():
+        for reason, count in analysed.unreached.items():
             unreached[reason] += count
         if not quiet:
-            name = repository.partition(":")[2].removesuffix(".git")
-            print(f"[{number}/{len(repositories)}] {name}: {len(got)} scored", flush=True)
+            print(
+                f"[{analysed.number}/{analysed.total}] {analysed.name}: {len(got)} scored",
+                flush=True,
+            )
     return predictions, dict(unreached)
 
 
@@ -177,8 +169,8 @@ def write_samples(path: Path, predictions: list[Prediction]) -> None:
                     len(sample.reviews),
                     sample.severity_label(Aggregation.MEAN),
                     int(sample.is_unanimous),
-                    int(primary),
-                    int(prediction.fired.get("with_size", primary)),
+                    encode_verdict(primary),
+                    encode_verdict(prediction.fired.get("with_size", primary)),
                 ]
             )
 
