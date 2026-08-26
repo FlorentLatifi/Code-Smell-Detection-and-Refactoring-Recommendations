@@ -65,3 +65,10 @@ pretty = true
 # tree-sitter-java ships no type information.
 module = ["tree_sitter_java"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# scikit-learn ships no py.typed marker. The estimators it hands back are
+# therefore Any inside this package; the boundary is kept narrow by having
+# ml/training.py be the only module that imports it.
+module = ["sklearn.*"]
+ignore_missing_imports = true

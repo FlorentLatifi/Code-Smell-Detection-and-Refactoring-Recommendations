@@ -1,2 +1,17 @@
+# Runtime dependencies. Development and CI tooling lives in requirements-dev.txt.
+# Pinned exactly so that a reported result can be reproduced at the version that
+# produced it (ENGINEERING.md 3.5).
+
+# Java front end.
 tree-sitter==0.26.0
 tree-sitter-java==0.23.5
+
+# Approach B. scikit-learn is BSD-3-Clause and carries the four things writing
+# ourselves would be substantial: grouped cross-validation, the two tree
+# ensembles, permutation importance, and the metrics. The rest are its own
+# transitive pins, listed so the environment is fully determined.
+scikit-learn==1.9.0
+numpy==2.5.2
+scipy==1.18.1
+joblib==1.5.3
+threadpoolctl==3.6.0
