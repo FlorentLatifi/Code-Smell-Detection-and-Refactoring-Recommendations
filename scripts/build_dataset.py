@@ -28,7 +28,7 @@ import argparse
 import csv
 import json
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
@@ -48,6 +48,14 @@ DEFAULT_OUT = Path("data/results")
 DATASET_NAME = "mlcq_dataset.csv"
 SUMMARY_NAME = "mlcq_dataset.json"
 
+# A 95-minute run fails often enough that both of these are needed. The rows go
+# to a partial file and only replace the committed one on success -- an earlier
+# crash at repository 130 truncated the good table to a third of itself, because
+# opening the real path for writing destroys it before the first row exists.
+# The progress file then lets the next attempt resume instead of restarting.
+PARTIAL_NAME = "mlcq_dataset.csv.part"
+PROGRESS_NAME = "mlcq_dataset.progress.json"
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -58,7 +66,51 @@ def build_parser() -> argparse.ArgumentParser:
         "--limit", type=int, default=0, help="Only walk this many repositories (trial run)"
     )
     parser.add_argument("--quiet", action="store_true", help="No per-repository progress")
+    parser.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Ignore any partial run and start over",
+    )
     return parser
+
+
+def load_progress(
+    path: Path, resume: bool
+) -> tuple[set[str], dict[str, int], dict[str, dict[str, int]]]:
+    """What an interrupted run got through, if it is still usable.
+
+    A partial file written against a different set of columns cannot be appended
+    to -- the result would be one CSV with two schemas -- so the column list is
+    checked and a mismatch starts over rather than producing a file that parses
+    and lies.
+    """
+    if not resume or not path.exists():
+        return set(), {}, {}
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    if stored.get("columns") != list(columns()):
+        print("Partial run used a different schema; starting over.", file=sys.stderr)
+        return set(), {}, {}
+    return set(stored["repositories"]), dict(stored["unreached"]), stored.get("tallies", {})
+
+
+def save_progress(
+    path: Path, done: set[str], unreached: dict[str, int], tallies: dict[str, dict[str, int]]
+) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "columns": list(columns()),
+                "repositories": sorted(done),
+                "unreached": unreached,
+                "tallies": tallies,
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -73,36 +125,48 @@ def main(argv: list[str] | None = None) -> int:
 
     samples = [s for s in load_samples(args.mlcq) if s.smell in VARIANTS]
     args.out.mkdir(parents=True, exist_ok=True)
-    dataset_path = args.out / DATASET_NAME
+    partial_path = args.out / PARTIAL_NAME
+    progress_path = args.out / PROGRESS_NAME
 
-    written = 0
-    unreached: dict[str, int] = defaultdict(int)
-    by_smell: Counter[str] = Counter()
-    by_entity: Counter[str] = Counter()
-    repositories = 0
+    done, unreached, tallies = load_progress(progress_path, args.resume)
+    if done:
+        print(f"Resuming: {len(done)} repositories already written", flush=True)
+    by_smell: Counter[str] = Counter(tallies.get("by_smell", {}))
+    by_entity: Counter[str] = Counter(tallies.get("by_entity_type", {}))
 
-    # Rows are streamed rather than accumulated: the corpus does not fit in
-    # memory and neither does a run that dies at repository 400 with nothing
-    # written.
-    with dataset_path.open("w", encoding="utf-8", newline="") as handle:
+    written = sum(by_smell.values())
+    mode = "a" if done else "w"
+    with partial_path.open(mode, encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(columns()))
-        writer.writeheader()
-        for analysed in iter_repositories(Corpus(args.corpus), samples, args.limit):
-            repositories += 1
+        if not done:
+            writer.writeheader()
+        for analysed in iter_repositories(Corpus(args.corpus), samples, args.limit, skip=done):
             for reason, count in analysed.unreached.items():
-                unreached[reason] += count
+                unreached[reason] = unreached.get(reason, 0) + count
             for resolved in analysed.matched:
                 writer.writerow(row(resolved.sample, resolved.cls, resolved.method))
                 written += 1
                 by_smell[resolved.sample.smell] += 1
                 by_entity[resolved.sample.entity_type] += 1
             handle.flush()
+            done.add(analysed.repository)
+            save_progress(
+                progress_path,
+                done,
+                unreached,
+                {"by_smell": dict(by_smell), "by_entity_type": dict(by_entity)},
+            )
             if not args.quiet:
                 print(
                     f"[{analysed.number}/{analysed.total}] {analysed.name}: "
                     f"{len(analysed.matched)} rows",
                     flush=True,
                 )
+
+    # Only now is the committed table replaced.
+    partial_path.replace(args.out / DATASET_NAME)
+    progress_path.unlink(missing_ok=True)
+    repositories = len(done)
 
     summary = {
         "rows": written,
@@ -118,7 +182,7 @@ def main(argv: list[str] | None = None) -> int:
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(f"\n{written} rows from {repositories} repositories; unreached: {dict(unreached)}")
-    print(f"Wrote {dataset_path} and {summary_path}")
+    print(f"Wrote {args.out / DATASET_NAME} and {summary_path}")
     return 0
 
 

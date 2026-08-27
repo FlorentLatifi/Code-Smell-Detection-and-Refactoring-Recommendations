@@ -17,7 +17,7 @@ the corpus is 4.4 GB and does not fit in memory at once.
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable, Iterator
+from collections.abc import Container, Iterable, Iterator
 from dataclasses import dataclass
 
 from javasmell.analysis import analyze_path
@@ -105,17 +105,24 @@ def _analyse_one(
 
 
 def iter_repositories(
-    corpus: Corpus, samples: Iterable[Sample], limit: int = 0
+    corpus: Corpus,
+    samples: Iterable[Sample],
+    limit: int = 0,
+    skip: Container[str] | None = None,
 ) -> Iterator[AnalysedRepository]:
     """Analyse each repository in turn, in a stable order.
 
     Repositories are visited alphabetically so that a run truncated by
     ``limit`` covers the same projects every time and two trial runs stay
-    comparable.
+    comparable. ``skip`` lets an interrupted run resume: the numbering still
+    counts every repository, so progress reads against the whole job rather
+    than against what is left of it.
     """
     grouped = group_by_repository(samples)
     repositories = sorted(grouped)
     if limit:
         repositories = repositories[:limit]
     for number, repository in enumerate(repositories, 1):
+        if skip is not None and repository in skip:
+            continue
         yield _analyse_one(corpus, repository, grouped[repository], number, len(repositories))
