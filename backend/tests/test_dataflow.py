@@ -202,3 +202,27 @@ def test_a_labelled_jump_is_refused_rather_than_resolved():
 def test_straight_line_code_escapes_nowhere():
     source = wrap("        int a = 1;\n        a += p;\n        this.total = a;")
     assert escaping_control_flow(body_statements(source)) is None
+
+
+def test_brackets_after_the_name_are_part_of_the_type():
+    """Java lets `double a[]` mean `double[] a`, and the type field omits them.
+
+    Reading only the type field gave `double`, so an extracted method took a
+    `double` where a `double[]` was passed and the file stopped compiling. Found
+    by running the engine over the corpus, not by reading the grammar.
+    """
+    source = wrap("        double a[] = null;\n        int b[][] = null;\n        String c = null;")
+    found = declarations_in(method_of(source), source).types
+
+    assert found["a"] == "double[]"
+    assert found["b"] == "int[][]"
+    assert found["c"] == "String"
+
+
+def test_one_declaration_may_mix_a_value_and_an_array():
+    """`int a, b[];` declares an int and an int array from a single type."""
+    source = wrap("        int a = 0, b[] = null;")
+    found = declarations_in(method_of(source), source).types
+
+    assert found["a"] == "int"
+    assert found["b"] == "int[]"

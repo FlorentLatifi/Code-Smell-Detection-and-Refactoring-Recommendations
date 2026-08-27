@@ -111,15 +111,31 @@ def declarations_in(node: Node, source: bytes) -> Declarations:
 
         named = current.child_by_field_name("name")
         if named is not None:
-            found.add(text_of(named, source), type_text)
+            found.add(text_of(named, source), type_text + _extra_dimensions(current, source))
             continue
         # A local_variable_declaration holds one or more variable_declarators.
         for child in current.named_children:
             if child.type == "variable_declarator":
                 declarator_name = child.child_by_field_name("name")
                 if declarator_name is not None:
-                    found.add(text_of(declarator_name, source), type_text)
+                    found.add(
+                        text_of(declarator_name, source),
+                        type_text + _extra_dimensions(child, source),
+                    )
     return found
+
+
+def _extra_dimensions(declarator: Node, source: bytes) -> str:
+    """The brackets Java lets a declaration put after the name instead of the type.
+
+    `double a[]` declares an array just as `double[] a` does, and `int a, b[];`
+    declares an int and an int array from one type. Reading only the type field
+    gave `double` for the first, so the extracted method took a `double` where a
+    `double[]` was passed and the file stopped compiling. Found by running the
+    engine over the corpus.
+    """
+    dimensions = declarator.child_by_field_name("dimensions")
+    return "" if dimensions is None else text_of(dimensions, source)
 
 
 def is_value_read(identifier: Node) -> bool:
