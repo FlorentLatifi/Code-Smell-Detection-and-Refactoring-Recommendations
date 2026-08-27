@@ -17,9 +17,12 @@
     "path",
     "start_line",
     "end_line",
+    "class_name",
     "class_kind",
+    "entity_name",
+    "entity_start_line",
+    "entity_end_line",
     "is_constructor",
-    "is_accessor",
     "review_count",
     "is_unanimous",
     "severity_mean",
@@ -58,7 +61,7 @@
     "m_NP"
   ],
   "environment": {
-    "commit": "fa2c5cfb345f917c3d6b2afb6100e028c0189bbb",
+    "commit": "35a672e4f40dbb0138b1ac66963cd729017ea1a9",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },

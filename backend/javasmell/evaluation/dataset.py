@@ -16,14 +16,19 @@ Envy is a statement about a method *relative to* its class, and a long method
 inside a God Class is not the same observation as one inside a small helper. A
 model handed only the nine method metrics cannot express either.
 
-*The three structural fields the detectors read are stored too.* Beyond
-``metrics`` the rules consult only ``kind`` (interfaces and enums are excluded
-from class strategies) and ``is_constructor``/``is_accessor`` (Feature Envy
-skips both). Carrying them means a threshold sweep can rebuild exactly what the
-detectors saw without going back to the source.
+*The entity's own identity is stored, not just the sample's range.* Beyond
+``metrics`` the rules consult ``kind``, ``is_constructor`` and ``is_accessor``.
+The last of those is not a field but a property derived from the method's name
+and how many lines it spans, so the row keeps the name and the span and lets it
+derive itself. Storing the answer instead and forcing it back with a synthetic
+name would make the replay agree with a definition of "accessor" that had since
+changed, and agree silently. ``entities`` is the exact inverse of ``row`` for
+every field a detector reads, and ``test_dataset`` holds it to that.
 """
 
 from __future__ import annotations
+
+from collections.abc import Mapping
 
 from javasmell.evaluation.mlcq import Aggregation, Sample
 from javasmell.model.entities import ClassInfo, MethodInfo
@@ -48,12 +53,21 @@ IDENTITY = (
     "smell",
     "entity_type",
     "path",
-    "start_line",
+    "start_line",  # the reviewers' range, kept for tracing back to MLCQ
     "end_line",
 )
 
-# Everything the rule detectors read that is not a metric; see module docstring.
-STRUCTURE = ("class_kind", "is_constructor", "is_accessor")
+# What the detectors read that is not a metric, plus what `is_accessor` derives
+# itself from. `entity_*` is the entity the matcher resolved, which is not
+# always the range MLCQ recorded.
+STRUCTURE = (
+    "class_name",
+    "class_kind",
+    "entity_name",
+    "entity_start_line",
+    "entity_end_line",
+    "is_constructor",
+)
 
 AGGREGATIONS = (
     Aggregation.MEAN,
@@ -100,9 +114,12 @@ def row(sample: Sample, cls: ClassInfo, method: MethodInfo | None) -> dict[str, 
         "path": sample.relative_path,
         "start_line": str(sample.start_line),
         "end_line": str(sample.end_line),
+        "class_name": cls.name,
         "class_kind": cls.kind,
+        "entity_name": cls.name if method is None else method.name,
+        "entity_start_line": str(cls.start_line if method is None else method.start_line),
+        "entity_end_line": str(cls.end_line if method is None else method.end_line),
         "is_constructor": _flag(None if method is None else method.is_constructor),
-        "is_accessor": _flag(None if method is None else method.is_accessor),
         "review_count": str(len(sample.reviews)),
         "is_unanimous": _flag(sample.is_unanimous),
     }
@@ -121,3 +138,50 @@ def row(sample: Sample, cls: ClassInfo, method: MethodInfo | None) -> dict[str, 
         values[f"m_{name}"] = "" if measured is None else repr(measured)
 
     return values
+
+
+def entities(record: Mapping[str, str]) -> tuple[ClassInfo, MethodInfo | None]:
+    """Rebuild what the detectors saw from one row: the inverse of :func:`row`.
+
+    Only the fields a detector reads are restored, and they are restored as
+    themselves rather than as their consequences -- the method keeps its real
+    name and span so ``is_accessor`` derives the same answer it derived during
+    the measured run. Everything else (fields, bodies, accesses) is left empty
+    on purpose: a detector that started reading one of them would be measuring
+    something this row never captured, and an empty list makes that show up as
+    a wrong number in the equivalence test rather than as a plausible one.
+    """
+    method: MethodInfo | None = None
+    if record["entity_type"] == "function":
+        method = MethodInfo(
+            name=record["entity_name"],
+            return_type=None,
+            parameters=[],
+            modifiers=frozenset(),
+            start_line=int(record["entity_start_line"]),
+            end_line=int(record["entity_end_line"]),
+            is_constructor=record["is_constructor"] == "1",
+            metrics={
+                name: float(record[f"m_{name}"])
+                for name in METHOD_METRICS
+                if record[f"m_{name}"] != ""
+            },
+        )
+
+    cls = ClassInfo(
+        name=record["class_name"],
+        kind=record["class_kind"],
+        package="",
+        file_path=record["path"],
+        modifiers=frozenset(),
+        superclass=None,
+        interfaces=[],
+        fields=[],
+        methods=[] if method is None else [method],
+        start_line=int(record["entity_start_line"]) if method is None else 0,
+        end_line=int(record["entity_end_line"]) if method is None else 0,
+        metrics={
+            name: float(record[f"c_{name}"]) for name in CLASS_METRICS if record[f"c_{name}"] != ""
+        },
+    )
+    return cls, method

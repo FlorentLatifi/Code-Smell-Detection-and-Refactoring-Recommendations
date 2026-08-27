@@ -8,10 +8,12 @@ without adding a column for it.
 from __future__ import annotations
 
 from javasmell.analysis import analyze_path, analyze_source
+from javasmell.detectors.rules import detect_entity
 from javasmell.evaluation.dataset import (
     CLASS_METRICS,
     METHOD_METRICS,
     columns,
+    entities,
     feature_columns,
     row,
 )
@@ -80,8 +82,8 @@ def test_class_sample_leaves_the_method_columns_empty():
     assert all(produced[f"m_{name}"] == "" for name in METHOD_METRICS)
     assert produced["c_NOM"] == "1.0"  # one non-constructor method
     assert produced["is_constructor"] == ""
-    assert produced["is_accessor"] == ""
     assert produced["class_kind"] == "class"
+    assert produced["entity_name"] == "Ledger"  # the class is the entity
 
 
 def test_method_sample_carries_both_its_own_and_its_class_metrics():
@@ -103,7 +105,7 @@ def test_method_sample_carries_both_its_own_and_its_class_metrics():
     assert produced["m_CC"] == "1.0"  # no branches
     assert produced["c_NOM"] == "2.0"  # total() and post()
     assert produced["is_constructor"] == "0"
-    assert produced["is_accessor"] == "0"
+    assert produced["entity_name"] == "post"
 
 
 def test_labels_cover_every_aggregation():
@@ -151,3 +153,81 @@ def test_feature_columns_are_class_first_then_method():
     assert features[0] == "c_AMW"
     assert features[len(CLASS_METRICS)] == "m_ATFD"
     assert len(features) == len(CLASS_METRICS) + len(METHOD_METRICS) == 26
+
+
+# ----------------------------------------------------------------------
+# The row is a faithful stand-in for the entity
+# ----------------------------------------------------------------------
+
+
+def verdicts(cls, method):
+    return sorted(s.smell_type for s in detect_entity(cls, method))
+
+
+def test_a_rebuilt_entity_gets_the_same_verdicts_as_the_measured_one():
+    """The property the whole replay rests on.
+
+    Approach A's figures and the sensitivity sweep both read detector verdicts
+    off stored rows instead of re-measuring 690 000 files. That is only sound if
+    a rebuilt entity is indistinguishable from the entity it came from, so the
+    claim is checked against every class and method in the fixtures rather than
+    against one hand-picked example.
+    """
+    project = analyze_path("tests/fixtures")
+    checked = 0
+    for unit in project.units:
+        for cls in unit.classes:
+            record = row(make_sample(), cls, None)
+            rebuilt_class, rebuilt_method = entities(record)
+            assert rebuilt_method is None
+            assert verdicts(rebuilt_class, None) == verdicts(cls, None)
+            checked += 1
+
+            for method in cls.methods:
+                record = row(make_sample(entity_type="function"), cls, method)
+                rebuilt_class, rebuilt_method = entities(record)
+                assert rebuilt_method is not None
+                assert verdicts(rebuilt_class, rebuilt_method) == verdicts(cls, method)
+                checked += 1
+
+    assert checked > 20, "the fixtures should exercise more entities than this"
+
+
+def test_an_accessor_is_recomputed_rather_than_remembered():
+    """`is_accessor` is derived from the name and the span, so both are stored.
+
+    Storing the answer instead would let the replay keep agreeing with a
+    definition of "accessor" that had since been changed, and keep agreeing
+    silently. Here the rebuilt method must reach the same verdict by deriving
+    it, which is only possible if the inputs survived the round trip.
+    """
+    source = """
+    class Ledger {
+        private int total;
+        int getTotal() { return total; }
+        void recalculateEverything(int a) { total = a; }
+    }
+    """
+    cls = analyze_source(source).units[0].classes[0]
+    getter = next(m for m in cls.methods if m.name == "getTotal")
+    worker = next(m for m in cls.methods if m.name == "recalculateEverything")
+    assert getter.is_accessor and not worker.is_accessor
+
+    _, rebuilt_getter = entities(row(make_sample(entity_type="function"), cls, getter))
+    _, rebuilt_worker = entities(row(make_sample(entity_type="function"), cls, worker))
+
+    assert rebuilt_getter is not None and rebuilt_getter.is_accessor
+    assert rebuilt_worker is not None and not rebuilt_worker.is_accessor
+
+
+def test_the_entity_range_is_kept_apart_from_the_reviewers_range():
+    """MLCQ's recorded range and the entity the matcher resolved are not the same."""
+    cls = analyze_source("class Ledger {\n  int total() { return 1; }\n}").units[0].classes[0]
+    method = cls.methods[0]
+
+    record = row(make_sample(entity_type="function"), cls, method)
+
+    assert record["start_line"] == "1"  # what the reviewers were shown
+    assert record["entity_start_line"] == str(method.start_line)
+    assert record["entity_name"] == "total"
+    assert record["class_name"] == "Ledger"

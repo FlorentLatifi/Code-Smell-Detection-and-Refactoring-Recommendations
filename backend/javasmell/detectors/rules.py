@@ -295,10 +295,24 @@ METHOD_DETECTORS = (
 )
 
 
+def detect_entity(
+    cls: ClassInfo, method: MethodInfo | None, t: Thresholds = DEFAULT
+) -> list[Smell]:
+    """Every smell found at one entity: this class, or this one method.
+
+    ``detect_in_class`` walks a whole class; the evaluation asks the narrower
+    question, and asking it directly means a replay from stored metrics does not
+    have to assemble a project around the single entity it wants to interrogate.
+    """
+    if method is None:
+        return [s for detector in CLASS_DETECTORS if (s := detector(cls, t))]
+    return [s for detector in METHOD_DETECTORS if (s := detector(cls, method, t))]
+
+
 def detect_in_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> list[Smell]:
-    smells = [s for detector in CLASS_DETECTORS if (s := detector(cls, t))]
+    smells = detect_entity(cls, None, t)
     for method in cls.methods:
-        smells.extend(s for detector in METHOD_DETECTORS if (s := detector(cls, method, t)))
+        smells.extend(detect_entity(cls, method, t))
     return smells
 
 
