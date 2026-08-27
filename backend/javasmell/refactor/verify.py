@@ -119,15 +119,28 @@ def error_messages(javac: str, source: bytes, name: str) -> set[str] | None:
     }
 
 
-def check(javac: str | None, before: bytes, after: bytes, name: str) -> Check:
-    """Verify one rewrite as strongly as this file allows."""
+def check(
+    javac: str | None,
+    before: bytes,
+    after: bytes,
+    name: str,
+    before_errors: set[str] | None = None,
+) -> Check:
+    """Verify one rewrite as strongly as this file allows.
+
+    ``before_errors`` may be supplied when the caller has already compiled the
+    original. A file usually holds several sites, and its baseline does not
+    change between them; recompiling it per site doubles the cost of a corpus
+    run for no new information.
+    """
     if not parses_cleanly(after):
         return Check(Verdict.BROKEN_SYNTAX, detail="the rewritten file is not valid Java")
 
     if javac is None:
         return Check(Verdict.PARSES, detail="javac not available")
 
-    before_errors = error_messages(javac, before, name)
+    if before_errors is None:
+        before_errors = error_messages(javac, before, name)
     after_errors = error_messages(javac, after, name)
     if before_errors is None or after_errors is None:
         return Check(Verdict.PARSES, detail="javac timed out")

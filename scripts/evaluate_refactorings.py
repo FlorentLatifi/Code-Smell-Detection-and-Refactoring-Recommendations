@@ -43,7 +43,7 @@ from javasmell.refactor.base import Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import find_site  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
-from javasmell.refactor.verify import Verdict, check  # noqa: E402
+from javasmell.refactor.verify import Verdict, check, error_messages  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
 DEFAULT_CORPUS = Path("data/corpus")
@@ -131,6 +131,11 @@ def run(args: argparse.Namespace) -> tuple[Tally, list[dict[str, object]], Count
         except OSError:
             continue
 
+        # One baseline per file, not one per site: a file holds several sites
+        # and its unrewritten state is the same for all of them.
+        baseline: set[str] | None = None
+        computed = False
+
         for class_name, method, smell_type, refactoring, line in sites_in(source, str(path)):
             automated = for_smell(smell_type)
             if automated is None:
@@ -157,7 +162,10 @@ def run(args: argparse.Namespace) -> tuple[Tally, list[dict[str, object]], Count
                     verdict = Verdict.BROKEN_SYNTAX
                     introduced = str(failure)
                 else:
-                    result = check(javac, source, rewritten, Path(path).name)
+                    if javac is not None and not computed:
+                        baseline = error_messages(javac, source, Path(path).name)
+                        computed = True
+                    result = check(javac, source, rewritten, Path(path).name, baseline)
                     verdict = result.verdict
                     errors_before, errors_after = result.errors_before, result.errors_after
                     introduced = result.detail
