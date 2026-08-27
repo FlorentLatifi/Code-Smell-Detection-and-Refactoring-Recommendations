@@ -18,7 +18,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 import tree_sitter_java as tsjava
-from tree_sitter import Language, Node, Parser
+from tree_sitter import Language, Node, Parser, Tree
 
 from javasmell.model.entities import (
     ClassInfo,
@@ -82,6 +82,17 @@ class JavaParser:
     def parse_file(self, path: str) -> CompilationUnit:
         source = Path(path).read_bytes()
         return self.parse_source(source, path)
+
+    def parse_tree(self, source: bytes) -> Tree:
+        """The raw syntax tree, for the one consumer that needs more than the model.
+
+        The refactoring engine works at statement level -- if-statements, blocks,
+        the exact byte span of each -- and the model deliberately carries none of
+        that. It also re-parses rather than reusing an existing ``ProjectModel``,
+        because it is about to rewrite the file and must be looking at what is on
+        disk now rather than at whatever was measured earlier.
+        """
+        return self._parser.parse(source)
 
     def parse_source(self, source: str | bytes, path: str = "<memory>") -> CompilationUnit:
         raw = source.encode("utf-8") if isinstance(source, str) else source
