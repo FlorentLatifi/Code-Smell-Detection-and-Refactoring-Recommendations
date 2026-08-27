@@ -12,6 +12,10 @@ dist/
 # Data & artifacts
 data/raw/
 data/corpus/
+# Trained models and their manifests. Regenerated from the committed feature
+# table in seconds, and a pickled estimator is undefined across scikit-learn
+# versions anyway, so the repository carries the recipe rather than the result.
+data/models/
 *.joblib
 *.pkl
 .env
