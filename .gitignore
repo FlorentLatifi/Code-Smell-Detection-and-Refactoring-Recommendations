@@ -16,6 +16,12 @@ data/corpus/
 *.pkl
 .env
 
+# Transient state of an interrupted build_dataset run. data/results/ is
+# committed, so these have to be excluded by name or a crashed run leaves them
+# staged for the next commit.
+data/results/*.part
+data/results/*.progress.json
+
 # OS
 Thumbs.db
 .DS_Store
