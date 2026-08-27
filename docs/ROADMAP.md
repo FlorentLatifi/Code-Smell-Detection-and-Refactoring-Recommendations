@@ -402,11 +402,25 @@ gabuar.
 Për **Move Method**, vendim i planifikuar: ndoshta vetëm propozim me klasën e
 synuar, pa aplikim automatik. Vendoset kur të arrijmë aty, dhe regjistrohet.
 
-**3.3 Verifikimi**
-`javac` mbi projektin pas çdo transformimi. Për projektet e korpusit me suitë
-testesh, testet para dhe pas. Pretendimi empirik i punimit është: *nga N raste të
-detektuara, M u transformuan automatikisht, të gjitha kompiluan, dhe K ruajtën
-sjelljen sipas testeve të vetë projektit*.
+**3.3 Verifikimi** 🟡 në ekzekutim
+
+U mat një pengesë që plani nuk e kishte parashikuar: **vetëm 8% e skedarëve të
+korpusit kompilojnë të vetëm.** Pjesa tjetër importon fqinjët e vet, dhe pa
+classpath-in e projektit `javac` dështon para se të preket asgjë. Këmbëngulja te
+një kompilim i pastër do të linte 8% të korpusit të verifikueshëm.
+
+Prandaj verifikimi bëhet në **tri nivele** (VD-32), secili i raportuar veç:
+parsohet (100% e skedarëve), nuk shton lloj të ri gabimi, dhe — ku është e mundur —
+kompilon.
+
+Ekzekutimi i parë e justifikoi menjëherë veten. Mbi 150 skedarë: 477 vende të
+detektuara, 125 të rishkruara (26.2%), dhe **11 të shënuara si prishëse**. Njëri
+ishte alarm i rremë i izolimit; të tjerët ishin defekt i vërtetë — deklarimet
+brenda një cikli të mëparshëm numëroheshin si të dukshme, ndaj një emër si `i`
+kalonte si parametër edhe pse blloku e deklaronte vetë.
+
+**Ai defekt nuk u kap nga 15 testet e shkruara me dorë. E kapi korpusi.** Kjo është
+arsyeja pse verifikimi empirik nuk zëvendësohet dot me teste njësie.
 
 **Kriteri i daljes:** tabela N/M/K mbi një korpus të deklaruar, plus shpërndarja e
 arsyeve të refuzimit.
