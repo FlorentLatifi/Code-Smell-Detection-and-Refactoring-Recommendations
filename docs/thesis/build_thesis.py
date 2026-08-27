@@ -29,6 +29,7 @@ TITLE_SIZE = Pt(14)
 CAPTION_SIZE = Pt(11)
 LINE_SPACING = 1.5
 
+from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5  # noqa: E402
 from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
@@ -196,6 +197,33 @@ def bullet(doc: Document, text: str) -> None:
     _set_font(paragraph.add_run(text))
 
 
+def figure(doc: Document, path: str, text: str) -> None:
+    """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni."""
+    holder = doc.add_paragraph()
+    holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    if os.path.exists(path):
+        holder.add_run().add_picture(path, width=Inches(5.6))
+    else:
+        _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
+    caption(doc, text)
+
+
+def table(doc: Document, text: str, headers: list[str], rows: list[list[str]]) -> None:
+    """Një tabelë me titullin sipër, siç e kërkon shablloni."""
+    caption(doc, text)
+    grid = doc.add_table(rows=1, cols=len(headers))
+    grid.style = "Table Grid"
+    for cell, header in zip(grid.rows[0].cells, headers, strict=True):
+        cell.paragraphs[0].paragraph_format.line_spacing = 1.0
+        _set_font(cell.paragraphs[0].add_run(header), size=CAPTION_SIZE, bold=True)
+    for values in rows:
+        cells = grid.add_row().cells
+        for cell, value in zip(cells, values, strict=True):
+            cell.paragraphs[0].paragraph_format.line_spacing = 1.0
+            _set_font(cell.paragraphs[0].add_run(value), size=CAPTION_SIZE)
+    blank(doc)
+
+
 def caption(doc: Document, text: str) -> None:
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -265,28 +293,39 @@ def build_front_matter(doc: Document) -> None:
     )
 
     unnumbered_heading(doc, "Lista e figurave")
-    body(doc, f"{TODO}: lista gjenerohet pasi të shtohen figurat.")
-    caption(doc, "Figura 1. Arkitektura e sistemit")
+    for entry in FIGURE_LIST:
+        body(doc, entry)
 
     unnumbered_heading(doc, "Lista e tabelave")
-    body(doc, f"{TODO}: lista gjenerohet pasi të shtohen tabelat.")
-    caption(doc, "Tabela 1. Metrikat e implementuara")
+    for entry in TABLE_LIST:
+        body(doc, entry)
 
     unnumbered_heading(doc, "Fjalori i termave")
     for term in GLOSSARY:
         bullet(doc, term)
 
 
-def build_introduction(doc: Document) -> None:
-    chapter(doc, 1, "Hyrje")
-    for number, title, paragraphs in INTRODUCTION:
+def render_sections(doc: Document, sections: list) -> None:
+    """Një kapitull, çfarëdo qofshin llojet e elementeve brenda tij."""
+    for number, title, paragraphs in sections:
         if number:
             section_heading(doc, number, title)
         for item in paragraphs:
-            if isinstance(item, tuple) and item[0] == "bullet":
-                bullet(doc, item[1])
-            else:
+            if not isinstance(item, tuple):
                 body(doc, item)
+            elif item[0] == "bullet":
+                bullet(doc, item[1])
+            elif item[0] == "figure":
+                figure(doc, item[1], item[2])
+            elif item[0] == "table":
+                table(doc, item[1], item[2], item[3])
+            else:
+                raise ValueError(f"element i panjohur: {item[0]}")
+
+
+def build_introduction(doc: Document) -> None:
+    chapter(doc, 1, "Hyrje")
+    render_sections(doc, INTRODUCTION)
 
 
 def build_references(doc: Document) -> None:
@@ -299,6 +338,8 @@ def build_references(doc: Document) -> None:
     """
     for number, reference in enumerate(all_references(), 1):
         paragraph = doc.add_paragraph()
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        paragraph.paragraph_format.line_spacing = LINE_SPACING
         paragraph.paragraph_format.left_indent = Inches(0.5)
         paragraph.paragraph_format.first_line_indent = Inches(-0.5)
         _set_font(paragraph.add_run(f"[{number}]	{reference}"))
@@ -311,9 +352,14 @@ def build_remaining_chapters(doc: Document) -> None:
     ones the system already applies, so they can be listed before the prose that
     cites them is finished.
     """
+    written = {2: CHAPTER_2, 3: CHAPTER_3, 4: CHAPTER_4, 6: CHAPTER_6}
     for number, title in REMAINING_CHAPTERS:
         chapter(doc, number, title)
-        if title == "Referencat":
+        if number in written:
+            render_sections(doc, written[number])
+        elif number == 5:
+            render_sections(doc, chapter_5())
+        elif title == "Referencat":
             build_references(doc)
         else:
             body(doc, f"{TODO}")
@@ -379,6 +425,21 @@ ACKNOWLEDGEMENTS = (
     f"{TODO}: Falënderimet shkruhen me fjalët e tua. Zakonisht përfshihen mentorja, "
     "profesorët e programit, familja dhe kushdo që ka kontribuar në këtë punim."
 )
+
+FIGURE_LIST = [
+    "Figura 1. MCC për të dyja qasjet",
+    "Figura 2. Recall-i sipas ashpërsisë së caktuar nga rishikuesit",
+    "Figura 3. Mostrat e shënuara nga secila qasje",
+    "Figura 4. Veçoritë me rëndësi më të lartë, të matura me permutation importance",
+    "Figura 5. Shpërndarja e mostrave sipas erës",
+]
+
+TABLE_LIST = [
+    "Tabela 1. Qasja A kundrejt gjykimit të rishikuesve",
+    "Tabela 2. Recall-i sipas ashpërsisë",
+    "Tabela 3. Modeli më i mirë për çdo erë",
+    "Tabela 4. Pajtimi mes dy qasjeve",
+]
 
 GLOSSARY = [
     "AST - Abstract Syntax Tree, pema e sintaksës abstrakte",
