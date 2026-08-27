@@ -778,3 +778,37 @@ fushe publike dhe një çifti akses-metodash — dallim që për Fowler-in ësht
 hapi i parë i ilaçit. Kjo lidhet me gjetjen te `blob`, ku ML-ja u mbështet te
 madhësia dhe jo te kohezioni: në të dyja rastet strategjia mat diçka pak më ndryshe
 nga ajo që emërton.
+
+---
+
+### VD-31: Nyjet e tree-sitter krahasohen me `==`, kurrë me `is`
+
+**Konteksti.** Analiza e rrjedhës së të dhënave duhet të pyesë vazhdimisht «a është
+kjo nyje e njëjta me atë?» — a është ky identifikues ana e majtë e caktimit, a e ka
+kalimi arritur kufirin e bllokut.
+
+**Zbulimi.** Lidhjet Python të tree-sitter-it ndërtojnë një mbështjellës **të ri**
+në çdo thirrje aksesori. Dy referenca ndaj së njëjtës nyje nuk janë kurrë i njëjti
+objekt, dhe `id()` i tyre ndryshon. `Node.__eq__` krahason pozicionin dhe pemën,
+pra është i vetmi krahasim që do të thotë atë që duket.
+
+Kjo u mat, jo u hamendësua:
+
+    child_by_field_name('left') dy here  ->  is: False,  ==: True
+
+**Vendimi.** Një funksion i vetëm `same_node` që përdor `==` dhe trajton `None`,
+dhe `span_of` për testet e anëtarësisë. Asnjë `is` dhe asnjë `id()` mes nyjeve.
+
+**Pse ka rëndësi.** Defekti dështon **në heshtje**, jo me gabim. Kontrolli
+«a është ky identifikues ana e majtë?» thjesht nuk përputhet kurrë, ndaj analiza e
+trajton çdo objektiv caktimi si vlerë që lexohet. Për Extract Method kjo do të
+thotë parametra të shpikur për variabla që bllokut nuk i duhen — kod që kompilon,
+që duket i arsyeshëm, dhe që është i gabuar.
+
+U kap nga testet e shkruara para se të besohej implementimi: pesë prej tyre
+dështuan, dhe të pesë kishin të drejtë. Kjo është arsyeja pse §5 kërkon vlera të
+derivuara me dorë e jo golden files — një golden file i gjeneruar nga ky kod do ta
+kishte fiksuar defektin si sjellje të pritur.
+
+**Pasojat.** I njëjti kurth vlen për çdo kod të ardhshëm mbi pemën. Motori i
+refaktorimit është i vetmi vend ku krahasohen nyje, dhe `same_node` rri aty.
