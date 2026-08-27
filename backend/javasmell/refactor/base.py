@@ -117,6 +117,7 @@ class Tally:
 
     detected: int = 0
     applied: int = 0
+    missing: int = 0
     refused_by_reason: dict[Refusal, int] = field(default_factory=dict)
 
     def record(self, outcome: Outcome) -> None:
@@ -127,10 +128,24 @@ class Tally:
             return
         self.refused_by_reason[reason] = self.refused_by_reason.get(reason, 0) + 1
 
+    def record_missing(self) -> None:
+        """A site the detector found but a fresh parse could not locate.
+
+        Kept apart from the refusals because it is not one: the transformation
+        was never consulted. It happens when the file changed between being
+        measured and being rewritten, and counting it as a decline would credit
+        the engine with caution it never exercised.
+        """
+        self.detected += 1
+        self.missing += 1
+
     @property
     def refused(self) -> int:
         return sum(self.refused_by_reason.values())
 
     def describe(self) -> str:
         share = self.applied / self.detected if self.detected else 0.0
-        return f"{self.applied}/{self.detected} applied ({share:.1%}), {self.refused} declined"
+        tail = f", {self.missing} unlocatable" if self.missing else ""
+        return (
+            f"{self.applied}/{self.detected} applied ({share:.1%}), {self.refused} declined{tail}"
+        )

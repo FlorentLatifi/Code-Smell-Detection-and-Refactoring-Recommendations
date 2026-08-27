@@ -343,3 +343,55 @@ def test_what_it_emits_compiles(source, line):
 
     ok, errors = compiles(apply_edits(source, outcome.edits))
     assert ok, errors
+
+
+def test_a_name_from_an_earlier_loop_is_out_of_scope():
+    """Two sibling loops may each declare `i`; the first one's has left scope.
+
+    Treating it as visible is not a harmless over-approximation. The block
+    declares its own `i`, so passing one in produced `variable i is already
+    defined in method extracted(...)` and the file stopped compiling. Found by
+    running the engine over the corpus, not by reading the code.
+    """
+    source = b"""public class T {
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            System.out.println(xs[i]);
+        }
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i] * 2);
+            }
+        }
+    }
+}
+"""
+    outcome = transform(source)
+    assert outcome.applied
+
+    rewritten = apply_edits(source, outcome.edits).decode()
+    signature = rewritten.split("private void extracted(")[1].split(")")[0]
+    assert "int i" not in signature, f"`i` must not be a parameter: {signature}"
+    assert signature == "int[] xs"
+
+
+@pytest.mark.skipif(JAVAC is None, reason="javac not on PATH")
+def test_the_shadowed_loop_variable_case_compiles():
+    source = b"""public class T {
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            System.out.println(xs[i]);
+        }
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i] * 2);
+            }
+        }
+    }
+}
+"""
+    outcome = transform(source)
+    assert outcome.applied
+
+    ok, errors = compiles(apply_edits(source, outcome.edits))
+    assert ok, errors

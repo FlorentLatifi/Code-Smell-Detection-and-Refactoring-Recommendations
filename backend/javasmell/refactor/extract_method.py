@@ -156,11 +156,19 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
     position = next(i for i, node in enumerate(siblings) if span_of(node) == chosen)
     before, after = siblings[:position], siblings[position + 1 :]
 
-    # Declared before the block: the parameters, plus anything the earlier
-    # statements introduced. Names born inside the block die with it, so they
-    # never cross the boundary.
+    # What is actually in scope where the block sits: the parameters, plus the
+    # locals declared directly in the method body before it.
+    #
+    # Only the direct children count. A name declared inside an earlier `for` or
+    # `if` has left scope by the time the block is reached, and treating it as
+    # visible is not a harmless over-approximation: the block routinely declares
+    # its own loop variable with the same name, so passing it in produced
+    # `variable i is already defined in method extracted(...)` -- a rewrite that
+    # does not compile. Found by running the engine over the corpus.
     outer = declarations_in(method.child_by_field_name("parameters") or method, source)
     for node in before:
+        if node.type != "local_variable_declaration":
+            continue
         for name, type_text in declarations_in(node, source).types.items():
             outer.add(name, type_text)
 

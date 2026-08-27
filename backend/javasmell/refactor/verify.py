@@ -12,11 +12,16 @@ than collapsed into one figure:
 1. **It still parses.** tree-sitter reports an ERROR or MISSING node for text
    that is not Java. This catches a malformed rewrite -- a lost brace, a mangled
    multi-byte character -- and it applies to every file.
-2. **It introduces no new compiler errors.** ``javac`` is run before and after
-   and the error counts compared. A file that failed on 12 unresolved imports and
-   still fails on 12 has not been damaged by the rewrite. This is a proxy: it
-   would miss a change that removed one error and added another, which is why it
-   does not replace the third check.
+2. **It introduces no new kind of compiler error.** ``javac`` runs before and
+   after and the *distinct* messages are compared. Counting them instead was
+   tried first and proved too strict: extracting a block whose parameter is an
+   imported type adds one more ``cannot find symbol`` for that type, purely
+   because the file is being compiled without its classpath. The rewrite is
+   correct and the extra error is an artefact of the isolation.
+
+   The weakness of comparing kinds is the mirror image: an introduced error that
+   happens to read like one already present would pass unnoticed. That is why it
+   does not replace the third check, and why both are reported.
 3. **It compiles.** For the minority of files that compile alone, the strongest
    statement available: ``javac`` accepted it before and accepts it after.
 
@@ -80,12 +85,17 @@ def parses_cleanly(source: bytes) -> bool:
     return True
 
 
-def count_errors(javac: str, source: bytes, name: str) -> int:
-    """How many errors ``javac`` reports for this file on its own.
+def error_messages(javac: str, source: bytes, name: str) -> set[str] | None:
+    """The distinct errors ``javac`` reports for this file on its own, or None.
 
-    The file is written to a throwaway directory with its original name, because
-    a public class must live in a file that matches it and renaming would invent
-    an error the code does not have.
+    None means javac could not be asked -- it timed out -- which is different
+    from finding no errors and must not be read as success.
+
+    The file is written to a throwaway directory under its original name,
+    because a public class must live in a file that matches it and renaming
+    would invent an error the code does not have. Line numbers are dropped: the
+    rewrite moves code, so every message after the edit point would otherwise
+    look new.
     """
     with tempfile.TemporaryDirectory() as work:
         path = Path(work) / name
@@ -99,10 +109,14 @@ def count_errors(javac: str, source: bytes, name: str) -> int:
                 check=False,
             )
         except subprocess.TimeoutExpired:
-            return -1
+            return None
     if completed.returncode == 0:
-        return 0
-    return sum(1 for line in completed.stderr.splitlines() if ERROR_MARKER in line)
+        return set()
+    return {
+        line.split(ERROR_MARKER, 1)[1].strip()
+        for line in completed.stderr.splitlines()
+        if ERROR_MARKER in line
+    }
 
 
 def check(javac: str | None, before: bytes, after: bytes, name: str) -> Check:
@@ -113,17 +127,19 @@ def check(javac: str | None, before: bytes, after: bytes, name: str) -> Check:
     if javac is None:
         return Check(Verdict.PARSES, detail="javac not available")
 
-    errors_before = count_errors(javac, before, name)
-    errors_after = count_errors(javac, after, name)
-
-    if errors_before < 0 or errors_after < 0:
+    before_errors = error_messages(javac, before, name)
+    after_errors = error_messages(javac, after, name)
+    if before_errors is None or after_errors is None:
         return Check(Verdict.PARSES, detail="javac timed out")
 
-    if errors_before == 0:
-        verdict = Verdict.COMPILES if errors_after == 0 else Verdict.NEW_ERRORS
-        return Check(verdict, errors_before, errors_after)
+    counts = (len(before_errors), len(after_errors))
+    introduced = after_errors - before_errors
 
-    # The file did not compile alone to begin with. The most that can be said is
-    # whether the rewrite made it worse.
-    verdict = Verdict.NO_NEW_ERRORS if errors_after <= errors_before else Verdict.NEW_ERRORS
-    return Check(verdict, errors_before, errors_after)
+    if not before_errors:
+        verdict = Verdict.COMPILES if not after_errors else Verdict.NEW_ERRORS
+        return Check(verdict, *counts, detail="; ".join(sorted(introduced))[:200])
+
+    # The file did not compile alone to begin with, so the most that can be said
+    # is whether the rewrite introduced a kind of error that was not there.
+    verdict = Verdict.NEW_ERRORS if introduced else Verdict.NO_NEW_ERRORS
+    return Check(verdict, *counts, detail="; ".join(sorted(introduced))[:200])
