@@ -21,13 +21,15 @@ from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Pt
+from docx.shared import Inches, Pt
 
 FONT = "Times New Roman"
 BODY_SIZE = Pt(12)
 TITLE_SIZE = Pt(14)
 CAPTION_SIZE = Pt(11)
 LINE_SPACING = 1.5
+
+from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
 
@@ -287,15 +289,34 @@ def build_introduction(doc: Document) -> None:
                 body(doc, item)
 
 
-def build_remaining_chapters(doc: Document) -> None:
-    """Headings only.
+def build_references(doc: Document) -> None:
+    """Chapter 7, numbered and alphabetical, in the template's own format.
 
-    The supervisor asked for the introduction and nothing else before the next
-    meeting, so the later chapters exist as structure, not as content.
+    Only cited sources belong here; anything read but not cited goes under
+    Bibliografia. The list is rendered from references.py rather than typed into
+    the document, so a citation added to the text and a citation added to the
+    list cannot drift apart.
+    """
+    for number, reference in enumerate(all_references(), 1):
+        paragraph = doc.add_paragraph()
+        paragraph.paragraph_format.left_indent = Inches(0.5)
+        paragraph.paragraph_format.first_line_indent = Inches(-0.5)
+        _set_font(paragraph.add_run(f"[{number}]	{reference}"))
+
+
+def build_remaining_chapters(doc: Document) -> None:
+    """Headings for the chapters not yet written, and the reference list.
+
+    Chapters 2 to 6 exist as structure. Chapter 7 is real: the sources are the
+    ones the system already applies, so they can be listed before the prose that
+    cites them is finished.
     """
     for number, title in REMAINING_CHAPTERS:
         chapter(doc, number, title)
-        body(doc, f"{TODO}")
+        if title == "Referencat":
+            build_references(doc)
+        else:
+            body(doc, f"{TODO}")
 
 
 def build() -> str:
@@ -376,6 +397,24 @@ GLOSSARY = [
     "TCC - Tight Class Cohesion, kohezioni i ngushtë i klasës",
     "WMC - Weighted Methods per Class, metodat e peshuara për klasë",
     "WOC - Weight of Class, pesha funksionale e klasës",
+    # Metrikat e nivelit të metodës dhe termat e vlerësimit u shtuan pasi u
+    # ndërtuan; fjalori duhet të mbulojë çdo shkurtesë që del në Kapitullin 5.
+    "AMW - Average Method Weight, pesha mesatare e metodave",
+    "CINT - Coupling Intensity, intensiteti i lidhshmërisë së një metode",
+    "CLOC - Class Lines of Code, rreshtat efektivë të një klase",
+    "F1 - mesatarja harmonike e precizionit dhe recall-it",
+    "GroupKFold - ndarje me grupe, ku çdo depo bie e tëra në një fold",
+    "MAXCC - kompleksiteti maksimal ciklomatik në një klasë",
+    "MAXNESTING - thellësia maksimale e ndërfutjes së blloqeve",
+    "MCC - Matthews Correlation Coefficient, koeficienti i korrelacionit i Matthews-it",
+    "MLOC - Method Lines of Code, rreshtat efektivë të një metode",
+    "NOAM - Number of Accessor Methods, numri i akses-metodave",
+    "NOAV - Number of Accessed Variables, numri i variablave të prekura",
+    "NOF - Number of Fields, numri i fushave",
+    "NOM - Number of Methods, numri i metodave",
+    "NOPA - Number of Public Attributes, numri i atributeve publike",
+    "NP - Number of Parameters, numri i parametrave",
+    "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
 ]
 
 INTRODUCTION = [
