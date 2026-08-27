@@ -351,7 +351,7 @@ nuk i provon dot parakushtet e veta.
 | # | Transformimi | Smell | Çfarë duhet provuar | Gjendja |
 |---|---|---|---|---|
 | 1 ✅ | Guard Clauses | DeepNesting | një trup metode | e mbaruar |
-| 2 | Extract Method | LongMethod, BrainMethod | një trup metode | **në radhë** |
+| 2 ✅ | Extract Method | LongMethod, BrainMethod | një trup metode | e mbaruar |
 | 3 | Introduce Parameter Object | LongParameterList | çdo pikë thirrjeje | vetëm metoda `private` |
 | 4 | Encapsulate Field | DataClass | çdo referencë ndaj fushës | vetëm propozim |
 | 5 | Move Method | FeatureEnvy | thirrjet dhe referencat | vetëm propozim |
@@ -377,10 +377,27 @@ kur njëra anë është NaN (VD-29).
 
 Dymbëdhjetë teste, përfshirë njërin që e kompilon daljen me `javac`.
 
-Për **Extract Method**, kufizim i qëllimshëm: vetëm blloqe me së shumti një
-variabël dalëse, pa `return`/`break`/`continue` që dalin jashtë bllokut. Një motor
-që refuzon shumë por nuk gabon kurrë është shkencërisht i mbrojtshëm; një që
-provon gjithçka dhe prish kodin nuk është.
+**Extract Method është i mbaruar** dhe e respekton kufizimin e planifikuar: së
+shumti një variabël dalëse, dhe asnjë `return`/`break`/`continue` që del jashtë
+bllokut.
+
+Zgjedhja e bllokut është **mekanike, jo heuristike**: deklarata e përbërë më e
+madhe në nivelin e parë të trupit, e matur në rreshta, me kufij që i jep sintaksa.
+Kjo do të thotë se i njëjti input jep gjithmonë të njëjtën nxjerrje, pra rezultati
+riprodhohet nga kushdo që e riekzekuton eksperimentin.
+
+Parametrat renditen alfabetikisht, sepse radha duhet fiksuar nga diçka dhe renditja
+është e vetmja rregull që nuk varet nga mënyra si u kalua pema. Metoda e re quhet
+`extracted`: Fowler-i emërton sipas qëllimit, dhe asgjë në një pemë sintaksore nuk
+e mban qëllimin — shpikja e një emri që tingëllon i besueshëm do të ishte e vetmja
+pjesë e këtij transformimi që është hamendje, ndaj mjeti jep strukturën dhe ia lë
+fjalorin autorit.
+
+Analiza e rrjedhës së të dhënave (`dataflow.py`) është pjesa mbi të cilën qëndron
+korrektësia, dhe testet e saj gjetën katër defekte reale në implementimin e parë —
+njëri prej të cilëve, identiteti i nyjeve të tree-sitter-it (VD-31), do të kishte
+prodhuar parametra të shpikur në çdo nxjerrje, pra kod që kompilon dhe është i
+gabuar.
 
 Për **Move Method**, vendim i planifikuar: ndoshta vetëm propozim me klasën e
 synuar, pa aplikim automatik. Vendoset kur të arrijmë aty, dhe regjistrohet.
