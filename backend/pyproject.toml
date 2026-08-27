@@ -70,5 +70,5 @@ ignore_missing_imports = true
 # scikit-learn ships no py.typed marker. The estimators it hands back are
 # therefore Any inside this package; the boundary is kept narrow by having
 # ml/training.py be the only module that imports it.
-module = ["sklearn.*"]
+module = ["sklearn.*", "joblib"]
 ignore_missing_imports = true

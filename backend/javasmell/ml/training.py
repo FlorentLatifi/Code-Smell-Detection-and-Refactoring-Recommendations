@@ -20,9 +20,13 @@ definitions of precision.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
+import joblib
 import numpy as np
+import sklearn
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator, clone
 from sklearn.dummy import DummyClassifier
@@ -184,3 +188,43 @@ def agreement(rules: dict[str, bool], model: dict[str, bool]) -> dict[str, float
             cohen_kappa_score([rules[i] for i in shared], [model[i] for i in shared])
         )
     return counts
+
+
+def fit_final(model: BaseEstimator, data: Dataset) -> BaseEstimator:
+    """Fit on everything, producing the model that ships.
+
+    This is deliberately not the model the scores describe. Those come from
+    out-of-fold predictions, and they characterise the *procedure*: what one
+    gets by training this pipeline on some projects and applying it to a project
+    it has never seen. The artefact below is that same procedure run once more
+    with no data held back, which is the right thing to deploy and the wrong
+    thing to quote a number for. Nothing here may be re-scored on the training
+    rows, and the manifest says so.
+    """
+    fitted = clone(model)
+    fitted.fit(data.x, data.y)
+    return fitted
+
+
+def save_model(fitted: BaseEstimator, path: Path, manifest: dict[str, object]) -> None:
+    """Write the fitted model beside a manifest describing how to use it.
+
+    A bare ``.joblib`` is close to useless six months later: it takes an
+    unlabelled array and cannot say which column was WMC. The manifest carries
+    the feature order, the label, the seed and the library versions, because
+    unpickling an estimator built by a different scikit-learn is undefined
+    rather than merely risky.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(fitted, path)
+    path.with_suffix(".json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def library_versions() -> dict[str, str]:
+    return {
+        "scikit-learn": sklearn.__version__,
+        "numpy": np.__version__,
+        "joblib": joblib.__version__,
+    }

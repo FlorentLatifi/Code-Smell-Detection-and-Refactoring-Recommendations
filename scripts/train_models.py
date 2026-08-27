@@ -41,13 +41,19 @@ from javasmell.ml.training import (  # noqa: E402
     SEED,
     agreement,
     cross_validated,
+    fit_final,
     importances,
+    library_versions,
     model_zoo,
+    save_model,
 )
 
 DEFAULT_DATASET = Path("data/results/mlcq_dataset.csv")
 DEFAULT_RULES = Path("data/results/rules_evaluation_samples.csv")
 DEFAULT_OUT = Path("data/results")
+# Models are regenerated, not committed: seconds from the committed table, and a
+# pickled estimator is undefined across scikit-learn versions anyway.
+DEFAULT_MODELS = Path("data/models")
 
 RESULT_NAME = "ml_evaluation.json"
 TOP_FEATURES = 6
@@ -60,6 +66,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--label", default=DEFAULT_LABEL)
     parser.add_argument("--folds", type=int, default=FOLDS)
+    parser.add_argument(
+        "--models",
+        type=Path,
+        default=DEFAULT_MODELS,
+        help="Where to write the fitted models (regenerated, never committed)",
+    )
     return parser
 
 
@@ -159,6 +171,25 @@ def main(argv: list[str] | None = None) -> int:
             "vs_rules": agreement(rule_verdicts(args.rules, smell), predictions[best]),
         }
 
+        # The shipped model is fitted on everything; the scores above are not
+        # its scores, they describe the procedure that produced it.
+        slug = smell.replace(" ", "_")
+        save_model(
+            fit_final(model_zoo()[best], data),
+            args.models / f"{slug}.joblib",
+            {
+                "smell": smell,
+                "model": best,
+                "features": list(data.names),
+                "label": args.label,
+                "seed": SEED,
+                "trained_on": len(data.y),
+                "libraries": library_versions(),
+                "scores_are_out_of_fold": True,
+                "environment": environment(),
+            },
+        )
+
     args.out.mkdir(parents=True, exist_ok=True)
     payload = {
         "per_smell": results,
@@ -173,7 +204,8 @@ def main(argv: list[str] | None = None) -> int:
     report(results)
     for smell, entry in results.items():
         print(f"{smell}: top features = {', '.join(entry['top_features'])}")  # type: ignore[arg-type]
-    print(f"\nWrote {path}")
+    print()
+    print(f"Wrote {path}; {len(results)} models in {args.models}")
     return 0
 
 
