@@ -314,10 +314,21 @@ tabela e krahasimit A vs B.
 
 Rendi është sipas rrezikut të korrektësisë, nga më e sigurta te më e vështira.
 
-**3.0 Infrastruktura**
-Rishkrim mbi rangjet e bajtave që i jep tree-sitter: aplikim i disa editimeve në
-një skedar pa kolizion, ruajtje e indentimit, dhe një `RefactoringResult` që mban
-edhe rastet e refuzuara me arsyen përkatëse.
+**3.0 Infrastruktura** ✅
+`refactor/edits.py` aplikon disa editime mbi rangje bajtash, nga fundi para që
+offset-et të mbeten të vlefshme, dhe **refuzon çdo palë që mbivendoset** — dy
+editime mbi të njëjtat bajta s'kanë rezultat të përcaktuar, dhe zgjedhja e njërit
+do të thoshte se motori hedh ndonjëherë një ndryshim që e raportoi si të aplikuar.
+Puna bëhet mbi bajta, jo karaktere (VD-27). Njësia e indentimit maset nga skedari,
+ndaj një projekt me tab-e del me tab-e.
+
+`refactor/base.py` mban `Outcome`, `Refusal` dhe `Tally`. Refuzimi është enum i
+numërueshëm (VD-28), dhe `Outcome.rewrite()` s'ndërtohet dot pa editime — pra
+«u aplikua» nuk shprehet dot pa ndryshim real.
+
+`refactor/locate.py` gjen entitetin në një pemë të riparsuar, i ankoruar te rreshti
+dhe i verifikuar me emrin, që mbingarkesat të dallohen dhe një skedar i ndryshuar
+që kur u mat të mos rishkruhet gabim.
 
 **3.1 Korniza e parakushteve**
 Çdo transformim deklaron çka duhet të jetë e vërtetë. Nëse s'provohet nga pema e
@@ -329,11 +340,21 @@ dhe raportohet si i tillë.
 
 | # | Transformimi | Smell | Vështirësia |
 |---|---|---|---|
-| 1 | Replace Nested Conditional with Guard Clauses | DeepNesting | e ulët |
+| 1 ✅ | Replace Nested Conditional with Guard Clauses | DeepNesting | e ulët |
 | 2 | Encapsulate Field | DataClass | mesatare, kërkon rishkrim referencash |
 | 3 | Introduce Parameter Object | LongParameterList | mesatare |
 | 4 | Extract Method | LongMethod, BrainMethod | e lartë, analizë hyrje/dalje |
 | 5 | Move Method | FeatureEnvy | shumë e lartë |
+
+**Transformimi i parë është i mbaruar.** `guard_clauses.py` e rishkruan saktësisht
+formën ku i tërë trupi i një metode `void` është mbështjellë në një kusht të vetëm
+pa `else`, dhe refuzon gjithçka tjetër me arsye: metodë jo-`void` (garda do të
+kërkonte një vlerë kthimi që s'shpikim dot), degë `else`, trup me më shumë se
+kushtin, degë boshe, degë pa bllok, metodë abstrakte. Kushti negohet duke u
+mbështjellë me `!(...)`, kurrë duke u përmbysur — `a > b` → `a <= b` është i gabuar
+kur njëra anë është NaN (VD-29).
+
+Dymbëdhjetë teste, përfshirë njërin që e kompilon daljen me `javac`.
 
 Për **Extract Method**, kufizim i qëllimshëm: vetëm blloqe me së shumti një
 variabël dalëse, pa `return`/`break`/`continue` që dalin jashtë bllokut. Një motor

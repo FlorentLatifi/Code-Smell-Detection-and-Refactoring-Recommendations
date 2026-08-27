@@ -606,3 +606,112 @@ pajtohen A dhe B, por çka kap secila **vetëm**.
 `"True"` kundrejt një shkruesi që nxjerr `"1"` prodhoi një tabelë pajtimi krejt me
 zero — dhe një tabelë me zero duket si gjetje, jo si defekt. Tani `decode_verdict`
 pranon të dyja drejtshkrimet dhe e ndal ekzekutimin për çdo gjë tjetër.
+
+---
+
+### VD-26: Kalimi i shtrenjtë shkruan atomikisht dhe rifillon
+
+**Konteksti.** Ndërtimi i tabelës së veçorive zgjat ~95 minuta. Një ekzekutim
+dështoi te depoja 130 nga 522 me kod dalje 4 dhe pa asnjë përjashtim Python — pra
+procesi u vra nga jashtë, jo nga një defekt në kod. Shkaku i saktë mbetet i
+paidentifikuar.
+
+Pasoja ishte shumë më e rëndë se humbja e 95 minutave: skripti e hapte skedarin e
+komituar me `"w"`, ndaj **e shkatërroi tabelën e mirë** para se të shkruante rreshtin
+e parë. Ajo u rikuperua nga git-i, por vetëm sepse ishte e komituar.
+
+**Vendimi.** Dy ndryshime, të dyja të domosdoshme veç e veç.
+
+*Atomik:* rreshtat shkojnë te `mlcq_dataset.csv.part` dhe e zëvendësojnë skedarin
+real vetëm pasi ekzekutimi mbaron. Një ekzekutim i dështuar nuk mund ta prekë
+artefaktin e komituar.
+
+*I rifillueshëm:* `mlcq_dataset.progress.json` mban depot e përfunduara, numërimet
+dhe **listën e kolonave**. Ekzekutimi tjetër i kapërcen depot e bëra. Kontrolli i
+kolonave nuk është ceremoni: një skedar i pjesshëm i shkruar me një skemë tjetër nuk
+mund të zgjatet, sepse rezultati do të ishte një CSV me dy skema — një skedar që
+parsohet dhe gënjen. Mospërputhja e nis nga e para.
+
+Numërimi i progresit vazhdon të llogarisë të gjitha depot, jo vetëm ato që kanë
+mbetur, që raportimi të lexohet kundrejt punës së plotë.
+
+**Alternativat.** Rifillim nga zeroja çdo herë: e pranueshme për 2 minuta, jo për 95.
+Ruajtje në një bazë të dhënash: shton varësi dhe e humb lexueshmërinë që e bën CSV-në
+dëshmi. Shkrim rresht-për-rresht drejt e te skedari real me `"a"`: nuk dallon dot një
+ekzekutim të përfunduar nga një të ndërprerë.
+
+**Pasojat.** I verifikuar nga fundi në fund, jo vetëm i shkruar: një ekzekutim mbi 25
+depo u vra te depoja 23, u rifillua, dhe prodhoi 269 rreshta — saktësisht sa
+ekzekutimi i panderprerë — pa header të dyfishuar dhe pa asnjë `sample_id` të
+përsëritur. Ky verifikim është manual; `load_progress` dhe `save_progress` rrinë te
+skripti dhe nuk mbulohen nga suita.
+
+---
+
+### VD-27: Motori i refaktorimit riparson skedarin dhe punon mbi bajta
+
+**Konteksti.** Një `Smell` thotë cilën klasë e metodë gjeti dhe në cilin rresht.
+Për ta rishkruar, motorit i duhet nyja e pemës — dhe modeli nuk e mban atë: ai
+ruan vetëm numra rreshtash, pa offset-e bajtash dhe pa strukturë brenda trupit.
+
+**Vendimi.** Motori e rilexon skedarin nga disku dhe e riparson. Dy arsye, të dyja
+të mjaftueshme veç e veç.
+
+*Modeli mund të jetë i vjetruar.* Ai u mat dikur; skedari që do rishkruhet është
+ai që ndodhet në disk tani. Rishkrimi mbi offset-e të matura kundrejt një teksti
+tjetër është pikërisht mënyra si prishet një skedar.
+
+*Modeli është shumë i trashë.* Guard Clauses kërkon nyjet `if_statement`, blloqet
+dhe kufijtë e sakta të tyre. Modeli mban metoda dhe fusha; asgjë nga kjo.
+
+Puna bëhet **mbi bajta, jo karaktere**. tree-sitter jep offset-e bajtash dhe Java-ja
+është UTF-8: një skedar me identifikues, koment ose varg jo-ASCII ka më shumë bajta
+se karaktere. Prerja sipas indeksit të karakterit e pret një sekuencë shumë-bajtëshe
+në mes dhe prodhon një skedar që ose s'dekodohet, ose dekodohet gabim.
+
+Lokalizimi ankorohet te **rreshti** dhe verifikohet me **emrin**, njësoj si përputhja
+MLCQ↔entitet (VD-19). E kundërta dështon te mbingarkesat, ku disa nyje ndajnë emrin
+dhe vetëm pozicioni i dallon; verifikimi me emër pastaj kap rastin që ka rëndësi —
+një skedar i ndryshuar që kur u mat, ku rreshti tani mban diçka krejt tjetër.
+
+**Pasojat.** `parsing/` ekspozon `parse_tree`. Motori mund të refuzojë me
+`UNPARSEABLE` ose thjesht të mos e gjejë entitetin, dhe të dyja janë dalje të sakta.
+
+---
+
+### VD-28: Refuzimi është enum i numërueshëm, jo tekst i lirë
+
+**Konteksti.** §4 e kartës thotë se motori refuzon në vend që të prishë, dhe se
+refuzimi është rezultat i saktë. Kriteri i daljes së Fazës 3 kërkon **shpërndarjen
+e arsyeve të refuzimit** si tabelë në punim.
+
+**Vendimi.** `Refusal` është `StrEnum` me tetë vlera, secila emërton diçka që pema
+e analizës nuk e provoi dot. Teksti i lirë nuk agregohet dot në tabelë, dhe një
+tabelë është pikërisht ajo që kërkohet.
+
+`Outcome.rewrite()` refuzon të ndërtohet pa editime: «u aplikua» nuk shprehet dot
+pa ndryshim real, ndaj numërimi nuk mund të raportojë një ndryshim që s'ndodhi.
+
+**Pasojat.** Bashkësia rritet vetëm kur një transformim ka nevojë për arsye
+vërtet të re. Ripërdorimi i një arsyeje afër-përafërt do ta turbullonte pikërisht
+tabelën për të cilën ekziston.
+
+---
+
+### VD-29: Kushti negohet duke u mbështjellë, jo duke u përmbysur
+
+**Konteksti.** Guard Clauses e kthen `if (C) { trupi }` në `if (jo-C) return;`
+plus trupin. Si prodhohet «jo-C»?
+
+**Vendimi.** `!(C)` mbi tekstin origjinal. Kurrë përmbysje e operatorit.
+
+Rishkrimi i `a > b` në `a <= b` është **i gabuar për numrat me presje**: nëse njëra
+anë është NaN, të dyja janë false, ndaj ato nuk janë negativë të njëri-tjetrit.
+Dhe përmbysja me dorë e një kushti të përbërë është mënyra si shkruhen defektet
+e De Morgan-it.
+
+Mbështjellja është mekanike dhe e saktë për çdo shprehje boolean, përfshirë një me
+efekte anësore — ajo vlerësohet saktësisht një herë në të dyja rastet.
+
+**Pasojat.** Dalja është pak më e zhurmshme se ajo që do të shkruante një njeri.
+Kjo është këmbim i pranuar: motori garanton ekuivalencë, jo elegancë.
