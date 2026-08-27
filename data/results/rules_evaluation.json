@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "883a9fb48d422b723ad3faa28b74900f184b5d04",
+    "commit": "35a672e4f40dbb0138b1ac66963cd729017ea1a9",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -10,26 +10,26 @@
         "by_aggregation": {
           "max": {
             "accuracy": 0.6944,
-            "f1": 0.1403,
-            "fn": 421,
+            "f1": 0.14,
+            "fn": 422,
             "fp": 8,
-            "mcc": 0.1857,
+            "mcc": 0.1855,
             "precision": 0.814,
-            "recall": 0.0768,
-            "support_positive": 456,
-            "tn": 940,
+            "recall": 0.0766,
+            "support_positive": 457,
+            "tn": 942,
             "tp": 35
           },
           "mean": {
-            "accuracy": 0.7699,
+            "accuracy": 0.7704,
             "f1": 0.1781,
             "fn": 315,
             "fp": 8,
-            "mcc": 0.232,
+            "mcc": 0.2321,
             "precision": 0.814,
             "recall": 0.1,
             "support_positive": 350,
-            "tn": 1046,
+            "tn": 1049,
             "tp": 35
           },
           "min": {
@@ -41,7 +41,7 @@
             "precision": 0.0233,
             "recall": 0.5,
             "support_positive": 2,
-            "tn": 1360,
+            "tn": 1363,
             "tp": 1
           },
           "unanimous": {
@@ -53,7 +53,7 @@
             "precision": 0.0,
             "recall": 0.0,
             "support_positive": 1,
-            "tn": 940,
+            "tn": 942,
             "tp": 0
           }
         },
@@ -73,31 +73,31 @@
       "with_size": {
         "by_aggregation": {
           "max": {
-            "accuracy": 0.7172,
-            "f1": 0.3167,
-            "fn": 364,
+            "accuracy": 0.7171,
+            "f1": 0.3162,
+            "fn": 365,
             "fp": 33,
-            "mcc": 0.2745,
+            "mcc": 0.2742,
             "precision": 0.736,
-            "recall": 0.2018,
-            "support_positive": 456,
-            "tn": 915,
+            "recall": 0.2013,
+            "support_positive": 457,
+            "tn": 917,
             "tp": 92
           },
           "mean": {
-            "accuracy": 0.7899,
+            "accuracy": 0.7903,
             "f1": 0.3789,
             "fn": 260,
             "fp": 35,
-            "mcc": 0.3402,
+            "mcc": 0.3404,
             "precision": 0.72,
             "recall": 0.2571,
             "support_positive": 350,
-            "tn": 1019,
+            "tn": 1022,
             "tp": 90
           },
           "min": {
-            "accuracy": 0.911,
+            "accuracy": 0.9112,
             "f1": 0.0157,
             "fn": 1,
             "fp": 124,
@@ -105,7 +105,7 @@
             "precision": 0.008,
             "recall": 0.5,
             "support_positive": 2,
-            "tn": 1278,
+            "tn": 1281,
             "tp": 1
           },
           "unanimous": {
@@ -117,7 +117,7 @@
             "precision": 0.0,
             "recall": 0.0,
             "support_positive": 1,
-            "tn": 915,
+            "tn": 917,
             "tp": 0
           }
         },
@@ -139,31 +139,31 @@
       "strategy": {
         "by_aggregation": {
           "max": {
-            "accuracy": 0.6939,
+            "accuracy": 0.6943,
             "f1": 0.1929,
             "fn": 244,
             "fp": 7,
-            "mcc": 0.2197,
+            "mcc": 0.2198,
             "precision": 0.8108,
             "recall": 0.1095,
             "support_positive": 274,
-            "tn": 539,
+            "tn": 540,
             "tp": 30
           },
           "mean": {
-            "accuracy": 0.7963,
+            "accuracy": 0.7966,
             "f1": 0.2511,
             "fn": 158,
             "fp": 9,
-            "mcc": 0.2751,
+            "mcc": 0.2752,
             "precision": 0.7568,
             "recall": 0.1505,
             "support_positive": 186,
-            "tn": 625,
+            "tn": 626,
             "tp": 28
           },
           "min": {
-            "accuracy": 0.9524,
+            "accuracy": 0.9525,
             "f1": 0.0488,
             "fn": 3,
             "fp": 36,
@@ -171,7 +171,7 @@
             "precision": 0.027,
             "recall": 0.25,
             "support_positive": 4,
-            "tn": 780,
+            "tn": 781,
             "tp": 1
           },
           "unanimous": {
@@ -183,7 +183,7 @@
             "precision": 0.0,
             "recall": 0.0,
             "support_positive": 1,
-            "tn": 539,
+            "tn": 540,
             "tp": 0
           }
         },
@@ -210,19 +210,19 @@
       "strategy": {
         "by_aggregation": {
           "max": {
-            "accuracy": 0.8636,
-            "f1": 0.2,
-            "fn": 101,
+            "accuracy": 0.8627,
+            "f1": 0.1986,
+            "fn": 102,
             "fp": 11,
-            "mcc": 0.2144,
+            "mcc": 0.2132,
             "precision": 0.56,
-            "recall": 0.1217,
-            "support_positive": 115,
-            "tn": 695,
+            "recall": 0.1207,
+            "support_positive": 116,
+            "tn": 696,
             "tp": 14
           },
           "mean": {
-            "accuracy": 0.9135,
+            "accuracy": 0.9137,
             "f1": 0.268,
             "fn": 59,
             "fp": 12,
@@ -230,7 +230,7 @@
             "precision": 0.52,
             "recall": 0.1806,
             "support_positive": 72,
-            "tn": 737,
+            "tn": 739,
             "tp": 13
           },
           "min": {
@@ -242,7 +242,7 @@
             "precision": 0.12,
             "recall": 0.6,
             "support_positive": 5,
-            "tn": 794,
+            "tn": 796,
             "tp": 3
           },
           "unanimous": {
@@ -254,7 +254,7 @@
             "precision": 0.0,
             "recall": null,
             "support_positive": 0,
-            "tn": 695,
+            "tn": 696,
             "tp": 0
           }
         },
@@ -281,43 +281,43 @@
       "strategy": {
         "by_aggregation": {
           "max": {
-            "accuracy": 0.8419,
-            "f1": 0.4518,
-            "fn": 220,
+            "accuracy": 0.8415,
+            "f1": 0.4496,
+            "fn": 222,
             "fp": 13,
-            "mcc": 0.4588,
+            "mcc": 0.4573,
             "precision": 0.8807,
-            "recall": 0.3038,
-            "support_positive": 316,
-            "tn": 1145,
+            "recall": 0.3019,
+            "support_positive": 318,
+            "tn": 1152,
             "tp": 96
           },
           "mean": {
-            "accuracy": 0.9091,
-            "f1": 0.5864,
-            "fn": 120,
+            "accuracy": 0.909,
+            "f1": 0.5846,
+            "fn": 121,
             "fp": 14,
-            "mcc": 0.581,
+            "mcc": 0.5796,
             "precision": 0.8716,
-            "recall": 0.4419,
-            "support_positive": 215,
-            "tn": 1245,
+            "recall": 0.4398,
+            "support_positive": 216,
+            "tn": 1253,
             "tp": 95
           },
           "min": {
-            "accuracy": 0.9261,
+            "accuracy": 0.9265,
             "f1": 0.0684,
             "fn": 4,
             "fp": 105,
-            "mcc": 0.1203,
+            "mcc": 0.1204,
             "precision": 0.0367,
             "recall": 0.5,
             "support_positive": 8,
-            "tn": 1361,
+            "tn": 1370,
             "tp": 4
           },
           "unanimous": {
-            "accuracy": 0.9879,
+            "accuracy": 0.988,
             "f1": 0.125,
             "fn": 1,
             "fp": 13,
@@ -325,7 +325,7 @@
             "precision": 0.0714,
             "recall": 0.5,
             "support_positive": 2,
-            "tn": 1145,
+            "tn": 1152,
             "tp": 1
           }
         },
@@ -337,14 +337,14 @@
           },
           "minor": {
             "caught": 72,
-            "recall": 0.377,
-            "support": 191
+            "recall": 0.375,
+            "support": 192
           }
         }
       }
     }
   },
-  "scored": 4519,
+  "scored": 4534,
   "thresholds": {
     "brain_method_cc": 4,
     "brain_method_loc": 35.0,
@@ -369,7 +369,7 @@
   },
   "unreached": {
     "no_entity": 8,
-    "no_file": 241,
+    "no_file": 226,
     "span_mismatch": 1,
     "syntax_errors": 1
   }
