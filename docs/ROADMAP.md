@@ -18,7 +18,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
 | Testet | ✅ 124 kalojnë | vlera të derivuara me dorë |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
-| ML (B) | 🟡 makineria gati | 4 modele, ndarje sipas depos, pret tabelën e veçorive |
+| ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
 | Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` — **rreziku më i madh tani** |
 | API | ⬜ bosh | `javasmell/api/` |
 | Frontend | ⬜ s'ekziston | |
@@ -156,14 +156,14 @@ Gjatë kësaj pune doli një defekt i dytë i klasës "një skedar rrëzon gjith
 `analyze_path` kap vetëm `OSError`, ai skedar rrëzonte analizën e çdo depoje pas tij.
 Kalimi tani është iterativ, me renditjen e ruajtur dhe të fiksuar me test.
 
-**Rezultatet e para (2026-08-26, 4519 mostra të vlerësuara):**
+**Rezultatet (4534 mostra të vlerësuara):**
 
 | Erë | Varianti | P | R | F1 | MCC | pozitivë |
 |---|---|---|---|---|---|---|
 | blob | God Class | 0.814 | 0.100 | 0.178 | 0.232 | 350 |
 | blob | + Large Class | 0.720 | 0.257 | 0.379 | 0.340 | 350 |
 | data class | strategjia | 0.757 | 0.150 | 0.251 | 0.275 | 186 |
-| long method | strategjia | 0.872 | 0.442 | 0.586 | 0.581 | 215 |
+| long method | strategjia | 0.872 | 0.440 | 0.585 | 0.580 | 216 |
 | feature envy | strategjia | 0.520 | 0.181 | 0.268 | 0.271 | 72 |
 
 Modeli është i qartë dhe i njëjtë kudo: **precizion i lartë, recall i ulët.** Kur
@@ -192,12 +192,11 @@ dyfishon recall-in (0.100 → 0.257) dhe e ngre MCC-në (0.232 → 0.340) me kos
 matur precizioni (0.814 → 0.720). Pra një pjesë e mirë e asaj që rishikuesit e
 quajnë "blob" është thjesht madhësi.
 
-**Kufizim i njohur i këtyre numrave.** Ata u prodhuan para se të rregullohej
-prerja e drejtorive: `iter_java_files` priste `target`, `build`, `out` dhe `bin` në
-çdo thellësi, edhe kur ishin paketa burimore nën një rrënjë `src`. U mat: prek 0.1%
-të skedarëve dhe 20 nga 4539 mostrat e përputhura (0.44%). Rregullimi është i
-komituar dhe i testuar; numrat rigjenerohen në ekzekutimin e ardhshëm dhe pritet të
-lëvizin në shifrën e tretë dhjetore, pa ndryshuar asnjë përfundim.
+**Parashikimi u verifikua.** Numrat e parë u prodhuan para se të rregullohej prerja
+e drejtorive, dhe atëherë u shënua se rigjenerimi pritej t'i lëvizte «në shifrën e
+tretë dhjetore, pa ndryshuar asnjë përfundim». Pas rregullimit dhe rindërtimit të
+tabelës: 4534 mostra në vend të 4519, dhe e vetmja lëvizje është `long method`
+(F1 0.586 → 0.585, MCC 0.581 → 0.580). Të tre erërat e tjera dolën identike.
 
 **Kriteri i daljes:** ✅ numra realë të Qasjes A mbi MLCQ, të riprodhueshëm me një
 komandë. Këtu fillon të mbushet Kapitulli 5.
@@ -280,15 +279,21 @@ Kjo përputhet me VD-22, ku shtimi i Large Class e dyfishoi recall-in: ajo që
 rishikuesit e MLCQ-së e quajnë "blob" shpjegohet më mirë me madhësi sesa me kushtin
 e kohezionit të strategjisë së botuar. Kjo është një gjetje, jo një dobësi e matjes.
 
-**Kufizim i njohur.** Tabela e veçorive u ndërtua pas rregullimit të prerjes së
-drejtorive; `rules_evaluation.json` i paraprin atij. Bashkimi A↔B punon mbi
-prerjen (n = 1404/820/821/1474). Rregullimi ktheu 15 nga 20 mostrat e humbura;
-5 mbeten, 4 prej tyre nën `generated-src/` (segmenti nuk është saktësisht `src`)
-dhe një nën një drejtori projekti të nivelit të parë të quajtur `build/`. Kjo është
-0.09% e rreshtave. Numrat e Qasjes A rigjenerohen kur `evaluate_rules.py` të lexojë
-tabelën e veçorive në vend që ta rimasë korpusin.
+Të dyja qasjet tani vijnë nga i njëjti bazament prej 4534 mostrash, ndaj bashkimi
+A↔B punon mbi bashkësinë e plotë (n = 1407/821/823/1483) e jo mbi një prerje.
 
-Mbetet: modeli i serializuar, dhe kalimi i `evaluate_rules.py` te tabela.
+`evaluate_rules.py --from-dataset` e rirendit detektorët mbi rreshtat e ruajtur në
+**0.7 sekonda** në vend të 95 minutave, dhe barazvlefshmëria me matjen e plotë u
+verifikua mbi 25 depo: përmbledhja identike, 269 mostra, zero verdikte që ndryshojnë.
+Kjo e bën fshirjen e pragjeve të Fazës 5 të mundur fare.
+
+**Kufizim i mbetur.** Rregullimi i prerjes ktheu 15 nga 20 mostrat e humbura; 5
+mbeten, 4 prej tyre nën `generated-src/`, ku segmenti nuk është saktësisht `src`,
+dhe një nën një drejtori projekti të nivelit të parë të quajtur `build/`. Kjo është
+0.09% e rreshtave dhe raportohet si e tillë.
+
+Faza 2 është e mbyllur: modelet e serializuara me manifest, dhe `evaluate_rules.py`
+lexon tabelën.
 
 - **Baseline i detyrueshëm**: klasifikues shumicë + regresion logjistik. Pa këtë,
   një F1 prej 0.85 nuk do të thotë asgjë; mund ta japë edhe hamendja.
