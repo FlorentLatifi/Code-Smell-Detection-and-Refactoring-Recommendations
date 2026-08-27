@@ -812,3 +812,43 @@ kishte fiksuar defektin si sjellje të pritur.
 
 **Pasojat.** I njëjti kurth vlen për çdo kod të ardhshëm mbi pemën. Motori i
 refaktorimit është i vetmi vend ku krahasohen nyje, dhe `same_node` rri aty.
+
+---
+
+### VD-32: Verifikimi bëhet në tri nivele, jo në një
+
+**Konteksti.** Karta kërkon që çdo transformim i aplikuar të verifikohet me
+`javac`. Kur u provua mbi korpus doli një pengesë e pritur por e pamatur më parë:
+**vetëm 8% e skedarëve kompilojnë të vetëm.** Pjesa tjetër importon fqinjët e vet,
+dhe pa classpath-in e projektit `javac` dështon para se të preket asgjë.
+
+Këmbëngulja te një kompilim i pastër do të linte 8% të korpusit të verifikueshëm
+dhe s'do të thoshte asgjë për pjesën tjetër.
+
+**Vendimi.** Tri kontrolle, nga më i dobëti te më i forti, secili i raportuar veç:
+
+1. **Parsohet.** tree-sitter jep nyje ERROR ose MISSING për tekst që nuk është Java.
+   Kap një rishkrim të deformuar dhe vlen për 100% të skedarëve.
+2. **Nuk shton lloj të ri gabimi.** `javac` para dhe pas, me krahasim të mesazheve
+   **të dallueshme**.
+3. **Kompilon.** Për pakicën që kompilon e vetme, pohimi më i fortë i mundshëm.
+
+**Pse lloje e jo numër.** Numërimi u provua i pari dhe doli tepër i rreptë:
+nxjerrja e një blloku, parametri i të cilit është tip i importuar, shton edhe një
+`cannot find symbol` për atë tip — thjesht sepse skedari kompilohet pa classpath.
+Rishkrimi është i saktë dhe gabimi shtesë është artefakt i izolimit. Kjo u mat mbi
+një rast konkret, nuk u hamendësua.
+
+Dobësia e krahasimit sipas llojeve është e kundërta: një gabim i futur që lexohet
+si njëri tashmë i pranishëm kalon pa u vënë re. Mes një kontrolli që humb ca prishje
+dhe një që mohon punë të saktë, i pari është këmbimi i ndershëm — dhe niveli i tretë
+ekziston pikërisht për ta mbuluar. Të dyja janë të dokumentuara me test.
+
+**Pasojat.** Ekzekutimi i parë mbi korpus e justifikoi menjëherë veten: 11 nga 125
+rishkrime u shënuan si prishëse. Njëri ishte alarm i rremë i llojit të mësipërm; të
+tjerët ishin **defekt i vërtetë** — deklarimet brenda një cikli të mëparshëm
+numëroheshin si të dukshme, ndaj një emër si `i` kalonte si parametër edhe pse
+blloku e deklaronte vetë, dhe dalja nuk kompilonte.
+
+Ai defekt nuk u kap nga 15 testet e shkruara me dorë. E kapi korpusi. Kjo është
+arsyeja pse verifikimi empirik nuk zëvendësohet dot me teste njësie, sado të mira.
