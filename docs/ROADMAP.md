@@ -338,13 +338,29 @@ dhe raportohet si i tillë.
 
 **3.2 Transformimet**
 
-| # | Transformimi | Smell | Vështirësia |
-|---|---|---|---|
-| 1 ✅ | Replace Nested Conditional with Guard Clauses | DeepNesting | e ulët |
-| 2 | Encapsulate Field | DataClass | mesatare, kërkon rishkrim referencash |
-| 3 | Introduce Parameter Object | LongParameterList | mesatare |
-| 4 | Extract Method | LongMethod, BrainMethod | e lartë, analizë hyrje/dalje |
-| 5 | Move Method | FeatureEnvy | shumë e lartë |
+Radha u rishikua pasi u ndërtua transformimi i parë: kufizimi real nuk është
+vështirësia, është **lokaliteti** (VD-30). Parser-i me qëllim nuk zgjidh simbole,
+ndaj çdo transformim që duhet të gjejë pikat e thirrjes ose referencat në projekt
+nuk i provon dot parakushtet e veta.
+
+| # | Transformimi | Smell | Çfarë duhet provuar | Gjendja |
+|---|---|---|---|---|
+| 1 ✅ | Guard Clauses | DeepNesting | një trup metode | e mbaruar |
+| 2 | Extract Method | LongMethod, BrainMethod | një trup metode | **në radhë** |
+| 3 | Introduce Parameter Object | LongParameterList | çdo pikë thirrjeje | vetëm metoda `private` |
+| 4 | Encapsulate Field | DataClass | çdo referencë ndaj fushës | vetëm propozim |
+| 5 | Move Method | FeatureEnvy | thirrjet dhe referencat | vetëm propozim |
+
+**Encapsulate Field nuk automatizohet, dhe arsyeja është gjetje më vete.** E matur
+mbi një klasë me pesë fusha publike: para saj WOC=0.167 dhe NOPA+NOAM=5, pra
+detektori **nuk ndez**; pas saj WOC=0.091 dhe NOPA+NOAM=10, pra ndez si **critical**.
+Refaktorimi që mjeti e rekomandon për Data Class e çon klasën më thellë në erë sipas
+vetë përkufizimit të strategjisë, sepse ai shndërron një fushë publike në dy
+akses-metoda publike dhe të dyja kushtet e strategjisë e numërojnë këtë si përkeqësim.
+
+Kjo nuk është defekt i yni: Fowler-i e trajton Encapsulate Field si hap përgatitor,
+dhe ilaçi i vërtetë është Move Method. Por një mjet që aplikon vetëm hapin e parë
+ecën në drejtim të gabuar, ndaj motori e propozon dhe nuk e aplikon.
 
 **Transformimi i parë është i mbaruar.** `guard_clauses.py` e rishkruan saktësisht
 formën ku i tërë trupi i një metode `void` është mbështjellë në një kusht të vetëm

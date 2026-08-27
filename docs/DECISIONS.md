@@ -715,3 +715,66 @@ efekte anësore — ajo vlerësohet saktësisht një herë në të dyja rastet.
 
 **Pasojat.** Dalja është pak më e zhurmshme se ajo që do të shkruante një njeri.
 Kjo është këmbim i pranuar: motori garanton ekuivalencë, jo elegancë.
+
+---
+
+### VD-30: Radha e transformimeve përcaktohet nga lokaliteti, jo nga vështirësia
+
+**Konteksti.** Plani i rendiste pesë transformimet sipas «rrezikut të
+korrektësisë», duke supozuar se vështirësia dhe rreziku ecin bashkë. Përgatitja e
+transformimit të dytë nxori se supozimi është i gabuar, dhe për dy arsye të
+pavarura.
+
+**Arsyeja e parë: parser-i me qëllim nuk zgjidh simbole.** Kjo e ndan bashkësinë
+në dysh, dhe jo aty ku e ndante vështirësia:
+
+| Transformimi | Çfarë duhet provuar | E provueshme? |
+|---|---|---|
+| Guard Clauses | vetëm trupi i një metode | po |
+| Extract Method | vetëm trupi i një metode | **po** |
+| Introduce Parameter Object | çdo pikë thirrjeje | vetëm për metoda `private` |
+| Encapsulate Field | çdo referencë ndaj fushës, kudo | jo |
+| Move Method | çdo pikë thirrjeje dhe çdo referencë | jo |
+
+Extract Method vlerësohej «e lartë», por e gjithë analiza e saj — variablat hyrëse,
+ato dalëse, rrjedha e kontrollit — ndodh brenda një trupi të vetëm metode, dhe pema
+e analizës e mbulon plotësisht. Encapsulate Field vlerësohej «mesatare», por kërkon
+gjetjen e çdo `x.fusha` në projekt dhe provimin se `x` është i tipit të duhur, çka
+kërkon zgjidhës simbolesh që VD-02 e përjashtoi me qëllim.
+
+**Arsyeja e dytë, dhe më e rëndësishmja: Encapsulate Field e përkeqëson Data Class
+sipas vetë përkufizimit të strategjisë.** E matur, jo e arsyetuar:
+
+| | WOC | NOPA+NOAM | WMC | DataClass |
+|---|---|---|---|---|
+| Para (5 fusha publike) | 0.167 | 5 | 1 | **nuk ndez** |
+| Pas (Encapsulate Field) | 0.091 | 10 | 11 | **ndez, critical** |
+
+Sepse WOC është pjesa e anëtarëve publikë që *bëjnë diçka*, dhe NOAM numëron
+akses-metodat. Encapsulate Field e shndërron një fushë publike në dy akses-metoda
+publike: emëruesi i WOC-ut rritet ndërsa numëruesi qëndron, dhe NOPA+NOAM rritet
+me një. Të dyja kushtet lëvizin më thellë në erë.
+
+Kjo nuk është defekt i implementimit tonë. Fowler-i e trajton Encapsulate Field si
+hap **përgatitor**; ilaçi për një Data Class është Move Method — të sillet sjellja
+brenda. Një mjet që aplikon vetëm hapin e parë e përkeqëson matjen që pretendon se
+përmirëson.
+
+**Vendimi.** Transformimi i dytë është **Extract Method**, jo Encapsulate Field.
+
+Encapsulate Field nuk automatizohet. Mbetet në `REFACTORINGS` si **propozim**, sepse
+si këshillë për një njeri është e saktë, por motori nuk e aplikon: nuk i provon dot
+parakushtet, dhe i aplikuar vetëm do të ecte në drejtim të gabuar.
+
+**Alternativat.** Ndërtimi i një zgjidhësi simbolesh: rihap VD-02, shton disa mijëra
+rreshta, dhe e zhvendos punimin nga «detektim dhe refaktorim» te «ndërtimi i një
+front-endi Java». Aplikimi i Encapsulate Field vetëm brenda skedarit: nuk provon dot
+se s'ka referenca jashtë tij, pra shkel rregullin «refuzo, mos prish».
+
+**Pasojat.** Rezultati i mësipërm hyn në Kapitullin 5 si gjetje, jo si problem i
+zbutur. Ai tregon diçka reale për strategjitë e Lanza & Marinescu-t: ato e matin
+Data Class-in nga sipërfaqja publike, ndaj janë të verbra ndaj dallimit mes një
+fushe publike dhe një çifti akses-metodash — dallim që për Fowler-in është pikërisht
+hapi i parë i ilaçit. Kjo lidhet me gjetjen te `blob`, ku ML-ja u mbështet te
+madhësia dhe jo te kohezioni: në të dyja rastet strategjia mat diçka pak më ndryshe
+nga ajo që emërton.
