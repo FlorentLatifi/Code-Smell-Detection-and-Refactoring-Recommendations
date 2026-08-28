@@ -24,6 +24,7 @@ data/models/
 # committed, so these have to be excluded by name or a crashed run leaves them
 # staged for the next commit.
 data/results/*.part
+data/results/*progress.json
 data/results/*.progress.json
 
 # OS

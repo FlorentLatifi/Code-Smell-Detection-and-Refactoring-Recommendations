@@ -39,7 +39,7 @@ from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
-from javasmell.refactor.base import Tally  # noqa: E402
+from javasmell.refactor.base import Refusal, Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import find_site  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
@@ -51,6 +51,13 @@ DEFAULT_OUT = Path("data/results")
 
 RESULT_NAME = "refactoring_evaluation.json"
 SITES_NAME = "refactoring_sites.csv"
+
+# Nje ekzekutim mbi korpusin e plote zgjat ore. Rreshtat shkojne te nje skedar i
+# pjesshem dhe e zevendesojne skedarin real vetem ne fund, dhe skedari i progresit
+# lejon rifillimin -- nje ekzekutim u vra te skedari 400 nga 4409 dhe humbi
+# gjithcka, sepse rreshtat mbaheshin ne memorie.
+PARTIAL_NAME = "refactoring_sites.csv.part"
+PROGRESS_NAME = "refactoring_progress.json"
 
 SITE_COLUMNS = [
     "file",
@@ -75,6 +82,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--limit", type=int, default=0, help="Only walk this many files")
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument(
+        "--no-resume",
+        dest="resume",
+        action="store_false",
+        help="Ignore any partial run and start over",
+    )
     parser.add_argument(
         "--no-verify",
         dest="verify",
@@ -114,21 +127,77 @@ def sites_in(source: bytes, path: str) -> list[tuple[str, str, str, str, int]]:
     return found
 
 
-def run(args: argparse.Namespace) -> tuple[Tally, list[dict[str, object]], Counter[str]]:
+def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[str]]:
+    """What an interrupted run got through, if it is still usable.
+
+    A run over the whole corpus takes hours, and one was killed at file 400 of
+    4409 with everything lost, because the rows were held in memory until the
+    end. The lesson had already been learned once for the feature table and not
+    carried over here.
+    """
+    if not resume or not path.exists():
+        return set(), Tally(), Counter()
+    stored = json.loads(path.read_text(encoding="utf-8"))
+    if stored.get("columns") != SITE_COLUMNS:
+        print("Partial run used a different schema; starting over.", file=sys.stderr)
+        return set(), Tally(), Counter()
+
+    tally = Tally(
+        detected=stored["detected"],
+        applied=stored["applied"],
+        missing=stored["missing"],
+        refused_by_reason={Refusal(k): v for k, v in stored["refused_by_reason"].items()},
+    )
+    return set(stored["files"]), tally, Counter(stored["verdicts"])
+
+
+def save_progress(path: Path, done: set[str], tally: Tally, verdicts: Counter[str]) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "columns": SITE_COLUMNS,
+                "files": sorted(done),
+                "detected": tally.detected,
+                "applied": tally.applied,
+                "missing": tally.missing,
+                "refused_by_reason": {r.value: n for r, n in tally.refused_by_reason.items()},
+                "verdicts": dict(verdicts),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
     corpus = Corpus(args.corpus)
     files = sampled_files(args.mlcq, corpus)
     if args.limit:
         files = files[: args.limit]
 
+    args.out.mkdir(parents=True, exist_ok=True)
+    partial_path = args.out / PARTIAL_NAME
+    progress_path = args.out / PROGRESS_NAME
+    done, tally, verdicts = load_progress(progress_path, args.resume)
+    if done:
+        print(f"Resuming: {len(done)} files already written", flush=True)
+
     javac = shutil.which("javac") if args.verify else None
-    tally = Tally()
-    verdicts: Counter[str] = Counter()
-    rows: list[dict[str, object]] = []
+    handle = partial_path.open("a" if done else "w", encoding="utf-8", newline="")
+    writer = csv.DictWriter(handle, fieldnames=SITE_COLUMNS)
+    if not done:
+        writer.writeheader()
 
     for number, path in enumerate(files, 1):
+        if str(path) in done:
+            continue
+        rows: list[dict[str, object]] = []
         try:
             source = Path(path).read_bytes()
         except OSError:
+            done.add(str(path))
             continue
 
         # One baseline per file, not one per site: a file holds several sites
@@ -188,10 +257,17 @@ def run(args: argparse.Namespace) -> tuple[Tally, list[dict[str, object]], Count
                 }
             )
 
+        # The file is finished: its rows go out now, not at the end of the run.
+        writer.writerows(rows)
+        handle.flush()
+        done.add(str(path))
+        save_progress(progress_path, done, tally, verdicts)
+
         if not args.quiet and number % 50 == 0:
             print(f"[{number}/{len(files)}] {tally.describe()}", flush=True)
 
-    return tally, rows, verdicts
+    handle.close()
+    return tally, verdicts, len(files)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -203,19 +279,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"corpus not found: {args.corpus}", file=sys.stderr)
         return 1
 
-    tally, rows, verdicts = run(args)
+    tally, verdicts, file_count = run(args)
 
-    args.out.mkdir(parents=True, exist_ok=True)
+    # Only now does the partial file become the committed one.
     sites_path = args.out / SITES_NAME
-    with sites_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=SITE_COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows)
+    (args.out / PARTIAL_NAME).replace(sites_path)
+    (args.out / PROGRESS_NAME).unlink(missing_ok=True)
 
-    by_refactoring: Counter[str] = Counter(
-        str(row["refactoring"]) for row in rows if row["applied"]
-    )
+    with sites_path.open(encoding="utf-8", newline="") as handle:
+        by_refactoring: Counter[str] = Counter(
+            row["refactoring"] for row in csv.DictReader(handle) if row["applied"] == "1"
+        )
+
     summary = {
+        "files": file_count,
         "detected": tally.detected,
         "applied": tally.applied,
         "refused": tally.refused,
