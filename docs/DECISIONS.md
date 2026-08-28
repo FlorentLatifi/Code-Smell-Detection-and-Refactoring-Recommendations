@@ -852,3 +852,35 @@ blloku e deklaronte vetë, dhe dalja nuk kompilonte.
 
 Ai defekt nuk u kap nga 15 testet e shkruara me dorë. E kapi korpusi. Kjo është
 arsyeja pse verifikimi empirik nuk zëvendësohet dot me teste njësie, sado të mira.
+
+---
+
+### VD-33: Çdo kalim i gjatë shkruan me rrjedhë dhe rifillon
+
+**Konteksti.** VD-26 e regjistroi këtë mësim për ndërtimin e tabelës së veçorive
+pasi një ekzekutim vdiq te depoja 130 nga 522 dhe shkatërroi artefaktin e
+komituar. Mësimi u zbatua atje dhe **nuk u bart** te vlerësimi i refaktorimeve.
+
+Pasoja erdhi menjëherë: ai ekzekutim u vra te skedari 400 nga 4409, pas afro dy
+orësh, dhe humbi gjithçka — sepse rreshtat mbaheshin në memorie deri në fund.
+Nuk kishte as skedar të pjesshëm për t'u shpëtuar.
+
+**Vendimi.** Rregulli vlen për çdo skript që zgjat më shumë se disa minuta, jo
+vetëm për atë ku u mësua:
+
+1. Rezultatet shkruhen **ndërsa prodhohen**, jo në fund.
+2. Shkrimi shkon te një skedar i pjesshëm dhe e zëvendëson daljen reale vetëm
+   pasi ekzekutimi mbaron.
+3. Një skedar progresi mban njësitë e përfunduara, që rifillimi të mos i
+   përsërisë. Ai mban edhe listën e kolonave: një skedar i pjesshëm i shkruar me
+   skemë tjetër nuk zgjatet dot, sepse rezultati do të ishte një CSV që parsohet
+   dhe gënjen.
+
+**Pasojat.** Rifillimi testohet, nuk supozohet. Për këtë skript: një ekzekutim u
+ndërpre me dorë te skedari 25, u rifillua, dhe prodhoi 192 rreshta pa kokë të
+dyfishuar dhe pa mbeturina.
+
+Shkaku i vetë vrasjeve mbetet i paidentifikuar — kod dalje 4 pa asnjë përjashtim
+Python, në të dyja rastet. Mund të jetë gjumi i makinës ose ndërhyrje e OneDrive-it.
+Rifillueshmëria e bën atë pyetje të parëndësishme, çka është arsyeja pse ajo
+zgjidhet para se të hetohet shkaku.
