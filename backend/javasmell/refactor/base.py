@@ -56,6 +56,11 @@ class Refusal(StrEnum):
     #: that produced them, and reported so it cannot pass unnoticed.
     EDIT_CONFLICT = "edit_conflict"
 
+    #: A value the block reads is declared but not yet certainly assigned where
+    #: the block sits. Java forbids passing such a variable, so the rewrite would
+    #: not compile even though it is otherwise correct.
+    NOT_DEFINITELY_ASSIGNED = "not_definitely_assigned"
+
     #: The file did not parse cleanly, so nothing about it is established.
     UNPARSEABLE = "unparseable"
 

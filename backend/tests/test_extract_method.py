@@ -395,3 +395,81 @@ def test_the_shadowed_loop_variable_case_compiles():
 
     ok, errors = compiles(apply_edits(source, outcome.edits))
     assert ok, errors
+
+
+def test_a_value_not_yet_assigned_cannot_be_passed_in():
+    """Java forbids reading a local before it is certainly assigned.
+
+    `ch` is declared without a value and read inside the block, so passing it as
+    a parameter gives `variable ch might not have been initialized`. The engine
+    emitted exactly that over the corpus before this check existed.
+    """
+    source = b"""public class T {
+    void m(int n) {
+        char ch;
+        for (int i = 0; i < n; i++) {
+            if (ch == 'x') {
+                System.out.println(i);
+            }
+        }
+    }
+}
+"""
+    outcome = transform(source)
+    assert not outcome.applied
+    assert outcome.refusal is Refusal.NOT_DEFINITELY_ASSIGNED
+    assert "ch" in outcome.detail
+
+
+def test_a_declaration_with_a_value_is_assigned():
+    source = b"""public class T {
+    void m(int n) {
+        char ch = 'a';
+        for (int i = 0; i < n; i++) {
+            if (ch == 'x') {
+                System.out.println(i);
+            }
+        }
+    }
+}
+"""
+    outcome = transform(source)
+    assert outcome.applied
+    assert "char ch" in apply_edits(source, outcome.edits).decode()
+
+
+def test_a_plain_assignment_before_the_block_counts():
+    source = b"""public class T {
+    void m(int n) {
+        char ch;
+        ch = 'a';
+        for (int i = 0; i < n; i++) {
+            if (ch == 'x') {
+                System.out.println(i);
+            }
+        }
+    }
+}
+"""
+    assert transform(source).applied
+
+
+def test_an_assignment_inside_a_conditional_does_not_count():
+    """It runs on some paths and not others, which is what Java refuses to assume."""
+    source = b"""public class T {
+    void m(int n) {
+        char ch;
+        if (n > 0) {
+            ch = 'a';
+        }
+        for (int i = 0; i < n; i++) {
+            if (ch == 'x') {
+                System.out.println(i);
+            }
+        }
+    }
+}
+"""
+    outcome = transform(source)
+    assert not outcome.applied
+    assert outcome.refusal is Refusal.NOT_DEFINITELY_ASSIGNED

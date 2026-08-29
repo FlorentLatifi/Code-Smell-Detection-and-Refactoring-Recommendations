@@ -186,6 +186,14 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
     if len(outputs) > 1:
         return f"{len(outputs)} values flow out: {', '.join(outputs)}"
 
+    # Java's definite-assignment rules: a local read before it is certainly
+    # assigned is a compile error, and that includes reading it as a parameter.
+    # A variable only written inside the block is an output and needs no value
+    # going in, so only the inputs are checked.
+    unassigned = sorted(set(inputs) - _definitely_assigned(method, before, source))
+    if unassigned:
+        return "unassigned:" + ", ".join(unassigned)
+
     types = {name: outer.types[name] for name in [*inputs, *outputs]}
     return Plan(
         statement=statement,
@@ -193,6 +201,41 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
         output=outputs[0] if outputs else None,
         types=types,
     )
+
+
+def _definitely_assigned(method: Node, before: list[Node], source: bytes) -> set[str]:
+    """Locals that certainly hold a value by the time the block is reached.
+
+    Deliberately conservative. A parameter always has one, and a declaration
+    with an initialiser gives one; an assignment counts only when it sits at the
+    top level of the body, because one inside an `if` runs on some paths and not
+    others, which is exactly what Java refuses to assume.
+
+    Getting this wrong is not a near miss: the engine emitted a rewrite that
+    javac rejected with `variable ch might not have been initialized`, found by
+    running over the corpus.
+    """
+    assigned: set[str] = set()
+    parameters = method.child_by_field_name("parameters")
+    if parameters is not None:
+        assigned |= set(declarations_in(parameters, source).types)
+
+    for node in before:
+        if node.type == "local_variable_declaration":
+            for child in node.named_children:
+                if child.type == "variable_declarator" and (
+                    child.child_by_field_name("value") is not None
+                ):
+                    named = child.child_by_field_name("name")
+                    if named is not None:
+                        assigned.add(text_of(named, source))
+        elif node.type == "expression_statement":
+            for child in node.named_children:
+                if child.type == "assignment_expression":
+                    left = child.child_by_field_name("left")
+                    if left is not None and left.type == "identifier":
+                        assigned.add(text_of(left, source))
+    return assigned
 
 
 def _render(
@@ -263,6 +306,9 @@ def apply(site: Site) -> Outcome:
 
     planned = _plan(method, statement, source)
     if isinstance(planned, str):
+        if planned.startswith("unassigned:"):
+            names = planned.removeprefix("unassigned:").strip()
+            return decline(Refusal.NOT_DEFINITELY_ASSIGNED, f"{names} may not be assigned yet")
         return decline(Refusal.MULTIPLE_OUTPUTS, planned)
 
     missing = [n for n in (*planned.inputs, planned.output) if n and n not in planned.types]
