@@ -504,6 +504,7 @@ def chapter_5() -> list:
     rules = _load("rules_evaluation.json")
     ml = _load("ml_evaluation.json")
     dataset = _load("mlcq_dataset.json")
+    sweep = _load("threshold_sweep.json")
 
     smells = sorted(ml["per_smell"])
     scored = dataset["rows"]
@@ -568,6 +569,22 @@ def chapter_5() -> list:
                     f"{minor['caught']}/{minor['support']} ({minor['caught'] / minor['support']:.1%})",
                 ]
             )
+
+    sweep_rows = []
+    for smell in smells:
+        for name, points in sweep["per_smell"].get(smell, {}).items():
+            values = [p["mcc"] for p in points if p["mcc"] is not None]
+            published = next(p["mcc"] for p in points if p["factor"] == 1.00)
+            sweep_rows.append(
+                [
+                    SMELL_SQ[smell],
+                    name,
+                    f"{published:.3f}",
+                    f"{min(values):.3f} – {max(values):.3f}",
+                    f"{max(values) - min(values):.3f}",
+                ]
+            )
+    sweep_rows.sort(key=lambda r: -float(r[4]))
 
     best_mcc = max(ml["per_smell"][s]["models"][ml["per_smell"][s]["best_model"]]["mcc"] for s in smells)
 
@@ -660,6 +677,41 @@ def chapter_5() -> list:
                 "defekte të vërteta në motor. Ato u rregulluan dhe u mbuluan me teste "
                 "regresioni; asnjëri prej tyre nuk ishte kapur nga testet e shkruara "
                 "me dorë.",
+            ],
+        ),
+        (
+            "5.5",
+            "Ndjeshmëria ndaj pragjeve",
+            [
+                "Pragjet e përdorura janë ato të botuara, të nxjerra statistikisht nga "
+                "një korpus tjetër. Pyetja e natyrshme është sa varet rezultati prej "
+                "tyre. Secili prag u zhvendos veç, mes gjysmës dhe dyfishit të vlerës "
+                "së vet, me të tjerët të mbajtur fiks.",
+                ("table", "Tabela 5. Sa lëviz MCC-ja kur zhvendoset një prag",
+                 ["Erë", "Pragu", "Te vlera e botuar", "Brezi", "Amplituda"], sweep_rows),
+                ("figure", str(FIGURES / "figura_6_ndjeshmeria_e_pragjeve.png"),
+                 "Figura 6. Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve"),
+                "Ndarja është e qartë. Për Blob dhe Data Class rezultati mezi lëviz, "
+                "pra shifrat e raportuara për to flasin për kodin. Për Long Method dhe "
+                "Feature Envy amplituda është e madhe, dhe kjo do të thotë se shifra e "
+                "raportuar flet po aq për pragun sa për kodin — vërejtje që duhet mbajtur "
+                "parasysh sa herë krahasohen mjete të ndryshme detektimi.",
+                "Te Long Method pragu i botuar rezulton konservativ për këtë korpus: "
+                "ulja e tij e rrit ndjeshëm recall-in me kosto të vogël precizioni, "
+                "çka sugjeron se rishikuesit e MLCQ-së e quajnë një metodë të gjatë më "
+                "herët se sa e vendos pragu.",
+                "Te Feature Envy vërehet diçka më e veçantë. Klauzola që kërkon që "
+                "numri i klasave-burim të jetë i vogël, kur relaksohet, i përmirëson "
+                "njëkohësisht edhe precizionin edhe recall-in. Një kufizim që heq "
+                "pozitivë të vërtetë pa hequr të rremë nuk po e ndan sinjalin nga "
+                "zhurma; pra ajo klauzolë, të paktën mbi këtë korpus, nuk e bën punën "
+                "për të cilën është vendosur.",
+                "Këto vlera nuk adoptohen. Zgjedhja e një pragu sepse jep shifrën më të "
+                "mirë mbi bashkësinë e vlerësimit është përshtatje ndaj të dhënave të "
+                "testimit, dhe numri që do të raportohej pas saj do të matte sa mirë u "
+                "zgjodh pragu, jo sa mirë funksionon detektimi. Kalibrimi do të kërkonte "
+                "një bashkësi të ndarë dhe një bashkësi tjetër të paprekur për vlerësim; "
+                "kjo mbetet punë e ardhshme.",
             ],
         ),
     ]

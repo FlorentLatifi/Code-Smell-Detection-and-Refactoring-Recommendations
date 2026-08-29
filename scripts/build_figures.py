@@ -197,10 +197,38 @@ def figure_dataset_balance(dataset: dict) -> None:
     save(fig, 5, "shperndarja_e_mostrave")
 
 
+def figure_threshold_sweep(sweep: dict) -> None:
+    """Figura 6: sa levize MCC-ja kur nje prag zhvendoset rreth vleres se botuar."""
+    interesting = [
+        ("long method", "long_method_loc", "Long Method: LOC"),
+        ("feature envy", "feature_envy_fdp", "Feature Envy: FDP"),
+        ("blob", "god_class_wmc", "Blob: WMC"),
+        ("data class", "data_class_woc", "Data Class: WOC"),
+    ]
+    fig, ax = plt.subplots(figsize=(6.2, 3.6))
+    styles = ["-o", "-s", "--^", "--v"]
+    for (smell, name, label), style in zip(interesting, styles, strict=True):
+        points = sweep["per_smell"][smell][name]
+        ax.plot(
+            [p["factor"] for p in points],
+            [p["mcc"] for p in points],
+            style,
+            label=label,
+            color=ACCENT if style.startswith("-") and "-" not in style[1:] else MUTED,
+            markersize=4,
+        )
+    ax.axvline(1.0, color=LIGHT, linewidth=1, zorder=0)
+    ax.set_xlabel("Faktori i zbatuar mbi vlerën e botuar")
+    ax.set_ylabel("MCC")
+    ax.legend(frameon=False, fontsize=9)
+    save(fig, 6, "ndjeshmeria_e_pragjeve")
+
+
 def main() -> int:
     rules = load("rules_evaluation.json")
     ml = load("ml_evaluation.json")
     dataset = load("mlcq_dataset.json")
+    sweep = load("threshold_sweep.json")
 
     print("Figurat:")
     figure_rules_vs_ml(rules, ml)
@@ -208,6 +236,7 @@ def main() -> int:
     figure_agreement(ml)
     figure_feature_importance(ml)
     figure_dataset_balance(dataset)
+    figure_threshold_sweep(sweep)
     return 0
 
 

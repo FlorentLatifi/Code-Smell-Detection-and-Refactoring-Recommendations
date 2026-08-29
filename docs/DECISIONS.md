@@ -884,3 +884,40 @@ Shkaku i vetë vrasjeve mbetet i paidentifikuar — kod dalje 4 pa asnjë përja
 Python, në të dyja rastet. Mund të jetë gjumi i makinës ose ndërhyrje e OneDrive-it.
 Rifillueshmëria e bën atë pyetje të parëndësishme, çka është arsyeja pse ajo
 zgjidhet para se të hetohet shkaku.
+
+---
+
+### VD-34: Fshirja e pragjeve mat qëndrueshmërinë, nuk zgjedh pragje
+
+**Konteksti.** Fshirja tregoi se dy pragje janë shumë të ndjeshme. Ulja e pragut
+të Long Method-it nga 30 në 15 e ngre MCC-në nga 0.580 në 0.690, dhe relaksimi i
+klauzolës `FDP ≤ 5` te Feature Envy e ngre nga 0.271 në 0.411 — duke rritur
+njëkohësisht edhe precizionin edhe recall-in.
+
+Tundimi i qartë është t'i adoptohen këto vlera dhe të raportohen numra më të mirë.
+
+**Vendimi.** Nuk adoptohen. Pragjet mbeten ato të botuara, dhe fshirja raportohet
+si **analizë ndjeshmërie**, jo si kalibrim.
+
+Arsyeja është e njëjta që e bën ndarjen e grupuar të domosdoshme. Zgjedhja e një
+pragu sepse ai jep shifrën më të mirë mbi bashkësinë e vlerësimit është përshtatje
+ndaj të dhënave të testimit. Numri që do të raportohej më pas nuk do të ishte më
+matje e performancës, por matje e sa mirë u zgjodh ai prag mbi po ato të dhëna —
+pikërisht defekti që Di Nucci et al. (2018) e identifikuan te literatura e
+mëparshme, dhe që ky punim e shmang me qëllim.
+
+Një prag i ri do të kërkonte kalibrim mbi një bashkësi të ndarë dhe vlerësim mbi
+një bashkësi tjetër, të paprekur. Korpusi aktual nuk është ndarë kështu, ndaj
+pretendimi nuk bëhet.
+
+**Çfarë raportohet.** Se rezultati për dy erëra varet fort nga pragu dhe për dy të
+tjera thuajse aspak. Kjo është e vërtetë e dobishme dhe e mbrojtshme: ajo i thotë
+lexuesit sa peshë t'i japë secilës shifër.
+
+Dhe ka edhe një gjetje përmbajtësore. Te Feature Envy, relaksimi i `FDP ≤ FEW`
+i përmirëson të dyja anët njëherësh. Kur një kufizim heq pozitivë të vërtetë pa
+hequr të rremë, ai nuk po ndan zhurmën nga sinjali — pra ajo klauzolë, të paktën
+mbi këtë korpus, nuk e bën punën për të cilën është vendosur.
+
+**Pasojat.** Kapitulli 5 e paraqet fshirjen si matje qëndrueshmërie. Adoptimi i
+pragjeve të reja regjistrohet te puna e ardhshme, me kushtin e ndarjes së korpusit.

@@ -432,6 +432,7 @@ FIGURE_LIST = [
     "Figura 3. Mostrat e shënuara nga secila qasje",
     "Figura 4. Veçoritë me rëndësi më të lartë, të matura me permutation importance",
     "Figura 5. Shpërndarja e mostrave sipas erës",
+    "Figura 6. Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve",
 ]
 
 TABLE_LIST = [
@@ -439,6 +440,7 @@ TABLE_LIST = [
     "Tabela 2. Recall-i sipas ashpërsisë",
     "Tabela 3. Modeli më i mirë për çdo erë",
     "Tabela 4. Pajtimi mes dy qasjeve",
+    "Tabela 5. Sa lëviz MCC-ja kur zhvendoset një prag",
 ]
 
 GLOSSARY = [

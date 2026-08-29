@@ -34,12 +34,12 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
-from javasmell.detectors.rules import detect_all, detect_entity  # noqa: E402
+from javasmell.detectors.rules import detect_all  # noqa: E402
 from javasmell.detectors.thresholds import DEFAULT, Thresholds  # noqa: E402
 from javasmell.evaluation.corpus import Corpus  # noqa: E402
-from javasmell.evaluation.dataset import entities  # noqa: E402
 from javasmell.evaluation.mlcq import Aggregation, Sample, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
+from javasmell.evaluation.replay import replay  # noqa: E402
 from javasmell.evaluation.scoring import (  # noqa: E402
     PRIMARY_VARIANT,
     VARIANTS,
@@ -141,36 +141,17 @@ def evaluate(
     return predictions, dict(unreached)
 
 
-def replay(
+def replay_from_table(
     dataset_path: Path, samples: list[Sample], thresholds: Thresholds
 ) -> tuple[list[Prediction], dict[str, int]]:
     """Score from the stored feature table rather than from the corpus.
 
-    Every field the detectors read is a column (VD-23), so this reaches the same
-    verdicts as a full run -- `test_dataset` pins that equivalence -- in seconds
-    instead of 95 minutes. That is what makes the threshold sweep of the Results
-    chapter feasible at all: it varies only the thresholds, which play no part
-    in the measuring.
-
-    The rows carry measurements, not labels, so the samples are re-read from
-    MLCQ. That file is small and parsing it costs nothing worth caching.
+    The replay itself lives in the package so the sweep can share it; what stays
+    here is the denominator, which belongs to the run that built the table and
+    not to this one.
     """
-    by_id = {sample.sample_id: sample for sample in samples}
-    predictions: list[Prediction] = []
-    with dataset_path.open(encoding="utf-8", newline="") as handle:
-        for record in csv.DictReader(handle):
-            sample = by_id.get(record["sample_id"])
-            if sample is None:
-                continue
-            cls, method = entities(record)
-            found = {s.smell_type for s in detect_entity(cls, method, thresholds)}
-            fired = {
-                name: not found.isdisjoint(detectors)
-                for name, detectors in VARIANTS[sample.smell].items()
-            }
-            predictions.append(Prediction(sample=sample, fired=fired))
+    predictions = replay(dataset_path, samples, thresholds)
 
-    # The denominator belongs to the run that built the table, not to this one.
     summary = dataset_path.with_suffix(".json")
     unreached: dict[str, int] = {}
     if summary.exists():
@@ -252,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.from_dataset.exists():
             print(f"feature table not found: {args.from_dataset}", file=sys.stderr)
             return 1
-        predictions, unreached = replay(args.from_dataset, samples, DEFAULT)
+        predictions, unreached = replay_from_table(args.from_dataset, samples, DEFAULT)
     else:
         predictions, unreached = evaluate(
             Corpus(args.corpus), samples, DEFAULT, args.limit, args.quiet
