@@ -39,6 +39,7 @@ from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
+from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 from javasmell.refactor.base import Refusal, Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import find_site  # noqa: E402
@@ -204,6 +205,9 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
         # and its unrewritten state is the same for all of them.
         baseline: set[str] | None = None
         computed = False
+        # Parsed once and shared with every site in this file; the tree does not
+        # change between them and a large generated file holds hundreds.
+        tree = JavaParser().parse_tree(source)
 
         for class_name, method, smell_type, refactoring, line in sites_in(source, str(path)):
             automated = for_smell(smell_type)
@@ -211,7 +215,7 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
                 continue
             _, transform = automated
 
-            site = find_site(str(path), source, class_name, line, method)
+            site = find_site(str(path), source, class_name, line, method, tree)
             if site is None:
                 # The detector and the fresh parse disagree about where the
                 # method starts. Counted, never guessed at.

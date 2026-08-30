@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tree_sitter import Node
+from tree_sitter import Node, Tree
 
 from javasmell.parsing.java_parser import JavaParser
 
@@ -77,13 +77,19 @@ def find_site(
     type_name: str,
     start_line: int,
     member_name: str | None = None,
+    tree: Tree | None = None,
 ) -> Site | None:
     """Locate one class, or one method within it. ``None`` when it is not there.
 
     ``start_line`` is 1-based, as every line number in this project is, while
     tree-sitter counts points from zero.
+
+    ``tree`` may be supplied when the caller has already parsed this exact
+    source. One generated file in the corpus is 3.3 MB and holds 885 sites the
+    engine wants to look at; parsing it once per site cost eight minutes on that
+    file alone, for a tree that never changes between them.
     """
-    tree = JavaParser().parse_tree(source)
+    tree = tree if tree is not None else JavaParser().parse_tree(source)
     wanted_row = start_line - 1
 
     types = iter_types(tree.root_node)
