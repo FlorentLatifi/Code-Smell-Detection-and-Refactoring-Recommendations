@@ -20,8 +20,8 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
 | Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` — **rreziku më i madh tani** |
-| API | ⬜ bosh | `javasmell/api/` |
-| Frontend | ⬜ s'ekziston | |
+| API | ✅ e plotë | FastAPI, tri endpoint-e, pa gjendje |
+| Frontend | ✅ e plotë | React + TypeScript + Vite |
 | Punimi | 🟡 skeleti + Kapitulli 1 | `docs/thesis/build_thesis.py` |
 
 Afati: ~12 javë deri te dorëzimi (~nëntor 2026).
@@ -443,7 +443,18 @@ në `ENGINEERING.md` §6.
 
 Çdo pamje me katër gjendje: loading, sukses, bosh, gabim. Pa "happy path" të vetëm.
 
-**Kriteri i daljes:** rrjedhë e plotë nga zgjedhja e projektit te diff-i i propozuar.
+**Gjendja:** ✅ e përfunduar. Rrjedha u verifikua në shfletues nga fundi në fund:
+analiza e fixtures jep shtatë erëra, detaji tregon kushtin që ndezi
+(`MAXNESTING = 6 (> 3)`), dhe pamja paraprake jep diff-in me +20/−15 pa e prekur
+skedarin.
+
+Dy devijime nga skica, të dyja të regjistruara. API-ja është **pa gjendje**: nuk ka
+identifikues projekti dhe nuk ka cache, sepse ato do të shtonin skadim, vjetërim
+dhe identitet në një mjet njëpërdoruesh mbi localhost (VD-35). Dhe një **refuzim i
+motorit kthehet si 200** me arsyen, jo si gabim, sepse refuzimi është rezultat i
+saktë dhe jo kërkesë e pavlefshme (VD-36).
+
+**Kriteri i daljes:** ✅ rrjedhë e plotë nga zgjedhja e projektit te diff-i i propozuar.
 
 ---
 

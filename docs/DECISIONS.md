@@ -921,3 +921,54 @@ mbi këtë korpus, nuk e bën punën për të cilën është vendosur.
 
 **Pasojat.** Kapitulli 5 e paraqet fshirjen si matje qëndrueshmërie. Adoptimi i
 pragjeve të reja regjistrohet te puna e ardhshme, me kushtin e ndarjes së korpusit.
+
+---
+
+### VD-35: API-ja është pa gjendje, pa identifikues projekti
+
+**Konteksti.** Plani parashikonte `POST /analyze` që kthen një identifikues, dhe
+pastaj `GET /projects/{id}/smells` e `GET /projects/{id}/metrics`. Ai dizajn
+nënkupton një cache në server: rezultatet e një analize ruhen dhe merren më pas
+me atë identifikues.
+
+**Vendimi.** Nuk ndërtohet. `/analyze` kthen gjithçka që gjeti në një përgjigje
+të vetme, `/metrics` bën të njëjtën gjë për matjet, dhe `/refactor/preview` lexon
+saktësisht një skedar.
+
+Një cache shton tri gjëra që duhen menduar: kur skadon një hyrje, çfarë ndodh kur
+skedari ndryshon nën të, dhe si i jepet identitet një analize. Të treja janë
+probleme reale, dhe asnjëra prej tyre nuk ka nevojë të zgjidhet për një mjet
+njëpërdoruesh që lidhet me localhost. Përgjigjja e `/analyze` mbi një projekt
+tipik është nën një megabajt, dhe preview-ja e një refaktorimi lexon një skedar,
+çka kushton milisekonda.
+
+**Alternativat.** Cache në memorie me çelës nga shtegu dhe koha e modifikimit: e
+saktë, por i shton kodit tri shqetësime për një përfitim që nuk u mat kurrë.
+Ruajtje në disk: e njëjta gjë plus vjetërim ndërmjet ekzekutimeve.
+
+**Pasojat.** Nëse frontend-i tregon se faqimi ka rëndësi për një projekt të madh,
+cache-i shtohet pas të njëjtave rrugë pa i ndryshuar ato. Vendimi është i
+kthyeshëm, dhe kjo është arsyeja pse merret tani në formën më të thjeshtë.
+
+---
+
+### VD-36: Një refuzim i motorit kthehet si sukses, jo si gabim
+
+**Konteksti.** `POST /refactor/preview` mund të përfundojë në tri mënyra: motori e
+rishkruan bllokun, motori refuzon me arsye, ose kërkesa vetë është e gabuar.
+
+**Vendimi.** Vetëm e treta është gabim HTTP. Kur motori refuzon, përgjigjja është
+200 me `applied: false` dhe arsyen e numërueshme.
+
+Refuzimi është rezultat i saktë (VD-11, VD-28) dhe pjesë e pretendimit të punimit;
+kthimi i tij si 4xx do ta ngatërronte «motori nuk e provon dot këtë» me «kërkesa
+jote ishte e pavlefshme», dhe ndërfaqja do të duhej ta merrte me mend dallimin nga
+teksti i mesazhit.
+
+**Përjashtim.** Një erë që motori as nuk e provon — Data Class, Move Method —
+kthen 422 me kodin `advisory_only`. Ky nuk është refuzim i një transformimi; është
+kërkesë për një transformim që nuk ekziston, dhe dallimi ka rëndësi për thirrësin.
+
+**Pasojat.** Ndërfaqja e shfaq refuzimin me arsyen bashkë me të, jo si dështim.
+Kjo është ajo që përdoruesi ka nevojë të dijë: pse kodi i tij nuk mund të
+rishkruhet automatikisht.
