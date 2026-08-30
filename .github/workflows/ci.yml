@@ -63,3 +63,26 @@ jobs:
           distribution: temurin
           java-version: "21"
       - run: javac -version
+
+  # The interface is typed, so a broken contract with the API surfaces here
+  # rather than in a browser. Kept separate from the Python job for the same
+  # reason the toolchain job is: a failure should name its own cause.
+  frontend:
+    name: Frontend (types, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Type check
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Build
+        working-directory: frontend
+        run: npm run build
