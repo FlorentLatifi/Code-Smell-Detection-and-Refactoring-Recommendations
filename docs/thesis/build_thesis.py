@@ -416,9 +416,23 @@ ABSTRACT = [
     "mëdha, ndërsa mjetet ekzistuese të analizës statike mbështeten kryesisht në "
     "pragje fikse mbi metrika të veçuara, çka prodhon numër të konsiderueshëm "
     "alarmesh të rreme dhe ndalet te identifikimi i problemit pa propozuar zgjidhje.",
-    f"{TODO}: Ky paragraf përshkruan çka u ndërtua dhe si u vlerësua. Shkruhet "
-    "pasi të përfundojnë eksperimentet, sepse duhet të përmbajë rezultate konkrete.",
-    f"{TODO}: Ky paragraf përmbledh gjetjet kryesore dhe përfundimin.",
+    "Ky punim ndërton një sistem që i zbulon code smells në dy mënyra të pavarura "
+    "dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
+    "e publikuara të detektimit mbi njëzet e gjashtë metrika; e dyta trajnon "
+    "klasifikues mbi po ato metrika. Të dyja vlerësohen mbi 4 534 mostra nga 522 "
+    "depo Java, të etiketuara nga zhvillues profesionistë, me ndarje të grupuar "
+    "sipas depos dhe me të njëjtin kod pikëzimi. Sistemi përfshin edhe një motor "
+    "refaktorimi që rishkruan kod vetëm kur i provon parakushtet e veta nga pema "
+    "sintaksore, dhe një ndërfaqe web mbi të tria.",
+    "Strategjitë e publikuara dolën të sakta por të kursyera: precizion 0.52 deri "
+    "0.87 me recall 0.10 deri 0.44. Të ndara sipas ashpërsisë, ato degradojnë me "
+    "hijeshi, duke i kapur rastet e rënda shumë më mirë se ato të lehtat. "
+    "Klasifikuesit i tejkaluan qartë, me MCC nga 0.488 te 0.713 kundrejt 0.232 deri "
+    "0.580, dhe i rizbuluan pjesërisht metrikat që përdorin vetë strategjitë. "
+    "Motori i refaktorimit transformoi një pjesë të matur të rasteve të detektuara, "
+    "ku shumica e refuzimeve vjen nga forma e kodit dhe nga rrjedha e kontrollit. "
+    "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
+    "riprodhueshëm nga korpusi te rezultati.",
 ]
 
 ACKNOWLEDGEMENTS = (
