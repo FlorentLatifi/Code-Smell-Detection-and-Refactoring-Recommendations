@@ -1,29 +1,28 @@
 {
-  "applied": 3495,
+  "applied": 3478,
   "applied_by_refactoring": {
-    "ExtractMethod": 3384,
+    "ExtractMethod": 3367,
     "ReplaceNestedConditionalWithGuardClauses": 111
   },
   "detected": 15991,
   "environment": {
-    "commit": "efe9bede8612f1b7c7455103c42baa2fe040d17b",
+    "commit": "b3ae5a84eb60f0c98b89884873137dfb291d3baf",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "files": 4409,
-  "refused": 12479,
+  "refused": 12496,
   "refused_by_reason": {
     "control_flow_escapes": 4185,
     "multiple_outputs": 368,
     "not_definitely_assigned": 628,
-    "shape_not_matched": 7298
+    "shape_not_matched": 7315
   },
   "unlocatable": 17,
   "verdicts": {
-    "compiles": 11,
-    "new_errors": 60,
-    "no_new_errors": 3421,
-    "parses": 3
+    "compiles": 13,
+    "new_errors": 56,
+    "no_new_errors": 3409
   },
   "verified_with_javac": true
 }

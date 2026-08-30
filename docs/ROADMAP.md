@@ -402,7 +402,31 @@ gabuar.
 Për **Move Method**, vendim i planifikuar: ndoshta vetëm propozim me klasën e
 synuar, pa aplikim automatik. Vendoset kur të arrijmë aty, dhe regjistrohet.
 
-**3.3 Verifikimi** 🟡 në ekzekutim
+**3.3 Verifikimi** ✅ e përfunduar
+
+**Rezultati mbi 4 409 skedarë:** 15 991 vende të detektuara, **3 478 të
+transformuara (21.7%)**. Nga to, 3 409 nuk shtuan asnjë lloj të ri gabimi dhe 13
+kompiluan plotësisht; 56 shënuan gabim të ri, dhe 55 prej tyre janë `package X
+does not exist` — artefakt i kompilimit pa classpath, jo prishje e vërtetë.
+
+| Arsyeja e refuzimit | Numri | Pjesa |
+|---|---|---|
+| forma e kodit nuk përputhet | 7 315 | 45.7% |
+| rrjedha e kontrollit del nga blloku | 4 185 | 26.2% |
+| vlerë hyrëse e pacaktuar ende | 628 | 3.9% |
+| më shumë se një vlerë dalëse | 368 | 2.3% |
+
+Verifikimi gjeti **tri defekte të vërteta** në motor, asnjëri prej të cilëve nuk u
+kap nga njëzet e katër testet e shkruara me dorë: deklarimet brenda një cikli të
+mëparshëm numëroheshin si të dukshme, kllapat e stilit C pas emrit nuk hynin në
+tip, dhe klauzola `throws` nuk bartej. Të treja prodhonin kod që nuk kompilon.
+
+**Kriteri i daljes:** ✅ tabela N/M/K mbi një korpus të deklaruar, plus shpërndarja
+e arsyeve të refuzimit.
+
+---
+
+### Shënim mbi verifikimin
 
 U mat një pengesë që plani nuk e kishte parashikuar: **vetëm 8% e skedarëve të
 korpusit kompilojnë të vetëm.** Pjesa tjetër importon fqinjët e vet, dhe pa
