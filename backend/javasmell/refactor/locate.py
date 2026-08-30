@@ -71,6 +71,52 @@ def iter_types(root: Node) -> list[Node]:
     return found
 
 
+class FileIndex:
+    """Every type in one file, walked once.
+
+    The walk is the expensive part: a generated parser in the corpus is 3.3 MB
+    and holds 885 sites the engine looks at, and walking the whole tree per site
+    cost six minutes on that file alone. The tree does not change between sites,
+    so neither does this.
+    """
+
+    def __init__(self, file_path: str, source: bytes, tree: Tree | None = None) -> None:
+        self.file_path = file_path
+        self.source = source
+        self._types = iter_types((tree or JavaParser().parse_tree(source)).root_node)
+        self._by_name: dict[str, list[Node]] = {}
+        for node in self._types:
+            self._by_name.setdefault(named_child_text(node, source), []).append(node)
+
+    def find(self, type_name: str, start_line: int, member_name: str | None = None) -> Site | None:
+        """Locate one class, or one method within it. ``None`` when it is not there.
+
+        ``start_line`` is 1-based, as every line number in this project is, while
+        tree-sitter counts points from zero.
+        """
+        wanted_row = start_line - 1
+        candidates = self._by_name.get(type_name, [])
+
+        if member_name is None:
+            for node in candidates:
+                if node.start_point[0] == wanted_row:
+                    return Site(self.file_path, self.source, node, node)
+            return None
+
+        for enclosing in candidates:
+            body = enclosing.child_by_field_name("body")
+            if body is None:
+                continue
+            for member in body.named_children:
+                if (
+                    member.type in CALLABLE_NODES
+                    and member.start_point[0] == wanted_row
+                    and named_child_text(member, self.source) == member_name
+                ):
+                    return Site(self.file_path, self.source, member, enclosing)
+        return None
+
+
 def find_site(
     file_path: str,
     source: bytes,
@@ -79,37 +125,9 @@ def find_site(
     member_name: str | None = None,
     tree: Tree | None = None,
 ) -> Site | None:
-    """Locate one class, or one method within it. ``None`` when it is not there.
+    """Locate one entity. Convenience wrapper for a caller with a single lookup.
 
-    ``start_line`` is 1-based, as every line number in this project is, while
-    tree-sitter counts points from zero.
-
-    ``tree`` may be supplied when the caller has already parsed this exact
-    source. One generated file in the corpus is 3.3 MB and holds 885 sites the
-    engine wants to look at; parsing it once per site cost eight minutes on that
-    file alone, for a tree that never changes between them.
+    A caller with several lookups in one file should build a :class:`FileIndex`
+    instead: this rebuilds it every call, which is the whole cost.
     """
-    tree = tree if tree is not None else JavaParser().parse_tree(source)
-    wanted_row = start_line - 1
-
-    types = iter_types(tree.root_node)
-    if member_name is None:
-        for node in types:
-            if node.start_point[0] == wanted_row and named_child_text(node, source) == type_name:
-                return Site(file_path, source, node, node)
-        return None
-
-    for enclosing in types:
-        if named_child_text(enclosing, source) != type_name:
-            continue
-        body = enclosing.child_by_field_name("body")
-        if body is None:
-            continue
-        for member in body.named_children:
-            if (
-                member.type in CALLABLE_NODES
-                and member.start_point[0] == wanted_row
-                and named_child_text(member, source) == member_name
-            ):
-                return Site(file_path, source, member, enclosing)
-    return None
+    return FileIndex(file_path, source, tree).find(type_name, start_line, member_name)
