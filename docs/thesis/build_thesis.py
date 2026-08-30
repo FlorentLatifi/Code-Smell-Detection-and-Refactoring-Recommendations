@@ -441,6 +441,9 @@ TABLE_LIST = [
     "Tabela 3. Modeli më i mirë për çdo erë",
     "Tabela 4. Pajtimi mes dy qasjeve",
     "Tabela 5. Sa lëviz MCC-ja kur zhvendoset një prag",
+    "Tabela 6. Rezultati i motorit të refaktorimit",
+    "Tabela 7. Pse u refuzuan",
+    "Tabela 8. Verifikimi i atyre që u aplikuan",
 ]
 
 GLOSSARY = [

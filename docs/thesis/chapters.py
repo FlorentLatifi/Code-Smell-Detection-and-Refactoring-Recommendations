@@ -34,6 +34,17 @@ def _load(name: str) -> dict:
     return json.loads((RESULTS / name).read_text(encoding="utf-8"))
 
 
+def _load_if_present(name: str) -> dict | None:
+    """A result that may not exist yet.
+
+    The refactoring evaluation takes hours, so the chapter has to build while it
+    is still running. When the file is missing the section says so plainly rather
+    than quoting the partial run as if it were finished.
+    """
+    path = RESULTS / name
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
 # ======================================================================
 # Kapitulli 2
 # ======================================================================
@@ -667,16 +678,17 @@ def chapter_5() -> list:
                 "Rezultatet e motorit të refaktorimit raportohen si numri i vendeve të "
                 "detektuara, sa prej tyre u transformuan, dhe shpërndarja e arsyeve të "
                 "refuzimit. Refuzimi është rezultat i saktë dhe numërohet si i tillë.",
-                "[PLOTËSO: tabela përfundimtare pritet nga ekzekutimi mbi korpusin e "
-                "plotë; ekzekutimi i pjesshëm mbi 150 skedarë dha 477 vende të "
-                "detektuara dhe 127 të transformuara, me refuzimet e ndara në formë "
-                "kodi (218), rrjedhë kontrolli që del nga blloku (112) dhe më shumë se "
-                "një vlerë dalëse (20).]",
-                "Verifikimi tregoi vlerën e vet menjëherë: ekzekutimi i parë shënoi "
-                "njëmbëdhjetë rishkrime si prishëse, prej të cilave dhjetë ishin "
-                "defekte të vërteta në motor. Ato u rregulluan dhe u mbuluan me teste "
-                "regresioni; asnjëri prej tyre nuk ishte kapur nga testet e shkruara "
-                "me dorë.",
+                *_refactoring_section(),
+                "Verifikimi tregoi vlerën e vet menjëherë. Mbi ekzekutimet e para u "
+                "shënuan si prishëse dhjetëra rishkrime, dhe hetimi i tyre nxori tri "
+                "defekte të vërteta në motor: deklarimet brenda një cikli të mëparshëm "
+                "numëroheshin si të dukshme, kllapat e stilit C pas emrit nuk hynin në "
+                "tip, dhe një variabël e pacaktuar kalohej si parametër. Të treja "
+                "prodhonin kod që nuk kompilon.",
+                "Asnjëri prej tyre nuk ishte kapur nga njëzet e një testet e shkruara me "
+                "dorë për këtë transformim. I kapi korpusi. Kjo është arsyeja pse "
+                "verifikimi empirik nuk zëvendësohet dot me teste njësie, sado të "
+                "kujdesshme, dhe është vetë një gjetje e këtij punimi.",
             ],
         ),
         (
@@ -714,4 +726,53 @@ def chapter_5() -> list:
                 "kjo mbetet punë e ardhshme.",
             ],
         ),
+    ]
+
+
+def _refactoring_section() -> list:
+    """Tabela N/M/K, ose një shënim i ndershëm nëse ekzekutimi s'ka mbaruar."""
+    data = _load_if_present("refactoring_evaluation.json")
+    if data is None:
+        return [
+            "[PLOTËSO: ekzekutimi mbi korpusin e plotë është ende në vazhdim; kjo "
+            "tabelë gjenerohet automatikisht sapo të përfundojë.]"
+        ]
+
+    detected = data["detected"]
+    applied = data["applied"]
+    rows = [
+        ["Vende të detektuara", str(detected), "100%"],
+        ["Të transformuara", str(applied), f"{applied / detected:.1%}"],
+        ["Të refuzuara", str(data["refused"]), f"{data['refused'] / detected:.1%}"],
+    ]
+    if data.get("unlocatable"):
+        rows.append(["Të palokalizueshme", str(data["unlocatable"]), ""])
+
+    refusals = [
+        [reason.replace("_", " "), str(count), f"{count / detected:.1%}"]
+        for reason, count in sorted(data["refused_by_reason"].items(), key=lambda p: -p[1])
+    ]
+
+    verdicts = [
+        [verdict.replace("_", " "), str(count), f"{count / applied:.1%}"]
+        for verdict, count in sorted(data["verdicts"].items(), key=lambda p: -p[1])
+    ]
+
+    broken = data["verdicts"].get("new_errors", 0) + data["verdicts"].get("broken_syntax", 0)
+    share = broken / applied if applied else 0.0
+
+    return [
+        f"Mbi {data['files']} skedarë të korpusit u detektuan {detected} vende ku motori "
+        f"ka një transformim; prej tyre {applied} u transformuan.",
+        ("table", "Tabela 6. Rezultati i motorit të refaktorimit",
+         ["", "Numri", "Pjesa"], rows),
+        "Shpërndarja e arsyeve të refuzimit është vetë rezultat: ajo tregon çfarë e "
+        "pengon automatizimin, dhe jo se ku dështon zbatimi.",
+        ("table", "Tabela 7. Pse u refuzuan",
+         ["Arsyeja", "Numri", "Pjesa e vendeve"], refusals),
+        ("table", "Tabela 8. Verifikimi i atyre që u aplikuan",
+         ["Verdikti", "Numri", "Pjesa e të aplikuarave"], verdicts),
+        f"Nga {applied} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
+        f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
+        "gabimi kundrejt skedarit origjinal.",
     ]
