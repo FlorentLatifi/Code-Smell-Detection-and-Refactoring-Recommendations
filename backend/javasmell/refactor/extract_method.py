@@ -238,8 +238,22 @@ def _definitely_assigned(method: Node, before: list[Node], source: bytes) -> set
     return assigned
 
 
+def _throws_clause(method: Node, source: bytes) -> bytes:
+    """The enclosing method's `throws`, carried over verbatim.
+
+    A block that throws a checked exception still throws it after the move, and
+    the new method has to say so or the file does not compile. Copying the whole
+    clause may declare more than the block can throw, which Java permits on a
+    private method and which is the safe direction to err in.
+    """
+    for child in method.children:
+        if child.type == "throws":
+            return b" " + source[child.start_byte : child.end_byte]
+    return b""
+
+
 def _render(
-    plan: Plan, name: str, source: bytes, static: bool, indent: bytes
+    plan: Plan, name: str, source: bytes, static: bool, indent: bytes, throws: bytes = b""
 ) -> tuple[bytes, bytes]:
     """The call that replaces the block, and the method that receives it."""
     inner = indent + b"    "
@@ -262,7 +276,9 @@ def _render(
         + name.encode()
         + b"("
         + parameters.encode()
-        + b") {\n"
+        + b")"
+        + throws
+        + b" {\n"
         + inner
         + lifted
         + b"\n"
@@ -315,13 +331,21 @@ def apply(site: Site) -> Outcome:
     if missing:
         return decline(Refusal.UNRESOLVED_NAME, f"no declared type for {', '.join(missing)}")
 
+    # A generic method's block may mention its type variables, and carrying them
+    # over correctly means reasoning about bounds and about where inference can
+    # still reach. Rare enough that the analysis would not earn its risk.
+    if any(child.type == "type_parameters" for child in method.children):
+        return decline(Refusal.SHAPE_NOT_MATCHED, "the method declares type parameters")
+
     static = any(
         child.type == "modifiers" and "static" in text_of(child, source)
         for child in method.children
     )
     indent = indent_at(source, method.start_byte)
     name = _free_name(_existing_names(site.enclosing_type, source))
-    call, definition = _render(planned, name, source, static, indent)
+    call, definition = _render(
+        planned, name, source, static, indent, _throws_clause(method, source)
+    )
 
     return Outcome.rewrite(
         NAME,

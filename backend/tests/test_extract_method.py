@@ -473,3 +473,76 @@ def test_an_assignment_inside_a_conditional_does_not_count():
     outcome = transform(source)
     assert not outcome.applied
     assert outcome.refusal is Refusal.NOT_DEFINITELY_ASSIGNED
+
+
+def test_a_checked_exception_keeps_its_throws_clause():
+    """The block still throws after the move, so the new method must say so.
+
+    Without this the engine emitted `unreported exception IOException`, found by
+    running over the corpus.
+    """
+    source = b"""import java.io.IOException;
+
+public class T {
+    void m(int n) throws IOException {
+        for (int i = 0; i < n; i++) {
+            if (i > 0) {
+                read(i);
+            }
+        }
+        System.out.println(n);
+    }
+
+    void read(int i) throws IOException {
+    }
+}
+"""
+    outcome = transform(source, line=4)
+    assert outcome.applied
+
+    rewritten = apply_edits(source, outcome.edits).decode()
+    assert "private void extracted(int n) throws IOException {" in rewritten
+
+
+@pytest.mark.skipif(JAVAC is None, reason="javac not on PATH")
+def test_the_checked_exception_case_compiles():
+    source = b"""import java.io.IOException;
+
+public class T {
+    void m(int n) throws IOException {
+        for (int i = 0; i < n; i++) {
+            if (i > 0) {
+                read(i);
+            }
+        }
+        System.out.println(n);
+    }
+
+    void read(int i) throws IOException {
+    }
+}
+"""
+    outcome = transform(source, line=4)
+    assert outcome.applied
+
+    ok, errors = compiles(apply_edits(source, outcome.edits))
+    assert ok, errors
+
+
+def test_a_generic_method_is_refused():
+    """Carrying type variables over means reasoning about bounds and inference."""
+    source = b"""public class T {
+    <E extends Number> void m(java.util.List<E> xs) {
+        for (E item : xs) {
+            if (item != null) {
+                System.out.println(item);
+            }
+        }
+        System.out.println(xs);
+    }
+}
+"""
+    outcome = transform(source)
+    assert not outcome.applied
+    assert outcome.refusal is Refusal.SHAPE_NOT_MATCHED
+    assert "type parameters" in outcome.detail
