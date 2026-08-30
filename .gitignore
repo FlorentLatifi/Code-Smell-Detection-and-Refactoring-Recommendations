@@ -38,3 +38,6 @@ Thumbs.db
 coverage.xml
 htmlcov/
 data/*.log
+
+# Frontend build output
+frontend/dist/
