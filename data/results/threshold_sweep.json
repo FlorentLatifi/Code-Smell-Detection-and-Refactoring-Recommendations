@@ -1,7 +1,7 @@
 {
   "aggregation": "mean",
   "environment": {
-    "commit": "7e7595c0ee5fe0b4f4f4bd8d00b11eb8c911a969",
+    "commit": "b1db822985b7f9ea55eb27284629db99048b0ffd",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },

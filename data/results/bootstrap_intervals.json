@@ -1,8 +1,8 @@
 {
  "environment": {
-  "commit": "c7e14fe89b97c6720e895b5865bed4ca19005c86",
-  "platform": "Linux-6.18.44-fc-v22-x86_64-with-glibc2.39",
-  "python": "3.13.12"
+  "commit": "b1db822985b7f9ea55eb27284629db99048b0ffd",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.1"
  },
  "label": "smelly_mean",
  "per_smell": {
