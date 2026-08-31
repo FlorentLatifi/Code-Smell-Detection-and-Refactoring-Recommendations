@@ -1043,3 +1043,36 @@ si `[PLOTËSO]`, jo e heshtur.
 **Pasojat.** Katër detektorëve njëklauzolësh iu shtua formula në docstring, që të
 tetë strategjitë të kenë të njëjtën formë. Riprodhimi ka tani një hap më shumë,
 të renditur në README dhe në vetë shtojcën.
+
+---
+
+### VD-39: Figurat dhe tabelat numërohen gjatë ndërtimit, jo në tekst
+
+**Konteksti.** Kontrolli i formatimit (i shkruar për të verifikuar shabllonin te
+skedari, jo te gjeneruesi) e nxori menjëherë një defekt që asnjë lexim nuk e kishte
+kapur: dokumenti hapej me **«Figura 5»**. Numrat ishin shtypur me dorë te titujt
+dhe ndiqnin radhën në të cilën ishin gjeneruar figurat, ndërsa shablloni — dhe çdo
+lexues — i pret sipas radhës ku shfaqen. Tabelat kishin të njëjtin problem: 6, 7, 8
+vinin para 5-ës. Po ashtu, lista e figurave dhe e tabelave në ballinë mbahej me dorë
+si një listë e tretë, e cila duhej përditësuar veçmas sa herë shtohej diçka.
+
+**Vendimi.** Titulli te kapitulli mban vetëm tekstin; numrin e cakton ndërtuesi kur
+e renderon elementin. Lista e ballinës ndërtohet nga e njëjta ecje mbi kapitujt, jo
+me dorë. Emrat e skedarëve të figurave u zhveshën nga numri dhe e përshkruajnë
+përmbajtjen: `mcc_a_vs_b.png` në vend të `figura_1_mcc_a_vs_b.png`.
+
+Arsyeja është se numri i figurës nuk është veti e figurës. Është veti e vendit ku
+ajo shfaqet, dhe ai vend ndryshon sa herë riorganizohet një nënkapitull. I mbajtur
+në tri vende njëherësh — te skedari, te titulli, te lista — ai numër është i sigurt
+të dalë i gabuar; i llogaritur nga radha, nuk mund të dalë fare.
+
+**Pasojat.** Numërimi tani ndjek leximin: Figura 1 është shpërndarja e mostrave, jo
+MCC-ja. Referenca e vetme me numër në prozë («shih Tabelën 7») u rishkrua të emërtojë
+tabelën në vend të numrit, sepse një referencë e tillë e rikthen të njëjtin problem.
+Kontrolli i formatit e verifikon renditjen dhe përputhjen e listës me trupin e
+dokumentit, dhe hyn në CI bashkë me ndërtimin e dokumentit.
+
+**Kufizimi.** Kontrolli mat skedarin `.docx` në depo. Nëse punimi redaktohet në Word
+dhe nuk rindërtohet, kontrolli e mat atë version të redaktuar — çka është pikërisht
+qëllimi — por numërimi atëherë nuk rirregullohet vetë: një tabelë e shtuar me dorë
+në Word duhet numëruar me dorë, dhe kontrolli do ta thotë nëse numri s'përputhet.

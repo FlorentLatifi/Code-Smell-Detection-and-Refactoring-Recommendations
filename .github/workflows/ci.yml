@@ -66,10 +66,11 @@ jobs:
 
   # The prose and the reference list are edited separately and drift silently:
   # the template allows only cited sources under Referencat, so a citation dropped
-  # while editing leaves a reference that breaks the format. Its own job because a
-  # thesis formatting failure is not a code failure.
+  # while editing leaves a reference that breaks the format. The layout rules are
+  # checked on the built file for the same reason. Its own job because a thesis
+  # formatting failure is not a code failure.
   thesis:
-    name: Thesis (citations)
+    name: Thesis (citations, format)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,6 +84,14 @@ jobs:
       - name: Check citations
         working-directory: docs/thesis
         run: python check_citations.py
+
+      - name: Build the document
+        working-directory: docs/thesis
+        run: python build_thesis.py
+
+      - name: Check formatting
+        working-directory: docs/thesis
+        run: python check_format.py
 
   # The interface is typed, so a broken contract with the API surfaces here
   # rather than in a browser. Kept separate from the Python job for the same
