@@ -15,6 +15,7 @@ rerunning this script overwrites the file.
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 
 from docx import Document
 from docx.enum.section import WD_SECTION
@@ -204,7 +205,21 @@ def bullet(doc: Document, text: str) -> None:
     _set_font(paragraph.add_run(text))
 
 
-def figure(doc: Document, path: str, text: str) -> None:
+@dataclass
+class Numbering:
+    """Numrat e figurave dhe të tabelave, të caktuar sipas radhës së shfaqjes.
+
+    Shablloni e kërkon numërimin sipas radhës në të cilën lexuesi i takon, dhe ajo
+    radhë është veti e dokumentit, jo e kapitullit ku u shkrua elementi. Numrat e
+    shtypur me dorë e kishin humbur atë veti pa u vënë re: dokumenti hapej me
+    «Figura 5». I caktuar këtu, numri s'ka si të mos përputhet me radhën.
+    """
+
+    figure: int = 0
+    table: int = 0
+
+
+def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
     """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni."""
     holder = doc.add_paragraph()
     holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -212,12 +227,16 @@ def figure(doc: Document, path: str, text: str) -> None:
         holder.add_run().add_picture(path, width=Inches(5.6))
     else:
         _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
-    caption(doc, text)
+    numbering.figure += 1
+    caption(doc, f"Figura {numbering.figure}. {text}")
 
 
-def table(doc: Document, text: str, headers: list[str], rows: list[list[str]]) -> None:
+def table(
+    doc: Document, text: str, headers: list[str], rows: list[list[str]], numbering: Numbering
+) -> None:
     """Një tabelë me titullin sipër, siç e kërkon shablloni."""
-    caption(doc, text)
+    numbering.table += 1
+    caption(doc, f"Tabela {numbering.table}. {text}")
     grid = doc.add_table(rows=1, cols=len(headers))
     grid.style = "Table Grid"
     for cell, header in zip(grid.rows[0].cells, headers, strict=True):
@@ -280,7 +299,7 @@ def build_inner_page(doc: Document) -> None:
     )
 
 
-def build_front_matter(doc: Document) -> None:
+def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> None:
     unnumbered_heading(doc, "Abstrakt")
     for paragraph in ABSTRACT:
         body(doc, paragraph)
@@ -300,11 +319,11 @@ def build_front_matter(doc: Document) -> None:
     )
 
     unnumbered_heading(doc, "Lista e figurave")
-    for entry in FIGURE_LIST:
+    for entry in figures:
         body(doc, entry)
 
     unnumbered_heading(doc, "Lista e tabelave")
-    for entry in TABLE_LIST:
+    for entry in tables:
         body(doc, entry)
 
     unnumbered_heading(doc, "Fjalori i termave")
@@ -312,7 +331,7 @@ def build_front_matter(doc: Document) -> None:
         bullet(doc, term)
 
 
-def render_sections(doc: Document, sections: list) -> None:
+def render_sections(doc: Document, sections: list, numbering: Numbering) -> None:
     """Një kapitull, çfarëdo qofshin llojet e elementeve brenda tij."""
     for number, title, paragraphs in sections:
         if number:
@@ -323,16 +342,39 @@ def render_sections(doc: Document, sections: list) -> None:
             elif item[0] == "bullet":
                 bullet(doc, item[1])
             elif item[0] == "figure":
-                figure(doc, item[1], item[2])
+                figure(doc, item[1], item[2], numbering)
             elif item[0] == "table":
-                table(doc, item[1], item[2], item[3])
+                table(doc, item[1], item[2], item[3], numbering)
             else:
                 raise ValueError(f"element i panjohur: {item[0]}")
 
 
-def build_introduction(doc: Document) -> None:
+def caption_lists(chapters: list) -> tuple[list[str], list[str]]:
+    """Lista e figurave dhe e tabelave, e ndërtuar nga vetë kapitujt.
+
+    Ballina renderohet para kapitujve, ndaj listat duhen ditur para se elementet
+    të numërohen. Ecja këtu është e njëjta që bën `render_sections`, dhe pikërisht
+    kjo e bën listën të pamundur ta humbasë një tabelë: e vetmja mënyrë për ta
+    shtuar një tabelë në dokument është ta shtosh te kapitulli, të cilin e lexon
+    edhe kjo funksion. Përputhja verifikohet nga `check_format.py`.
+    """
+    figures: list[str] = []
+    tables: list[str] = []
+    for sections in chapters:
+        for _, _, paragraphs in sections:
+            for item in paragraphs:
+                if not isinstance(item, tuple):
+                    continue
+                if item[0] == "figure":
+                    figures.append(f"Figura {len(figures) + 1}. {item[2]}")
+                elif item[0] == "table":
+                    tables.append(f"Tabela {len(tables) + 1}. {item[1]}")
+    return figures, tables
+
+
+def build_introduction(doc: Document, numbering: Numbering) -> None:
     chapter(doc, 1, "Hyrje")
-    render_sections(doc, INTRODUCTION)
+    render_sections(doc, INTRODUCTION, numbering)
 
 
 def build_references(doc: Document) -> None:
@@ -352,22 +394,17 @@ def build_references(doc: Document) -> None:
         _set_font(paragraph.add_run(f"[{number}]	{reference}"))
 
 
-def build_remaining_chapters(doc: Document) -> None:
+def build_remaining_chapters(doc: Document, chapters: dict, numbering: Numbering) -> None:
     """Every chapter after the introduction.
 
     Chapters 2, 3, 4 and 6 are prose and live in ``chapters.py``. Chapters 5 and 8
     are built at this moment from ``data/results/``, so a rebuilt experiment and a
     rebuilt document cannot disagree. Chapter 7 renders the reference list.
     """
-    written = {2: CHAPTER_2, 3: CHAPTER_3, 4: CHAPTER_4, 6: CHAPTER_6}
     for number, title in REMAINING_CHAPTERS:
         chapter(doc, number, title)
-        if number in written:
-            render_sections(doc, written[number])
-        elif number == 5:
-            render_sections(doc, chapter_5())
-        elif number == 8:
-            render_sections(doc, chapter_8())
+        if number in chapters:
+            render_sections(doc, chapters[number], numbering)
         elif title == "Referencat":
             build_references(doc)
         else:
@@ -375,6 +412,21 @@ def build_remaining_chapters(doc: Document) -> None:
 
 
 def build() -> str:
+    # Kapitujt 5 dhe 8 lexojnë `data/results/` sa herë thirren, ndaj ndërtohen një
+    # herë: ballina i numëron elementet e tyre para se ata të renderohen, dhe dy
+    # lexime të veçanta do të ishin dy burime të vërtete për të njëjtin dokument.
+    chapters = {
+        1: INTRODUCTION,
+        2: CHAPTER_2,
+        3: CHAPTER_3,
+        4: CHAPTER_4,
+        5: chapter_5(),
+        6: CHAPTER_6,
+        8: chapter_8(),
+    }
+    figures, tables = caption_lists([chapters[n] for n in sorted(chapters)])
+    numbering = Numbering()
+
     doc = Document()
     _set_properties(doc)
     configure_styles(doc)
@@ -390,14 +442,14 @@ def build() -> str:
     front = doc.add_section(WD_SECTION.NEW_PAGE)
     _page_numbering(front, "upperRoman", 1)
     _footer_page_number(front, enabled=True)
-    build_front_matter(doc)
+    build_front_matter(doc, figures, tables)
 
     # --- Section 3: chapters, arabic restarting at 1 --------------------
     main = doc.add_section(WD_SECTION.NEW_PAGE)
     _page_numbering(main, "decimal", 1)
     _footer_page_number(main, enabled=True)
-    build_introduction(doc)
-    build_remaining_chapters(doc)
+    build_introduction(doc, numbering)
+    build_remaining_chapters(doc, chapters, numbering)
 
     doc.save(OUTPUT)
     return OUTPUT
@@ -448,33 +500,6 @@ ACKNOWLEDGEMENTS = (
     f"{TODO}: Falënderimet shkruhen me fjalët e tua. Zakonisht përfshihen mentorja, "
     "profesorët e programit, familja dhe kushdo që ka kontribuar në këtë punim."
 )
-
-FIGURE_LIST = [
-    "Figura 1. MCC për të dyja qasjet",
-    "Figura 2. Recall-i sipas ashpërsisë së caktuar nga rishikuesit",
-    "Figura 3. Mostrat e shënuara nga secila qasje",
-    "Figura 4. Veçoritë me rëndësi më të lartë, të matura me permutation importance",
-    "Figura 5. Shpërndarja e mostrave sipas erës",
-    "Figura 6. Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve",
-]
-
-TABLE_LIST = [
-    "Tabela 1. Qasja A kundrejt gjykimit të rishikuesve",
-    "Tabela 2. Recall-i sipas ashpërsisë",
-    "Tabela 3. Modeli më i mirë për çdo erë",
-    "Tabela 4. Pajtimi mes dy qasjeve",
-    "Tabela 5. Sa lëviz MCC-ja kur zhvendoset një prag",
-    "Tabela 6. Rezultati i motorit të refaktorimit",
-    "Tabela 7. Pse u refuzuan",
-    "Tabela 8. Verifikimi i atyre që u aplikuan",
-    "Tabela 9. Strategjitë e detektimit dhe burimet e tyre",
-    "Tabela 10. Kuantifikuesit e përgjithshëm",
-    "Tabela 11. Pragjet e përdorura",
-    "Tabela 12. Metrikat sipas nivelit",
-    "Tabela 13. Çka propozohet dhe çka aplikohet",
-    "Tabela 14. Arsyet e refuzimit",
-    "Tabela 15. Radha e ekzekutimit",
-]
 
 GLOSSARY = [
     "AST - Abstract Syntax Tree, pema e sintaksës abstrakte",

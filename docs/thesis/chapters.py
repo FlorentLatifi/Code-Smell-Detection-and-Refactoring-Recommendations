@@ -644,8 +644,8 @@ def chapter_5() -> list:
                 f"nga {dataset['repositories']} depo, dhe rigjenerohen me një komandë. "
                 "Agregimi i etiketave është mesatarja e rrumbullakosur lart, përveç "
                 "aty ku thuhet ndryshe.",
-                ("figure", str(FIGURES / "figura_5_shperndarja_e_mostrave.png"),
-                 "Figura 5. Shpërndarja e mostrave sipas erës"),
+                ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
+                 "Shpërndarja e mostrave sipas erës"),
             ],
         ),
         (
@@ -656,17 +656,17 @@ def chapter_5() -> list:
                 "erë. MCC-ja raportohet sepse është shifra që nuk e lajkaton një "
                 "detektor mbi një bashkësi të çekuilibruar: një klasifikues që nuk "
                 "ndez kurrë merr zero këtu.",
-                ("table", "Tabela 1. Qasja A kundrejt gjykimit të rishikuesve",
+                ("table", "Qasja A kundrejt gjykimit të rishikuesve",
                  ["Erë", "P", "R", "F1", "MCC", "Pozitivë"], rules_rows),
                 "Modeli është i njëjtë kudo: precizion i lartë dhe recall i ulët. Kur "
                 "strategjitë ndezin kanë kryesisht të drejtë, por i humbin shumicën e "
                 "rasteve.",
                 "Ky lexim ndryshon kur recall-i ndahet sipas ashpërsisë që caktuan "
                 "vetë rishikuesit.",
-                ("table", "Tabela 2. Recall-i sipas ashpërsisë",
+                ("table", "Recall-i sipas ashpërsisë",
                  ["Erë", "Recall te major", "Recall te minor"], severity_rows),
-                ("figure", str(FIGURES / "figura_2_recall_sipas_ashpersise.png"),
-                 "Figura 2. Recall-i sipas ashpërsisë së caktuar nga rishikuesit"),
+                ("figure", str(FIGURES / "recall_sipas_ashpersise.png"),
+                 "Recall-i sipas ashpërsisë së caktuar nga rishikuesit"),
                 "Detektorët degradojnë me hijeshi: i kapin rastet e rënda dukshëm më "
                 "mirë se ato të lehtat. Kjo është shifra që një F1 i vetëm e fsheh.",
             ],
@@ -678,29 +678,29 @@ def chapter_5() -> list:
                 "Për secilën erë raportohet modeli me MCC-në më të lartë. Klasifikuesi "
                 "i shumicës nuk ndez asnjëherë për asnjë erë, ndaj çdo shifër më poshtë "
                 "është mësim i vërtetë dhe jo çekuilibër i shfrytëzuar.",
-                ("table", "Tabela 3. Modeli më i mirë për çdo erë",
+                ("table", "Modeli më i mirë për çdo erë",
                  ["Erë", "Modeli", "P", "R", "F1", "MCC"], ml_rows),
                 f"MCC-ja më e lartë e arritur është {best_mcc:.3f}. Të gjitha vlerat "
                 "vijnë nga parashikime jashtë fold-it mbi një ndarje të grupuar sipas "
                 "depos, pra përshkruajnë atë që pritet mbi një projekt që modeli nuk e "
                 "ka parë kurrë.",
-                ("figure", str(FIGURES / "figura_4_rendesia_e_vecorive.png"),
-                 "Figura 4. Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
+                ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
+                 "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
             ],
         ),
         (
             "5.3",
             "Krahasimi i dy qasjeve",
             [
-                ("figure", str(FIGURES / "figura_1_mcc_a_vs_b.png"),
-                 "Figura 1. MCC për të dyja qasjet"),
+                ("figure", str(FIGURES / "mcc_a_vs_b.png"),
+                 "MCC për të dyja qasjet"),
                 "Qasja B e tejkalon Qasjen A në çdo erë. Por përmbledhja nuk e tregon "
                 "se çka kap secila vetëm, ndaj raportohen edhe të katër qelizat bashkë "
                 "me koeficientin kappa.",
-                ("table", "Tabela 4. Pajtimi mes dy qasjeve",
+                ("table", "Pajtimi mes dy qasjeve",
                  ["Erë", "κ", "Të dyja", "Vetëm A", "Vetëm B", "n"], agreement_rows),
-                ("figure", str(FIGURES / "figura_3_pajtimi_a_b.png"),
-                 "Figura 3. Mostrat e shënuara nga secila qasje"),
+                ("figure", str(FIGURES / "pajtimi_a_b.png"),
+                 "Mostrat e shënuara nga secila qasje"),
                 "Kolona «vetëm B» tejkalon «vetëm A» në çdo erë, shpesh me një rend "
                 "madhësie: modeli pothuajse e përfshin rregullin. Përjashtimi është "
                 "Feature Envy, ku rregulli kap një numër të krahasueshëm rastesh që "
@@ -735,10 +735,10 @@ def chapter_5() -> list:
                 "një korpus tjetër. Pyetja e natyrshme është sa varet rezultati prej "
                 "tyre. Secili prag u zhvendos veç, mes gjysmës dhe dyfishit të vlerës "
                 "së vet, me të tjerët të mbajtur fiks.",
-                ("table", "Tabela 5. Sa lëviz MCC-ja kur zhvendoset një prag",
+                ("table", "Sa lëviz MCC-ja kur zhvendoset një prag",
                  ["Erë", "Pragu", "Te vlera e botuar", "Brezi", "Amplituda"], sweep_rows),
-                ("figure", str(FIGURES / "figura_6_ndjeshmeria_e_pragjeve.png"),
-                 "Figura 6. Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve"),
+                ("figure", str(FIGURES / "ndjeshmeria_e_pragjeve.png"),
+                 "Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve"),
                 "Ndarja është e qartë. Për Blob dhe Data Class rezultati mezi lëviz, "
                 "pra shifrat e raportuara për to flasin për kodin. Për Long Method dhe "
                 "Feature Envy amplituda është e madhe, dhe kjo do të thotë se shifra e "
@@ -800,13 +800,13 @@ def _refactoring_section() -> list:
     return [
         f"Mbi {data['files']} skedarë të korpusit u detektuan {detected} vende ku motori "
         f"ka një transformim; prej tyre {applied} u transformuan.",
-        ("table", "Tabela 6. Rezultati i motorit të refaktorimit",
+        ("table", "Rezultati i motorit të refaktorimit",
          ["", "Numri", "Pjesa"], rows),
         "Shpërndarja e arsyeve të refuzimit është vetë rezultat: ajo tregon çfarë e "
         "pengon automatizimin, dhe jo se ku dështon zbatimi.",
-        ("table", "Tabela 7. Pse u refuzuan",
+        ("table", "Pse u refuzuan",
          ["Arsyeja", "Numri", "Pjesa e vendeve"], refusals),
-        ("table", "Tabela 8. Verifikimi i atyre që u aplikuan",
+        ("table", "Verifikimi i atyre që u aplikuan",
          ["Verdikti", "Numri", "Pjesa e të aplikuarave"], verdicts),
         f"Nga {applied} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
@@ -931,7 +931,7 @@ def chapter_8() -> list:
                 "ky dokument, jo të kopjuara me dorë.",
                 (
                     "table",
-                    "Tabela 9. Strategjitë e detektimit dhe burimet e tyre",
+                    "Strategjitë e detektimit dhe burimet e tyre",
                     ["Erë", "Fusha", "Kushtet", "Burimi"],
                     strategy_rows,
                 ),
@@ -948,7 +948,7 @@ def chapter_8() -> list:
                 "dyzet e pesë sistemesh Java dhe C++.",
                 (
                     "table",
-                    "Tabela 10. Kuantifikuesit e përgjithshëm",
+                    "Kuantifikuesit e përgjithshëm",
                     ["Emri", "Vlera"],
                     quantifier_rows,
                 ),
@@ -957,7 +957,7 @@ def chapter_8() -> list:
                 "zhvendos, një nga një.",
                 (
                     "table",
-                    "Tabela 11. Pragjet e përdorura",
+                    "Pragjet e përdorura",
                     ["Parametri", "Vlera"],
                     threshold_rows,
                 ),
@@ -974,7 +974,7 @@ def chapter_8() -> list:
                 "Fjalori i termave.",
                 (
                     "table",
-                    "Tabela 12. Metrikat sipas nivelit",
+                    "Metrikat sipas nivelit",
                     ["Niveli", "Metrikat"],
                     metric_rows,
                 ),
@@ -989,15 +989,15 @@ def chapter_8() -> list:
                 "çdo reference në projekt, çka analiza sintaksore nuk e provon dot.",
                 (
                     "table",
-                    "Tabela 13. Çka propozohet dhe çka aplikohet",
+                    "Çka propozohet dhe çka aplikohet",
                     ["Erë", "Refaktorimet e Fowler-it", "Motori"],
                     engine_rows,
                 ),
                 "Kur një parakusht nuk provohet, motori refuzon me një arsye të "
-                "numërueshme. Shpërndarja e tyre mbi korpus është në Tabelën 7.",
+                "numërueshme. Shpërndarja e tyre mbi korpus jepet te Kapitulli 5.",
                 (
                     "table",
-                    "Tabela 14. Arsyet e refuzimit",
+                    "Arsyet e refuzimit",
                     ["Arsyeja", "Kuptimi"],
                     refusal_rows,
                 ),
@@ -1011,7 +1011,7 @@ def chapter_8() -> list:
                 "këtë radhë; hapi i parë kërkon qasje në internet, të tjerët jo.",
                 (
                     "table",
-                    "Tabela 15. Radha e ekzekutimit",
+                    "Radha e ekzekutimit",
                     ["#", "Skripti", "Prodhon", "Kohë"],
                     [list(row) for row in REPRODUCTION],
                 ),

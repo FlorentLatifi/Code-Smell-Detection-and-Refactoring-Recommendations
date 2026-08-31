@@ -61,16 +61,23 @@ def load(name: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def save(fig, number: int, slug: str) -> None:
+def save(fig, slug: str) -> None:
+    """Emri i skedarit e përshkruan përmbajtjen, nuk e numëron.
+
+    Numri i figurës varet nga radha ku ajo shfaqet në punim, dhe ajo radhë
+    ndryshon sa herë riorganizohet një nënkapitull. I ngjitur te skedari, ai numër
+    do të duhej rregulluar në tri vende njëherësh; i llogaritur gjatë ndërtimit të
+    dokumentit, nuk mund të dalë i gabuar fare.
+    """
     FIGURES.mkdir(parents=True, exist_ok=True)
-    path = FIGURES / f"figura_{number}_{slug}.png"
+    path = FIGURES / f"{slug}.png"
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
     print(f"  {path}")
 
 
 def figure_rules_vs_ml(rules: dict, ml: dict) -> None:
-    """Figura 1: MCC për të dyja qasjet, erë për erë."""
+    """MCC për të dyja qasjet, erë për erë."""
     smells = sorted(ml["per_smell"])
     approach_a = [
         rules["per_smell"][s]["strategy"]["by_aggregation"]["mean"]["mcc"] for s in smells
@@ -102,11 +109,11 @@ def figure_rules_vs_ml(rules: dict, ml: dict) -> None:
         ax.text(position - width / 2, value + 0.015, f"{value:.3f}", ha="center", fontsize=8)
     for position, value in zip(positions, approach_b, strict=True):
         ax.text(position + width / 2, value + 0.015, f"{value:.3f}", ha="center", fontsize=8)
-    save(fig, 1, "mcc_a_vs_b")
+    save(fig, "mcc_a_vs_b")
 
 
 def figure_recall_by_severity(rules: dict) -> None:
-    """Figura 2: recall-i sipas ashpërsisë që caktuan rishikuesit."""
+    """Recall-i sipas ashpërsisë që caktuan rishikuesit."""
     rows = []
     for smell in sorted(rules["per_smell"]):
         for variant, data in rules["per_smell"][smell].items():
@@ -137,11 +144,11 @@ def figure_recall_by_severity(rules: dict) -> None:
     ax.set_xlabel("Recall")
     ax.set_xlim(0, 1.0)
     ax.legend(frameon=False, loc="lower right")
-    save(fig, 2, "recall_sipas_ashpersise")
+    save(fig, "recall_sipas_ashpersise")
 
 
 def figure_agreement(ml: dict) -> None:
-    """Figura 3: çka kap secila qasje vetëm, dhe çka të dyja."""
+    """Çka kap secila qasje vetëm, dhe çka të dyja."""
     smells = sorted(ml["per_smell"])
     both = [ml["per_smell"][s]["vs_rules"]["both"] for s in smells]
     only_a = [ml["per_smell"][s]["vs_rules"]["only_rules"] for s in smells]
@@ -163,11 +170,11 @@ def figure_agreement(ml: dict) -> None:
     ax.set_xticklabels([SMELL_LABELS[s] for s in smells])
     ax.set_ylabel("Mostra të shënuara")
     ax.legend(frameon=False)
-    save(fig, 3, "pajtimi_a_b")
+    save(fig, "pajtimi_a_b")
 
 
 def figure_feature_importance(ml: dict) -> None:
-    """Figura 4: veçoritë që modelet zgjodhën, për dy erëra."""
+    """Veçoritë që modelet zgjodhën, për dy erëra."""
     fig, axes = plt.subplots(1, 2, figsize=(6.8, 3.2))
     for ax, smell in zip(axes, ("long method", "feature envy"), strict=True):
         ranked = sorted(ml["per_smell"][smell]["importances"].items(), key=lambda p: p[1])[-6:]
@@ -179,11 +186,11 @@ def figure_feature_importance(ml: dict) -> None:
         ax.set_title(SMELL_LABELS[smell], fontsize=10)
         ax.set_xlabel("Rëndësia (permutation)")
     fig.tight_layout()
-    save(fig, 4, "rendesia_e_vecorive")
+    save(fig, "rendesia_e_vecorive")
 
 
 def figure_dataset_balance(dataset: dict) -> None:
-    """Figura 5: sa mostra për erë, dhe sa prej tyre pozitive."""
+    """Sa mostra për erë, dhe sa prej tyre pozitive."""
     smells = sorted(dataset["by_smell"])
     totals = [dataset["by_smell"][s] for s in smells]
 
@@ -194,11 +201,11 @@ def figure_dataset_balance(dataset: dict) -> None:
     ax.set_ylabel("Mostra")
     for position, value in enumerate(totals):
         ax.text(position, value + 20, str(value), ha="center", fontsize=9)
-    save(fig, 5, "shperndarja_e_mostrave")
+    save(fig, "shperndarja_e_mostrave")
 
 
 def figure_threshold_sweep(sweep: dict) -> None:
-    """Figura 6: sa levize MCC-ja kur nje prag zhvendoset rreth vleres se botuar."""
+    """Sa lëviz MCC-ja kur një prag zhvendoset rreth vlerës së botuar."""
     interesting = [
         ("long method", "long_method_loc", "Long Method: LOC"),
         ("feature envy", "feature_envy_fdp", "Feature Envy: FDP"),
@@ -221,7 +228,7 @@ def figure_threshold_sweep(sweep: dict) -> None:
     ax.set_xlabel("Faktori i zbatuar mbi vlerën e botuar")
     ax.set_ylabel("MCC")
     ax.legend(frameon=False, fontsize=9)
-    save(fig, 6, "ndjeshmeria_e_pragjeve")
+    save(fig, "ndjeshmeria_e_pragjeve")
 
 
 def main() -> int:

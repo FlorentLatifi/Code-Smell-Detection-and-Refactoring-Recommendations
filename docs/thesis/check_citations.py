@@ -27,15 +27,8 @@ import sys
 import unicodedata
 from collections.abc import Iterator
 
-from build_thesis import (
-    ABSTRACT,
-    ACKNOWLEDGEMENTS,
-    FIGURE_LIST,
-    GLOSSARY,
-    INTRODUCTION,
-    TABLE_LIST,
-)
-from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5
+from build_thesis import ABSTRACT, ACKNOWLEDGEMENTS, GLOSSARY, INTRODUCTION
+from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5, chapter_8
 from references import all_references
 
 # Një mbiemër: fillon me shkronjë të madhe dhe mund të jetë i përbërë
@@ -98,8 +91,6 @@ def thesis_text() -> str:
     sources = [
         ABSTRACT,
         ACKNOWLEDGEMENTS,
-        FIGURE_LIST,
-        TABLE_LIST,
         GLOSSARY,
         INTRODUCTION,
         CHAPTER_2,
@@ -107,6 +98,7 @@ def thesis_text() -> str:
         CHAPTER_4,
         chapter_5(),
         CHAPTER_6,
+        chapter_8(),
     ]
     return "\n".join(_strings(sources))
 
