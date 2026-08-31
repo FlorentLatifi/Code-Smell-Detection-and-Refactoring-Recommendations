@@ -253,3 +253,21 @@ def test_a_model_fitted_by_another_library_is_refused(tmp_path: Path) -> None:
 
     with pytest.raises(ModelUnavailable, match="scikit-learn"):
         load_model(models, models / "dataset.csv", "blob")
+
+
+def test_a_project_the_model_flags_nowhere_is_not_an_error() -> None:
+    """The empty-batch path, which explaining one entity at a time never had.
+
+    Flagged entities are explained together, so when none is flagged the batch is
+    an empty selection of rows. That is the common case for clean code and must
+    come back as verdicts with no explanations, not as a failure.
+    """
+    quiet = [
+        klass(f"Q{index}", {"WMC": 1.0, "CBO": 1.0}, [method("run", {"MLOC": 1.0})])
+        for index in range(3)
+    ]
+    report = predict(served("long method"), project(quiet))
+
+    assert report.considered == 3
+    assert [p.flagged for p in report.predictions] == [False, False, False]
+    assert all(p.contributions == () for p in report.predictions)
