@@ -559,6 +559,11 @@ CHAPTER_6 = [
             "atë plotësisht: te Feature Envy rregulli kap raste që modeli i humb, dhe "
             "kjo është e vetmja erë ku bashkimi i dy qasjeve do të kishte kuptim "
             "praktik.",
+            "Përparësia qëndron edhe kur matet me interval besimi, por jo pa kusht. Kur "
+            "rregullit i jepet pragu i tij më i mirë nga fshirja — krahasimi më bujar që "
+            "mund t'i bëhet — dallimi te Long Method e përfshin zeron. Pra pretendimi "
+            "vlen përgjithësisht, dhe jo pikërisht te era ku rregulli tashmë punonte më "
+            "mirë. Ky është kufizim i krahasimit, jo i njërës qasje.",
         ],
     ),
     (
@@ -602,6 +607,16 @@ CHAPTER_6 = [
             "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
             "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
             "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
+            "Ashpërsia që sistemi e derivon nuk e riprodhon gjykimin e rishikuesve. Ajo "
+            "u ndërtua në shkallën e MLCQ-së pikërisht që të krahasohej me ta pa hap "
+            "përkthimi, dhe kur krahasimi u bë, pajtimi doli pranë rastësisë për tri nga "
+            "katër erërat, me mbivlerësim sistematik. Pretendimi hiqet: ajo mbetet "
+            "renditje e brendshme e mjetit dhe jo riprodhim i gjykimit njerëzor.",
+            "Vetë e vërteta bazë ka një tavan të ulët. Rishikuesit e MLCQ-së pajtohen "
+            "mes tyre me MCC nën 0.24 për çdo erë, çka do të thotë se një pjesë e "
+            "pareduktueshme e gabimit të çdo detektori i takon paqartësisë së "
+            "përkufizimit dhe jo detektorit. Kjo nuk i zbut shifrat e këtij punimi, por "
+            "e ndryshon shkallën në të cilën duhen lexuar — të tijat dhe të literaturës.",
         ],
     ),
     (
@@ -624,8 +639,16 @@ CHAPTER_6 = [
             ),
             (
                 "bullet",
-                "Analizë e ndjeshmërisë mbi pragje, e cila tashmë është e mundur në "
-                "sekonda falë tabelës së veçorive.",
+                "Kalibrim i pragjeve mbi një bashkësi të ndarë dhe vlerësim mbi një "
+                "tjetër të paprekur. Fshirja tregoi se dy pragje e ndryshojnë ndjeshëm "
+                "rezultatin, por adoptimi i tyre pa këtë ndarje do të ishte thjesht "
+                "përshtatje ndaj të dhënave të testimit.",
+            ),
+            (
+                "bullet",
+                "Ashpërsi e mësuar nga të dhënat në vend që të derivohet nga teprica. "
+                "Kjo e kthen një derivim të shpjegueshëm në një model të dytë, ndaj "
+                "kërkon ndarjen e vet të korpusit.",
             ),
         ],
     ),
@@ -643,6 +666,10 @@ CHAPTER_6 = [
             "strategjive; dhe një pjesë e vogël por reale e rasteve të detektuara mund "
             "të transformohet automatikisht, ku shumica e refuzimeve vjen nga forma e "
             "kodit dhe nga rrjedha e kontrollit.",
+            "Dy rezultate negative i shoqërojnë ato dhe nuk duhen lexuar veç: ashpërsia "
+            "e derivuar nuk e riprodhon gjykimin e rishikuesve, dhe vetë rishikuesit "
+            "pajtohen mes tyre aq pak sa çdo shifër e kësaj fushe duhet lexuar mbi një "
+            "tavan dukshëm më të ulët se sa e sugjeron zakonisht literatura.",
             "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
             "riprodhueshëm nga korpusi te rezultati, ku çdo numër rigjenerohet me një "
             "komandë dhe çdo vendim është i regjistruar me arsyen e vet.",
