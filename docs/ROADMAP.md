@@ -501,7 +501,11 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
   5 (Rezultatet, nga `data/results/`), 6 dhe abstrakti.
 - ✅ Figurat dhe tabelat gjenerohen nga skriptet, jo me kopjim manual. Nëse një numër
   ndryshon, rigjenerohet gjithçka.
-- ⬜ Mbetet: redaktimi i tekstit, verifikimi i referencave dhe formatimi UBT.
+- ✅ Koherenca e citimeve verifikohet nga `docs/thesis/check_citations.py`, që
+  krahason tekstin me listën e referencave në të dy drejtimet dhe hyn në CI (VD-37).
+- ⬜ Mbetet: redaktimi i tekstit, kontrolli i numrave të faqeve kundrejt burimeve
+  origjinale (`references.NEEDS_PAGE_CHECK`), plotësimi i vendeve `[PLOTËSO]` dhe
+  verifikimi i formatimit UBT.
 
 ---
 

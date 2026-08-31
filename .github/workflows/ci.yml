@@ -64,6 +64,26 @@ jobs:
           java-version: "21"
       - run: javac -version
 
+  # The prose and the reference list are edited separately and drift silently:
+  # the template allows only cited sources under Referencat, so a citation dropped
+  # while editing leaves a reference that breaks the format. Its own job because a
+  # thesis formatting failure is not a code failure.
+  thesis:
+    name: Thesis (citations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: docs/thesis/requirements.txt
+      - name: Install dependencies
+        run: pip install -r docs/thesis/requirements.txt
+      - name: Check citations
+        working-directory: docs/thesis
+        run: python check_citations.py
+
   # The interface is typed, so a broken contract with the API surfaces here
   # rather than in a browser. Kept separate from the Python job for the same
   # reason the toolchain job is: a failure should name its own cause.

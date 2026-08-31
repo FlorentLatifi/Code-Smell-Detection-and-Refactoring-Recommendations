@@ -649,3 +649,13 @@ REMAINING_CHAPTERS = [
 
 if __name__ == "__main__":
     print(f"U gjenerua: {build()}")
+
+    # Importuar këtu e jo lart, sepse check_citations e lexon këtë modul: në krye
+    # do të ishte import qarkor. Ndërtimi nuk ndalet nga një mospërputhje — gjatë
+    # shkrimit ajo është gjendje kalimtare — por nuk kalon as pa u thënë.
+    from check_citations import report
+
+    problems = report()
+    if problems:
+        print("Kujdes, teksti dhe lista e referencave nuk përputhen:")
+        print("\n".join(problems))

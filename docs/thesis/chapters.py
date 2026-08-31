@@ -297,9 +297,13 @@ CHAPTER_4 = [
         "4.2",
         "Matja",
         [
-            "Analizuesi ndërtohet mbi tree-sitter dhe regjistron vetëm fakte "
-            "sintaksore. Mbi këtë model maten shtatëmbëdhjetë metrika klase dhe nëntë "
-            "metrika metode, me një kalim të vetëm për klasë.",
+            "Analizuesi ndërtohet mbi tree-sitter (Brunsfeld et al.) dhe regjistron "
+            "vetëm fakte sintaksore. Mbi këtë model maten shtatëmbëdhjetë metrika "
+            "klase dhe nëntë metrika metode, me një kalim të vetëm për klasë. Ndër to "
+            "janë metrikat e Chidamber & Kemerer-it (1994), varianti i normalizuar i "
+            "LCOM-it i Henderson-Sellers-it (1996), TCC-ja e Bieman & Kang-ut (1995) "
+            "dhe kompleksiteti ciklomatik (McCabe, 1976), i matur si numri i pikave "
+            "të vendimit në trupin e metodës plus një.",
             "Rreshtat e kodit numërohen sipas kornizës së Park (1992): rreshtat bosh, "
             "komentet dhe rreshtat që përmbajnë vetëm një kllapë nuk janë pohime dhe "
             "nuk numërohen. Ky përkufizim ka një implementim të vetëm në kod, sepse "
@@ -377,6 +381,38 @@ CHAPTER_4 = [
     ),
     (
         "4.6",
+        "Matja e performancës",
+        [
+            "Një mostër quhet pozitive kur ashpërsia e agreguar e rishikuesve është mbi "
+            "«none». Agregimi parësor është mesatarja e rishikimeve; maksimumi, "
+            "minimumi dhe unanimiteti raportohen si analizë ndjeshmërie, sepse "
+            "rishikuesit e MLCQ-së nuk pajtohen me njëri-tjetrin në një të katërtën e "
+            "mostrave dhe një shifër e vetme do ta fshihte atë mospajtim.",
+            "Mbi këtë përkufizim maten precizioni, recall-i dhe F1-i. Të tria "
+            "raportohen bashkë me koeficientin e korrelacionit të Matthews-it "
+            "(Matthews, 1975), i cili i përfshin të katër qelizat e matricës konfuze "
+            "dhe mbetet i papërcaktuar kur njëra margjinë është bosh. Mbi një bashkësi "
+            "ku shumica e etiketave janë negative kjo veti është vendimtare: një "
+            "detektor që nuk ndez kurrë del i papërcaktuar këtu, ndërsa saktësia e "
+            "përgjithshme do t'i jepte shifër të lartë.",
+            "Recall-i raportohet gjithmonë edhe i ndarë sipas ashpërsisë që caktuan "
+            "rishikuesit. Një mjet që i kap rastet e rënda dhe i lëshon ato të lehtat "
+            "nuk është i njëjti mjet me një tjetër që i lëshon të dyja, por një recall "
+            "i vetëm i mesatarizuar i paraqet njësoj.",
+            "Pajtimi mes dy qasjeve matet me koeficientin kappa (Cohen, 1960) dhe jo "
+            "me pajtimin e papërpunuar. Kur 78% e etiketave janë negative, dy "
+            "detektorë që të dy ndezin rrallë pajtohen mbi nëntë të dhjetat e "
+            "bashkësisë pa mësuar asgjë nga njëri-tjetri; kappa e heq atë pajtim që "
+            "pritet nga rastësia. Krahas saj raportohen të katër qelizat, sepse pyetja "
+            "e punimit nuk është sa shpesh pajtohen, por çfarë kap secila vetëm.",
+            "Motori i refaktorimit nuk matet me këto shifra. Për të numërohen vendet e "
+            "detektuara, ato të transformuara dhe ato të refuzuara sipas arsyes, plus "
+            "verdikti i verifikimit për secilin rishkrim. Një refuzim nuk hyn si "
+            "dështim, sepse parakushti i paprovuar është pikërisht sjellja e kërkuar.",
+        ],
+    ),
+    (
+        "4.7",
         "Riprodhueshmëria",
         [
             "Çdo numër i raportuar në Kapitullin 5 prodhohet nga një skript dhe "
@@ -660,7 +696,7 @@ def chapter_5() -> list:
                  "Figura 1. MCC për të dyja qasjet"),
                 "Qasja B e tejkalon Qasjen A në çdo erë. Por përmbledhja nuk e tregon "
                 "se çka kap secila vetëm, ndaj raportohen edhe të katër qelizat bashkë "
-                "me kappa-n e Cohen-it.",
+                "me koeficientin kappa.",
                 ("table", "Tabela 4. Pajtimi mes dy qasjeve",
                  ["Erë", "κ", "Të dyja", "Vetëm A", "Vetëm B", "n"], agreement_rows),
                 ("figure", str(FIGURES / "figura_3_pajtimi_a_b.png"),

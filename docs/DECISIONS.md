@@ -972,3 +972,39 @@ kërkesë për një transformim që nuk ekziston, dhe dallimi ka rëndësi për 
 **Pasojat.** Ndërfaqja e shfaq refuzimin me arsyen bashkë me të, jo si dështim.
 Kjo është ajo që përdoruesi ka nevojë të dijë: pse kodi i tij nuk mund të
 rishkruhet automatikisht.
+
+---
+
+### VD-37: Koherenca e citimeve verifikohet nga një kontroll, jo nga leximi
+
+**Konteksti.** Shablloni i UBT-së e ndan listën në dy pjesë: te «Referencat» hyjnë
+vetëm burimet e cituara në tekst, ndërsa çdo burim i lexuar por i pacituar shkon te
+«Bibliografia». `build_thesis.build_references` e renderon listën nga `references.py`
+në vend që ta shtypë në dokument, pikërisht që të dy anët të mos ndahen nga
+njëra-tjetra. Por renderimi e siguron vetëm numërimin dhe renditjen; nëse teksti
+citon një burim që lista nuk e ka, ose lista mban një burim që teksti nuk e citon
+më, asgjë nuk e thotë. Të dyja janë gabime formati që i kap vetëm një lexim i
+kujdesshëm, dhe pikërisht ai lexim bëhet natën para dorëzimit.
+
+**Vendimi.** `docs/thesis/check_citations.py` i nxjerr citimet nga i njëjti tekst që
+shkon në dokument dhe i krahason me listën në të dy drejtimet. Kontrolli del me kod
+jo-zero dhe hyn në CI si punë e vetën; `build_thesis.py` e thërret pas ruajtjes dhe
+i shtyp mospërputhjet si paralajmërim, pa e ndalur ndërtimin — gjatë shkrimit një
+citim para referencës së vet është gjendje kalimtare normale.
+
+**Çka nxori menjëherë.** Katër burime ishin në listë pa u cituar askund: McCabe
+(1976) për kompleksitetin ciklomatik, Matthews (1975) për MCC-në, Cohen (1960) për
+kappa-n, dhe tree-sitter-i mbi të cilin ndërtohet analizuesi. Të katërta zbatohen
+nga kodi, pra mungonte citimi, jo burimi. Gjatë shtimit të tyre doli se Kapitulli 4
+nuk i përkufizonte fare masat me të cilat raportohet Kapitulli 5; tani i përkufizon
+te 4.6.
+
+**Alternativat.** Lexim manual para dorëzimit: pikërisht ajo që kontrolli e
+zëvendëson, dhe e vetmja gjë që nuk shkallëzohet me numrin e redaktimeve. Ndalimi i
+ndërtimit kur citimet nuk përputhen: e bën të pamundur ndërtimi i një drafti gjatë
+shkrimit, pra do të anashkalohej brenda javës.
+
+**Kufizimi.** Kontrolli i njeh dy format e shabllonit — «Fowler (2018)» dhe
+«(Fowler, 2018)» — dhe e pranon lakimin shqip të mbiemrit vetëm kur heqja e mbaresës
+jep pikërisht një autor të listës. Një citim i shkruar në ndonjë formë të tretë do
+të raportohej si i palistuar; kjo është zhurmë e dukshme, jo heshtje.
