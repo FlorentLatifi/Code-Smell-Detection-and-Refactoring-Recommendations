@@ -1215,3 +1215,28 @@ kërkim në tërë projektin dhe një zgjidhës simbolesh.
 **Pasojat.** Motori automatizon tani tri transformime nga pesë, dhe
 `LongParameterList` del nga lista vetëm-këshillë. Tabela N/M/K e Kapitullit 5
 rigjenerohet, sepse numrat e mëparshëm përshkruajnë një motor me dy transformime.
+
+---
+
+### VD-43: Edhe abstrakti i merr shifrat nga rezultatet
+
+**Konteksti.** Kapitulli 5 dhe Shtojca i lexojnë numrat nga `data/results/`, sepse
+një numër i shkruar me dorë dhe i rigjeneruar diku tjetër ndahen heshtazi (VD-38).
+Abstrakti bënte përjashtim: precizioni, recall-i dhe MCC-ja ishin shtypur si prozë
+te `build_thesis.py`. Ai është i vetmi vend ku ajo ndarje do të lexohej e para nga
+komisioni.
+
+**Vendimi.** `chapters.abstract()` i llogarit brezat nga të njëjtët skedarë që
+ushqejnë Kapitullin 5. Abstrakti tani përmban zero numra të shkruar me dorë.
+
+**Pasojat.** Ai u përditësua vetvetiu me atë që ishte matur ndërkohë dhe mungonte:
+ashpërsia e derivuar që nuk e riprodhon gjykimin e rishikuesve, tavani i pajtimit
+mes vetë rishikuesve, dhe intervalet e besimit. Numri i transformimeve të
+automatizuara lexohet nga `system_reference.json`, ndaj shtimi i të tretit e
+korrigjoi vetë abstraktin.
+
+**Kufizimi.** Pjesa e refaktorimit dhe tavani shfaqen vetëm kur skedarët përkatës
+ekzistojnë; përndryshe abstrakti i heq ato fjali në vend që të pretendojë një
+numër. Kjo e mban punimin të ndërtueshëm gjatë një ekzekutimi të gjatë, njësoj si
+Kapitulli 5.4.
+

@@ -31,8 +31,16 @@ import sys
 import unicodedata
 from collections.abc import Iterator
 
-from build_thesis import ABSTRACT, ACKNOWLEDGEMENTS, GLOSSARY, INTRODUCTION
-from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5, chapter_8
+from build_thesis import ACKNOWLEDGEMENTS, GLOSSARY, INTRODUCTION
+from chapters import (
+    CHAPTER_2,
+    CHAPTER_3,
+    CHAPTER_4,
+    CHAPTER_6,
+    abstract,
+    chapter_5,
+    chapter_8,
+)
 from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 
 # Një mbiemër: fillon me shkronjë të madhe dhe mund të jetë i përbërë
@@ -96,7 +104,7 @@ def _strings(item: object) -> Iterator[str]:
 def thesis_text() -> str:
     """I tërë teksti që shkon në dokument, si një varg i vetëm."""
     sources = [
-        ABSTRACT,
+        abstract(),
         ACKNOWLEDGEMENTS,
         GLOSSARY,
         INTRODUCTION,

@@ -1,4 +1,4 @@
-"""Përmbajtja e kapitujve 2 deri 6.
+"""Abstrakti dhe përmbajtja e kapitujve 2 deri 8.
 
 E ndarë nga `build_thesis.py` sepse ai është ndërtues formati dhe ky është tekst;
 bashkimi i të dyjave do ta bënte të vështirë të ndryshohej njëri pa prekur
@@ -43,6 +43,108 @@ def _load_if_present(name: str) -> dict | None:
     """
     path = RESULTS / name
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+# ======================================================================
+# Abstrakti
+# ======================================================================
+def abstract() -> list[str]:
+    """Abstrakti, me çdo shifër të lexuar nga `data/results/`.
+
+    Shifrat këtu janë të njëjtat që raporton Kapitulli 5, dhe lexohen nga i njëjti
+    burim. Të shtypura me dorë, ato do të ishin i vetmi vend në punim ku një numër
+    i rigjeneruar dhe një numër i shkruar mund të ndaheshin heshtazi — dhe do të
+    ishte pikërisht faqja e parë që lexon komisioni.
+    """
+    rules = _load("rules_evaluation.json")
+    ml = _load("ml_evaluation.json")
+    dataset = _load("mlcq_dataset.json")
+    reference = _load("system_reference.json")
+    refactoring = _load_if_present("refactoring_evaluation.json")
+    ceiling = _load_if_present("reviewer_agreement.json")
+
+    primary = [
+        rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]
+        for smell in sorted(rules["per_smell"])
+    ]
+    best = [
+        ml["per_smell"][smell]["models"][ml["per_smell"][smell]["best_model"]]
+        for smell in sorted(ml["per_smell"])
+    ]
+    severity = [
+        rules["per_smell"][smell]["strategy"]["severity_agreement"]["kappa_quadratic"]
+        for smell in sorted(rules["per_smell"])
+    ]
+    severity = [value for value in severity if value is not None]
+
+    metrics = len(reference["metrics"]["class"]) + len(reference["metrics"]["method"])
+    automated = len({s["automated"] for s in reference["strategies"] if s["automated"]})
+
+    def band(values: list[float]) -> str:
+        return f"{min(values):.3f} deri {max(values):.3f}"
+
+    # Ndarësi i mijësheve në shqip është hapësira, jo presja, dhe zëvendësimi bëhet
+    # mbi numrin e vetëm e jo mbi paragrafin: një herë ai u lëshua mbi tërë tekstin
+    # dhe i hoqi të gjitha presjet e fjalisë.
+    samples = f"{dataset['rows']:,}".replace(",", " ")
+
+    paragraphs = [
+        "Cilësia e brendshme e kodit burimor përcakton sa lehtë një sistem softuerik "
+        "mund të kuptohet, të ndryshohet dhe të zgjerohet gjatë gjithë jetës së tij. "
+        "Code smells janë simptoma të strukturës së dobët të dizajnit që nuk shkaktojnë "
+        "gabime të drejtpërdrejta, por e rrisin ndjeshëm koston e ndryshimeve të "
+        "ardhshme. Identifikimi manual i tyre nuk është i realizueshëm në sisteme të "
+        "mëdha, ndërsa mjetet ekzistuese të analizës statike mbështeten kryesisht në "
+        "pragje fikse mbi metrika të veçuara, çka prodhon numër të konsiderueshëm "
+        "alarmesh të rreme dhe ndalet te identifikimi i problemit pa propozuar zgjidhje.",
+        f"Ky punim ndërton një sistem që i zbulon code smells në dy mënyra të pavarura "
+        f"dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
+        f"e publikuara të detektimit mbi {metrics} metrika; e dyta trajnon klasifikues "
+        f"mbi po ato metrika. Të dyja vlerësohen mbi {samples} mostra nga "
+        f"{dataset['repositories']} depo Java, të etiketuara nga zhvillues "
+        f"profesionistë, me ndarje të grupuar sipas depos dhe me të njëjtin kod "
+        f"pikëzimi. Sistemi përfshin edhe një motor refaktorimi që rishkruan kod vetëm "
+        f"kur i provon parakushtet e veta nga pema sintaksore, dhe një ndërfaqe web mbi "
+        f"të tria.",
+        f"Strategjitë e publikuara dolën të sakta por të kursyera: precizion "
+        f"{band([m['precision'] for m in primary])} me recall "
+        f"{band([m['recall'] for m in primary])}. Të ndara sipas ashpërsisë, ato "
+        f"degradojnë me hijeshi, duke i kapur rastet e rënda shumë më mirë se ato të "
+        f"lehtat. Klasifikuesit i tejkaluan qartë, me MCC "
+        f"{band([m['mcc'] for m in best])} kundrejt "
+        f"{band([m['mcc'] for m in primary])}, dhe i rizbuluan pjesërisht metrikat që "
+        f"përdorin vetë strategjitë. Intervalet e besimit me bootstrap sipas depos "
+        f"tregojnë se ajo përparësi e kalon zeron te të katër erërat.",
+    ]
+
+    third = (
+        f"Dy rezultate janë negative dhe raportohen si të tilla. Ashpërsia që sistemi "
+        f"e derivon nga teprica mbi pragje nuk e riprodhon gjykimin e rishikuesve: "
+        f"pajtimi i matur me kappa me peshë qëndron te {band(severity)}, dhe gabimi "
+        f"është i njëanshëm nga mbivlerësimi. "
+    )
+    if ceiling is not None:
+        ceilings = [entry["mcc"] for entry in ceiling["per_smell"].values()]
+        third += (
+            f"Po ashtu, vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}, "
+            f"çka tregon se një pjesë e pareduktueshme e gabimit të çdo detektori i "
+            f"takon përkufizimit të erës dhe jo detektorit. "
+        )
+    if refactoring is not None:
+        share = refactoring["applied"] / refactoring["detected"]
+        third += (
+            f"Motori i refaktorimit automatizon {automated} transformime dhe transformoi "
+            f"{share:.1%} të vendeve të detektuara, ku shumica e refuzimeve vjen nga "
+            f"forma e kodit dhe nga rrjedha e kontrollit; refuzimi trajtohet si rezultat "
+            f"i saktë dhe numërohet. "
+        )
+    third += (
+        "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
+        "riprodhueshëm nga korpusi te rezultati."
+    )
+
+    paragraphs.append(third)
+    return paragraphs
 
 
 # ======================================================================
