@@ -820,8 +820,8 @@ def chapter_5() -> list:
                 "depos, pra përshkruajnë atë që pritet mbi një projekt që modeli nuk e "
                 "ka parë kurrë.",
                 ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
-                *_explanation_paragraphs(ml),
                  "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
+                *_explanation_paragraphs(ml),
             ],
         ),
         (
@@ -1030,9 +1030,11 @@ def _explanation_paragraphs(ml: dict) -> list:
         entry = ml["per_smell"][smell]["explained"]
         if not entry["flagged"]:
             continue
-        top = ", ".join(
-            f"{name} ({count})" for name, count in list(entry["decisive_feature"].items())[:3]
-        )
+        # Renditur sipas numrit këtu e jo sipas skedarit: `json.dumps` e shkruan
+        # atë me çelësa të renditur alfabetikisht, ndaj radha e ruajtur nuk është
+        # radha e rëndësisë.
+        ranked = sorted(entry["decisive_feature"].items(), key=lambda pair: -pair[1])
+        top = ", ".join(f"{name} ({count})" for name, count in ranked[:3])
         rows.append([
             SMELL_SQ[smell],
             str(entry["flagged"]),

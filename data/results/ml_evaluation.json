@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "7a7c6c4ab179ce4138f0510df64a1076780b77d7",
+    "commit": "d7c9d983d7fced1071147f651ece48bfa36d356d",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -43,6 +43,25 @@
         "positives": 350,
         "repositories": 358,
         "samples": 1407
+      },
+      "explained": {
+        "decisive_feature": {
+          "c_AMW": 3,
+          "c_ATFD": 1,
+          "c_CBO": 41,
+          "c_CLOC": 86,
+          "c_MAXCC": 1,
+          "c_NOAM": 83,
+          "c_NOF": 11,
+          "c_NOM": 7,
+          "c_RFC": 13,
+          "c_TCC": 5,
+          "c_WMC": 5,
+          "c_WOC": 13
+        },
+        "explained": 269,
+        "flagged": 368,
+        "share": 0.731
       },
       "importances": {
         "c_AMW": 0.012826934873384557,
@@ -163,6 +182,25 @@
         "repositories": 298,
         "samples": 821
       },
+      "explained": {
+        "decisive_feature": {
+          "c_AMW": 3,
+          "c_CBO": 20,
+          "c_CLOC": 48,
+          "c_LCOM": 10,
+          "c_LCOM3": 5,
+          "c_MAXCC": 2,
+          "c_NOAM": 5,
+          "c_NOF": 3,
+          "c_RFC": 1,
+          "c_TCC": 1,
+          "c_WMC": 2,
+          "c_WOC": 21
+        },
+        "explained": 121,
+        "flagged": 175,
+        "share": 0.6914
+      },
       "importances": {
         "c_AMW": 0.025894063880706975,
         "c_ATFD": 0.004027429130107462,
@@ -281,6 +319,16 @@
         "positives": 72,
         "repositories": 278,
         "samples": 823
+      },
+      "explained": {
+        "decisive_feature": {
+          "m_MAXNESTING": 1,
+          "m_MLOC": 53,
+          "m_NOAV": 5
+        },
+        "explained": 59,
+        "flagged": 66,
+        "share": 0.8939
       },
       "importances": {
         "c_AMW": -0.0032008049913996237,
@@ -409,6 +457,15 @@
         "positives": 216,
         "repositories": 354,
         "samples": 1483
+      },
+      "explained": {
+        "decisive_feature": {
+          "m_CC": 2,
+          "m_MLOC": 220
+        },
+        "explained": 222,
+        "flagged": 231,
+        "share": 0.961
       },
       "importances": {
         "c_AMW": -0.0018787491306348808,
