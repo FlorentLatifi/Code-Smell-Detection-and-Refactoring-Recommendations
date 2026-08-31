@@ -7,6 +7,8 @@ without adding a column for it.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from javasmell.analysis import analyze_path, analyze_source
 from javasmell.detectors.rules import detect_entity
 from javasmell.evaluation.dataset import (
@@ -18,6 +20,11 @@ from javasmell.evaluation.dataset import (
     row,
 )
 from javasmell.evaluation.mlcq import Review, Sample
+
+# Anchored to this file, not to the working directory: ``analyze_path`` reports an
+# absent root as an empty project, so a relative path turns "run pytest from the
+# repository root" into two failures that look like a metrics bug.
+FIXTURES = str(Path(__file__).parent / "fixtures")
 
 
 def make_sample(
@@ -49,7 +56,7 @@ def test_declared_columns_still_match_what_the_calculator_produces():
     or sweep can see it -- the same failure mode as the two LOC counters that
     drifted apart in VD-21, and just as invisible.
     """
-    project = analyze_path("tests/fixtures")
+    project = analyze_path(FIXTURES)
     measured_class: set[str] = set()
     measured_method: set[str] = set()
     for unit in project.units:
@@ -173,7 +180,7 @@ def test_a_rebuilt_entity_gets_the_same_verdicts_as_the_measured_one():
     claim is checked against every class and method in the fixtures rather than
     against one hand-picked example.
     """
-    project = analyze_path("tests/fixtures")
+    project = analyze_path(FIXTURES)
     checked = 0
     for unit in project.units:
         for cls in unit.classes:
