@@ -6,6 +6,11 @@ two is deliberate: Encapsulate Field and Move Method both need to find every
 reference in the project, which the parser cannot prove because it is not a
 symbol resolver (VD-30). They stay as advice and are never applied.
 
+Introduce Parameter Object was in that list until the locality argument was read
+the other way round: changing a signature needs every call site, and Java already
+confines the call sites of a ``private`` method to the file being rewritten. It
+applies there and refuses everywhere else.
+
 The mapping is one smell to one transformation. A smell with several applicable
 transformations would need a rule for choosing between them, and there is no
 second case yet to derive that rule from.
@@ -15,7 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from javasmell.refactor import extract_method, guard_clauses
+from javasmell.refactor import extract_method, guard_clauses, introduce_parameter_object
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.locate import Site
 
@@ -27,6 +32,10 @@ AUTOMATED: dict[str, tuple[str, Transformation]] = {
     "DeepNesting": (guard_clauses.NAME, guard_clauses.apply),
     "LongMethod": (extract_method.NAME, extract_method.apply),
     "BrainMethod": (extract_method.NAME, extract_method.apply),
+    "LongParameterList": (
+        introduce_parameter_object.NAME,
+        introduce_parameter_object.apply,
+    ),
 }
 
 # Advised by the detectors, never applied. Kept here so the reason travels with
@@ -36,7 +45,6 @@ ADVISORY_ONLY = {
     "GodClass": "moving members needs call sites this analysis cannot resolve",
     "LargeClass": "moving members needs call sites this analysis cannot resolve",
     "FeatureEnvy": "moving a method needs every call site",
-    "LongParameterList": "changing a signature needs every call site",
 }
 
 

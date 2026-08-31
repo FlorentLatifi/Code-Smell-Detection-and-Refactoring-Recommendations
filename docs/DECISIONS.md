@@ -1159,3 +1159,59 @@ ndarjen e vet të korpusit; regjistrohet si punë e ardhshme.
 rezultatet e punimit. Një implementim i vetëm i ashpërsisë (`worst_severity`) i
 shërben si kalimit mbi korpus ashtu edhe rirenditjes, që numri i raportuar të mos
 ndahet nga numri që sheh përdoruesi.
+
+---
+
+### VD-42: Introduce Parameter Object aplikohet te metodat private, pa e prekur trupin
+
+**Konteksti.** VD-30 e vendosi radhën e transformimeve sipas lokalitetit dhe e la
+Introduce Parameter Object-in te «vetëm metodat private», si punë e planifikuar që
+nuk u bë. Argumenti aty ishte se ndryshimi i një nënshkrimi kërkon çdo pikë
+thirrjeje. Por Java-ja e kufizon vetë `private`-in te trupi i klasës së jashtme, pra
+për një metodë private çdo thirrje ndodhet në skedarin që po rishkruhet — e
+provueshme nga e njëjta pemë që motori tashmë e ka. Modifikuesi i qasjes nuk e bën
+metodën më të lehtë; ai është i tërë kushti që e bën të mundur.
+
+**Vendimi i parë: aplikohet vetëm te metodat private.** Çdo formë tjetër refuzohet.
+
+**Vendimi i dytë, më pak i zakonshëm: trupi nuk rishkruhet.** Fowler-i e kalon
+objektin nëpër trup dhe i heq emrat e lirë. Ky motor i ri-deklaron ata si variabla
+lokalë në rreshtat e parë:
+
+    private int total(TotalParams params) {
+        Order order = params.order;
+        int qty = params.qty;
+        <trupi origjinal, i paprekur>
+
+Kjo i heq dy mënyrat me të cilat transformimi zakonisht gabohet: një emër i
+mbivendosur në një fushëveprim të brendshëm, dhe një parametër që trupi ia cakton
+vlerën. Lokalët mbajnë të njëjtin emër, të njëjtin tip dhe të njëjtën mundësi
+caktimi që Java u jep parametrave; meqë Java kalon me vlerë, caktimi i një
+parametri nuk e ka prekur kurrë thirrësin, ndaj lokali sillet identik. Ndryshon
+ajo për të cilën është era — nënshkrimi — dhe mbetet e paprekur ajo që shkroi
+autori.
+
+**Vendimi i tretë: klasa e objektit del si `static` e ndërfutur, vetëm brenda një
+klase të nivelit të parë.** Një klasë `static` e ndërfutur brenda një klase të
+brendshme është e paligjshme para Java 16. Kufizimi te klasat e nivelit të parë e
+mban daljen të ligjshme në çdo version, në vend që të varet nga kompiluesi që
+rastis të ekzekutohet. Ky është kufizim portabiliteti, jo i analizës, dhe hyn në
+shpërndarjen e refuzimeve si i tillë.
+
+**Çka refuzohet.** Emër i mbingarkuar (një thirrje e zhveshur nuk i atribuohet
+dot), thirrje përmes një instance tjetër (`private` lejon qasjen mes instancave të
+së njëjtës klasë, pra `other.total(...)` mund të jetë e jona ose jo), referencë
+metode `this::total`, varargs, metodë gjenerike, parametër me anotim, klasë
+mbështjellëse e ndërfutur. Refuzohet gjithashtu çdo skedar ku emri i metodës del
+edhe si emër i një variabli — mbi-refuzim i vetëdijshëm, sepse analiza nuk i dallon
+dot pa zgjidhës simbolesh.
+
+**Alternativat.** Rishkrimi i plotë i trupit sipas Fowler-it: më besnik ndaj
+katalogut, por kërkon zgjidhjen e çdo shfaqjeje emri brenda trupit, me
+mbivendosjet dhe lambdat që e shoqërojnë; pikërisht ajo klasë problemesh që kjo
+formë e shmang. Zgjerimi te metodat jo-private: rihap VD-02, sepse do të kërkonte
+kërkim në tërë projektin dhe një zgjidhës simbolesh.
+
+**Pasojat.** Motori automatizon tani tri transformime nga pesë, dhe
+`LongParameterList` del nga lista vetëm-këshillë. Tabela N/M/K e Kapitullit 5
+rigjenerohet, sepse numrat e mëparshëm përshkruajnë një motor me dy transformime.

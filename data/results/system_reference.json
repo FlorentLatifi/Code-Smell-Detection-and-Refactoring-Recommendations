@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "b1db822985b7f9ea55eb27284629db99048b0ffd",
+    "commit": "fc227243bff9bda3d19a56ad2a2c3c0e9103e283",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -133,8 +133,8 @@
       "title": "Long Method (Fowler): effective lines of code past the threshold"
     },
     {
-      "advisory_reason": "changing a signature needs every call site",
-      "automated": null,
+      "advisory_reason": null,
+      "automated": "IntroduceParameterObject",
       "formula": "NP > FEW",
       "refactorings": [
         "IntroduceParameterObject",

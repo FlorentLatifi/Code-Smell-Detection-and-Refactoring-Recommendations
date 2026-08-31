@@ -33,9 +33,10 @@ Modeli i shumicës nuk ndez asnjëherë për asnjë erë, ndaj çdo shifër më 
 mësim i vërtetë dhe jo çekuilibër i shfrytëzuar. Ndarja është e grupuar sipas depos,
 kurrë e rastësishme sipas rreshtave.
 
-Motori i refaktorimit aplikon dy transformime — Guard Clauses dhe Extract Method — dhe
-i propozon tri të tjerat pa i aplikuar, sepse ato kërkojnë gjetjen e çdo reference në
-projekt, çka analiza nuk e provon dot. **Refuzimi është rezultat i saktë** dhe raportohet
+Motori i refaktorimit aplikon tri transformime — Guard Clauses, Extract Method dhe
+Introduce Parameter Object për metodat `private` — dhe i propozon dy të tjerat pa i
+aplikuar, sepse ato kërkojnë gjetjen e çdo reference në projekt, çka analiza nuk e
+provon dot. **Refuzimi është rezultat i saktë** dhe raportohet
 si i tillë.
 
 ## Struktura

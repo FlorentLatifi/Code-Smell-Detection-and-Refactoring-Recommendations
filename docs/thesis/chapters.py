@@ -245,10 +245,16 @@ CHAPTER_3 = [
             "E para: analizuesi regjistron fakte sintaksore dhe nuk zgjidh simbole. "
             "Kjo e mban sistemin të thjeshtë dhe të shpejtë, por do të thotë se çdo "
             "transformim që duhet të gjejë të gjitha referencat ndaj një emri në "
-            "projekt nuk i provon dot parakushtet e veta. Rrjedhimisht tri nga pesë "
+            "projekt nuk i provon dot parakushtet e veta. Rrjedhimisht dy nga pesë "
             "transformimet e planifikuara mbeten propozim dhe nuk aplikohen "
             "automatikisht. Kjo nuk është mangësi implementimi por pasojë e "
             "deklaruar e zgjedhjes.",
+            "Kufiri nuk është gjithmonë aty ku duket. Ndryshimi i një nënshkrimi "
+            "kërkon çdo pikë thirrjeje, por Java-ja i kufizon vetë thirrjet e një "
+            "metode `private` brenda skedarit ku ajo jeton. Prandaj Introduce "
+            "Parameter Object aplikohet pikërisht atje dhe refuzon kudo tjetër: "
+            "modifikuesi i qasjes, e jo vështirësia e transformimit, është kushti që "
+            "e bën të provueshëm.",
             "E dyta: refaktorimi bëhet me transformime mbi pemën sintaksore dhe jo me "
             "gjenerim teksti. Një model gjuhësor do të prodhonte kod për shumë më "
             "tepër raste, por pretendimi i punimit është që ajo çka aplikohet të jetë "
@@ -491,7 +497,7 @@ CHAPTER_6 = [
             "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
             "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Verifikimi "
             "me suitat e testeve të vetë projekteve mbetet punë e ardhshme.",
-            "Analizuesi nuk zgjidh simbole, ndaj tri nga pesë transformimet e "
+            "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
             "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
             "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
         ],

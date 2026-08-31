@@ -19,7 +19,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Testet | ✅ 289 kalojnë | vlera të derivuara me dorë; 1 anashkalohet pa symlink |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
-| Motori i refaktorimit (C) | ✅ e mbyllur | 2 transformime të automatizuara, 3 vetëm këshillë (VD-30) |
+| Motori i refaktorimit (C) | ✅ e mbyllur | 3 transformime të automatizuara, 2 vetëm këshillë (VD-30, VD-42) |
 | API | ✅ e plotë | `/analyze`, `/metrics`, `/refactor/preview`, `/health`; pa gjendje (VD-35) |
 | Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje: analiza dhe rezultatet (VD-40) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
@@ -359,7 +359,7 @@ nuk i provon dot parakushtet e veta.
 |---|---|---|---|---|
 | 1 ✅ | Guard Clauses | DeepNesting | një trup metode | e mbaruar |
 | 2 ✅ | Extract Method | LongMethod, BrainMethod | një trup metode | e mbaruar |
-| 3 | Introduce Parameter Object | LongParameterList | çdo pikë thirrjeje | vetëm metoda `private` |
+| 3 ✅ | Introduce Parameter Object | LongParameterList | çdo pikë thirrjeje | e mbaruar për metodat `private` |
 | 4 | Encapsulate Field | DataClass | çdo referencë ndaj fushës | vetëm propozim |
 | 5 | Move Method | FeatureEnvy | thirrjet dhe referencat | vetëm propozim |
 
