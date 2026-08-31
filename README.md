@@ -84,6 +84,17 @@ JAVASMELL_ROOT=/shtegu/i/lejuar python -m uvicorn javasmell.api.app:create_app -
 cd frontend && npm install && npm run dev
 ```
 
+Qasja B shërbehet vetëm nëse modelet janë trajnuar — `data/models/` nuk komitohet,
+sepse depoja mban recetën dhe jo rezultatin:
+
+```bash
+python scripts/train_models.py
+```
+
+Pa to, `/analyze` me `include_model` kthen `available: false` me arsyen, dhe
+rregullat përgjigjen si zakonisht. Modeli pyetet vetëm mbi një dosje projekti, jo
+mbi një skedar të vetëm (VD-48).
+
 Konfigurimi i të gjitha mjeteve është i përqendruar në `backend/pyproject.toml`.
 `mypy` punon në modalitet **strict**, dhe paralajmërimet e testeve trajtohen si
 gabime: një `DeprecationWarning` nga tree-sitter është pikërisht sinjali që

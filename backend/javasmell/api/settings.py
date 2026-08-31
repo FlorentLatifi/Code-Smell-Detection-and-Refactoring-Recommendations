@@ -28,6 +28,14 @@ DEFAULT_MAX_BYTES = 200_000_000
 # hold a worker forever.
 DEFAULT_TIMEOUT_S = 300
 
+# Approach B's artefacts. These are located relative to the repository rather
+# than to `root`, because they are part of the installation and not part of the
+# code under analysis: pointing the analyser at a project must never change which
+# model judges it.
+_REPO = Path(__file__).resolve().parents[3]
+DEFAULT_MODELS_DIR = _REPO / "data" / "models"
+DEFAULT_DATASET = _REPO / "data" / "results" / "mlcq_dataset.csv"
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -37,6 +45,11 @@ class Settings:
     max_files: int = DEFAULT_MAX_FILES
     max_bytes: int = DEFAULT_MAX_BYTES
     timeout_s: int = DEFAULT_TIMEOUT_S
+    #: Where `scripts/train_models.py` left the fitted models and their manifests.
+    models_dir: Path = DEFAULT_MODELS_DIR
+    #: The table those models were fitted on, read back for the median a
+    #: verdict is explained against.
+    dataset_csv: Path = DEFAULT_DATASET
 
     @classmethod
     def from_environment(cls) -> Settings:
@@ -50,4 +63,6 @@ class Settings:
             max_files=int(os.environ.get("JAVASMELL_MAX_FILES", DEFAULT_MAX_FILES)),
             max_bytes=int(os.environ.get("JAVASMELL_MAX_BYTES", DEFAULT_MAX_BYTES)),
             timeout_s=int(os.environ.get("JAVASMELL_TIMEOUT_S", DEFAULT_TIMEOUT_S)),
+            models_dir=Path(os.environ.get("JAVASMELL_MODELS", DEFAULT_MODELS_DIR)).resolve(),
+            dataset_csv=Path(os.environ.get("JAVASMELL_DATASET", DEFAULT_DATASET)).resolve(),
         )

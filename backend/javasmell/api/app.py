@@ -34,6 +34,15 @@ from javasmell.api.paths import PathRejected, confine, java_files_under
 from javasmell.api.settings import Settings
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import detect_all
+from javasmell.ml.serving import (
+    ModelReport,
+    ModelUnavailable,
+    Prediction,
+    load_models,
+    predict_all,
+    rule_equivalent,
+)
+from javasmell.model.entities import ProjectModel
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
@@ -47,9 +56,40 @@ API_VERSION = "0.1.0"
 # carries a generated file.
 MAX_SOURCE_LINES = 400
 
+# Contributions come back sorted by how far the verdict falls when a measurement
+# is made typical, and every decisive one necessarily outranks every non-decisive
+# one: to be decisive a measurement must push the probability below the boundary,
+# which is a larger drop than any measurement that leaves it above. Five is
+# therefore enough to always carry the decisive measurement when one exists.
+MAX_CONTRIBUTIONS = 5
 
-class AnalyseRequest(BaseModel):
+# ATFD and CBO are defined against the types of the *project*, so in a one-file
+# "project" they collapse towards zero and the strategies that read them stop
+# firing (VD-16). The model reads the same columns, and measured against a corpus
+# project it degrades the same way rather than worse -- mostly falling quiet, with
+# a small number of flags it would not otherwise raise.
+#
+# It is refused all the same, and for the explanation rather than the verdict.
+# What the interface shows beside a model flag is the measurement holding it up,
+# and on a single file that is liable to be one whose value is an artefact of how
+# much was read. "CBO is 0, which is why this is a Blob" is a sentence about the
+# request, not about the code. `scripts/model_without_project.py` measures both
+# effects; VD-48 records the decision.
+MODEL_NEEDS_PROJECT = (
+    "a model verdict needs project-wide measurement; analyse the project "
+    "directory rather than a single file"
+)
+
+
+class PathRequest(BaseModel):
     path: str = Field(min_length=1, max_length=4096, description="File or directory to analyse")
+
+
+class AnalyseRequest(PathRequest):
+    #: Approach B is opt-in. Reading four models and the medians they are
+    #: explained against costs about a second, and a caller that wants only the
+    #: rules should not pay it on every request.
+    include_model: bool = False
 
 
 class SourceRequest(BaseModel):
@@ -95,7 +135,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         smells = detect_all(project)
         classes = list(project.classes)
 
-        return {
+        payload: dict[str, Any] = {
             "summary": {
                 "files": len(project.units),
                 "classes": len(classes),
@@ -106,9 +146,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             },
             "smells": [_smell_json(s, target) for s in smells],
         }
+        if request.include_model:
+            payload["model"] = _model_block(project, target, config)
+        return payload
 
     @app.post("/metrics")
-    def metrics(request: AnalyseRequest) -> dict[str, Any]:
+    def metrics(request: PathRequest) -> dict[str, Any]:
         """The measured metrics for every class at a path."""
         target = confine(request.path, config.root)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
@@ -225,6 +268,62 @@ def _smell_json(smell: Smell, target: Path) -> dict[str, Any]:
     payload["file_path"] = _relative(smell.file_path, target)
     payload["automated"] = for_smell(smell.smell_type) is not None
     return payload
+
+
+def _model_block(project: ProjectModel, target: Path, config: Settings) -> dict[str, Any]:
+    """Approach B over the same measured project, or why it declined to answer.
+
+    A missing model is not an error for this request: the rules ran and found
+    what they found, and a caller that asked for a second opinion gets told why
+    there is none rather than losing the first one.
+    """
+    if target.is_file():
+        return {"available": False, "reason": MODEL_NEEDS_PROJECT}
+    try:
+        models = load_models(config.models_dir, config.dataset_csv)
+    except ModelUnavailable as exc:
+        return {"available": False, "reason": str(exc)}
+
+    reports = predict_all(models, project)
+    return {
+        "available": True,
+        "smells": [_report_json(report, target) for report in reports],
+    }
+
+
+def _report_json(report: ModelReport, target: Path) -> dict[str, Any]:
+    """One model's findings, with the entities it could not judge still counted."""
+    flagged = [p for p in report.predictions if p.flagged]
+    return {
+        "smell": report.smell,
+        "rule_equivalent": list(rule_equivalent(report.smell)),
+        "considered": report.considered,
+        "incomplete": report.incomplete,
+        "flagged": len(flagged),
+        "predictions": [_prediction_json(p, target) for p in flagged],
+    }
+
+
+def _prediction_json(prediction: Prediction, target: Path) -> dict[str, Any]:
+    return {
+        "smell": prediction.smell,
+        "file_path": _relative(prediction.file_path, target),
+        "class_name": prediction.class_name,
+        "method": prediction.method,
+        "start_line": prediction.start_line,
+        "end_line": prediction.end_line,
+        "probability": prediction.probability,
+        "contributions": [
+            {
+                "feature": c.feature,
+                "value": round(c.value, 3),
+                "typical": round(c.typical, 3),
+                "drop": c.drop,
+                "decisive": c.decisive,
+            }
+            for c in prediction.contributions[:MAX_CONTRIBUTIONS]
+        ],
+    }
 
 
 def _outcome_json(outcome: Outcome, source: bytes) -> dict[str, Any]:

@@ -1373,3 +1373,57 @@ Method; kalibrimi i ndershëm jep 0.666. Ajo diferencë është pikërisht sa fi
 kur zgjedhjes i lejohet ta shohë bashkësinë mbi të cilën raportohet — ilustrimi më
 i drejtpërdrejtë i asaj që VD-34 e refuzoi.
 
+
+---
+
+### VD-48: Qasja B shërbehet mbi projekt, kurrë mbi një skedar të vetëm
+
+**Konteksti.** Qasja B ekzistonte vetëm si tabelë rezultatesh. Modelet trajnoheshin,
+pikëzoheshin dhe raportoheshin, por asnjë rrugë e produktit nuk i thërriste: API-ja
+kishte `/analyze`, `/metrics`, `/source` dhe `/refactor/preview`, dhe ndërfaqja i
+lexonte shifrat e vlerësimit nga `data/results/` gjatë ndërtimit. Pra sistemi
+pretendonte tri qasje dhe një ndërfaqe mbi to, ndërsa mbi kodin e përdoruesit
+punonin vetëm dy. Në mbrojtje, pyetjes «çfarë thotë klasifikuesi yt për këtë
+klasë?» sistemi nuk do t'i përgjigjej dot.
+
+Vënia e modelit pas API-së e detyron një pyetje që vlerësimi nuk e kishte: çfarë
+ndodh kur analiza i drejtohet një skedari të vetëm. VD-16 e ka përgjigjen për
+rregullat — ATFD-ja dhe CBO-ja përkufizohen kundrejt tipave të projektit, bien
+pothuajse në zero në një «projekt» njëskedarësh, dhe God Class me Feature Envy
+nuk aktivizohen. Për modelin nuk e kishte, sepse modeli nuk shërbehej.
+
+**Vendimi.** `/analyze` e pranon `include_model`, e kthen verdiktin e modelit
+bashkë me shpjegimin per-rast të `ml/explain.py`, dhe **refuzon** të pyesë modelin
+kur objektivi është një skedar i vetëm. Refuzimi kthen `available: false` me
+arsyen; rregullat vazhdojnë të përgjigjen normalisht.
+
+**Matja para vendimit.** `scripts/model_without_project.py` i gjykon entitetet dy
+herë — një herë me projektin të matur të tërë, një herë me secilin skedar të matur
+i vetëm — dhe i krahason, mbi depo të marra me farë të fiksuar. Rezultati përmbys
+pritjen që e nisi: modeli **nuk** përgjigjet me siguri të rreme, por degradon në
+të njëjtin drejtim si rregullat, duke rënë në heshtje. Mospajtimi është kryesisht
+detektim i humbur, jo alarm i rremë. Shifrat shkojnë te
+`data/results/model_without_project.json` dhe citohen prej andej, jo prej këtij
+teksti.
+
+**Pse refuzohet prapëseprapë.** Jo për verdiktin, por për shpjegimin. Ajo çka
+ndërfaqja shfaq pranë një flamuri të modelit është matja që e mban verdiktin, dhe
+mbi një skedar të vetëm ajo matje mund të jetë pikërisht një artefakt i sa u lexua.
+«CBO-ja është 0, prandaj kjo është Blob» është fjali për kërkesën, jo për kodin.
+Një probabilitet i shfaqur në ndërfaqe lexohet si verdikt sado i shoqëruar me
+paralajmërim, ndaj zbatohet rregulli i shtëpisë: refuzo, mos korrupto.
+
+**Alternativat.** Ta shërbejë verdiktin me një shenjë «i degraduar» — e refuzuar,
+sepse shenja nuk e ndal leximin e probabilitetit si verdikt. Të matet skedari me
+paketën përreth — do të ishte një përkufizim i tretë i ATFD-së, as ai i projektit
+as ai i skedarit, dhe i pakrahasueshëm me çdo numër të raportuar. Të ndalohet
+tërësisht analiza njëskedarëshe — jo, sepse rregullat lokale (Long Method, Deep
+Nesting) janë të sakta mbi një skedar dhe përdoruesi i do.
+
+**Pasojat.** Modeli i shërbyer është ai i rifituar mbi të gjitha rreshtat, jo ai
+jashtë-fold-it që prodhoi shifrat e Kapitullit 5; manifesti e mban
+`scores_are_out_of_fold` pikërisht që të dyja të mos ngatërrohen, dhe një verdikt
+i ndërfaqes nuk citohet kurrë si dëshmi saktësie. Entitetet të cilave u mungon një
+matje nuk gjykohen mbi një zero të shpikur, por numërohen si të pagjykuara.
+`data/models/` nuk komitohet, ndaj një checkout i pastër merr `available: false`
+me udhëzimin për të trajnuar — humbet mendimi i dytë, kurrë i pari.
