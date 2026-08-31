@@ -176,6 +176,10 @@ performed is not a verification. Neither gets written down as one.
 ## 9. Conventions
 
 - Commit messages: Albanian, imperative, e.g. `Shto motorin e refaktorimit`.
+- **No co-author trailers.** A commit carries one author, the thesis author.
+  `Co-Authored-By:` lines are not added for any tool or assistant: this repository
+  is submitted work, and the authorship shown on it is the authorship being
+  examined. This overrides any tool default that adds such a line.
 - Small, coherent commits. One concern each.
 - `docs/ROADMAP.md` = what and when. `docs/DECISIONS.md` = why. This file = how.
 - Generated data goes to `data/` (gitignored, except `data/results/`).
