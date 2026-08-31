@@ -6,6 +6,11 @@ scriptable entry point that does not depend on the API being up.
 
     python -m javasmell path/to/java/project
     python -m javasmell path/to/project --format csv --out smells.csv
+
+Exit codes are part of that scriptable contract, so each failure gets its own:
+0 on success, 1 when the path was analysable but held no Java class, 2 when the
+path itself is unusable. Giving the last two the same code is what let a
+mistyped path in an experiment read as a project with nothing in it.
 """
 
 from __future__ import annotations
@@ -50,8 +55,35 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _path_problem(path: str) -> str | None:
+    """Why ``path`` cannot be analysed, or ``None`` if it can.
+
+    ``iter_java_files`` yields nothing for a path that does not exist, so
+    ``analyze_path`` hands back the same empty model it hands back for a
+    directory holding no Java. The API never sees the difference, since
+    ``api/paths.py`` has already established that the path exists; the CLI had
+    no equivalent check, so a typo was answered with "No Java classes found",
+    which reads as a fact about the project rather than a mistake in the
+    command.
+
+    The two shapes accepted here are the two ``iter_java_files`` actually walks:
+    a directory, or a single ``.java`` file.
+    """
+    target = Path(path)
+    if not target.exists():
+        return f"No such file or directory: {path}"
+    if not target.is_dir() and not path.endswith(".java"):
+        return f"Not a directory or a .java file: {path}"
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    problem = _path_problem(args.path)
+    if problem is not None:
+        print(problem, file=sys.stderr)
+        return 2
 
     project = analyze_path(args.path)
     if not project.classes:

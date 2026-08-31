@@ -39,6 +39,47 @@ def test_missing_sources_exit_non_zero(tmp_path, capsys):
     assert "No Java classes found" in capsys.readouterr().err
 
 
+def test_unusable_path_is_refused_before_any_analysis(tmp_path, capsys):
+    """A mistyped path must not be reportable as a project with nothing in it.
+
+    ``analyze_path`` returns an empty model for a path that does not exist, so
+    before this check a typo produced the very sentence a real but Java-free
+    directory produces. The empty directory above still exits 1; an unusable
+    path exits 2, which is what lets an experiment script tell the two apart.
+    """
+    missing = tmp_path / "typo"
+
+    assert main([str(missing)]) == 2
+
+    captured = capsys.readouterr()
+    assert f"No such file or directory: {missing}" in captured.err
+    assert captured.out == "", "nothing was analysed, so there is nothing to report"
+
+
+def test_non_java_file_is_refused(tmp_path, capsys):
+    """The path exists, but ``iter_java_files`` would walk straight past it."""
+    notes = tmp_path / "notes.txt"
+    notes.write_text("not Java", encoding="utf-8")
+
+    assert main([str(notes)]) == 2
+
+    captured = capsys.readouterr()
+    assert f"Not a directory or a .java file: {notes}" in captured.err
+    assert captured.out == ""
+
+
+def test_a_single_java_file_is_accepted(capsys):
+    """The other shape the walker handles, so the new check must let it through."""
+    one_file = str(Path(FIXTURES) / "Warehouse.java")
+
+    assert main([one_file, "--format", "metrics"]) == 0
+
+    rows = list(csv.reader(capsys.readouterr().out.splitlines()))
+    # Warehouse, Item and InvoicePrinter are three of the five fixture classes;
+    # three rows plus the header, against six rows for the whole directory.
+    assert len(rows) == 4
+
+
 def test_json_output_carries_the_documented_keys(capsys):
     assert main([FIXTURES, "--format", "json"]) == 0
 
