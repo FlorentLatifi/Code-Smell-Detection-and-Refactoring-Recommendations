@@ -949,6 +949,8 @@ def _confidence_section() -> list:
         f"të ngushta, për të njëjtën arsye që ndarja e trajnimit është e grupuar.",
         ("table", "Intervale besimi 95% për MCC-në",
          ["Erë", "A: rregullat", "B: modeli", "B − A", "E kalon zeron"], rows),
+        ("figure", str(FIGURES / "intervalet_e_besimit.png"),
+         "MCC me interval besimi 95% për të dyja qasjet"),
         "Përparësia e Qasjes B ndaj Qasjes A e kalon zeron te të katër erërat, pra nuk "
         "është artefakt i korpusit. Por intervalet janë të gjera — për Feature Envy-n "
         "gjerësia i kalon njëzet e pesë pikët — dhe kjo do të thotë se renditja e "
@@ -1069,6 +1071,8 @@ def _severity_section() -> list:
                 f"rishikuesit dhe vetëm {lenient} më lehtë "
                 f"({stricter / compared:.0%} kundrejt {lenient / compared:.0%}). Sistemi "
                 f"nuk gabon rastësisht: ai e mbivlerëson ashpërsinë.",
+                ("figure", str(FIGURES / "ashpersia_kundrejt_rishikuesve.png"),
+                 "Ashpërsia e derivuar kundrejt asaj që caktuan rishikuesit"),
                 "Shpjegimi qëndron te vetë ndërtimi i pikës. Për Long Method teprica matet "
                 "mbi një metrikë të vetme, ku dyfishi i pragut ka kuptim të drejtpërdrejtë. "
                 "Për strategjitë me disa kushte, pika është mesatarja e tepricave mbi "

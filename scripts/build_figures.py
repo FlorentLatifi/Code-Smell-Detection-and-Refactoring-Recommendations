@@ -240,11 +240,105 @@ def figure_threshold_sweep(sweep: Results) -> None:
     save(fig, "ndjeshmeria_e_pragjeve")
 
 
+def figure_confidence_intervals(intervals: Results) -> None:
+    """Brezi i besimit rreth çdo MCC-je, për të dyja qasjet.
+
+    Shiritat e gabimit janë e vetmja mënyrë e ndershme për ta parë renditjen mes
+    erërave: pikat e veçanta sugjerojnë një radhë që intervalet e mbivendosura e
+    hedhin poshtë.
+    """
+    smells = sorted(intervals["per_smell"])
+    positions = range(len(smells))
+    offset = 0.16
+
+    fig, ax = plt.subplots(figsize=(6.2, 3.4))
+    for label, key, colour, shift in (
+        ("Qasja A (rregulla)", "rules", MUTED, -offset),
+        ("Qasja B (ML)", None, ACCENT, offset),
+    ):
+        lows, highs, middles = [], [], []
+        for smell in smells:
+            entry = intervals["per_smell"][smell]
+            band = entry["intervals"][key or entry["best_model"]]
+            lows.append(band["median"] - band["low"])
+            highs.append(band["high"] - band["median"])
+            middles.append(band["median"])
+        ax.errorbar(
+            middles,
+            [p + shift for p in positions],
+            xerr=[lows, highs],
+            fmt="o",
+            color=colour,
+            markersize=5,
+            capsize=3,
+            linewidth=1.4,
+            label=label,
+        )
+
+    ax.set_yticks(list(positions))
+    ax.set_yticklabels([SMELL_LABELS[s] for s in smells])
+    ax.set_xlabel("MCC, me interval besimi 95% (bootstrap sipas depos)")
+    ax.set_xlim(0, 0.85)
+    ax.invert_yaxis()
+    # Poshtë-majtas është e vetmja zonë bosh: djathtas shiritat e Long Method-it
+    # e kalojnë legjendën.
+    ax.legend(frameon=False, fontsize=9, loc="lower left")
+    save(fig, "intervalet_e_besimit")
+
+
+def figure_severity_bias(rules: Results) -> None:
+    """Ku bie ashpërsia jonë kundrejt asaj që caktuan rishikuesit.
+
+    Tri kategori, jo një matricë e plotë: e njëjta, më e rëndë, më e lehtë. Gjetja
+    nuk është se pajtimi mungon, por se gabimi ka drejtim.
+    """
+    scale = ("minor", "major", "critical")
+    rank = {name: index for index, name in enumerate(scale)}
+    smells = sorted(rules["per_smell"])
+
+    exact, stricter, lenient = [], [], []
+    for smell in smells:
+        matrix = rules["per_smell"][smell]["strategy"]["severity_agreement"]["matrix"]
+        counts = {"same": 0, "over": 0, "under": 0}
+        for actual, predictions in matrix.items():
+            for predicted, count in predictions.items():
+                if rank[predicted] > rank[actual]:
+                    counts["over"] += count
+                elif rank[predicted] < rank[actual]:
+                    counts["under"] += count
+                else:
+                    counts["same"] += count
+        total = sum(counts.values()) or 1
+        exact.append(100 * counts["same"] / total)
+        stricter.append(100 * counts["over"] / total)
+        lenient.append(100 * counts["under"] / total)
+
+    fig, ax = plt.subplots(figsize=(6.2, 3.0))
+    positions = range(len(smells))
+    bottom = [0.0] * len(smells)
+    for values, label, colour in (
+        (exact, "e njëjta ashpërsi", ACCENT),
+        (stricter, "më e rëndë se rishikuesit", MUTED),
+        (lenient, "më e lehtë se rishikuesit", LIGHT),
+    ):
+        ax.barh(list(positions), values, left=bottom, label=label, color=colour, height=0.6)
+        bottom = [b + v for b, v in zip(bottom, values, strict=True)]
+
+    ax.set_yticks(list(positions))
+    ax.set_yticklabels([SMELL_LABELS[s] for s in smells])
+    ax.set_xlabel("Përqindje e mostrave ku të dyja anët shohin një erë")
+    ax.set_xlim(0, 100)
+    ax.invert_yaxis()
+    ax.legend(frameon=False, fontsize=8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.18))
+    save(fig, "ashpersia_kundrejt_rishikuesve")
+
+
 def main() -> int:
     rules = load("rules_evaluation.json")
     ml = load("ml_evaluation.json")
     dataset = load("mlcq_dataset.json")
     sweep = load("threshold_sweep.json")
+    intervals = load("bootstrap_intervals.json")
 
     print("Figurat:")
     figure_rules_vs_ml(rules, ml)
@@ -253,6 +347,8 @@ def main() -> int:
     figure_feature_importance(ml)
     figure_dataset_balance(dataset)
     figure_threshold_sweep(sweep)
+    figure_confidence_intervals(intervals)
+    figure_severity_bias(rules)
     return 0
 
 
