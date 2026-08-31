@@ -45,7 +45,7 @@ from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
 
 from javasmell.evaluation.scoring import PRIMARY_VARIANT, VARIANTS
-from javasmell.ml.explain import DECISION, Contribution, explain, typical_values
+from javasmell.ml.explain import DECISION, Contribution, explain_many, typical_values
 from javasmell.ml.features import CLASS_LEVEL, load
 from javasmell.ml.training import library_versions
 from javasmell.model.entities import ClassInfo, MethodInfo, ProjectModel
@@ -258,14 +258,27 @@ def predict(model: SmellModel, project: ProjectModel) -> ModelReport:
     if rows:
         matrix = np.vstack(rows)
         probabilities = model.estimator.predict_proba(matrix)[:, 1]
+
+        # Explained together rather than one at a time: the flagged entities of a
+        # large project number in the thousands, and per-entity calls spend all
+        # their time entering scikit-learn (see `explain_many`).
+        flagged_at = [
+            position
+            for position in range(len(judged))
+            if float(probabilities[position]) >= DECISION
+        ]
+        explanations = dict(
+            zip(
+                flagged_at,
+                explain_many(model.estimator, matrix[flagged_at], model.typical, model.features),
+                strict=True,
+            )
+        )
+
         for position, (cls, method) in enumerate(judged):
             probability = float(probabilities[position])
             flagged = probability >= DECISION
-            contributions: tuple[Contribution, ...] = ()
-            if flagged:
-                contributions = tuple(
-                    explain(model.estimator, matrix[position], model.typical, model.features)
-                )
+            contributions: tuple[Contribution, ...] = tuple(explanations.get(position, ()))
             predictions.append(
                 Prediction(
                     smell=model.smell,

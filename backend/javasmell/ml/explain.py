@@ -75,24 +75,66 @@ def explain(
     names: tuple[str, ...],
 ) -> list[Contribution]:
     """Rank the measurements by how much each one holds the verdict up."""
-    base = float(model.predict_proba(row.reshape(1, -1))[0, 1])
+    return explain_many(model, row.reshape(1, -1), typical, names)[0]
 
-    perturbed = np.repeat(row.reshape(1, -1), len(names), axis=0)
-    for index in range(len(names)):
-        perturbed[index, index] = typical[index]
-    after = model.predict_proba(perturbed)[:, 1]
 
-    contributions = [
-        Contribution(
-            feature=names[index],
-            value=float(row[index]),
-            typical=float(typical[index]),
-            drop=round(base - float(after[index]), 4),
-            decisive=base >= DECISION > float(after[index]),
-        )
-        for index in range(len(names))
-    ]
-    return sorted(contributions, key=lambda c: (-c.drop, c.feature))
+# One `predict_proba` costs far more in setup than in arithmetic, so explaining a
+# project one entity at a time spends nearly all of its time entering and leaving
+# scikit-learn: a 447-class project took 162 seconds that way against 5 for the
+# parse. Explaining them together turns thousands of calls into a handful.
+#
+# The cap is on rows per call rather than entities, because the matrix is
+# entities times measurements: at 26 features, 20 000 rows is a few megabytes and
+# a project with fifty thousand flagged methods still cannot exhaust memory.
+MAX_ROWS_PER_CALL = 20_000
+
+
+def explain_many(
+    model: BaseEstimator,
+    rows: NDArray[np.float64],
+    typical: NDArray[np.float64],
+    names: tuple[str, ...],
+) -> list[list[Contribution]]:
+    """The same explanation as :func:`explain`, for many entities at once.
+
+    This is the one implementation; ``explain`` is a single-row call into it, so
+    the two cannot drift into disagreeing about what a contribution is.
+    """
+    if len(rows) == 0:
+        return []
+
+    width = len(names)
+    base = model.predict_proba(rows)[:, 1]
+
+    # Every entity repeated once per measurement, each copy with one measurement
+    # replaced by the typical value: row (e, j) is entity e with measurement j
+    # made typical.
+    perturbed = np.repeat(rows, width, axis=0)
+    for index in range(width):
+        perturbed[index::width, index] = typical[index]
+
+    after = np.concatenate(
+        [
+            model.predict_proba(perturbed[start : start + MAX_ROWS_PER_CALL])[:, 1]
+            for start in range(0, len(perturbed), MAX_ROWS_PER_CALL)
+        ]
+    ).reshape(len(rows), width)
+
+    explained: list[list[Contribution]] = []
+    for entity in range(len(rows)):
+        here = float(base[entity])
+        contributions = [
+            Contribution(
+                feature=names[index],
+                value=float(rows[entity, index]),
+                typical=float(typical[index]),
+                drop=round(here - float(after[entity, index]), 4),
+                decisive=here >= DECISION > float(after[entity, index]),
+            )
+            for index in range(width)
+        ]
+        explained.append(sorted(contributions, key=lambda c: (-c.drop, c.feature)))
+    return explained
 
 
 def decisive_over_folds(

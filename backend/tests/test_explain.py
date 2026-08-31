@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 
-from javasmell.ml.explain import DECISION, explain, typical_values
+from javasmell.ml.explain import DECISION, explain, explain_many, typical_values
 
 NAMES = ("decisive", "noise")
 
@@ -75,3 +75,28 @@ def test_an_entity_the_model_does_not_flag_has_no_decisive_measurement() -> None
     ranked = explain(model, np.array([2.0, 1.0]), typical_values(table()), NAMES)
     assert model.predict_proba(np.array([[2.0, 1.0]]))[0, 1] < DECISION
     assert not any(c.decisive for c in ranked)
+
+
+def test_explaining_many_agrees_with_explaining_one() -> None:
+    """The batched path is an optimisation, so it has to be indistinguishable.
+
+    Explaining a project one entity at a time spends almost all of its time
+    entering scikit-learn -- 162 seconds against 5 for the parse, on a 447-class
+    project -- so `predict` explains the flagged entities together. That is only
+    allowed to be faster, never different, and a fixture whose rule is known
+    cannot show the difference: the rows here straddle the boundary in both
+    directions so agreement is tested where the verdict actually turns.
+    """
+    model = trained()
+    typical = typical_values(table())
+    rows = np.array([[value, value % 2] for value in range(20)], dtype=np.float64)
+
+    batched = explain_many(model, rows, typical, NAMES)
+    one_by_one = [explain(model, row, typical, NAMES) for row in rows]
+
+    assert batched == one_by_one
+
+
+def test_explaining_nothing_is_not_an_error() -> None:
+    """A project where the model flagged no entity still has to come back."""
+    assert explain_many(trained(), np.empty((0, 2)), typical_values(table()), NAMES) == []
