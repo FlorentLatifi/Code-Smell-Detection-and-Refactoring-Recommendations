@@ -98,7 +98,10 @@ export function App() {
     const ordered = smells
       .filter((s) => severity === "all" || s.severity === severity)
       .filter((s) => kind === "all" || s.smell_type === kind)
-      .filter((s) => !agreed || agreementOn(model, s) !== null)
+      // Inert without a model to agree with. The control is hidden in that
+      // case, so a filter left checked from an earlier run would empty the
+      // list with nothing on screen to switch it back off.
+      .filter((s) => !agreed || model === null || agreementOn(model, s) !== null)
       .filter(matches);
 
     if (order === "file") {
