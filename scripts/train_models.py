@@ -40,6 +40,7 @@ from javasmell.ml.training import (  # noqa: E402
     FOLDS,
     SEED,
     agreement,
+    combined,
     cross_validated,
     fit_final,
     importances,
@@ -150,11 +151,13 @@ def main(argv: list[str] | None = None) -> int:
 
         print(f"{smell}: {data.describe()}", flush=True)
         scored: dict[str, dict[str, object]] = {}
+        truth: dict[str, dict[str, bool]] = {}
         predictions: dict[str, dict[str, bool]] = {}
         for name, model in model_zoo().items():
             folded = cross_validated(model, data, args.folds)
             scored[name] = as_dict(folded.confusion())
             predictions[name] = folded.by_sample()
+            truth[name] = folded.truth_by_sample()
 
         # "Best" is by MCC, the figure that is not fooled by the imbalance.
         ranked = [n for n in scored if n != BASELINE]
@@ -179,6 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             "importances": dict(ranking),
             "top_features": [name for name, _ in ranking[:TOP_FEATURES]],
             "vs_rules": agreement(rule_verdicts(args.rules, smell), predictions[best]),
+            "combined": combined(rule_verdicts(args.rules, smell), predictions[best], truth[best]),
         }
 
         # The shipped model is fitted on everything; the scores above are not

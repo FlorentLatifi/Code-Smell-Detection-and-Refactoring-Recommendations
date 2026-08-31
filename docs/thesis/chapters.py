@@ -840,6 +840,7 @@ def chapter_5() -> list:
                 "madhësie: modeli pothuajse e përfshin rregullin. Përjashtimi është "
                 "Feature Envy, ku rregulli kap një numër të krahasueshëm rastesh që "
                 "modeli i humb.",
+                *_combined_paragraphs(ml),
             ],
         ),
         (
@@ -1009,6 +1010,52 @@ def _confidence_section() -> list:
     ]
 
     return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+
+
+def _combined_paragraphs(ml: dict) -> list:
+    """A ndihmon bashkimi i dy qasjeve? Pyetja që kapitulli e ngriti vetë.
+
+    Deri tani ajo mbetej vërejtje: rregulli kap disa raste që modeli i humb, pra
+    bashkimi «do të kishte kuptim». Kjo e mat, në të dy drejtimet.
+    """
+    smells = sorted(ml["per_smell"])
+    if not all("combined" in ml["per_smell"][s] for s in smells):
+        return []
+
+    rows = []
+    for smell in smells:
+        entry = ml["per_smell"][smell]
+        best = entry["models"][entry["best_model"]]
+        union = entry["combined"]["union"]
+        crossing = entry["combined"]["intersection"]
+        rows.append([
+            SMELL_SQ[smell],
+            f"{best['mcc']:.3f}",
+            f"{union['mcc']:.3f}" if union["mcc"] is not None else "—",
+            f"{crossing['mcc']:.3f}" if crossing["mcc"] is not None else "—",
+            f"{union['recall']:.3f}",
+            f"{crossing['precision']:.3f}" if crossing["precision"] is not None else "—",
+        ])
+
+    return [
+        "Vërejtja e mësipërme ngre një pyetje praktike: a do të ishte më mirë t’i "
+        "përdorje të dyja bashkë? Bashkimi trashëgon pozitivët e vërtetë të secilës, "
+        "por edhe të rremët, dhe mbi një bashkësi ku shumica e etiketave janë negative "
+        "ai shkëmbim nuk është aspak i vetëkuptueshëm. Prandaj u mat.",
+        ("table", "Të dyja qasjet së bashku",
+         ["Erë", "B: modeli", "A∪B", "A∩B", "A∪B: recall", "A∩B: precizion"], rows),
+        "Përgjigjja është jo. Bashkimi e ngre recall-in ndjeshëm, por çmimi në "
+        "precizion e fshin fitimin: MCC-ja mezi lëviz te Blob dhe Data Class, dhe "
+        "**bie** te Long Method e Feature Envy. Ironia është se Feature Envy ishte "
+        "pikërisht era ku vërejtja premtonte më shumë — dhe atje bashkimi del më keq, "
+        "sepse bashkë me trembëdhjetë rastet që rregulli i kap vijnë edhe pozitivët e "
+        "tij të rremë.",
+        "Prerja tregon të kundërtën dhe është më e dobishmja e të dyjave. Kur të dyja "
+        "qasjet pajtohen, precizioni ngrihet mbi 0.80 te çdo erë dhe deri në 0.905 te "
+        "Long Method — dukshëm mbi secilën qasje veç. Recall-i bie ndjeshëm, ndaj "
+        "MCC-ja del e ulët, por për një përdorues që kërkon pak alarme të rreme "
+        "pajtimi i dy qasjeve të pavarura është sinjali më i fortë që sistemi prodhon.",
+    ]
 
 
 def _severity_section() -> list:

@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "b1db822985b7f9ea55eb27284629db99048b0ffd",
+    "commit": "7a7c6c4ab179ce4138f0510df64a1076780b77d7",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -9,6 +9,33 @@
   "per_smell": {
     "blob": {
       "best_model": "gradient_boosting",
+      "combined": {
+        "intersection": {
+          "accuracy": 0.769,
+          "f1": 0.1645,
+          "fn": 318,
+          "fp": 7,
+          "mcc": 0.2233,
+          "precision": 0.8205,
+          "recall": 0.0914,
+          "support_positive": 350,
+          "tn": 1050,
+          "tp": 32
+        },
+        "n": 1407,
+        "union": {
+          "accuracy": 0.8067,
+          "f1": 0.6233,
+          "fn": 125,
+          "fp": 147,
+          "mcc": 0.4938,
+          "precision": 0.6048,
+          "recall": 0.6429,
+          "support_positive": 350,
+          "tn": 910,
+          "tp": 225
+        }
+      },
       "data": {
         "dropped_incomplete": 0,
         "dropped_unlabelled": 0,
@@ -101,6 +128,33 @@
     },
     "data class": {
       "best_model": "gradient_boosting",
+      "combined": {
+        "intersection": {
+          "accuracy": 0.7954,
+          "f1": 0.2222,
+          "fn": 162,
+          "fp": 6,
+          "mcc": 0.2668,
+          "precision": 0.8,
+          "recall": 0.129,
+          "support_positive": 186,
+          "tn": 629,
+          "tp": 24
+        },
+        "n": 821,
+        "union": {
+          "accuracy": 0.8295,
+          "f1": 0.6196,
+          "fn": 72,
+          "fp": 68,
+          "mcc": 0.5097,
+          "precision": 0.6264,
+          "recall": 0.6129,
+          "support_positive": 186,
+          "tn": 567,
+          "tp": 114
+        }
+      },
       "data": {
         "dropped_incomplete": 0,
         "dropped_unlabelled": 0,
@@ -193,6 +247,33 @@
     },
     "feature envy": {
       "best_model": "gradient_boosting",
+      "combined": {
+        "intersection": {
+          "accuracy": 0.9222,
+          "f1": 0.2381,
+          "fn": 62,
+          "fp": 2,
+          "mcc": 0.3211,
+          "precision": 0.8333,
+          "recall": 0.1389,
+          "support_positive": 72,
+          "tn": 749,
+          "tp": 10
+        },
+        "n": 823,
+        "union": {
+          "accuracy": 0.9405,
+          "f1": 0.6755,
+          "fn": 21,
+          "fp": 28,
+          "mcc": 0.6436,
+          "precision": 0.6456,
+          "recall": 0.7083,
+          "support_positive": 72,
+          "tn": 723,
+          "tp": 51
+        }
+      },
       "data": {
         "dropped_incomplete": 0,
         "dropped_unlabelled": 0,
@@ -294,6 +375,33 @@
     },
     "long method": {
       "best_model": "random_forest",
+      "combined": {
+        "intersection": {
+          "accuracy": 0.9117,
+          "f1": 0.5919,
+          "fn": 121,
+          "fp": 10,
+          "mcc": 0.594,
+          "precision": 0.9048,
+          "recall": 0.4398,
+          "support_positive": 216,
+          "tn": 1257,
+          "tp": 95
+        },
+        "n": 1483,
+        "union": {
+          "accuracy": 0.9238,
+          "f1": 0.7494,
+          "fn": 47,
+          "fp": 66,
+          "mcc": 0.7055,
+          "precision": 0.7191,
+          "recall": 0.7824,
+          "support_positive": 216,
+          "tn": 1201,
+          "tp": 169
+        }
+      },
       "data": {
         "dropped_incomplete": 0,
         "dropped_unlabelled": 0,

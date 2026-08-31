@@ -96,6 +96,10 @@ class OutOfFold:
     def by_sample(self) -> dict[str, bool]:
         return dict(zip(self.sample_ids, self.y_pred.tolist(), strict=True))
 
+    def truth_by_sample(self) -> dict[str, bool]:
+        """The label each sample carried, keyed the same way as the prediction."""
+        return dict(zip(self.sample_ids, self.y_true.tolist(), strict=True))
+
 
 def usable_folds(data: Dataset, folds: int = FOLDS) -> int:
     """GroupKFold cannot make more folds than there are repositories."""
@@ -227,4 +231,31 @@ def library_versions() -> dict[str, str]:
         "scikit-learn": sklearn.__version__,
         "numpy": np.__version__,
         "joblib": joblib.__version__,
+    }
+
+
+def combined(
+    rules: dict[str, bool], model: dict[str, bool], truth: dict[str, bool]
+) -> dict[str, object]:
+    """Score the two approaches taken together, both ways.
+
+    The Results chapter observes that for Feature Envy the rule catches cases the
+    model misses, and says a union of the two "would make practical sense". That
+    is a claim, and until it is scored it is only a hope: a union inherits both
+    approaches' false positives along with their true ones, and on a set where
+    most labels are negative that trade is not obviously good.
+
+    Both directions are reported because they answer different questions. The
+    union asks whether the two approaches see different things and adding them
+    helps recall; the intersection asks whether agreement between them is a
+    stronger signal than either alone, which is what a user who wants few false
+    alarms would want to know.
+    """
+    shared = sorted(set(rules) & set(model) & set(truth))
+    union = confusion((truth[i], rules[i] or model[i]) for i in shared)
+    intersection = confusion((truth[i], rules[i] and model[i]) for i in shared)
+    return {
+        "n": len(shared),
+        "union": union.to_dict(),
+        "intersection": intersection.to_dict(),
     }

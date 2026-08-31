@@ -16,6 +16,7 @@ from javasmell.ml.features import feature_names, load
 from javasmell.ml.training import (
     BASELINE,
     OutOfFold,
+    combined,
     cross_validated,
     model_zoo,
     usable_folds,
@@ -143,3 +144,44 @@ def test_confusion_is_built_from_the_pairs_in_order():
     assert (matrix.tp, matrix.fn, matrix.fp, matrix.tn) == (2, 2, 1, 1)
     assert matrix.precision == 2 / 3
     assert matrix.recall == 0.5
+
+
+def test_the_union_and_the_intersection_are_scored_by_hand() -> None:
+    """Four samples, worked out on paper.
+
+    truth   A      B      union  intersection
+    True    True   False  True   False
+    True    False  True   True   False
+    False   True   True   True   True
+    False   False  False  False  False
+
+    Union: two of the smelly samples are caught (TP=2, FN=0) and the clean one
+    both approaches flagged is a false positive (FP=1, TN=1).
+    Intersection: neither smelly sample is caught by both (TP=0, FN=2), and the
+    one false positive they share survives (FP=1, TN=1).
+    """
+    rules = {"1": True, "2": False, "3": True, "4": False}
+    model = {"1": False, "2": True, "3": True, "4": False}
+    truth = {"1": True, "2": True, "3": False, "4": False}
+
+    scored = combined(rules, model, truth)
+    assert scored["n"] == 4
+
+    union = scored["union"]
+    assert isinstance(union, dict)
+    assert (union["tp"], union["fn"], union["fp"], union["tn"]) == (2, 0, 1, 1)
+
+    intersection = scored["intersection"]
+    assert isinstance(intersection, dict)
+    assert (intersection["tp"], intersection["fn"], intersection["fp"], intersection["tn"]) == (
+        0,
+        2,
+        1,
+        1,
+    )
+
+
+def test_a_sample_only_one_side_scored_is_left_out() -> None:
+    """The union is taken over the samples both approaches judged, and no others."""
+    scored = combined({"1": True, "2": True}, {"1": True}, {"1": True, "2": True})
+    assert scored["n"] == 1
