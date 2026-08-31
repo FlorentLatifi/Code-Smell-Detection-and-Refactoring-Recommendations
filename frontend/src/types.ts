@@ -53,3 +53,11 @@ export interface Preview {
 export interface ApiError {
   error: { code: string; message: string };
 }
+
+/** The lines of one file around a finding, as `/source` returns them. */
+export interface Source {
+  start_line: number;
+  end_line: number;
+  truncated: boolean;
+  lines: string[];
+}

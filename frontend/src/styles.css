@@ -242,10 +242,18 @@ button:disabled {
 }
 
 /* ---------- two columns ---------- */
+/* `minmax(0, ...)` rather than `1fr`: a grid item's automatic minimum is its
+   content, so a long path inside the list would widen the page instead of
+   ellipsising. This is the whole reason the interface has no horizontal
+   scrollbar at narrow widths. */
 .layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 30px;
+}
+
+.layout > * {
+  min-width: 0;
 }
 
 @media (min-width: 1000px) {
@@ -257,10 +265,21 @@ button:disabled {
 /* ---------- filters ---------- */
 .filters {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 12px 18px;
   align-items: end;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--ink);
+}
+
+/* A flex item will not shrink below its content unless told to, and the content
+   here is a path that can be arbitrarily long. Without this the list pushes the
+   page wider instead of ellipsising, which is the one thing a fixed-width column
+   of identifiers must never do. */
+.filters label,
+.row .headline,
+.row .where {
+  min-width: 0;
 }
 
 .filters label {
@@ -364,6 +383,7 @@ select {
 }
 
 .row .grade {
+  flex: none;
   margin-left: auto;
   color: var(--ink-faint);
   font-size: 0.7rem;
@@ -605,13 +625,17 @@ select {
 
 .split {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 26px;
+}
+
+.split > * {
+  min-width: 0;
 }
 
 @media (min-width: 1040px) {
   .split {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
@@ -829,4 +853,57 @@ select {
   margin: 7px 0 0;
   color: var(--ink-faint);
   font-size: 0.76rem;
+}
+
+/* ---------- the flagged source ---------- */
+/* The same treatment the diff gets: the reader is comparing two views of one
+   file, so they must not be set differently. */
+.source {
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+  font: 0.76rem/1.55 var(--mono);
+}
+
+.source .line {
+  display: block;
+  padding-right: 12px;
+  white-space: pre;
+}
+
+.source .gutter {
+  display: inline-block;
+  width: 42px;
+  padding-right: 11px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  user-select: none;
+}
+
+/* ---------- search field in the filter bar ---------- */
+.filters .grow {
+  flex: 1;
+  min-width: 140px;
+}
+
+.filters input[type="search"] {
+  width: 100%;
+  padding: 4px 7px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  font: 0.86rem var(--mono);
+}
+
+/* The engine can rewrite this one. A mark, not a badge: it sits in the line the
+   severity already occupies and costs no row height. */
+.auto {
+  margin-right: 5px;
+  color: var(--accent);
+  text-decoration: none;
 }

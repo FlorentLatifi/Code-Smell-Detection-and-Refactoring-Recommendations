@@ -42,9 +42,20 @@ from javasmell.refactor.registry import ADVISORY_ONLY, for_smell
 API_TITLE = "JavaSmell"
 API_VERSION = "0.1.0"
 
+# A finding spans a class or a method, not a file. The cap is generous enough for
+# the largest God Class in the corpus and small enough that no single response
+# carries a generated file.
+MAX_SOURCE_LINES = 400
+
 
 class AnalyseRequest(BaseModel):
     path: str = Field(min_length=1, max_length=4096, description="File or directory to analyse")
+
+
+class SourceRequest(BaseModel):
+    path: str = Field(min_length=1, max_length=4096)
+    start_line: int = Field(ge=1, le=10_000_000)
+    end_line: int = Field(ge=1, le=10_000_000)
 
 
 class PreviewRequest(BaseModel):
@@ -125,6 +136,39 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 for unit in project.units
                 for cls in unit.classes
             ]
+        }
+
+    @app.post("/source", response_model=None)
+    def source(request: SourceRequest) -> dict[str, Any] | JSONResponse:
+        """The lines of one file around a finding.
+
+        A detector reports a class or a method by position, and the only way to
+        judge what it found is to read it. The whole file is not sent: a finding
+        has a span, and a caller that wanted more could ask for more.
+
+        Reading is confined to the allowed root by the same check every other
+        route uses, and capped in lines so a generated file cannot be pulled
+        through this route in one response.
+        """
+        target = confine(request.path, config.root)
+        if not target.is_file():
+            return error("not_a_file", "source is read one file at a time", 400)
+        if request.end_line < request.start_line:
+            return error("bad_range", "the range ends before it starts", 400)
+
+        try:
+            text = target.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return error("unreadable", "the file could not be read", 400)
+
+        lines = text.splitlines()
+        first = min(request.start_line, len(lines))
+        last = min(request.end_line, first + MAX_SOURCE_LINES - 1, len(lines))
+        return {
+            "start_line": first,
+            "end_line": last,
+            "truncated": last < min(request.end_line, len(lines)),
+            "lines": lines[first - 1 : last],
         }
 
     # The handler answers either with a body or with a structured error, and

@@ -1,10 +1,45 @@
 import { useMemo, useRef, useState } from "react";
-import { analyse, preview } from "./api";
-import { Diff } from "./Diff";
+import { analyse } from "./api";
+import { Detail } from "./Detail";
 import { Results } from "./Results";
-import type { Analysis, Preview, Severity, Smell } from "./types";
+import type { Analysis, Severity, Smell } from "./types";
 
 const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
+
+/** How the list is ordered. Severity first is the default a reader wants. */
+type Order = "severity" | "score" | "file";
+
+const ORDER_LABELS: Record<Order, string> = {
+  severity: "ashpërsia",
+  score: "teprica",
+  file: "skedari",
+};
+
+const REMEMBERED_PATH = "javasmell.path";
+
+/**
+ * The last path analysed, so the tool opens where it was left.
+ *
+ * Wrapped because storage is not always there to be read: a private window or a
+ * browser set to block site data throws on access rather than returning null,
+ * and an interface that will not render without a convenience is worse than one
+ * without the convenience.
+ */
+function remembered(key: string): string {
+  try {
+    return window.localStorage.getItem(key) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function remember(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Nothing to do and nothing worth telling the user.
+  }
+}
 
 type Screen =
   | { state: "idle" }
@@ -18,10 +53,12 @@ type View = "analysis" | "results";
 
 export function App() {
   const [view, setView] = useState<View>("analysis");
-  const [path, setPath] = useState("");
+  const [path, setPath] = useState(() => remembered(REMEMBERED_PATH));
   const [screen, setScreen] = useState<Screen>({ state: "idle" });
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [kind, setKind] = useState<string>("all");
+  const [query, setQuery] = useState("");
+  const [order, setOrder] = useState<Order>("severity");
   const [selected, setSelected] = useState<Smell | null>(null);
   const listRef = useRef<HTMLElement>(null);
 
@@ -31,22 +68,40 @@ export function App() {
     setSelected(null);
     try {
       setScreen({ state: "ready", analysis: await analyse(path) });
+      remember(REMEMBERED_PATH, path);
     } catch (failure) {
       setScreen({ state: "error", message: (failure as Error).message });
     }
   }
 
   const smells = screen.state === "ready" ? screen.analysis.smells : [];
-  const shown = useMemo(
-    () =>
-      smells
-        .filter((s) => severity === "all" || s.severity === severity)
-        .filter((s) => kind === "all" || s.smell_type === kind)
-        .sort(
-          (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || b.score - a.score,
-        ),
-    [smells, severity, kind],
-  );
+  const shown = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const matches = (smell: Smell) =>
+      needle === "" ||
+      `${smell.class_name} ${smell.method ?? ""} ${smell.file_path} ${smell.smell_type}`
+        .toLowerCase()
+        .includes(needle);
+
+    // Sorted into a copy: `smells` belongs to the analysis, and sorting it in
+    // place would reorder what the summary was counted from.
+    const ordered = smells
+      .filter((s) => severity === "all" || s.severity === severity)
+      .filter((s) => kind === "all" || s.smell_type === kind)
+      .filter(matches);
+
+    if (order === "file") {
+      return ordered.sort(
+        (a, b) => a.file_path.localeCompare(b.file_path) || a.start_line - b.start_line,
+      );
+    }
+    if (order === "score") {
+      return ordered.sort((a, b) => b.score - a.score);
+    }
+    return ordered.sort(
+      (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || b.score - a.score,
+    );
+  }, [smells, severity, kind, query, order]);
 
   /**
    * Up and down move through the findings.
@@ -135,8 +190,12 @@ export function App() {
                   analysis={screen.analysis}
                   severity={severity}
                   kind={kind}
+                  order={order}
+                  query={query}
                   onSeverity={setSeverity}
                   onKind={setKind}
+                  onOrder={setOrder}
+                  onQuery={setQuery}
                 />
                 <p className="count">
                   {shown.length} nga {screen.analysis.smells.length}
@@ -157,7 +216,14 @@ export function App() {
                               {smell.class_name}
                               {smell.method ? `.${smell.method.replace(/\(.*$/, "")}` : ""}
                             </span>
-                            <span className="grade">{smell.severity}</span>
+                            <span className="grade">
+                              {smell.automated && (
+                                <abbr className="auto" title="Motori e rishkruan vetë">
+                                  ✎
+                                </abbr>
+                              )}
+                              {smell.severity}
+                            </span>
                           </span>
                           <span className="file">
                             {smell.file_path}:{smell.start_line}
@@ -224,14 +290,22 @@ function Filters({
   analysis,
   severity,
   kind,
+  order,
+  query,
   onSeverity,
   onKind,
+  onOrder,
+  onQuery,
 }: {
   analysis: Analysis;
   severity: Severity | "all";
   kind: string;
+  order: Order;
+  query: string;
   onSeverity: (value: Severity | "all") => void;
   onKind: (value: string) => void;
+  onOrder: (value: Order) => void;
+  onQuery: (value: string) => void;
 }) {
   return (
     <div className="filters">
@@ -255,144 +329,25 @@ function Filters({
           ))}
         </select>
       </label>
+      <label>
+        Radhitur sipas
+        <select value={order} onChange={(e) => onOrder(e.target.value as Order)}>
+          {(Object.keys(ORDER_LABELS) as Order[]).map((name) => (
+            <option key={name} value={name}>
+              {ORDER_LABELS[name]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="grow">
+        Kërko
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+          placeholder="klasë, metodë ose skedar"
+        />
+      </label>
     </div>
   );
 }
-
-function Detail({ smell, path }: { smell: Smell; path: string }) {
-  const [result, setResult] = useState<Preview | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-
-  async function ask() {
-    setBusy(true);
-    setFailure(null);
-    setResult(null);
-    try {
-      setResult(await preview(path, smell));
-    } catch (error) {
-      setFailure((error as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <article>
-      <h2>{smell.smell_type}</h2>
-      <p className="where">
-        {smell.package ? `${smell.package}.` : ""}
-        {smell.class_name}
-        {smell.method ? `.${smell.method}` : ""}
-      </p>
-      <p className="file">
-        {smell.file_path}:{smell.start_line}–{smell.end_line}
-      </p>
-
-      <h3>Pse u shënua</h3>
-      <Conditions smell={smell} />
-      {smell.conditions.length > 0 && <p className="note caption">{EXCESS_NOTE}</p>}
-
-      <h3>Metrikat e matura</h3>
-      <table className="metrics">
-        <tbody>
-          {Object.entries(smell.metrics).map(([name, value]) => (
-            <tr key={name}>
-              <th>{name}</th>
-              <td>{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Refaktorimet e propozuara</h3>
-      <ul className="refactorings">
-        {smell.refactorings.map((name) => (
-          <li key={name}>{name}</li>
-        ))}
-      </ul>
-
-      {smell.automated ? (
-        <button className="primary" onClick={ask} disabled={busy}>
-          {busy ? "Duke përgatitur…" : "Shfaq ndryshimin e propozuar"}
-        </button>
-      ) : (
-        <p className="note">
-          Motori nuk e aplikon automatikisht këtë refaktorim: ai kërkon gjetjen e çdo reference
-          në projekt, çka analiza nuk e provon dot. Mbetet propozim për autorin.
-        </p>
-      )}
-
-      {failure && (
-        <p className="failure" role="alert">
-          {failure}
-        </p>
-      )}
-
-      {result && !result.applied && (
-        <p className="note">
-          Motori refuzoi ta aplikojë: <b>{result.refusal}</b>
-          {result.detail ? ` — ${result.detail}` : ""}. Refuzimi është rezultat i saktë, jo
-          dështim.
-        </p>
-      )}
-
-      {result?.applied && result.before && result.after && (
-        <Diff before={result.before} after={result.after} />
-      )}
-    </article>
-  );
-}
-
-/**
- * Why the detector fired: the measurement beside the bound it passed.
- *
- * The API sends the clauses as data as well as as a sentence, so the value and
- * the threshold can be put in the same column and compared by eye. The bar is
- * the excess — how far past the bound the measurement sits — on the same 5x cap
- * the severity score uses, so a reader who has seen one has seen the other.
- */
-function Conditions({ smell }: { smell: Smell }) {
-  if (smell.conditions.length === 0) {
-    return <p className="empty">{smell.rationale}</p>;
-  }
-
-  return (
-    <table className="conditions">
-      <tbody>
-        {smell.conditions.map((condition) => {
-          const above = condition.operator.startsWith(">");
-          const excess = above
-            ? condition.value / (condition.threshold || 1)
-            : (condition.threshold || 1) / (condition.value || 0.001);
-          const width = Math.min(Math.max(excess, 1), 5) / 5;
-          return (
-            <tr key={`${condition.metric}${condition.operator}`}>
-              <th>{condition.metric}</th>
-              <td className="measured">{condition.value}</td>
-              <td className="bound">
-                {condition.operator} {condition.threshold}
-              </td>
-              <td className="excess">
-                <span style={{ width: `${width * 100}%` }} title={`${excess.toFixed(1)}×`} />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
-
-/**
- * The bar needs one sentence, because it is not a progress bar.
- *
- * It is the excess the severity score is built from, on the same 5x cap. Saying
- * so also exposes the oddity the thesis reports in section 5.6: a permissive
- * clause like `FDP <= 5` reads as a large excess when the measurement sits far
- * below it, which is one of the reasons the derived severity does not track the
- * reviewers' judgement.
- */
-const EXCESS_NOTE =
-  "Shiriti tregon tepricën mbi kufirin, e kufizuar në 5× — e njëjta madhësi nga e cila " +
-  "derivohet ashpërsia.";

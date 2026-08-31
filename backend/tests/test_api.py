@@ -273,3 +273,43 @@ def test_preview_of_a_missing_entity_is_a_404(client):
         },
     )
     assert response.status_code == 404
+
+
+def test_source_returns_the_lines_a_finding_spans(client):
+    """The interface has to be able to show the code, not only measure it."""
+    body = client.post("/analyze", json={"path": "src"}).json()
+    smell = next(s for s in body["smells"] if s["smell_type"] == "LongMethod")
+
+    read = client.post(
+        "/source",
+        json={
+            "path": "src/Ledger.java",
+            "start_line": smell["start_line"],
+            "end_line": smell["end_line"],
+        },
+    )
+    assert read.status_code == 200
+    lines = read.json()["lines"]
+
+    # `process` is the only method that trips Long Method, so the first line of
+    # the span is its signature and the last is the brace that closes it.
+    assert lines[0].strip().startswith("void process")
+    assert lines[-1].strip() == "}"
+    assert len(lines) == smell["end_line"] - smell["start_line"] + 1
+
+
+def test_source_refuses_a_path_outside_the_root(client):
+    """The same confinement every other route gets, over the same check."""
+    denied = client.post(
+        "/source", json={"path": "../secret/keys.txt", "start_line": 1, "end_line": 5}
+    )
+    assert denied.status_code == 400
+    assert denied.json()["error"]["code"]
+
+
+def test_source_refuses_a_backwards_range(client):
+    answer = client.post(
+        "/source", json={"path": "src/Ledger.java", "start_line": 9, "end_line": 4}
+    )
+    assert answer.status_code == 400
+    assert answer.json()["error"]["code"] == "bad_range"

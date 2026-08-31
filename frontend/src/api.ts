@@ -1,4 +1,4 @@
-import type { Analysis, ApiError, Preview, Smell } from "./types";
+import type { Analysis, ApiError, Preview, Smell, Source } from "./types";
 
 // The server answers a failure with { error: { code, message } } and never with
 // a stack trace, so the message is safe to put in front of a user unchanged.
@@ -33,12 +33,25 @@ export function analyse(path: string): Promise<Analysis> {
   return post<Analysis>("/analyze", { path });
 }
 
+/** Join the project path and the file path the analysis reported. */
+function within(path: string, file: string): string {
+  return file ? `${path.replace(/\/+$/, "")}/${file}` : path;
+}
+
 export function preview(path: string, smell: Smell): Promise<Preview> {
   return post<Preview>("/refactor/preview", {
-    path: smell.file_path ? `${path.replace(/\/+$/, "")}/${smell.file_path}` : path,
+    path: within(path, smell.file_path),
     class_name: smell.class_name,
     method: smell.method ? smell.method.replace(/\(.*$/, "") : null,
     start_line: smell.start_line,
     smell_type: smell.smell_type,
+  });
+}
+
+export function source(path: string, smell: Smell): Promise<Source> {
+  return post<Source>("/source", {
+    path: within(path, smell.file_path),
+    start_line: smell.start_line,
+    end_line: smell.end_line,
   });
 }
