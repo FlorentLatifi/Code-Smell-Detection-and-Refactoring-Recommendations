@@ -812,3 +812,217 @@ def _refactoring_section() -> list:
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
         "gabimi kundrejt skedarit origjinal.",
     ]
+
+
+# ======================================================================
+# Kapitulli 8: shtojcat
+# ======================================================================
+# Çfarë do të thotë secila arsye refuzimi. Vlerat vijnë nga kodi; kuptimi
+# shkruhet këtu, sepse është shpjegim për lexuesin dhe jo e dhënë e sistemit.
+# Një arsye e re pa shpjegim del e shënuar në dokument dhe jo e heshtur.
+REFUSAL_SQ = {
+    "unresolved_name": (
+        "Një emër, deklarimin e të cilit analiza nuk e gjen dot. Parser-i regjistron "
+        "fakte sintaksore dhe me qëllim nuk është zgjidhës simbolesh."
+    ),
+    "possible_side_effect": (
+        "Zhvendosja mund ta ndryshojë sjelljen, sepse diçka brenda mund të shkruajë "
+        "gjendje ose të kryejë hyrje-dalje."
+    ),
+    "ambiguous_overload": "Disa metoda e ndajnë emrin dhe thirrja nuk lidhet dot me njërën.",
+    "multiple_outputs": (
+        "Blloku cakton më shumë se një variabël që lexohet pas tij, ndaj një vlerë e "
+        "vetme kthimi nuk e nxjerr dot rezultatin jashtë."
+    ),
+    "control_flow_escapes": (
+        "Një return, break ose continue del nga blloku, ndaj blloku nuk është shprehje "
+        "dhe nuk ngrihet i tëri."
+    ),
+    "shape_not_matched": (
+        "Kodi nuk e ka formën që ky transformim rishkruan. Nuk është dështim i "
+        "analizës, por mjet i gabuar për atë vend."
+    ),
+    "edit_conflict": (
+        "Dy editime kërkuan të njëjtat bajta. Gjithmonë defekt i transformimit që i "
+        "prodhoi, dhe raportohet që të mos kalojë pa u vënë re."
+    ),
+    "not_definitely_assigned": (
+        "Një vlerë që blloku e lexon është deklaruar por jo caktuar me siguri aty ku "
+        "blloku ndodhet. Java e ndalon kalimin e saj, ndaj rishkrimi nuk do të "
+        "kompilonte edhe pse përndryshe është i saktë."
+    ),
+    "unparseable": "Skedari nuk u parsua i pastër, ndaj asgjë për të nuk është e provuar.",
+}
+
+# Radha e ekzekutimit të eksperimenteve, me kohët e matura në një laptop pa GPU.
+REPRODUCTION = [
+    ("1", "fetch_corpus.py", "korpusi, jashtë git-it", "orë, një herë"),
+    ("2", "build_dataset.py", "tabela e veçorive, e komituar", "~95 min"),
+    ("3", "evaluate_rules.py --from-dataset", "numrat e Qasjes A", "sekonda"),
+    ("4", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
+    ("5", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
+    ("6", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
+    ("7", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
+    ("8", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
+]
+
+REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"
+
+
+def chapter_8() -> list:
+    """Shtojcat, të ndërtuara nga `system_reference.json`.
+
+    Asnjë vlerë këtu nuk shtypet me dorë. Pragjet, formulat dhe metrikat vijnë nga
+    i njëjti kod që prodhoi rezultatet, ndaj një prag i ndryshuar pa u rigjeneruar
+    shtojca nuk mund të kalojë i padukshëm: numri thjesht nuk ndodhet dot këtu.
+    """
+    reference = _load("system_reference.json")
+
+    strategy_rows = []
+    for entry in reference["strategies"]:
+        name, _, source = entry["title"].partition(" (")
+        strategy_rows.append(
+            [
+                name,
+                "klasë" if entry["scope"] == "class" else "metodë",
+                entry["formula"],
+                source.rstrip(")") or "—",
+            ]
+        )
+
+    quantifier_rows = [
+        [name, f"{value:g}"] for name, value in sorted(reference["quantifiers"].items())
+    ]
+    threshold_rows = [
+        [name, f"{value:g}"] for name, value in sorted(reference["thresholds"].items())
+    ]
+
+    class_metrics = reference["metrics"]["class"]
+    method_metrics = reference["metrics"]["method"]
+    metric_rows = [
+        [f"Klasë ({len(class_metrics)})", ", ".join(class_metrics)],
+        [f"Metodë ({len(method_metrics)})", ", ".join(method_metrics)],
+    ]
+
+    engine_rows = []
+    for entry in reference["strategies"]:
+        if entry["automated"]:
+            does = f"aplikohet: {entry['automated']}"
+        elif entry["advisory_reason"]:
+            does = "vetëm propozohet"
+        else:
+            does = "nuk ka transformim"
+        engine_rows.append([entry["smell"], ", ".join(entry["refactorings"]), does])
+
+    refusal_rows = [
+        [reason, REFUSAL_SQ.get(reason, "[PLOTËSO: arsye e re, pa shpjegim në shtojcë]")]
+        for reason in reference["refusal_reasons"]
+    ]
+
+    environment = reference["environment"]
+
+    return [
+        (
+            "8.1",
+            "Strategjitë e detektimit",
+            [
+                "Tabela jep të tetë strategjitë ashtu si i zbaton sistemi. Kushtet janë "
+                "ato të shkruara në kodin e detektorit dhe nxirren prej tij kur ndërtohet "
+                "ky dokument, jo të kopjuara me dorë.",
+                (
+                    "table",
+                    "Tabela 9. Strategjitë e detektimit dhe burimet e tyre",
+                    ["Erë", "Fusha", "Kushtet", "Burimi"],
+                    strategy_rows,
+                ),
+                "Emrat me shkronja të mëdha te kolona e kushteve janë kuantifikuesit e "
+                "Lanza & Marinescu-t, vlerat e të cilëve jepen më poshtë.",
+            ],
+        ),
+        (
+            "8.2",
+            "Kuantifikuesit dhe pragjet",
+            [
+                "Strategjitë janë shkruar në një fjalor kuantifikuesish e jo në numra të "
+                "veçantë. Vlerat janë ato të nxjerra statistikisht nga një korpus prej "
+                "dyzet e pesë sistemesh Java dhe C++.",
+                (
+                    "table",
+                    "Tabela 10. Kuantifikuesit e përgjithshëm",
+                    ["Emri", "Vlera"],
+                    quantifier_rows,
+                ),
+                "Poshtë janë pragjet me të cilat u prodhuan rezultatet e Kapitullit 5. "
+                "Secili prej tyre është një nga ata që analiza e ndjeshmërisë i "
+                "zhvendos, një nga një.",
+                (
+                    "table",
+                    "Tabela 11. Pragjet e përdorura",
+                    ["Parametri", "Vlera"],
+                    threshold_rows,
+                ),
+            ],
+        ),
+        (
+            "8.3",
+            "Metrikat e matura",
+            [
+                "Çdo entitet matet një herë dhe të gjitha metrikat shkojnë në tabelën e "
+                "veçorive, edhe ato që asnjë strategji nuk i përdor: modelet e Qasjes B "
+                "i shohin të gjitha, dhe pikërisht kjo e bën të përgjigjshme pyetjen nëse "
+                "ato zgjedhin metrikat e strategjive. Kuptimi i shkurtesave jepet te "
+                "Fjalori i termave.",
+                (
+                    "table",
+                    "Tabela 12. Metrikat sipas nivelit",
+                    ["Niveli", "Metrikat"],
+                    metric_rows,
+                ),
+            ],
+        ),
+        (
+            "8.4",
+            "Refaktorimet dhe arsyet e refuzimit",
+            [
+                "Kolona e fundit dallon çka propozon sistemi nga çka aplikon. Dallimi nuk "
+                "vjen nga koha e zhvillimit: transformimet e mbetura kërkojnë gjetjen e "
+                "çdo reference në projekt, çka analiza sintaksore nuk e provon dot.",
+                (
+                    "table",
+                    "Tabela 13. Çka propozohet dhe çka aplikohet",
+                    ["Erë", "Refaktorimet e Fowler-it", "Motori"],
+                    engine_rows,
+                ),
+                "Kur një parakusht nuk provohet, motori refuzon me një arsye të "
+                "numërueshme. Shpërndarja e tyre mbi korpus është në Tabelën 7.",
+                (
+                    "table",
+                    "Tabela 14. Arsyet e refuzimit",
+                    ["Arsyeja", "Kuptimi"],
+                    refusal_rows,
+                ),
+            ],
+        ),
+        (
+            "8.5",
+            "Riprodhimi i rezultateve",
+            [
+                f"Kodi burimor është i hapur te {REPOSITORY}. Skriptet ekzekutohen në "
+                "këtë radhë; hapi i parë kërkon qasje në internet, të tjerët jo.",
+                (
+                    "table",
+                    "Tabela 15. Radha e ekzekutimit",
+                    ["#", "Skripti", "Prodhon", "Kohë"],
+                    [list(row) for row in REPRODUCTION],
+                ),
+                "Çdo skript shkruan rezultatin si CSV ose JSON në data/results/, bashkë me "
+                "commit-in, versionin e Python-it dhe platformën që e prodhuan. Numrat e "
+                "këtij punimi u prodhuan me commit-in "
+                f"{environment['commit'][:10]}, Python {environment['python']}, "
+                f"{environment['platform']}.",
+                "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
+                "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
+                "vlera.",
+            ],
+        ),
+    ]

@@ -24,7 +24,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Frontend | ✅ e plotë | React + TypeScript + Vite |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Figurat e punimit | ✅ 6 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
-| Punimi | 🟡 kapitujt 1–6 të shkruar | mbetet redaktimi, referencat dhe formatimi UBT |
+| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | mbetet redaktimi dhe formatimi UBT |
 | Testet e frontend-it | ⬜ nuk ka | i vetmi shtresim pa teste; i regjistruar si kufizim |
 
 Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
@@ -498,7 +498,9 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
   `data/results/threshold_sweep.json`. Dy pragje dolën shumë të ndjeshme dhe
   **nuk u adoptuan** — fshirja mat qëndrueshmërinë, nuk zgjedh pragje (VD-34).
 - ✅ Kapitulli 2 (Literatura), 3 (Problemi), 4 (Metodologjia, nga `DECISIONS.md`),
-  5 (Rezultatet, nga `data/results/`), 6 dhe abstrakti.
+  5 (Rezultatet, nga `data/results/`), 6, 8 (Shtojcat) dhe abstrakti. Shtojcat
+  ndërtohen nga `system_reference.json`, pra pragjet dhe strategjitë në punim
+  nuk transkriptohen nga kodi por nxirren prej tij (VD-38).
 - ✅ Figurat dhe tabelat gjenerohen nga skriptet, jo me kopjim manual. Nëse një numër
   ndryshon, rigjenerohet gjithçka.
 - ✅ Koherenca e citimeve verifikohet nga `docs/thesis/check_citations.py`, që

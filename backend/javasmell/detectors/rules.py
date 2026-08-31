@@ -147,6 +147,8 @@ def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
 def detect_large_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """Large Class (Fowler): size alone, without the cohesion evidence.
 
+        CLOC > HIGH_CLASS_LOC  OR  NOM > HIGH_NOM
+
     Reported separately from God Class on purpose. A class can be long and
     still cohesive, and conflating the two would hide which symptom the tool
     actually found.
@@ -201,6 +203,8 @@ def detect_feature_envy(
 def detect_long_method(cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """Long Method (Fowler): effective lines of code past the threshold.
 
+        MLOC > 30
+
     Comment and blank lines are already excluded by the parser's LOC counter,
     so a well-documented method is not punished for its documentation.
     """
@@ -253,7 +257,10 @@ def detect_brain_method(
 def detect_long_parameter_list(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
 ) -> Smell | None:
-    """Long Parameter List (Fowler)."""
+    """Long Parameter List (Fowler).
+
+        NP > FEW
+    """
     np = method.metrics.get("NP", 0.0)
     if np <= t.long_parameter_list_np:
         return None
@@ -269,6 +276,8 @@ def detect_deep_nesting(
     cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT
 ) -> Smell | None:
     """Deeply nested control flow.
+
+        MAXNESTING > 3
 
     Not in Fowler's catalogue under this name, but it is the condition that
     ``Replace Nested Conditional with Guard Clauses`` exists to remove, and it

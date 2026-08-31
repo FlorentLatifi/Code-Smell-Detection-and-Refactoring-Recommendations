@@ -29,7 +29,14 @@ TITLE_SIZE = Pt(14)
 CAPTION_SIZE = Pt(11)
 LINE_SPACING = 1.5
 
-from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5  # noqa: E402
+from chapters import (  # noqa: E402
+    CHAPTER_2,
+    CHAPTER_3,
+    CHAPTER_4,
+    CHAPTER_6,
+    chapter_5,
+    chapter_8,
+)
 from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
@@ -346,11 +353,11 @@ def build_references(doc: Document) -> None:
 
 
 def build_remaining_chapters(doc: Document) -> None:
-    """Headings for the chapters not yet written, and the reference list.
+    """Every chapter after the introduction.
 
-    Chapters 2 to 6 exist as structure. Chapter 7 is real: the sources are the
-    ones the system already applies, so they can be listed before the prose that
-    cites them is finished.
+    Chapters 2, 3, 4 and 6 are prose and live in ``chapters.py``. Chapters 5 and 8
+    are built at this moment from ``data/results/``, so a rebuilt experiment and a
+    rebuilt document cannot disagree. Chapter 7 renders the reference list.
     """
     written = {2: CHAPTER_2, 3: CHAPTER_3, 4: CHAPTER_4, 6: CHAPTER_6}
     for number, title in REMAINING_CHAPTERS:
@@ -359,6 +366,8 @@ def build_remaining_chapters(doc: Document) -> None:
             render_sections(doc, written[number])
         elif number == 5:
             render_sections(doc, chapter_5())
+        elif number == 8:
+            render_sections(doc, chapter_8())
         elif title == "Referencat":
             build_references(doc)
         else:
@@ -458,6 +467,13 @@ TABLE_LIST = [
     "Tabela 6. Rezultati i motorit të refaktorimit",
     "Tabela 7. Pse u refuzuan",
     "Tabela 8. Verifikimi i atyre që u aplikuan",
+    "Tabela 9. Strategjitë e detektimit dhe burimet e tyre",
+    "Tabela 10. Kuantifikuesit e përgjithshëm",
+    "Tabela 11. Pragjet e përdorura",
+    "Tabela 12. Metrikat sipas nivelit",
+    "Tabela 13. Çka propozohet dhe çka aplikohet",
+    "Tabela 14. Arsyet e refuzimit",
+    "Tabela 15. Radha e ekzekutimit",
 ]
 
 GLOSSARY = [

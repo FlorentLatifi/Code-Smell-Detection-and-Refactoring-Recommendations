@@ -1,0 +1,182 @@
+{
+  "environment": {
+    "commit": "e47911ef9f9722e23cc7fd6ca9f75d3027272c3b",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "metrics": {
+    "class": [
+      "AMW",
+      "ATFD",
+      "CBO",
+      "CLOC",
+      "DIT",
+      "LCOM",
+      "LCOM3",
+      "MAXCC",
+      "NOAM",
+      "NOC",
+      "NOF",
+      "NOM",
+      "NOPA",
+      "RFC",
+      "TCC",
+      "WMC",
+      "WOC"
+    ],
+    "method": [
+      "ATFD",
+      "CC",
+      "CINT",
+      "FDP",
+      "LAA",
+      "MAXNESTING",
+      "MLOC",
+      "NOAV",
+      "NP"
+    ]
+  },
+  "quantifiers": {
+    "FEW": 5,
+    "HIGH_CLASS_LOC": 200,
+    "HIGH_METHOD_LOC": 70,
+    "HIGH_NOM": 20,
+    "HIGH_WMC": 31,
+    "MANY": 10,
+    "ONE_THIRD": 0.3333333333333333,
+    "SHORT_MEMORY_CAP": 7,
+    "VERY_HIGH_WMC": 47
+  },
+  "refusal_reasons": [
+    "unresolved_name",
+    "possible_side_effect",
+    "ambiguous_overload",
+    "multiple_outputs",
+    "control_flow_escapes",
+    "shape_not_matched",
+    "edit_conflict",
+    "not_definitely_assigned",
+    "unparseable"
+  ],
+  "strategies": [
+    {
+      "advisory_reason": "moving members needs call sites this analysis cannot resolve",
+      "automated": null,
+      "formula": "WMC >= VERY_HIGH  AND  TCC < ONE_THIRD  AND  ATFD > FEW",
+      "refactorings": [
+        "ExtractClass",
+        "MoveMethod",
+        "ExtractSubclass"
+      ],
+      "scope": "class",
+      "smell": "GodClass",
+      "title": "God Class (Lanza & Marinescu, p. 80)"
+    },
+    {
+      "advisory_reason": "every reference to the field would have to be found and rewritten",
+      "automated": null,
+      "formula": "WOC < ONE_THIRD  AND  ( (NOPA + NOAM > FEW  AND WMC < HIGH) OR (NOPA + NOAM > MANY AND WMC < VERY_HIGH) )",
+      "refactorings": [
+        "EncapsulateField",
+        "MoveMethod"
+      ],
+      "scope": "class",
+      "smell": "DataClass",
+      "title": "Data Class (Lanza & Marinescu, p. 88)"
+    },
+    {
+      "advisory_reason": "moving members needs call sites this analysis cannot resolve",
+      "automated": null,
+      "formula": "CLOC > HIGH_CLASS_LOC  OR  NOM > HIGH_NOM",
+      "refactorings": [
+        "ExtractClass",
+        "ExtractSubclass"
+      ],
+      "scope": "class",
+      "smell": "LargeClass",
+      "title": "Large Class (Fowler): size alone, without the cohesion evidence"
+    },
+    {
+      "advisory_reason": "moving a method needs every call site",
+      "automated": null,
+      "formula": "ATFD > FEW  AND  LAA < ONE_THIRD  AND  FDP <= FEW",
+      "refactorings": [
+        "MoveMethod",
+        "ExtractMethod"
+      ],
+      "scope": "method",
+      "smell": "FeatureEnvy",
+      "title": "Feature Envy (Lanza & Marinescu, p. 84)"
+    },
+    {
+      "advisory_reason": null,
+      "automated": "ExtractMethod",
+      "formula": "LOC > HIGH/2  AND  CC >= threshold  AND  MAXNESTING >= 3 AND  NOAV > MANY",
+      "refactorings": [
+        "ExtractMethod",
+        "ReplaceConditionalWithPolymorphism"
+      ],
+      "scope": "method",
+      "smell": "BrainMethod",
+      "title": "Brain Method (Lanza & Marinescu, p. 92)"
+    },
+    {
+      "advisory_reason": null,
+      "automated": "ExtractMethod",
+      "formula": "MLOC > 30",
+      "refactorings": [
+        "ExtractMethod",
+        "DecomposeConditional"
+      ],
+      "scope": "method",
+      "smell": "LongMethod",
+      "title": "Long Method (Fowler): effective lines of code past the threshold"
+    },
+    {
+      "advisory_reason": "changing a signature needs every call site",
+      "automated": null,
+      "formula": "",
+      "refactorings": [
+        "IntroduceParameterObject",
+        "PreserveWholeObject"
+      ],
+      "scope": "method",
+      "smell": "LongParameterList",
+      "title": "Long Parameter List (Fowler)"
+    },
+    {
+      "advisory_reason": null,
+      "automated": "ReplaceNestedConditionalWithGuardClauses",
+      "formula": "MAXNESTING > 3",
+      "refactorings": [
+        "ReplaceNestedConditionalWithGuardClauses",
+        "ExtractMethod"
+      ],
+      "scope": "method",
+      "smell": "DeepNesting",
+      "title": "Deeply nested control flow"
+    }
+  ],
+  "thresholds": {
+    "brain_method_cc": 4,
+    "brain_method_loc": 35.0,
+    "brain_method_nesting": 3,
+    "brain_method_noav": 10,
+    "data_class_public_members": 5,
+    "data_class_public_members_many": 10,
+    "data_class_wmc_high": 47,
+    "data_class_wmc_low": 31,
+    "data_class_woc": 0.3333333333333333,
+    "deep_nesting": 3,
+    "feature_envy_atfd": 5,
+    "feature_envy_fdp": 5,
+    "feature_envy_laa": 0.3333333333333333,
+    "god_class_atfd": 5,
+    "god_class_tcc": 0.3333333333333333,
+    "god_class_wmc": 47,
+    "large_class_loc": 200,
+    "large_class_nom": 20,
+    "long_method_loc": 30,
+    "long_parameter_list_np": 5
+  }
+}

@@ -1008,3 +1008,38 @@ shkrimit, pra do të anashkalohej brenda javës.
 «(Fowler, 2018)» — dhe e pranon lakimin shqip të mbiemrit vetëm kur heqja e mbaresës
 jep pikërisht një autor të listës. Një citim i shkruar në ndonjë formë të tretë do
 të raportohej si i palistuar; kjo është zhurmë e dukshme, jo heshtje.
+
+---
+
+### VD-38: Shtojca nxirret nga kodi, nuk transkriptohet prej tij
+
+**Konteksti.** Shtojca duhet të japë pragjet, strategjitë, metrikat dhe arsyet e
+refuzimit — pikërisht ato që një anëtar i komisionit i kontrollon kur do të dijë
+nëse strategjia e zbatuar është ajo e botuara. Të gjitha jetojnë në kod dhe
+ndryshojnë me të. Shtypja e tyre me dorë në tekst do të prodhonte të njëjtën ndarje
+të heshtur që VD-21 e gjeti mes dy numëruesve të LOC-ut: dokumenti do të vazhdonte
+të thoshte një vlerë të vjetër, dhe asgjë nuk do ta thoshte se ka mbetur pas.
+
+**Vendimi.** `scripts/export_system_reference.py` i nxjerr nga vetë modulet dhe i
+shkruan te `data/results/system_reference.json`; Kapitulli 8 e lexon atë skedar
+njësoj si Kapitulli 5 lexon rezultatet. Vlerat vijnë nga `Thresholds` dhe nga
+moduli i kuantifikuesve; formulat e strategjive lexohen nga docstring-u i vetë
+detektorit, ku qëndrojnë bashkë me faqen e burimit. Pra shtojca nuk përmban asnjë
+numër dhe asnjë kusht të shkruar dy herë.
+
+**Pse docstring-u dhe jo pema e sintaksës.** Alternativa ishte të ekzekutoheshin
+detektorët mbi entitete të krijuara posaçërisht për të ndezur çdo klauzolë, dhe të
+lexoheshin `Condition`-at që kthejnë. Kjo do të jepte kushtet e vlerësuara vërtet,
+por kërkon një hartë me dorë metrikash për çdo detektor — pra transkriptim, vetëm
+i zhvendosur. Për Data Class-in dhe God Class-in ajo hartë as nuk mund të jetë e
+njëjta: njëri kërkon WMC të lartë, tjetri të ulët.
+
+**Mbrojtja.** Eksporti e derivon çelësin e erës nga emri i funksionit dhe e
+krahason bashkësinë me `REFACTORINGS`; nëse një detektor shtohet, riemërtohet ose
+hiqet, eksporti ndalet me gabim në vend që shtojca të mbetet e paplotë. Arsyet e
+refuzimit vijnë nga enum-i, dhe një arsye e re pa shpjegim shqip del në dokument
+si `[PLOTËSO]`, jo e heshtur.
+
+**Pasojat.** Katër detektorëve njëklauzolësh iu shtua formula në docstring, që të
+tetë strategjitë të kenë të njëjtën formë. Riprodhimi ka tani një hap më shumë,
+të renditur në README dhe në vetë shtojcën.
