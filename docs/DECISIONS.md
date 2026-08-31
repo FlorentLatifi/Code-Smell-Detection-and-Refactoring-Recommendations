@@ -1240,3 +1240,46 @@ ekzistojnë; përndryshe abstrakti i heq ato fjali në vend që të pretendojë 
 numër. Kjo e mban punimin të ndërtueshëm gjatë një ekzekutimi të gjatë, njësoj si
 Kapitulli 5.4.
 
+---
+
+### VD-44: Matet edhe nëse rishkrimi e hoqi erën, jo vetëm nëse kompilon
+
+**Konteksti.** Harku i Qasjes C ishte: detekto, propozo, apliko, verifiko se
+kompilon. Pyetja më e natyrshme mungonte krejt — a u hoq era? — dhe `verify.py`
+nuk ridetekton asgjë. Sistemi provonte që rishkrimi është **i saktë**, kurrë që
+është **i dobishëm**.
+
+**Vendimi.** `refactor/resolution.py` e rimat entitetin e rishkruar dhe pyet nëse
+detektori ende ndez. Rezultati hyn si kolonë në `refactoring_sites.csv` dhe si
+përmbledhje në `refactoring_evaluation.json`.
+
+Verifikimi i thyerjes dhe verifikimi i dobisë mbahen si dy module të veçanta,
+sepse janë dy pyetje të pavarura: një transformim mund të kompilojë dhe ta lërë
+erën aty ku ishte.
+
+**Çka nxori.** Mbi një prerje prej 120 skedarësh: nga 81 rishkrime, 61 e hoqën
+erën, 15 jo, dhe 5 nuk u gjykuan dot. Ndarja sipas transformimit përputhet
+saktësisht me atë që parashikohej nga përkufizimet e metrikave para se të
+ekzekutohej:
+
+| Transformimi | u hoq | mbeti |
+|---|---|---|
+| Introduce Parameter Object | 1 | 0 |
+| Extract Method (Long/Brain Method) | 59 | 13 |
+| Guard Clauses (Deep Nesting) | 1 | 2 |
+
+Arsyeja është strukturore. Guard Clauses heq saktësisht një nivel ndërfutjeje
+ndërsa pragu është tre, pra kuron një metodë me katër nivele dhe jo një me
+gjashtë. Extract Method e shkurton metodën pa garanci se e kalon prapa pragun.
+Introduce Parameter Object e zgjidh me ndërtim.
+
+**Identifikimi pas rishkrimit.** Entiteti gjendet me **emër**, jo me rresht,
+sepse rishkrimi i lëviz rreshtat — Introduce Parameter Object fut një klasë mbi
+metodën që ndryshon. Kur emri është i paqartë (dy klasa, ose një metodë e
+mbingarkuar), përgjigjja është `unknown` dhe jo hamendje, sipas të njëjtit parim
+me të cilin refuzojnë vetë transformimet.
+
+**Pasojat.** Kapitulli 5.4 raporton tani dy shifra që nuk duhen ngatërruar:
+vendet e transformuara, dhe erërat e hequra. Pretendimi «e rregullon erën»
+qëndron vetëm për të dytën.
+

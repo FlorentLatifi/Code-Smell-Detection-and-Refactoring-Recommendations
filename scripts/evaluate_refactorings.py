@@ -44,6 +44,7 @@ from javasmell.refactor.base import Refusal, Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import FileIndex  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
+from javasmell.refactor.resolution import resolves  # noqa: E402
 from javasmell.refactor.verify import Verdict, check, error_messages  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
@@ -73,6 +74,7 @@ SITE_COLUMNS = [
     "errors_before",
     "errors_after",
     "introduced",
+    "resolution",
 ]
 
 
@@ -128,7 +130,7 @@ def sites_in(source: bytes, path: str) -> list[tuple[str, str, str, str, int]]:
     return found
 
 
-def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[str]]:
+def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[str], Counter[str]]:
     """What an interrupted run got through, if it is still usable.
 
     A run over the whole corpus takes hours, and one was killed at file 400 of
@@ -137,11 +139,11 @@ def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[st
     carried over here.
     """
     if not resume or not path.exists():
-        return set(), Tally(), Counter()
+        return set(), Tally(), Counter(), Counter()
     stored = json.loads(path.read_text(encoding="utf-8"))
     if stored.get("columns") != SITE_COLUMNS:
         print("Partial run used a different schema; starting over.", file=sys.stderr)
-        return set(), Tally(), Counter()
+        return set(), Tally(), Counter(), Counter()
 
     tally = Tally(
         detected=stored["detected"],
@@ -149,10 +151,21 @@ def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[st
         missing=stored["missing"],
         refused_by_reason={Refusal(k): v for k, v in stored["refused_by_reason"].items()},
     )
-    return set(stored["files"]), tally, Counter(stored["verdicts"])
+    return (
+        set(stored["files"]),
+        tally,
+        Counter(stored["verdicts"]),
+        Counter(stored.get("resolution", {})),
+    )
 
 
-def save_progress(path: Path, done: set[str], tally: Tally, verdicts: Counter[str]) -> None:
+def save_progress(
+    path: Path,
+    done: set[str],
+    tally: Tally,
+    verdicts: Counter[str],
+    resolutions: Counter[str],
+) -> None:
     path.write_text(
         json.dumps(
             {
@@ -163,6 +176,7 @@ def save_progress(path: Path, done: set[str], tally: Tally, verdicts: Counter[st
                 "missing": tally.missing,
                 "refused_by_reason": {r.value: n for r, n in tally.refused_by_reason.items()},
                 "verdicts": dict(verdicts),
+                "resolution": dict(resolutions),
             },
             indent=2,
             sort_keys=True,
@@ -172,7 +186,7 @@ def save_progress(path: Path, done: set[str], tally: Tally, verdicts: Counter[st
     )
 
 
-def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
+def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], int]:
     corpus = Corpus(args.corpus)
     files = sampled_files(args.mlcq, corpus)
     if args.limit:
@@ -181,7 +195,7 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
     args.out.mkdir(parents=True, exist_ok=True)
     partial_path = args.out / PARTIAL_NAME
     progress_path = args.out / PROGRESS_NAME
-    done, tally, verdicts = load_progress(progress_path, args.resume)
+    done, tally, verdicts, resolutions = load_progress(progress_path, args.resume)
     if done:
         print(f"Resuming: {len(done)} files already written", flush=True)
 
@@ -228,6 +242,7 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
             verdict = Verdict.NOT_CHECKED
             errors_before = errors_after = 0
             introduced = ""
+            resolution = ""
             if outcome.applied:
                 try:
                     rewritten = apply_edits(source, outcome.edits)
@@ -235,6 +250,11 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
                     verdict = Verdict.BROKEN_SYNTAX
                     introduced = str(failure)
                 else:
+                    # Correct and compiling is not the same as helpful: the
+                    # rewritten entity is measured again and asked whether the
+                    # detector still fires on it.
+                    resolution = resolves(rewritten, class_name, method, smell_type).value
+                    resolutions[resolution] += 1
                     if javac is not None and not computed:
                         baseline = error_messages(javac, source, Path(path).name)
                         computed = True
@@ -258,6 +278,7 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
                     "errors_before": errors_before,
                     "errors_after": errors_after,
                     "introduced": introduced,
+                    "resolution": resolution,
                 }
             )
 
@@ -265,13 +286,13 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], int]:
         writer.writerows(rows)
         handle.flush()
         done.add(str(path))
-        save_progress(progress_path, done, tally, verdicts)
+        save_progress(progress_path, done, tally, verdicts, resolutions)
 
         if not args.quiet and number % 50 == 0:
             print(f"[{number}/{len(files)}] {tally.describe()}", flush=True)
 
     handle.close()
-    return tally, verdicts, len(files)
+    return tally, verdicts, resolutions, len(files)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -283,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"corpus not found: {args.corpus}", file=sys.stderr)
         return 1
 
-    tally, verdicts, file_count = run(args)
+    tally, verdicts, resolutions, file_count = run(args)
 
     # Only now does the partial file become the committed one.
     sites_path = args.out / SITES_NAME
@@ -304,6 +325,7 @@ def main(argv: list[str] | None = None) -> int:
         "refused_by_reason": {r.value: n for r, n in sorted(tally.refused_by_reason.items())},
         "applied_by_refactoring": dict(sorted(by_refactoring.items())),
         "verdicts": dict(sorted(verdicts.items())),
+        "resolution": dict(sorted(resolutions.items())),
         "verified_with_javac": args.verify,
         "environment": environment(),
     }
@@ -317,6 +339,9 @@ def main(argv: list[str] | None = None) -> int:
     print()
     for verdict, count in sorted(verdicts.items(), key=lambda p: -p[1]):
         print(f"  {verdict:<24} {count}")
+    print()
+    for name, count in sorted(resolutions.items(), key=lambda p: -p[1]):
+        print(f"  smell {name:<18} {count}")
     print()
     print(f"Wrote {result_path} and {sites_path}")
     return 0

@@ -904,6 +904,12 @@ def chapter_5() -> list:
 
 SEVERITY_SCALE = ("minor", "major", "critical")
 
+RESOLUTION_SQ = {
+    "resolved": "era u hoq",
+    "persists": "era mbeti",
+    "unknown": "entiteti nuk u identifikua dot",
+}
+
 
 def _confidence_section() -> list:
     """Intervalet e besimit dhe tavani i pajtimit njerëzor.
@@ -1141,6 +1147,46 @@ def _refactoring_section() -> list:
         f"Nga {applied} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
         "gabimi kundrejt skedarit origjinal.",
+        *_resolution_paragraphs(data),
+    ]
+
+
+def _resolution_paragraphs(data: dict) -> list:
+    """A rishkroi motori erën, apo thjesht kodin?
+
+    Verifikimi i mësipërm tregon se rishkrimi nuk e prish skedarin. Kjo është
+    pyetja tjetër, dhe përgjigjet e tyre nuk përkojnë: një transformim mund të
+    jetë i saktë, të kompilojë, dhe ta lërë erën aty ku ishte.
+    """
+    counts = data.get("resolution")
+    if not counts:
+        return []
+
+    total = sum(counts.values())
+    rows = [
+        [RESOLUTION_SQ.get(name, name), str(count), f"{count / total:.1%}"]
+        for name, count in sorted(counts.items(), key=lambda p: -p[1])
+    ]
+    persists = counts.get("persists", 0)
+
+    return [
+        "Që një rishkrim të kompilojë nuk do të thotë se e zgjidh problemin për të "
+        "cilin u aplikua. Prandaj çdo entitet i rishkruar u mat sërish dhe u pyet nëse "
+        "detektori ende ndez mbi të.",
+        ("table", "A u hoq era pas rishkrimit",
+         ["Rezultati", "Numri", "Pjesa e të aplikuarave"], rows),
+        f"Në {persists / total:.1%} të rasteve era mbetet pas një rishkrimi krejtësisht "
+        f"të saktë. Kjo nuk është defekt i zbatimit por pasojë e vetë transformimeve, "
+        f"dhe rrjedh drejtpërdrejt nga përkufizimet e metrikave.",
+        "Guard Clauses heq saktësisht një nivel ndërfutjeje, ndërsa Deep Nesting ndez "
+        "mbi tre: një metodë e ndërfutur katër nivele shërohet, një e ndërfutur gjashtë "
+        "mbetet mbi kufirin. Extract Method e shkurton metodën duke nxjerrë bllokun më "
+        "të madh, pa asnjë garanci se e kalon prapa pragun. Vetëm Introduce Parameter "
+        "Object e zgjidh erën me ndërtim, sepse lista e parametrave bëhet një.",
+        "Pasoja praktike është se numri i vendeve të transformuara nuk duhet lexuar si "
+        "numri i erërave të hequra. Mjeti e ndihmon autorin edhe kur nuk e shëron "
+        "rastin — një metodë më e shkurtër me ndërfutje më të cekët është përmirësim — "
+        "por pretendimi «e rregullon erën» qëndron vetëm për pjesën e matur më sipër.",
     ]
 
 
