@@ -14,6 +14,10 @@ prozë dhe referenca në një listë Python.
 
     python docs/thesis/check_citations.py
 
+Kontrollohet edhe auditimi i numrave të faqeve: `references.py` deklaron cilat hyrje
+janë rikontrolluar kundrejt botuesit dhe cilat jo, dhe një hyrje e re me faqe nuk
+guxon të rrijë jashtë të dyja listave.
+
 Del me kod jo-zero nëse ndonjëra anë ka diçka që tjetra nuk e ka, që kontrolli të
 mund të hyjë në CI. Nuk e prek dokumentin dhe nuk e ndalon ndërtimin: gjatë shkrimit
 një citim pa referencë është gjendje kalimtare normale, ndërsa para dorëzimit është
@@ -29,7 +33,7 @@ from collections.abc import Iterator
 
 from build_thesis import ABSTRACT, ACKNOWLEDGEMENTS, GLOSSARY, INTRODUCTION
 from chapters import CHAPTER_2, CHAPTER_3, CHAPTER_4, CHAPTER_6, chapter_5, chapter_8
-from references import all_references
+from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 
 # Një mbiemër: fillon me shkronjë të madhe dhe mund të jetë i përbërë
 # («Di Nucci», «Arcelli Fontana», «Henderson-Sellers»), i lidhur me «&» ose i
@@ -143,6 +147,34 @@ def _undeclined(author: str, known: set[str]) -> str:
     return author
 
 
+def _audit_key(name: str) -> tuple[str, str]:
+    """«Bieman & Kang 1995» -> ('bieman', '1995'), çelësi i njëjtë si te `listed`."""
+    author, _, year = name.rpartition(" ")
+    return (_first_author(author), year)
+
+
+def _check_page_audit(references: dict[tuple[str, str], str]) -> list[str]:
+    """Çdo referencë me numra faqesh është ose e verifikuar ose e shënuar si jo.
+
+    `references.py` e ndan listën në të kontrolluara dhe të pakontrolluara kundrejt
+    regjistrit të botuesit. Ajo ndarje është pretendim për saktësinë e punimit, ndaj
+    trajtohet si kod: një referencë e re me faqe që nuk hyn në asnjërën listë do të
+    thoshte heshtazi «e verifikuar», çka nuk është.
+    """
+    problems = []
+    audited = {}
+    for name in PAGES_VERIFIED + PAGES_UNVERIFIED:
+        key = _audit_key(name)
+        if key not in references:
+            problems.append(f"  auditimi i faqeve përmend një burim që s'është në listë: {name}")
+        audited[key] = name
+
+    for key, reference in sorted(references.items()):
+        if "pp. " in reference and key not in audited:
+            problems.append(f"  referencë me faqe jashtë auditimit: {reference[:70]}")
+    return problems
+
+
 def report() -> list[str]:
     """Mospërputhjet mes tekstit dhe listës, si rreshta gati për t'u shtypur."""
     text = thesis_text()
@@ -168,7 +200,7 @@ def report() -> list[str]:
         hint = " (viti nuk përputhet me listën)" if author in known_authors else ""
         problems.append(f"  e cituar por e palistuar: {author} {year}{hint}")
 
-    return problems
+    return problems + _check_page_audit(references)
 
 
 def main() -> int:

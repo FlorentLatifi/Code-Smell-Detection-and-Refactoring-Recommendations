@@ -14,9 +14,11 @@ RREGULLI I SHABLLONIT: te «Referencat» shkojnë vetëm burimet e cituara. Çdo
 burim i lexuar por i pacituar shkon te «Bibliografia». Prandaj një referencë
 hiqet nga kjo listë nëse citimi përkatës del nga teksti.
 
-VERIFIKIM PARA DORËZIMIT: autorët, titujt, vitet dhe revistat janë të sakta, por
-numrat e vëllimeve dhe të faqeve duhen kontrolluar një nga një kundrejt burimit
-origjinal. `NEEDS_PAGE_CHECK` i liston ato ku kontrolli është më i domosdoshëm.
+VERIFIKIM: autorët, titujt, vitet dhe revistat janë të sakta. Numrat e vëllimeve
+dhe të faqeve janë rikontrolluar kundrejt regjistrit të botuesit vetëm për një
+pjesë, dhe `PAGES_VERIFIED` e `PAGES_UNVERIFIED` e thonë saktësisht se cila është
+cila. Ndarja mbahet këtu e jo në kokë, sepse «i kontrolluar» harrohet brenda javës
+dhe pastaj rikontrollohet e njëjta gjë ndërsa tjetra mbetet përgjithmonë e paprekur.
 """
 
 from __future__ import annotations
@@ -192,11 +194,37 @@ def all_references() -> list[str]:
     return sorted(CITED_BY_SYSTEM + METHODOLOGY + RELATED_WORK + TOOLS, key=_sort_key)
 
 
-# Burimet ku numri i vëllimit ose i faqeve duhet kontrolluar kundrejt origjinalit
-# para dorëzimit. Autorët, titujt, vitet dhe revistat janë verifikuar.
-NEEDS_PAGE_CHECK = (
+# Vëllimi dhe faqet e rikontrolluara më 2026-08-31 kundrejt regjistrit të botuesit:
+# DBLP për të katërtat e para, IEEE Xplore dhe Springer për të tjerat. Të tetë dolën
+# të sakta ashtu si ishin shkruar; asnjë hyrje nuk u ndryshua.
+PAGES_VERIFIED = (
+    "Arcelli Fontana et al. 2016",
     "Bieman & Kang 1995",
+    "Chidamber & Kemerer 1994",
     "Cunningham 1992",
+    "Di Nucci et al. 2018",
     "Madeyski & Lewowski 2020",
     "Marinescu 2004",
+    "McCabe 1976",
+)
+
+# Hyrjet me numra faqesh që nuk janë kontrolluar nga një burim i dytë. Janë
+# transkriptuar nga vetë botimi dhe s'ka arsye të dyshohen, por «e patestuar» dhe
+# «e saktë» nuk shkruhen njësoj. Librat dhe raportet nuk hyjnë as këtu as më lart,
+# sepse nuk kanë numra faqesh për t'u kontrolluar.
+PAGES_UNVERIFIED = (
+    "Azeem et al. 2019",
+    "Breiman 2001",
+    "Cohen 1960",
+    "Friedman 2001",
+    "Lehman 1980",
+    "Mäntylä & Lassenius 2006",
+    "Matthews 1975",
+    "Moha et al. 2010",
+    "Murphy-Hill et al. 2012",
+    "Palomba et al. 2015",
+    "Pedregosa et al. 2011",
+    "Sharma & Spinellis 2018",
+    "Silva et al. 2016",
+    "Tsantalis & Chatzigeorgiou 2009",
 )

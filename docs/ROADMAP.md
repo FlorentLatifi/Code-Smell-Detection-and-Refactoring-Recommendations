@@ -508,8 +508,13 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
 - ✅ Formatimi UBT verifikohet nga `docs/thesis/check_format.py` mbi vetë skedarin
   `.docx`: fonti, madhësitë, hapësira e rreshtave, tri regjimet e numërimit të
   faqeve, ndarja e kapitujve dhe numërimi i figurave sipas radhës (VD-39).
-- ⬜ Mbetet: redaktimi i tekstit, kontrolli i numrave të faqeve kundrejt burimeve
-  origjinale (`references.NEEDS_PAGE_CHECK`) dhe plotësimi i vendeve `[PLOTËSO]`.
+- ✅ Numrat e faqeve u rikontrolluan kundrejt regjistrave të botuesve (DBLP, IEEE
+  Xplore, Springer) për tetë hyrjet kryesore; të tetë dolën të sakta. Ndarja mes
+  të verifikuarave dhe të paverifikuarave mbahet te `references.py` dhe e ruan
+  `check_citations.py`, që një hyrje e re me faqe të mos rrijë heshtazi jashtë saj.
+- ⬜ Mbetet: redaktimi i tekstit dhe plotësimi i vendeve `[PLOTËSO]` — mentorja,
+  data e dorëzimit, falënderimet, data e qasjes te tree-sitter, dhe kufizimet
+  shtesë te Kapitulli 6.
 
 ---
 
