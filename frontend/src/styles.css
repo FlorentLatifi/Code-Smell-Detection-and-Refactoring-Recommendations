@@ -1,254 +1,832 @@
-/* One stylesheet, no framework. The interface has four screens and a list; a
-   design system would be more code than the thing it dresses. */
+/* One stylesheet, no framework. The interface has two views and a list; a design
+   system would be more code than the thing it dresses.
+
+   The direction is an instrument, not a product page. Three rules hold it:
+
+   1. Typography carries the design. Headings and headline numbers are set in the
+      same serif family the thesis uses, so the tool and the document read as one
+      artefact; identifiers and measurements are always monospaced, because every
+      one of them is a literal from the source or a number to be compared.
+   2. Structure comes from rules and alignment, not from boxes. No shadows, no
+      rounded corners, no floating cards. A hairline and a shared baseline say
+      "these belong together" more quietly and more precisely than a container.
+   3. The palette is the one `build_figures.py` draws the thesis figures in. A
+      screenshot of this screen and a figure from Chapter 5 sit on the same page
+      without clashing, which is the whole reason to have a palette at all.
+
+   Colour is reserved for meaning: severity, added and removed lines, and the one
+   accent that marks the current selection. Nothing else is coloured. */
 
 :root {
-  --ink: #16202b;
-  --ink-soft: #4a5a6b;
-  --ink-faint: #8494a3;
-  --paper: #f2f4f6;
+  /* Ink and paper. Cool greys rather than pure black on pure white: a screen
+     read for an hour is easier at slightly less than full contrast. */
+  --ink: #1a1d21;
+  --ink-soft: #4c5560;
+  --ink-faint: #838d99;
+  --paper: #f4f3f1;
   --surface: #ffffff;
-  --rule: #d8dee4;
-  --rule-soft: #e8edf1;
+  --rule: #c9cbcd;
+  --rule-soft: #e3e3e1;
 
-  --accent: #0f6e6e;
-  --accent-wash: #e2efee;
+  /* Straight from the figure palette in scripts/build_figures.py. */
+  --accent: #1f4e79;
+  --accent-wash: #e7edf3;
 
-  --critical: #a33a31;
-  --major: #a8681f;
-  --minor: #4a5a6b;
+  --critical: #8c2f22;
+  --major: #8a5a12;
+  --minor: #5b636d;
 
-  --added: #1f6b3f;
-  --added-wash: #e7f4ec;
-  --removed: #9d3b33;
-  --removed-wash: #fbeceb;
+  --added: #1d5c38;
+  --added-wash: #e8f1eb;
+  --removed: #8c2f22;
+  --removed-wash: #f6eae8;
 
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    Georgia, "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "SF Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #e4eaef;
-    --ink-soft: #a5b3c0;
-    --ink-faint: #71818f;
-    --paper: #0e141a;
-    --surface: #161f28;
-    --rule: #2a3743;
-    --rule-soft: #202b35;
+    --ink: #e6e4e0;
+    --ink-soft: #a8adb4;
+    --ink-faint: #767d86;
+    --paper: #14161a;
+    --surface: #1b1e23;
+    --rule: #363b42;
+    --rule-soft: #262a30;
 
-    --accent: #4bb3ac;
-    --accent-wash: #112c2c;
+    --accent: #7ba7d1;
+    --accent-wash: #1c2733;
 
-    --critical: #e08078;
-    --major: #d4a457;
-    --minor: #a5b3c0;
+    --critical: #d98276;
+    --major: #cfa257;
+    --minor: #a8adb4;
 
-    --added: #6cc38d;
-    --added-wash: #12291d;
-    --removed: #e08078;
-    --removed-wash: #2a1917;
+    --added: #77bd92;
+    --added-wash: #16261c;
+    --removed: #d98276;
+    --removed-wash: #2b1a18;
   }
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15px/1.5 var(--sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.page { max-width: 1240px; margin: 0 auto; padding: 28px 24px 72px; }
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 26px 84px;
+}
 
-header { border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
-h1 { margin: 0; font-size: 1.7rem; letter-spacing: -0.02em; }
-.tagline { margin: 4px 0 0; color: var(--ink-soft); font-size: 0.92rem; }
+/* ---------- masthead ---------- */
+/* A rule under the title, the weight a printed page would give it. */
+header {
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font: 400 1.85rem/1.1 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 5px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+/* ---------- view switch ---------- */
+/* Underlined, like a running head; not buttons pretending to be tabs. */
+.tabs {
+  display: flex;
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.tab {
+  padding: 0 0 5px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-faint);
+  font: 500 0.82rem/1 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.on {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
 
 /* ---------- search ---------- */
-.search { display: flex; gap: 10px; margin: 22px 0; }
+.search {
+  display: flex;
+  gap: 8px;
+  margin: 26px 0 22px;
+}
+
 .search input {
-  flex: 1; padding: 10px 13px; font-size: 0.95rem; font-family: var(--mono);
-  border: 1px solid var(--rule); border-radius: 4px;
-  background: var(--surface); color: var(--ink);
+  flex: 1;
+  padding: 9px 11px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  font: 0.9rem var(--mono);
 }
-.search input:focus-visible, select:focus-visible, button:focus-visible {
-  outline: 2px solid var(--accent); outline-offset: 1px;
+
+.search input::placeholder {
+  color: var(--ink-faint);
 }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 button {
-  padding: 10px 18px; font-size: 0.92rem; font-weight: 600; cursor: pointer;
-  border: 1px solid var(--accent); border-radius: 4px;
-  background: var(--accent); color: #fff;
+  padding: 9px 20px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font: 600 0.86rem var(--sans);
+  letter-spacing: 0.02em;
+  cursor: pointer;
 }
-button:disabled { opacity: 0.45; cursor: default; }
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
 /* ---------- states ---------- */
-.empty, .note { color: var(--ink-soft); font-size: 0.9rem; max-width: 62ch; }
+.empty,
+.note {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  max-width: 64ch;
+}
+
 .failure {
-  color: var(--critical); background: var(--removed-wash);
-  border-left: 3px solid var(--critical); padding: 11px 14px; border-radius: 0 3px 3px 0;
-  max-width: 62ch; font-size: 0.9rem;
+  max-width: 64ch;
+  padding: 10px 0 10px 13px;
+  border-left: 2px solid var(--critical);
+  color: var(--critical);
+  font-size: 0.9rem;
 }
 
-/* ---------- summary ---------- */
-.summary { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule);
-  border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
-.figure { background: var(--surface); padding: 12px 20px; min-width: 96px; }
-.figure b { display: block; font-size: 1.45rem; font-variant-numeric: tabular-nums; }
-.figure span { font-size: 0.76rem; color: var(--ink-faint); }
-.figure.accent b { color: var(--accent); }
-.figure.critical b { color: var(--critical); }
-.figure.major b { color: var(--major); }
+/* ---------- measured figures ---------- */
+/* A row of numbers, separated by rules. The number is the object; the label is
+   the caption under it, as in a table of figures. */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+}
 
-/* ---------- layout ---------- */
-.layout { display: grid; grid-template-columns: 1fr; gap: 22px; }
-@media (min-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.figure {
+  flex: 1;
+  min-width: 104px;
+  padding: 12px 22px 12px 0;
+}
 
-.filters { display: flex; gap: 14px; margin-bottom: 10px; }
-.filters label { font-size: 0.78rem; color: var(--ink-faint); display: grid; gap: 3px; }
+.figure + .figure {
+  padding-left: 22px;
+  border-left: 1px solid var(--rule-soft);
+}
+
+.figure b {
+  display: block;
+  font: 400 1.6rem/1.1 var(--serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.figure span {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.figure.accent b {
+  color: var(--accent);
+}
+
+.figure.critical b {
+  color: var(--critical);
+}
+
+.figure.major b {
+  color: var(--major);
+}
+
+/* ---------- two columns ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+@media (min-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+}
+
+/* ---------- filters ---------- */
+.filters {
+  display: flex;
+  gap: 18px;
+  align-items: end;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.filters label {
+  display: grid;
+  gap: 2px;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 select {
-  padding: 6px 9px; font-size: 0.88rem; border: 1px solid var(--rule);
-  border-radius: 3px; background: var(--surface); color: var(--ink);
+  padding: 4px 6px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  font: 0.86rem var(--sans);
 }
-.count { font-size: 0.78rem; color: var(--ink-faint); margin: 0 0 8px; }
 
-.list ul { list-style: none; margin: 0; padding: 0;
-  border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.list li + li { border-top: 1px solid var(--rule-soft); }
+.count {
+  margin: 0 0 0 auto;
+  color: var(--ink-faint);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- the list ---------- */
+/* Ruled rows on the page itself, not a bordered card: the list is the page. */
+.list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li + li {
+  border-top: 1px solid var(--rule-soft);
+}
+
 .row {
-  width: 100%; display: grid; grid-template-columns: 74px 132px 1fr; gap: 9px;
-  align-items: baseline; text-align: left; padding: 9px 12px;
-  background: var(--surface); color: var(--ink); border: 0; border-radius: 0;
-  font-weight: 400; font-size: 0.87rem;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  gap: 0 11px;
+  width: 100%;
+  padding: 9px 10px 9px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 400 0.88rem var(--sans);
+  text-align: left;
+  cursor: pointer;
 }
-.row:hover { background: var(--accent-wash); }
-.row.selected { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent); }
-.row .kind { font-weight: 600; }
-.row .where { font-family: var(--mono); font-size: 0.82rem; }
-.row .file { grid-column: 2 / -1; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); }
 
-.pill {
-  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
-  border: 1px solid currentColor; border-radius: 100px; padding: 1px 7px; white-space: nowrap;
+.row:hover {
+  background: var(--accent-wash);
 }
-.pill.critical { color: var(--critical); }
-.pill.major { color: var(--major); }
-.pill.minor { color: var(--minor); }
+
+.row.selected {
+  background: var(--accent-wash);
+}
+
+/* The severity marker: a rule down the left of the row, not a coloured pill.
+   Shape carries the same information a badge would, and takes no width. */
+.row .mark {
+  align-self: stretch;
+  width: 3px;
+  background: var(--minor);
+}
+
+.row.critical .mark {
+  background: var(--critical);
+}
+
+.row.major .mark {
+  background: var(--major);
+}
+
+.row .headline {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.row .kind {
+  font-weight: 600;
+}
+
+.row .where {
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row .file {
+  margin-top: 2px;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.row .grade {
+  margin-left: auto;
+  color: var(--ink-faint);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
 
 /* ---------- detail ---------- */
-.detail { background: var(--surface); border: 1px solid var(--rule);
-  border-radius: 4px; padding: 18px 20px; align-self: start; }
-.detail h2 { margin: 0 0 6px; font-size: 1.1rem; display: flex; align-items: center; gap: 9px; }
-.detail h3 { margin: 18px 0 6px; font-size: 0.78rem; text-transform: uppercase;
-  letter-spacing: 0.07em; color: var(--ink-faint); }
-.detail .where { font-family: var(--mono); font-size: 0.86rem; margin: 0; }
-.detail .file { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-faint); margin: 2px 0 0; }
-.rationale { font-family: var(--mono); font-size: 0.82rem; background: var(--paper);
-  border: 1px solid var(--rule-soft); border-radius: 3px; padding: 9px 11px; margin: 0; }
+.detail {
+  align-self: start;
+  padding-top: 2px;
+}
 
-.metrics { border-collapse: collapse; font-size: 0.82rem; }
-.metrics th { text-align: left; font-family: var(--mono); font-weight: 500;
-  color: var(--ink-soft); padding: 2px 18px 2px 0; }
-.metrics td { font-variant-numeric: tabular-nums; padding: 2px 0; }
+.detail h2 {
+  margin: 0;
+  font: 400 1.25rem/1.2 var(--serif);
+}
 
-.refactorings { margin: 0; padding-left: 18px; font-size: 0.87rem; }
-.primary { margin-top: 16px; }
+.detail h3 {
+  margin: 22px 0 7px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink-faint);
+  font: 600 0.7rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.detail .where {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.detail .file {
+  margin: 2px 0 0;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+}
+
+/* ---------- conditions ---------- */
+/* Why it fired: the measurement beside the threshold it passed. This table is
+   the interface's whole reason for existing, so it gets the most alignment. */
+.conditions {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.conditions th {
+  padding: 3px 14px 3px 0;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-weight: 500;
+  text-align: left;
+}
+
+.conditions td {
+  padding: 3px 14px 3px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.conditions .measured {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.conditions .bound {
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.conditions .excess {
+  width: 100%;
+}
+
+/* A bar in the last column: how far past the threshold the measurement sits.
+   Capped at five times, the same cap the severity score applies. */
+.excess span {
+  display: block;
+  height: 6px;
+  min-width: 2px;
+  background: var(--accent);
+  opacity: 0.55;
+}
+
+.metrics {
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.metrics th {
+  padding: 2px 20px 2px 0;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-weight: 500;
+  text-align: left;
+}
+
+.metrics td {
+  padding: 2px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.refactorings {
+  margin: 0;
+  padding-left: 17px;
+  font-size: 0.87rem;
+}
+
+.refactorings li + li {
+  margin-top: 3px;
+}
+
+.primary {
+  margin-top: 18px;
+}
 
 /* ---------- diff ---------- */
-.diff { margin-top: 20px; }
-.diff h3 { display: flex; gap: 8px; align-items: baseline; }
-.plus { color: var(--added); font-variant-numeric: tabular-nums; }
-.minus { color: var(--removed); font-variant-numeric: tabular-nums; }
+.diff {
+  margin-top: 24px;
+}
+
+.diff h3 {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+}
+
+.plus {
+  color: var(--added);
+  font-variant-numeric: tabular-nums;
+}
+
+.minus {
+  color: var(--removed);
+  font-variant-numeric: tabular-nums;
+}
+
 .diff pre {
-  margin: 10px 0 0; padding: 0; overflow-x: auto;
-  border: 1px solid var(--rule); border-radius: 4px; background: var(--paper);
-  font-family: var(--mono); font-size: 0.76rem; line-height: 1.5;
+  margin: 9px 0 0;
+  padding: 0;
+  overflow-x: auto;
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+  font: 0.76rem/1.55 var(--mono);
 }
-.diff .line, .diff .gap { display: block; white-space: pre; padding-right: 12px; }
-.diff .gutter { display: inline-block; width: 34px; text-align: right; padding-right: 8px;
-  color: var(--ink-faint); user-select: none; font-variant-numeric: tabular-nums; }
-.diff .mark { display: inline-block; width: 16px; text-align: center; user-select: none; }
-.diff .added { background: var(--added-wash); color: var(--added); }
-.diff .removed { background: var(--removed-wash); color: var(--removed); }
-.diff .gap { color: var(--ink-faint); text-align: center; padding: 2px 0; }
 
-/* ---------- rezultatet e vleresimit ---------- */
-.tabs { display: flex; gap: 6px; margin-top: 12px; }
-.tab {
-  border: 1px solid var(--rule); background: var(--surface); color: var(--ink-soft);
-  border-radius: 3px; padding: 5px 12px; font-size: 0.84rem; cursor: pointer;
+.diff .line,
+.diff .gap {
+  display: block;
+  padding-right: 12px;
+  white-space: pre;
 }
-.tab:hover { border-color: var(--accent); color: var(--ink); }
-.tab.on { background: var(--accent-wash); border-color: var(--accent); color: var(--accent); }
 
-.results { margin-top: 20px; }
-.results .lede { color: var(--ink-soft); font-size: 0.88rem; max-width: 62ch; margin: 0 0 18px; }
-.results .footnote { margin-top: 22px; font-size: 0.78rem; }
+.diff .gutter {
+  display: inline-block;
+  width: 34px;
+  padding-right: 9px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  user-select: none;
+}
+
+.diff .mark {
+  display: inline-block;
+  width: 15px;
+  text-align: center;
+  user-select: none;
+}
+
+.diff .added {
+  background: var(--added-wash);
+  color: var(--added);
+}
+
+.diff .removed {
+  background: var(--removed-wash);
+  color: var(--removed);
+}
+
+.diff .gap {
+  padding: 2px 0;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* ---------- results view ---------- */
+.results {
+  margin-top: 26px;
+}
+
+.results .lede {
+  max-width: 66ch;
+  margin: 0 0 24px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.results .footnote {
+  margin-top: 26px;
+  font-size: 0.76rem;
+}
 
 .panel {
-  border: 1px solid var(--rule); border-radius: 4px; background: var(--surface);
-  padding: 16px 18px; margin-bottom: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+  margin-bottom: 22px;
+  overflow-x: auto;
 }
-.panel h3 { margin: 0 0 6px; font-size: 0.98rem; }
-.panel h4 { margin: 18px 0 6px; font-size: 0.84rem; color: var(--ink-soft); font-weight: 600; }
-.panel h4:first-of-type { margin-top: 10px; }
-.panel > .quiet { max-width: 68ch; }
 
-.quiet { color: var(--ink-soft); font-size: 0.82rem; margin: 0 0 8px; }
+.panel h3 {
+  margin: 0 0 5px;
+  font: 400 1.1rem/1.2 var(--serif);
+}
 
-/* Dy kolona kur ka hapësirë, një kur nuk ka: tabelat e fshirjes janë të gjera. */
-.split { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 1040px) { .split { grid-template-columns: 1fr 1fr; } }
-.split > .panel { margin-bottom: 0; }
+.panel h4 {
+  margin: 20px 0 7px;
+  color: var(--ink-faint);
+  font: 600 0.7rem/1 var(--sans);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
 
-.summary.tight { margin: 0 0 6px; }
-/* Kutia e përmbledhjes e ka sfondin e vet si vijë ndarëse mes shifrave; kur ato
-   nuk e mbushin rreshtin, ajo vijë duket si një bllok bosh. Shtrirja e figurave e
-   mbush rreshtin sido që të jetë numri i tyre. */
-.results .summary .figure { flex: 1; }
+.panel h4:first-of-type {
+  margin-top: 12px;
+}
 
-/* Tabelat e gjera — fshirja e pragjeve ka shtatë kolona — rrëshqasin brenda
-   panelit të vet; pa këtë, e tërë faqja fiton një shirit horizontal. */
-.panel { overflow-x: auto; }
-.grid { border-collapse: collapse; width: 100%; font-size: 0.83rem; }
-.grid th { text-align: left; font-weight: 600; color: var(--ink-soft); padding: 5px 10px 5px 0; }
-.grid thead th { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em;
-  border-bottom: 1px solid var(--rule); }
-.grid td { padding: 5px 10px 5px 0; vertical-align: middle; }
-.grid tbody tr + tr th, .grid tbody tr + tr td { border-top: 1px solid var(--rule-soft); }
-.grid .figures { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.grid .strong { font-weight: 600; }
-.grid .variant th, .grid .variant td { color: var(--ink-faint); font-weight: 400; }
-.grid .published { background: var(--accent-wash); }
-.sweep th, .sweep td { padding-right: 6px; }
-.sweep code { font-size: 0.74rem; }
+.quiet {
+  max-width: 68ch;
+  margin: 0 0 10px;
+  color: var(--ink-soft);
+  font-size: 0.83rem;
+}
 
-.bar { display: flex; align-items: center; gap: 8px; min-width: 130px; }
-.bar .fill { height: 8px; border-radius: 2px; min-width: 2px; }
-.bar b { font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.8rem; }
-.fill.rules { background: var(--ink-faint); }
-.fill.model { background: var(--accent); }
-.fill.severe { background: var(--major); }
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
 
-.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+@media (min-width: 1040px) {
+  .split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.split > .panel {
+  margin-bottom: 0;
+}
+
+.summary.tight {
+  margin: 0 0 6px;
+  border-top: 0;
+}
+
+.results .summary .figure {
+  flex: 1;
+}
+
+/* ---------- data tables ---------- */
+.grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.grid th {
+  padding: 5px 12px 5px 0;
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-align: left;
+}
+
+.grid thead th {
+  border-bottom: 1px solid var(--ink);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.grid td {
+  padding: 5px 12px 5px 0;
+  vertical-align: middle;
+}
+
+.grid tbody tr + tr th,
+.grid tbody tr + tr td {
+  border-top: 1px solid var(--rule-soft);
+}
+
+.grid .figures {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.grid .strong {
+  font-weight: 600;
+}
+
+.grid .variant th,
+.grid .variant td {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+
+.grid .published {
+  background: var(--accent-wash);
+}
+
+.sweep th,
+.sweep td {
+  padding-right: 7px;
+}
+
+.sweep code {
+  font-size: 0.73rem;
+}
+
+/* ---------- bars ---------- */
+.bar {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  min-width: 132px;
+}
+
+.bar .fill {
+  height: 7px;
+  min-width: 2px;
+}
+
+.bar b {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.fill.rules {
+  background: var(--ink-faint);
+}
+
+.fill.model {
+  background: var(--accent);
+}
+
+.fill.severe {
+  background: var(--major);
+}
+
+/* ---------- chips ---------- */
+/* Square, ruled, monospaced: switches on an instrument, not tags on a blog. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 10px;
+  border: 1px solid var(--rule);
+  width: fit-content;
+}
+
 .chip {
-  border: 1px solid var(--rule); background: var(--surface); color: var(--ink-soft);
-  border-radius: 999px; padding: 3px 11px; font-size: 0.78rem; cursor: pointer;
+  padding: 4px 12px;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: 500 0.76rem var(--mono);
+  letter-spacing: 0.02em;
+  cursor: pointer;
 }
-.chip:hover { border-color: var(--accent); }
-.chip.on { background: var(--accent-wash); border-color: var(--accent); color: var(--accent); }
 
-.stack { display: flex; height: 14px; border-radius: 3px; overflow: hidden; margin: 6px 0 8px; }
-.slice { display: block; min-width: 1px; }
-.slice.both, .swatch.both { background: var(--accent); }
-.slice.rules, .swatch.rules { background: var(--major); }
-.slice.model, .swatch.model { background: var(--ink-faint); }
-.slice.neither, .swatch.neither { background: var(--rule); }
+.chip + .chip {
+  border-left: 1px solid var(--rule);
+}
 
-.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 12px;
-  margin: 0 0 8px; padding: 0; font-size: 0.79rem; color: var(--ink-soft); }
-.legend li { display: flex; align-items: center; gap: 5px; }
-.swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.chip:hover {
+  color: var(--ink);
+}
 
-.features { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
-.features code { font-family: var(--mono); font-size: 0.76rem; background: var(--paper);
-  border: 1px solid var(--rule-soft); border-radius: 3px; padding: 2px 6px; }
+.chip.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---------- agreement bar ---------- */
+.stack {
+  display: flex;
+  height: 13px;
+  margin: 7px 0 9px;
+  overflow: hidden;
+}
+
+.slice {
+  display: block;
+  min-width: 1px;
+}
+
+.slice.both,
+.swatch.both {
+  background: var(--accent);
+}
+
+.slice.rules,
+.swatch.rules {
+  background: var(--major);
+}
+
+.slice.model,
+.swatch.model {
+  background: var(--ink-faint);
+}
+
+.slice.neither,
+.swatch.neither {
+  background: var(--rule);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 9px;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+}
+
+.features code {
+  padding: 2px 7px;
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+}
+
+/* A caption under a table: smaller than the body, and set apart from it. */
+.caption {
+  margin: 7px 0 0;
+  color: var(--ink-faint);
+  font-size: 0.76rem;
+}

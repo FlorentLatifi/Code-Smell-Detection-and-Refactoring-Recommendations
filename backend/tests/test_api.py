@@ -118,6 +118,17 @@ def test_a_smell_carries_the_conditions_that_fired(client):
     assert all(s["rationale"] for s in smells)
     assert all(s["severity"] in {"minor", "major", "critical"} for s in smells)
 
+    # Every clause travels as data too, so the interface can align the measured
+    # value against the threshold instead of parsing a sentence.
+    #
+    # `process` spans 35 lines from its signature to its closing brace, of which
+    # three hold nothing but a brace, and none are blank: 35 - 3 = 32 effective
+    # lines against a published threshold of 30.
+    long_method = next(s for s in smells if s["smell_type"] == "LongMethod")
+    assert long_method["conditions"] == [
+        {"metric": "MLOC", "operator": ">", "threshold": 30, "value": 32.0}
+    ]
+
 
 def test_metrics_are_returned_per_class_and_method(client):
     body = client.post("/metrics", json={"path": "src"}).json()

@@ -127,6 +127,19 @@ class Smell:
             "severity": self.severity.value,
             "score": round(self.score, 3),
             "rationale": self.rationale,
+            # The clauses as data, not only as the joined sentence. The interface
+            # has to show which measurement carried the detection, and parsing it
+            # back out of `rationale` would make a display concern depend on the
+            # exact wording of a sentence.
+            "conditions": [
+                {
+                    "metric": c.metric,
+                    "operator": c.operator,
+                    "threshold": round(c.threshold, 3),
+                    "value": round(c.value, 3),
+                }
+                for c in self.conditions
+            ],
             "refactorings": list(self.refactorings),
             "metrics": {k: round(v, 3) for k, v in self.metrics.items()},
         }

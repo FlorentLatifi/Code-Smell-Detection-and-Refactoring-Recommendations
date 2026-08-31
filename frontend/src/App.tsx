@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { analyse, preview } from "./api";
 import { Diff } from "./Diff";
 import { Results } from "./Results";
@@ -23,6 +23,7 @@ export function App() {
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [kind, setKind] = useState<string>("all");
   const [selected, setSelected] = useState<Smell | null>(null);
+  const listRef = useRef<HTMLElement>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
@@ -46,6 +47,26 @@ export function App() {
         ),
     [smells, severity, kind],
   );
+
+  /**
+   * Up and down move through the findings.
+   *
+   * The list is the part a reader walks: a hundred rows read one after another
+   * while the detail beside them changes. Reaching for the mouse for each one
+   * makes that a chore, and the rows are already buttons, so the only thing
+   * missing is moving the focus with the selection.
+   */
+  function navigate(event: React.KeyboardEvent) {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    if (shown.length === 0) return;
+    event.preventDefault();
+
+    const current = selected ? shown.indexOf(selected) : -1;
+    const step = event.key === "ArrowDown" ? 1 : -1;
+    const next = Math.min(Math.max(current + step, 0), shown.length - 1);
+    setSelected(shown[next]);
+    listRef.current?.querySelectorAll<HTMLButtonElement>("button.row")[next]?.focus();
+  }
 
   return (
     <div className="page">
@@ -109,7 +130,7 @@ export function App() {
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
           ) : (
             <div className="layout">
-              <section className="list">
+              <section className="list" ref={listRef} onKeyDown={navigate}>
                 <Filters
                   analysis={screen.analysis}
                   severity={severity}
@@ -124,17 +145,23 @@ export function App() {
                   {shown.map((smell, index) => (
                     <li key={`${smell.file_path}:${smell.start_line}:${smell.smell_type}:${index}`}>
                       <button
-                        className={selected === smell ? "row selected" : "row"}
+                        className={`row ${smell.severity}${selected === smell ? " selected" : ""}`}
                         onClick={() => setSelected(smell)}
+                        aria-current={selected === smell}
                       >
-                        <span className={`pill ${smell.severity}`}>{smell.severity}</span>
-                        <span className="kind">{smell.smell_type}</span>
-                        <span className="where">
-                          {smell.class_name}
-                          {smell.method ? `.${smell.method.replace(/\(.*$/, "")}` : ""}
-                        </span>
-                        <span className="file">
-                          {smell.file_path}:{smell.start_line}
+                        <span className="mark" aria-hidden="true" />
+                        <span>
+                          <span className="headline">
+                            <span className="kind">{smell.smell_type}</span>
+                            <span className="where">
+                              {smell.class_name}
+                              {smell.method ? `.${smell.method.replace(/\(.*$/, "")}` : ""}
+                            </span>
+                            <span className="grade">{smell.severity}</span>
+                          </span>
+                          <span className="file">
+                            {smell.file_path}:{smell.start_line}
+                          </span>
                         </span>
                       </button>
                     </li>
@@ -252,9 +279,7 @@ function Detail({ smell, path }: { smell: Smell; path: string }) {
 
   return (
     <article>
-      <h2>
-        <span className={`pill ${smell.severity}`}>{smell.severity}</span> {smell.smell_type}
-      </h2>
+      <h2>{smell.smell_type}</h2>
       <p className="where">
         {smell.package ? `${smell.package}.` : ""}
         {smell.class_name}
@@ -265,7 +290,8 @@ function Detail({ smell, path }: { smell: Smell; path: string }) {
       </p>
 
       <h3>Pse u shënua</h3>
-      <p className="rationale">{smell.rationale}</p>
+      <Conditions smell={smell} />
+      {smell.conditions.length > 0 && <p className="note caption">{EXCESS_NOTE}</p>}
 
       <h3>Metrikat e matura</h3>
       <table className="metrics">
@@ -317,3 +343,56 @@ function Detail({ smell, path }: { smell: Smell; path: string }) {
     </article>
   );
 }
+
+/**
+ * Why the detector fired: the measurement beside the bound it passed.
+ *
+ * The API sends the clauses as data as well as as a sentence, so the value and
+ * the threshold can be put in the same column and compared by eye. The bar is
+ * the excess — how far past the bound the measurement sits — on the same 5x cap
+ * the severity score uses, so a reader who has seen one has seen the other.
+ */
+function Conditions({ smell }: { smell: Smell }) {
+  if (smell.conditions.length === 0) {
+    return <p className="empty">{smell.rationale}</p>;
+  }
+
+  return (
+    <table className="conditions">
+      <tbody>
+        {smell.conditions.map((condition) => {
+          const above = condition.operator.startsWith(">");
+          const excess = above
+            ? condition.value / (condition.threshold || 1)
+            : (condition.threshold || 1) / (condition.value || 0.001);
+          const width = Math.min(Math.max(excess, 1), 5) / 5;
+          return (
+            <tr key={`${condition.metric}${condition.operator}`}>
+              <th>{condition.metric}</th>
+              <td className="measured">{condition.value}</td>
+              <td className="bound">
+                {condition.operator} {condition.threshold}
+              </td>
+              <td className="excess">
+                <span style={{ width: `${width * 100}%` }} title={`${excess.toFixed(1)}×`} />
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+/**
+ * The bar needs one sentence, because it is not a progress bar.
+ *
+ * It is the excess the severity score is built from, on the same 5x cap. Saying
+ * so also exposes the oddity the thesis reports in section 5.6: a permissive
+ * clause like `FDP <= 5` reads as a large excess when the measurement sits far
+ * below it, which is one of the reasons the derived severity does not track the
+ * reviewers' judgement.
+ */
+const EXCESS_NOTE =
+  "Shiriti tregon tepricën mbi kufirin, e kufizuar në 5× — e njëjta madhësi nga e cila " +
+  "derivohet ashpërsia.";

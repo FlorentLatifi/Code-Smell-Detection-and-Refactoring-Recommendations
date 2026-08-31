@@ -1,5 +1,13 @@
 export type Severity = "minor" | "major" | "critical";
 
+/** One clause of a detection strategy, with the value that satisfied it. */
+export interface Condition {
+  metric: string;
+  operator: string;
+  threshold: number;
+  value: number;
+}
+
 export interface Smell {
   smell_type: string;
   scope: string;
@@ -12,6 +20,7 @@ export interface Smell {
   severity: Severity;
   score: number;
   rationale: string;
+  conditions: Condition[];
   refactorings: string[];
   metrics: Record<string, number>;
   automated: boolean;
