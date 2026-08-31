@@ -1,0 +1,90 @@
+{
+ "environment": {
+  "commit": "52b8892eb6d96cc9a48f77d9904746f26a20fe20",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.1"
+ },
+ "per_smell": {
+  "blob": {
+   "accuracy": 0.5389379632449995,
+   "confusion": {
+    "accuracy": 0.5389,
+    "f1": 0.3948,
+    "fn": 4541,
+    "fp": 4541,
+    "mcc": 0.0224,
+    "precision": 0.3948,
+    "recall": 0.3948,
+    "support_positive": 7503,
+    "tn": 7654,
+    "tp": 2962
+   },
+   "mcc": 0.022409699506831134,
+   "pairs": 9849,
+   "samples": 1484,
+   "samples_with_one_review": 2,
+   "smell": "blob"
+  },
+  "data class": {
+   "accuracy": 0.5547874179052886,
+   "confusion": {
+    "accuracy": 0.5548,
+    "f1": 0.3769,
+    "fn": 2576,
+    "fp": 2576,
+    "mcc": 0.0305,
+    "precision": 0.3769,
+    "recall": 0.3769,
+    "support_positive": 4134,
+    "tn": 4862,
+    "tp": 1558
+   },
+   "mcc": 0.030545039119062364,
+   "pairs": 5786,
+   "samples": 856,
+   "samples_with_one_review": 6,
+   "smell": "data class"
+  },
+  "feature envy": {
+   "accuracy": 0.662925416364953,
+   "confusion": {
+    "accuracy": 0.6629,
+    "f1": 0.4899,
+    "fn": 931,
+    "fp": 931,
+    "mcc": 0.2382,
+    "precision": 0.4899,
+    "recall": 0.4899,
+    "support_positive": 1825,
+    "tn": 2768,
+    "tp": 894
+   },
+   "mcc": 0.23817336784840035,
+   "pairs": 2762,
+   "samples": 861,
+   "samples_with_one_review": 0,
+   "smell": "feature envy"
+  },
+  "long method": {
+   "accuracy": 0.6214845550945136,
+   "confusion": {
+    "accuracy": 0.6215,
+    "f1": 0.4895,
+    "fn": 2463,
+    "fp": 2463,
+    "mcc": 0.1888,
+    "precision": 0.4895,
+    "recall": 0.4895,
+    "support_positive": 4825,
+    "tn": 5726,
+    "tp": 2362
+   },
+   "mcc": 0.18876435405260564,
+   "pairs": 6507,
+   "samples": 1569,
+   "samples_with_one_review": 15,
+   "smell": "long method"
+  }
+ },
+ "question": "binary presence, pooled over every pair of reviews on a sample"
+}

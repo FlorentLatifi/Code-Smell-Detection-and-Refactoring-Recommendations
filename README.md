@@ -108,8 +108,10 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | 4 | `train_models.py` | numrat e Qasjes B dhe modelet | sekonda |
 | 5 | `sweep_thresholds.py` | analiza e ndjeshmërisë | sekonda |
 | 6 | `evaluate_refactorings.py` | tabela N/M/K e Qasjes C | orë |
-| 7 | `export_system_reference.py` | tabelat e Shtojcës (pragjet, strategjitë) | sekonda |
-| 8 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
+| 7 | `reviewer_agreement.py` | tavani i pajtimit mes rishikuesve | sekonda |
+| 8 | `bootstrap_intervals.py` | intervalet e besimit mbi çdo shifër | nën një minutë |
+| 9 | `export_system_reference.py` | tabelat e Shtojcës (pragjet, strategjitë) | sekonda |
+| 10 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
 | 7 | `build_figures.py` | figurat e punimit | sekonda |
 
 Hapi 2 është i vetmi kalim i shtrenjtë që duhet paguar: ai mat çdo entitet një herë,

@@ -763,10 +763,109 @@ def chapter_5() -> list:
             ],
         ),
         *_severity_section(),
+        *_confidence_section(),
     ]
 
 
 SEVERITY_SCALE = ("minor", "major", "critical")
+
+
+def _confidence_section() -> list:
+    """Intervalet e besimit dhe tavani i pajtimit njerëzor.
+
+    Të dyja i përgjigjen së njëjtës pyetje nga dy anë: sa peshë mban një shifër e
+    vetme. E para thotë sa lëviz ajo kur ndryshon korpusi; e dyta thotë kundrejt
+    çfarë etikete matet.
+    """
+    intervals = _load("bootstrap_intervals.json")
+    ceiling = _load_if_present("reviewer_agreement.json")
+
+    def span(entry: dict) -> str:
+        return f"[{entry['low']:.3f}, {entry['high']:.3f}]"
+
+    rows = []
+    swept_rows = []
+    for smell in sorted(intervals["per_smell"]):
+        data = intervals["per_smell"][smell]
+        band = data["intervals"]
+        difference = band["difference_model_minus_rules"]
+        rows.append([
+            SMELL_SQ[smell],
+            span(band["rules"]),
+            span(band[data["best_model"]]),
+            span(difference),
+            "po" if difference["low"] > 0 else "jo",
+        ])
+        swept = band["difference_model_minus_rules_swept"]
+        swept_rows.append([
+            SMELL_SQ[smell],
+            data["swept_knob"],
+            span(swept),
+            "po" if swept["low"] > 0 else "jo",
+            f"{swept['share_positive']:.1%}",
+        ])
+
+    paragraphs: list = [
+        f"Çdo shifër e mësipërme është një vlerësim i vetëm mbi një korpus të "
+        f"caktuar. Për të matur sa varet ajo nga korpusi, çdo tregues u riprodhua me "
+        f"bootstrap mbi {intervals['resamples']} rimostrime, duke rimostruar "
+        f"**depo** e jo rreshta: mostrat e së njëjtës depo ndajnë autorë dhe "
+        f"konvencione, ndaj rimostrimi i rreshtave do të prodhonte intervale artificialisht "
+        f"të ngushta, për të njëjtën arsye që ndarja e trajnimit është e grupuar.",
+        ("table", "Intervale besimi 95% për MCC-në",
+         ["Erë", "A: rregullat", "B: modeli", "B − A", "E kalon zeron"], rows),
+        "Përparësia e Qasjes B ndaj Qasjes A e kalon zeron te të katër erërat, pra nuk "
+        "është artefakt i korpusit. Por intervalet janë të gjera — për Feature Envy-n "
+        "gjerësia i kalon njëzet e pesë pikët — dhe kjo do të thotë se renditja e "
+        "erërave mes tyre nuk qëndron: dallimi mes Data Class-it dhe Blob-it, për "
+        "shembull, humbet brenda tyre.",
+        "Krahasimi ndryshon kur Qasjes A i jepet pragu i saj më i mirë nga fshirja e "
+        "Nënkapitullit 5.5, çka është krahasimi më bujar që mund t'i bëhet:",
+        ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
+         ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
+         swept_rows),
+        "Për tri erërat e para përparësia mbetet. Për Long Method-in ajo zhduket: "
+        "intervali e përfshin zeron dhe shenja ruhet vetëm në 88.6% të rimostrimeve. "
+        "Pra pretendimi «modeli e tejkalon rregullin» qëndron përgjithësisht, por jo "
+        "për erën ku rregulli tashmë punonte më mirë, sapo atij rregulli i lejohet të "
+        "kalibrohet. Ky është kufizimi i vetëm i rëndësishëm i krahasimit A↔B.",
+    ]
+
+    if ceiling is None:
+        return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+
+    ceiling_rows = [
+        [
+            SMELL_SQ[smell],
+            f"{data['mcc']:.3f}",
+            f"{data['accuracy']:.3f}",
+            f"{data['pairs']:,}".replace(",", " "),
+        ]
+        for smell, data in sorted(ceiling["per_smell"].items())
+    ]
+    best = max(data["mcc"] for data in ceiling["per_smell"].values())
+
+    paragraphs += [
+        "Mbetet pyetja e dytë: kundrejt çfarë etikete maten këto shifra. Etiketa është "
+        "ndërtuar duke bashkuar rishikime njerëzore, dhe ata rishikues nuk pajtohen me "
+        "njëri-tjetrin. Tabela më poshtë e mat atë mospajtim me të njëjtin tregues dhe "
+        "të njëjtin kod: një rishikues merret si e vërtetë, tjetri si parashikim, dhe "
+        "çifti kalon nëpër të njëjtën matricë konfuze.",
+        ("table", "Sa pajtohen rishikuesit me njëri-tjetrin",
+         ["Erë", "MCC mes rishikuesve", "Saktësia", "Çifte"], ceiling_rows),
+        f"Asnjë erë nuk e kalon {best:.3f}. Kjo nuk do të thotë se sistemi i tejkalon "
+        f"njerëzit: shifrat e kapitullit maten kundrejt etiketës së agreguar, ndërsa "
+        f"kjo mat marrëveshjen mes dy individëve, dhe agregimi e heq një pjesë të "
+        f"zhurmës që një individ i vetëm e mbart. Të dy numrat nuk janë i njëjti "
+        f"tregues dhe nuk duhen vendosur në një renditje.",
+        "Ajo që tregon është sa e ashpër është vetë detyra. Kur dy zhvillues "
+        "profesionistë që shohin të njëjtin kod pajtohen kaq pak, një pjesë e "
+        "pareduktueshme e gabimit të çdo detektori nuk i takon detektorit por "
+        "përkufizimit. Çdo shifër e këtij kapitulli duhet lexuar mbi këtë sfond, dhe "
+        "po ashtu çdo shifër e literaturës që raportohet pa të.",
+    ]
+
+    return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
 
 
 def _severity_section() -> list:
@@ -954,8 +1053,10 @@ REPRODUCTION = [
     ("4", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
     ("5", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
     ("6", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
-    ("7", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
-    ("8", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
+    ("7", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
+    ("8", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
+    ("9", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
+    ("10", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"
