@@ -1183,10 +1183,67 @@ def _resolution_paragraphs(data: dict) -> list:
         "mbetet mbi kufirin. Extract Method e shkurton metodën duke nxjerrë bllokun më "
         "të madh, pa asnjë garanci se e kalon prapa pragun. Vetëm Introduce Parameter "
         "Object e zgjidh erën me ndërtim, sepse lista e parametrave bëhet një.",
+        *_metric_shift_paragraphs(data),
+        *_introduced_paragraphs(data),
         "Pasoja praktike është se numri i vendeve të transformuara nuk duhet lexuar si "
-        "numri i erërave të hequra. Mjeti e ndihmon autorin edhe kur nuk e shëron "
-        "rastin — një metodë më e shkurtër me ndërfutje më të cekët është përmirësim — "
-        "por pretendimi «e rregullon erën» qëndron vetëm për pjesën e matur më sipër.",
+        "numri i erërave të hequra. Të tria matjet duhen lexuar bashkë: sa raste u "
+        "shëruan, sa lëvizi matja te ato që nuk u shëruan, dhe sa herë rishkrimi solli "
+        "një problem të ri.",
+    ]
+
+
+def _metric_shift_paragraphs(data: dict) -> list:
+    """Sa lëvizi matja, edhe atje ku era mbeti.
+
+    Pa këtë shifër, «era mbeti» dhe «asgjë nuk ndryshoi» lexohen njësoj, dhe nuk
+    janë e njëjta gjë.
+    """
+    shift = data.get("metric_shift")
+    if not shift:
+        return []
+
+    rows = [
+        [
+            smell,
+            entry["metric_before"] and f"{entry['metric_before']:g}",
+            f"{entry['metric_after']:g}",
+            str(entry["sites"]),
+        ]
+        for smell, entry in sorted(shift.items())
+    ]
+    return [
+        "Të thuash vetëm nëse era mbeti do të thoshte t'i lexoje njësoj një rishkrim "
+        "që nuk ndryshoi asgjë dhe një që e përgjysmoi metodën. Prandaj raportohet edhe "
+        "sa lëvizi matja mbi të cilën ndez detektori, si mesore mbi vendet e aplikuara.",
+        ("table", "Sa lëvizi matja pas rishkrimit",
+         ["Erë", "Para", "Pas", "Vende"], rows),
+        "Lëvizja është e madhe atje ku transformimi ka hapësirë të veprojë dhe e vogël "
+        "atje ku nuk ka: Guard Clauses heq një nivel të vetëm, dhe mesorja e tregon "
+        "pikërisht atë. Pra edhe kur era mbetet, kodi nuk mbetet i pandryshuar.",
+    ]
+
+
+def _introduced_paragraphs(data: dict) -> list:
+    """A e shkëmbeu motori një erë me një tjetër?"""
+    introduced = data.get("introduced_smells")
+    if not introduced:
+        return []
+
+    total = sum(introduced.values())
+    listed = ", ".join(f"{name} ({count})" for name, count in sorted(introduced.items()))
+    return [
+        f"Mbetet pyetja e fundit dhe më e pakëndshmja: a solli rishkrimi një erë që nuk "
+        f"ishte aty? Klasa u mat e tëra para dhe pas, sepse Extract Method krijon një "
+        f"metodë të re, dhe kod i ri është kod që askush nuk e ka matur ende. "
+        f"Përgjigjja është po, {total} herë: {listed}.",
+        "Shumica janë Long Parameter List, dhe shkaku është i drejtpërdrejtë: Extract "
+        "Method ia kalon metodës së nxjerrë çdo vlerë që blloku lexonte, ndaj një bllok "
+        "me gjashtë hyrje prodhon një metodë me gjashtë parametra — një mbi pragun. "
+        "Transformimi është i saktë dhe kompilon; thjesht e zhvendos problemin.",
+        "Kjo është e njëjta formë me paradoksin e Encapsulate Field-it të Nënkapitullit "
+        "6.2: një refaktorim i rekomanduar gjerësisht që, i matur me vetë metrikat mbi "
+        "të cilat ndërtohet detektimi, nuk përmirëson domosdo atë që mat detektori. "
+        "Motori nuk e fsheh: numri raportohet krahas atyre të shëruara.",
     ]
 
 

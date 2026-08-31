@@ -29,6 +29,7 @@ import shutil
 import sys
 from collections import Counter
 from pathlib import Path
+from statistics import median
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
@@ -44,7 +45,7 @@ from javasmell.refactor.base import Refusal, Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import FileIndex  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
-from javasmell.refactor.resolution import resolves  # noqa: E402
+from javasmell.refactor.resolution import compare  # noqa: E402
 from javasmell.refactor.verify import Verdict, check, error_messages  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
@@ -75,6 +76,10 @@ SITE_COLUMNS = [
     "errors_after",
     "introduced",
     "resolution",
+    "introduced_smells",
+    "metric",
+    "metric_before",
+    "metric_after",
 ]
 
 
@@ -130,7 +135,36 @@ def sites_in(source: bytes, path: str) -> list[tuple[str, str, str, str, int]]:
     return found
 
 
-def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[str], Counter[str]]:
+def _metric_shift(path: Path) -> dict[str, dict[str, float]]:
+    """How far the measurement moved, per smell, over the applied sites.
+
+    The median rather than the mean: one method of nine hundred lines would
+    otherwise decide the number for every other. Reported beside the resolution
+    counts because "did not remove the smell" and "did not change anything" are
+    different claims, and only this separates them.
+    """
+    before: dict[str, list[float]] = {}
+    after: dict[str, list[float]] = {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            if row["applied"] != "1" or not row["metric_before"] or not row["metric_after"]:
+                continue
+            before.setdefault(row["smell"], []).append(float(row["metric_before"]))
+            after.setdefault(row["smell"], []).append(float(row["metric_after"]))
+
+    shift = {}
+    for smell, values in sorted(before.items()):
+        shift[smell] = {
+            "metric_before": round(median(values), 3),
+            "metric_after": round(median(after[smell]), 3),
+            "sites": len(values),
+        }
+    return shift
+
+
+def load_progress(
+    path: Path, resume: bool
+) -> tuple[set[str], Tally, Counter[str], Counter[str], Counter[str], int]:
     """What an interrupted run got through, if it is still usable.
 
     A run over the whole corpus takes hours, and one was killed at file 400 of
@@ -139,11 +173,11 @@ def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[st
     carried over here.
     """
     if not resume or not path.exists():
-        return set(), Tally(), Counter(), Counter()
+        return set(), Tally(), Counter(), Counter(), Counter(), 0
     stored = json.loads(path.read_text(encoding="utf-8"))
     if stored.get("columns") != SITE_COLUMNS:
         print("Partial run used a different schema; starting over.", file=sys.stderr)
-        return set(), Tally(), Counter(), Counter()
+        return set(), Tally(), Counter(), Counter(), Counter(), 0
 
     tally = Tally(
         detected=stored["detected"],
@@ -156,6 +190,8 @@ def load_progress(path: Path, resume: bool) -> tuple[set[str], Tally, Counter[st
         tally,
         Counter(stored["verdicts"]),
         Counter(stored.get("resolution", {})),
+        Counter(stored.get("introduced_smells", {})),
+        int(stored.get("offset", 0)),
     )
 
 
@@ -165,7 +201,16 @@ def save_progress(
     tally: Tally,
     verdicts: Counter[str],
     resolutions: Counter[str],
+    introduced_smells: Counter[str],
+    offset: int,
 ) -> None:
+    """The checkpoint, written after every file.
+
+    ``offset`` is where the partial CSV ended when the checkpoint was taken. A run
+    killed between writing a file's rows and writing this checkpoint would
+    otherwise leave rows for a file that is not marked done, and resuming would
+    write them a second time. Truncating back to the offset keeps the two in step.
+    """
     path.write_text(
         json.dumps(
             {
@@ -177,6 +222,8 @@ def save_progress(
                 "refused_by_reason": {r.value: n for r, n in tally.refused_by_reason.items()},
                 "verdicts": dict(verdicts),
                 "resolution": dict(resolutions),
+                "introduced_smells": dict(introduced_smells),
+                "offset": offset,
             },
             indent=2,
             sort_keys=True,
@@ -186,7 +233,9 @@ def save_progress(
     )
 
 
-def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], int]:
+def run(
+    args: argparse.Namespace,
+) -> tuple[Tally, Counter[str], Counter[str], Counter[str], int]:
     corpus = Corpus(args.corpus)
     files = sampled_files(args.mlcq, corpus)
     if args.limit:
@@ -195,11 +244,18 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], in
     args.out.mkdir(parents=True, exist_ok=True)
     partial_path = args.out / PARTIAL_NAME
     progress_path = args.out / PROGRESS_NAME
-    done, tally, verdicts, resolutions = load_progress(progress_path, args.resume)
+    done, tally, verdicts, resolutions, introduced_smells, offset = load_progress(
+        progress_path, args.resume
+    )
     if done:
         print(f"Resuming: {len(done)} files already written", flush=True)
 
     javac = shutil.which("javac") if args.verify else None
+    if done and offset:
+        # Drop anything written after the last checkpoint: those rows belong to a
+        # file that is not marked done and is about to be measured again.
+        with partial_path.open("r+b") as trim:
+            trim.truncate(offset)
     handle = partial_path.open("a" if done else "w", encoding="utf-8", newline="")
     writer = csv.DictWriter(handle, fieldnames=SITE_COLUMNS)
     if not done:
@@ -243,6 +299,7 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], in
             errors_before = errors_after = 0
             introduced = ""
             resolution = ""
+            change = None
             if outcome.applied:
                 try:
                     rewritten = apply_edits(source, outcome.edits)
@@ -252,9 +309,13 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], in
                 else:
                     # Correct and compiling is not the same as helpful: the
                     # rewritten entity is measured again and asked whether the
-                    # detector still fires on it.
-                    resolution = resolves(rewritten, class_name, method, smell_type).value
+                    # detector still fires, whether the class gained a smell it
+                    # did not have, and how far the measurement moved.
+                    change = compare(source, rewritten, class_name, method, smell_type)
+                    resolution = change.resolution.value
                     resolutions[resolution] += 1
+                    for name in change.introduced:
+                        introduced_smells[name] += 1
                     if javac is not None and not computed:
                         baseline = error_messages(javac, source, Path(path).name)
                         computed = True
@@ -279,6 +340,12 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], in
                     "errors_after": errors_after,
                     "introduced": introduced,
                     "resolution": resolution,
+                    "introduced_smells": "" if change is None else " ".join(change.introduced),
+                    "metric": "" if change is None else change.metric,
+                    "metric_before": ""
+                    if change is None or change.before is None
+                    else change.before,
+                    "metric_after": "" if change is None or change.after is None else change.after,
                 }
             )
 
@@ -286,13 +353,15 @@ def run(args: argparse.Namespace) -> tuple[Tally, Counter[str], Counter[str], in
         writer.writerows(rows)
         handle.flush()
         done.add(str(path))
-        save_progress(progress_path, done, tally, verdicts, resolutions)
+        save_progress(
+            progress_path, done, tally, verdicts, resolutions, introduced_smells, handle.tell()
+        )
 
         if not args.quiet and number % 50 == 0:
             print(f"[{number}/{len(files)}] {tally.describe()}", flush=True)
 
     handle.close()
-    return tally, verdicts, resolutions, len(files)
+    return tally, verdicts, resolutions, introduced_smells, len(files)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -304,7 +373,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"corpus not found: {args.corpus}", file=sys.stderr)
         return 1
 
-    tally, verdicts, resolutions, file_count = run(args)
+    tally, verdicts, resolutions, introduced_smells, file_count = run(args)
 
     # Only now does the partial file become the committed one.
     sites_path = args.out / SITES_NAME
@@ -326,6 +395,8 @@ def main(argv: list[str] | None = None) -> int:
         "applied_by_refactoring": dict(sorted(by_refactoring.items())),
         "verdicts": dict(sorted(verdicts.items())),
         "resolution": dict(sorted(resolutions.items())),
+        "introduced_smells": dict(sorted(introduced_smells.items())),
+        "metric_shift": _metric_shift(sites_path),
         "verified_with_javac": args.verify,
         "environment": environment(),
     }

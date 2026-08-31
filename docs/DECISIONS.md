@@ -1283,3 +1283,56 @@ me të cilin refuzojnë vetë transformimet.
 vendet e transformuara, dhe erërat e hequra. Pretendimi «e rregullon erën»
 qëndron vetëm për të dytën.
 
+---
+
+### VD-45: Rishkrimi matet me tri pyetje, jo me një
+
+**Konteksti.** VD-44 shtoi pyetjen «a u hoq era». Duke e parë rezultatin, dolën dy
+zbrazëti të tjera në të njëjtin kalim. E para: teksti pretendonte se «një metodë më
+e shkurtër është përmirësim» pa e matur atë kurrë — pikërisht lloji i pohimit të
+pambështetur që ky projekt nuk e lejon askund tjetër. E dyta: askush nuk pyeste
+nëse rishkrimi sillte një erë **të re**, ndonëse Extract Method ia kalon metodës së
+nxjerrë çdo vlerë që blloku lexonte, pra një bllok me gjashtë hyrje prodhon
+mekanikisht një Long Parameter List.
+
+**Vendimi.** Çdo vend i aplikuar matet me tri pyetje: a u hoq era, sa lëvizi matja
+mbi të cilën ndez detektori, dhe a u shtua ndonjë erë në klasë. Erërat e reja
+kërkohen në **tërë klasën** e jo te entiteti, sepse transformimi mund të krijojë
+entitet: metoda që Extract Method shkruan është kod të cilin askush nuk e ka matur.
+
+**Çka nxori, mbi 90 skedarë.** Nga 79 rishkrime, 60 e hoqën erën dhe 14 jo. Mesorja
+e matjes ra ndjeshëm edhe atje ku era mbeti: Long Method nga 45 rreshta në 13,
+Brain Method nga 56 në 12, Deep Nesting nga 5 nivele në 4. Dhe motori futi 11 erëra
+të reja — nëntë prej tyre Long Parameter List, saktësisht nga mekanizmi i
+parashikuar.
+
+Kjo e fundit ka të njëjtën formë me paradoksin e Encapsulate Field-it: një
+refaktorim i rekomanduar që, i matur me vetë metrikat mbi të cilat ndërtohet
+detektimi, e zhvendos problemin në vend që ta heqë.
+
+**Pasojat.** Kapitulli 5.4 raporton të tria dhe thotë hapur se nuk duhen lexuar
+veç. Numri i vendeve të transformuara nuk është numri i erërave të hequra, dhe as
+numri i përmirësimeve.
+
+---
+
+### VD-46: Ekzekutimi i gjatë rifillon saktësisht, jo afërsisht
+
+**Konteksti.** Kalimi mbi korpus zgjat orë. VD-33 e kishte bërë të rifillueshëm:
+progresi shkruhet pas çdo skedari dhe rreshtat rrjedhin në një CSV të pjesshëm. Por
+mes shkrimit të rreshtave të një skedari dhe shkrimit të pikës së kontrollit ka një
+çast: një ndërprerje aty i lë rreshtat në CSV pa e shënuar skedarin si të kryer, dhe
+rifillimi i shkruan sërish.
+
+**Vendimi.** Pika e kontrolli mban edhe **pozicionin në bajta** ku përfundonte CSV-ja
+kur u shkrua. Në rifillim skedari i pjesshëm pritet te ai pozicion, ndaj rreshtat e
+një skedari të papërfunduar hiqen para se ai të matet sërish.
+
+**Verifikimi.** Një ekzekutim mbi 90 skedarë u ndërpre me qëllim te skedari i 25-të
+dhe u rifillua. Rezultati doli **identik** me ekzekutimin e panderprerë: të njëjtat
+numra për çdo fushë, i njëjti numër rreshtash, dhe e njëjta bashkësi rreshtash.
+
+**Pasojat.** Ndërprerja e sesionit ose fikja e kompjuterit nuk kushton më asgjë
+përveç kohës së skedarit në punë e sipër. `--no-resume` mbetet për rastin kur
+skema ndryshon dhe një ekzekutim i ri është vërtet i nevojshëm.
+

@@ -12,7 +12,7 @@ from __future__ import annotations
 from javasmell.refactor import guard_clauses, introduce_parameter_object
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
-from javasmell.refactor.resolution import Resolution, resolves
+from javasmell.refactor.resolution import Resolution, compare, resolves
 
 # Body is one `if`, with three more inside it: MAXNESTING = 4, over the bound of
 # three. Removing the outer condition leaves three, which does not fire.
@@ -129,3 +129,62 @@ def test_a_class_level_smell_is_asked_without_a_method() -> None:
 }
 """
     assert resolves(data_class, "T", None, "DataClass") is Resolution.PERSISTS
+
+
+# Extract Method passes every value the block read as a parameter. This block
+# reads six locals, so the method it produces takes six parameters -- one over
+# the bound of five, and therefore a Long Parameter List that did not exist
+# before the rewrite.
+SIX_INPUTS = b"""class T {
+    int run(int a, int b, int c, int d, int e, int f) {
+        int total = 0;
+        for (int i = 0; i < 10; i++) {
+            total += a;
+            total += b;
+            total += c;
+            total += d;
+            total += e;
+            total += f;
+        }
+        return total;
+    }
+}
+"""
+
+
+def test_a_rewrite_can_introduce_a_smell_that_was_not_there() -> None:
+    """The mirror of resolving one, and the reason the class is measured whole.
+
+    Nothing in the original file is a Long Parameter List; `run` takes six
+    parameters but is not private and is not what was rewritten. The extracted
+    method is new code, and it is measured for the first time here.
+    """
+    from javasmell.refactor import extract_method
+
+    site = find_site("T.java", SIX_INPUTS, "T", 2, "run")
+    assert site is not None
+    outcome = extract_method.apply(site)
+    assert outcome.applied, outcome.detail
+    rewritten = apply_edits(SIX_INPUTS, outcome.edits)
+
+    change = compare(SIX_INPUTS, rewritten, "T", "run", "LongMethod")
+    assert "LongParameterList" in change.introduced
+
+
+def test_the_measurement_that_moved_is_reported_with_the_smell() -> None:
+    """Four levels of nesting become three, and the number says so."""
+    rewritten = rewrite(NESTED_FOUR, guard_clauses)
+    change = compare(NESTED_FOUR, rewritten, "T", "m", "DeepNesting")
+
+    assert change.metric == "MAXNESTING"
+    assert (change.before, change.after) == (4.0, 3.0)
+    assert change.resolution is Resolution.RESOLVED
+
+
+def test_a_surviving_smell_still_reports_how_far_it_moved() -> None:
+    """Five levels become four: still over the bound, and measurably better."""
+    rewritten = rewrite(NESTED_FIVE, guard_clauses)
+    change = compare(NESTED_FIVE, rewritten, "T", "m", "DeepNesting")
+
+    assert change.resolution is Resolution.PERSISTS
+    assert (change.before, change.after) == (5.0, 4.0)
