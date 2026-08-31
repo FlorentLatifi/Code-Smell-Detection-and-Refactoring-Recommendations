@@ -174,7 +174,7 @@ TOOLS = [
     (
         "Brunsfeld, M. et al. tree-sitter: An incremental parsing system for "
         "programming tools. [https://tree-sitter.github.io/tree-sitter/], "
-        "data e qasjes: [PLOTËSO]."
+        "data e qasjes: 30.08.2026."
     ),
 ]
 

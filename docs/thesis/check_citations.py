@@ -54,6 +54,9 @@ COAUTHOR_MARKERS = ("&", "et")
 # përbërë: «Henderson-Sellers» nuk shkurtohet, «Henderson-Sellers-it» po.
 MAX_SUFFIX = 3
 
+# Fraza pas së cilës një vit është datë qasjeje, jo vit botimi.
+ACCESS_DATE = "data e qasjes"
+
 
 def _fold(text: str) -> str:
     """Krahasim që nuk varet nga diakritika: «Mäntylä» dhe «Mantyla» janë një."""
@@ -122,11 +125,16 @@ def listed() -> dict[tuple[str, str], str]:
     Viti është numri i parë katërshifror i hyrjes, sepse formati i shabllonit e vë
     vitin menjëherë pas autorëve. Burimet elektronike pa vit mbeten me vit bosh dhe
     krahasohen vetëm me mbiemrin.
+
+    Data e qasjes pritet para kërkimit: ajo mban një vit që nuk është vit botimi,
+    dhe i lexuar si i tillë do të kërkonte një citim «(Autori, 2026)» që askush nuk
+    e shkruan — pra kontrolli do të ankohej përgjithmonë për një burim të saktë.
     """
     entries = {}
     for reference in all_references():
         author = _first_author(reference.split(",")[0])
-        year = re.search(r"\b(?:19|20)\d{2}\b", reference)
+        published = reference.split(ACCESS_DATE)[0]
+        year = re.search(r"\b(?:19|20)\d{2}\b", published)
         entries[(author, year.group() if year else "")] = reference
     return entries
 

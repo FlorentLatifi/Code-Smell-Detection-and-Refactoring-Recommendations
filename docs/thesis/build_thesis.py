@@ -41,6 +41,7 @@ from chapters import (  # noqa: E402
 from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
+LOGO = os.path.join(os.path.dirname(__file__), "assets", "ubt_logo.jpg")
 
 # Anything the author still has to supply is marked so it cannot be missed
 # during a final read-through.
@@ -260,9 +261,20 @@ def caption(doc: Document, text: str) -> None:
 # ----------------------------------------------------------------------
 # Document sections
 # ----------------------------------------------------------------------
+def build_logo(doc: Document) -> None:
+    """The university banner that heads both cover pages of the template."""
+    holder = doc.add_paragraph()
+    holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    holder.paragraph_format.space_after = Pt(12)
+    if os.path.exists(LOGO):
+        holder.add_run().add_picture(LOGO, width=Inches(5.9))
+    else:
+        _set_font(holder.add_run(f"{TODO}: mungon logoja e UBT-së"), size=TITLE_SIZE, bold=True)
+
+
 def build_cover(doc: Document) -> None:
-    """Page 1 of the template: programme, title, degree, author, date."""
-    centered(doc, "UNIVERSITETI PËR BIZNES DHE TEKNOLOGJI", size=TITLE_SIZE, bold=True)
+    """Page 1 of the template: logo, programme, title, degree, author, date."""
+    build_logo(doc)
     centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", bold=True)
     blank(doc, 8)
     centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
@@ -278,7 +290,7 @@ def build_cover(doc: Document) -> None:
 def build_inner_page(doc: Document) -> None:
     """Page 2: adds the academic year, the supervisor and the degree statement."""
     doc.add_page_break()
-    centered(doc, "UNIVERSITETI PËR BIZNES DHE TEKNOLOGJI", size=TITLE_SIZE, bold=True)
+    build_logo(doc)
     centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", bold=True)
     blank(doc, 2)
     centered(doc, "Punim Diplome", bold=True)
@@ -460,9 +472,9 @@ def build() -> str:
 # ======================================================================
 TITLE_SQ = "Detektimi i code smells dhe rekomandimet për refaktorim"
 AUTHOR = "Florent Latifi"
-SUPERVISOR = f"{TODO} Altina Salihu"
-ACADEMIC_YEAR = "2023 - 2024"
-SUBMISSION_DATE = f"{TODO} / 2026"
+SUPERVISOR = "Altina Salihu"
+ACADEMIC_YEAR = "2025 - 2026"
+SUBMISSION_DATE = "Nëntor / 2026"
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "
     "mësim i makinës, analizë statike, Java"
