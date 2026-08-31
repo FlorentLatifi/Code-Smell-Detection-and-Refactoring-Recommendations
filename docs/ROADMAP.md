@@ -16,12 +16,12 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
-| Testet | ✅ 342 kalojnë | vlera të derivuara me dorë; 1 anashkalohet pa symlink |
+| Testet | ✅ 375 kalojnë | vlera të derivuara me dorë; 1 anashkalohet pa symlink |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
-| ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
+| ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
 | Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; matet edhe heqja e erës (VD-42, VD-44) |
-| API | ✅ e plotë | `/analyze`, `/metrics`, `/source`, `/refactor/preview`, `/health`; pa gjendje (VD-35) |
-| Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje: analiza dhe rezultatet (VD-40) |
+| API | ✅ e plotë | `/analyze` (me `include_model`), `/metrics`, `/source`, `/refactor/preview`, `/health`; pa gjendje (VD-35) |
+| Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Figurat e punimit | ✅ 8 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
 | Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | mbetet redaktimi dhe formatimi UBT |

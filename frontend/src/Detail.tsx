@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { preview, source } from "./api";
 import { Diff } from "./Diff";
-import type { Preview, Smell, Source } from "./types";
+import type { Prediction, Preview, Smell, Source } from "./types";
 
 /**
  * Everything known about one finding: the code, why it fired, and what it would
@@ -11,7 +11,19 @@ import type { Preview, Smell, Source } from "./types";
  * beside it has one shape, while this side gained the source, the conditions and
  * the diff and will gain more.
  */
-export function Detail({ smell, path }: { smell: Smell; path: string }) {
+export function Detail({
+  smell,
+  path,
+  prediction,
+  asked,
+}: {
+  smell: Smell;
+  path: string;
+  /** The model's verdict on this same entity, when it flagged it too. */
+  prediction: Prediction | null;
+  /** Whether the model was consulted at all, which is what makes silence mean something. */
+  asked: boolean;
+}) {
   const [result, setResult] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
@@ -47,6 +59,8 @@ export function Detail({ smell, path }: { smell: Smell; path: string }) {
       <h3>Pse u shënua</h3>
       <Conditions smell={smell} />
       {smell.conditions.length > 0 && <p className="caption">{EXCESS_NOTE}</p>}
+
+      {asked && <ModelVerdict prediction={prediction} />}
 
       <h3>Metrikat e matura</h3>
       <table className="metrics">
@@ -180,6 +194,91 @@ function Conditions({ smell }: { smell: Smell }) {
     </table>
   );
 }
+
+/**
+ * What the classifier says about the same entity, in the same shape as a rule.
+ *
+ * The standing objection to machine-learned smell detection is that it wins on
+ * the numbers and says nothing about any particular class. So the verdict is not
+ * shown alone: beside it is the measurement that holds it up, and what the
+ * probability falls to when that measurement is made typical. A reader compares
+ * this table with the one above it and sees two approaches answering in the same
+ * units.
+ *
+ * Silence is a result too. When the model was asked and did not flag the entity,
+ * that disagreement is stated, because A∩B is the strongest signal the thesis
+ * reports and a reader needs to know which side of it a finding sits on.
+ */
+function ModelVerdict({ prediction }: { prediction: Prediction | null }) {
+  if (!prediction) {
+    return (
+      <>
+        <h3>Qasja B — modeli</h3>
+        <p className="note">
+          Modeli nuk e shënoi këtë entitet. Të dyja qasjet nuk pajtohen këtu, ndaj gjetja
+          mbështetet vetëm te strategjia e botuar.
+        </p>
+      </>
+    );
+  }
+
+  const decisive = prediction.contributions.find((c) => c.decisive) ?? null;
+
+  return (
+    <>
+      <h3>Qasja B — modeli</h3>
+      <p className="verdict">
+        <b>{(prediction.probability * 100).toFixed(0)}%</b> gjasë sipas modelit — të dyja qasjet
+        pajtohen për këtë entitet.
+      </p>
+
+      <table className="conditions contributions">
+        <tbody>
+          {prediction.contributions.map((contribution) => {
+            // The drop is a probability, so it already sits between 0 and 1.
+            const width = Math.min(Math.max(contribution.drop, 0), 1);
+            return (
+              <tr
+                key={contribution.feature}
+                className={contribution.decisive ? "decisive" : undefined}
+              >
+                <th>{contribution.feature}</th>
+                <td className="measured">{contribution.value}</td>
+                <td className="bound">tipike {contribution.typical}</td>
+                <td className="excess">
+                  <span
+                    style={{ width: `${width * 100}%` }}
+                    title={`bie ${contribution.drop.toFixed(3)}`}
+                  />
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <p className="caption">
+        {decisive
+          ? `Po të ishte ${decisive.feature} tipike (${decisive.typical}) në vend të ` +
+            `${decisive.value}, modeli nuk do ta shënonte. Shiriti tregon sa bie gjasa kur ` +
+            `secila matje kthehet në tipike.`
+          : MASKED_NOTE}
+      </p>
+    </>
+  );
+}
+
+/**
+ * When no single measurement carries the verdict, that is said rather than hidden.
+ *
+ * Two measurements that say the same thing mask each other: replacing either one
+ * alone moves nothing, and the entity looks unexplained. It is a real limit of
+ * explaining one measurement at a time, and the thesis reports it as one.
+ */
+const MASKED_NOTE =
+  "Asnjë matje e vetme nuk e mban verdiktin: kur dy matje thonë të njëjtën gjë, " +
+  "zëvendësimi i njërës nuk e lëviz gjasën. Ky është kufi i njohur i shpjegimit " +
+  "matje-për-matje, jo mungesë arsyeje.";
 
 /**
  * The bar needs one sentence, because it is not a progress bar.

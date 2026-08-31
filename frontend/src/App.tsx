@@ -1,8 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 import { analyse } from "./api";
 import { Detail } from "./Detail";
+import { SMELL_SQ } from "./evaluation";
+import { agreementOn, indexModel } from "./model";
 import { Results } from "./Results";
-import type { Analysis, Severity, Smell } from "./types";
+import type { Analysis, ModelBlock, Severity, Smell } from "./types";
 
 const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
 
@@ -59,6 +61,10 @@ export function App() {
   const [kind, setKind] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState<Order>("severity");
+  // Whether the model was asked, kept apart from whether it answered: an
+  // untrained checkout has no models, and the difference has to stay visible.
+  const [askModel, setAskModel] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [selected, setSelected] = useState<Smell | null>(null);
   const listRef = useRef<HTMLElement>(null);
 
@@ -67,7 +73,7 @@ export function App() {
     setScreen({ state: "loading" });
     setSelected(null);
     try {
-      setScreen({ state: "ready", analysis: await analyse(path) });
+      setScreen({ state: "ready", analysis: await analyse(path, askModel) });
       remember(REMEMBERED_PATH, path);
     } catch (failure) {
       setScreen({ state: "error", message: (failure as Error).message });
@@ -75,6 +81,10 @@ export function App() {
   }
 
   const smells = screen.state === "ready" ? screen.analysis.smells : [];
+  const model = useMemo(
+    () => (screen.state === "ready" ? indexModel(screen.analysis.model) : null),
+    [screen],
+  );
   const shown = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const matches = (smell: Smell) =>
@@ -88,6 +98,7 @@ export function App() {
     const ordered = smells
       .filter((s) => severity === "all" || s.severity === severity)
       .filter((s) => kind === "all" || s.smell_type === kind)
+      .filter((s) => !agreed || agreementOn(model, s) !== null)
       .filter(matches);
 
     if (order === "file") {
@@ -101,7 +112,7 @@ export function App() {
     return ordered.sort(
       (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || b.score - a.score,
     );
-  }, [smells, severity, kind, query, order]);
+  }, [smells, severity, kind, query, order, agreed, model]);
 
   /**
    * Up and down move through the findings.
@@ -160,6 +171,15 @@ export function App() {
         <button type="submit" disabled={screen.state === "loading" || !path.trim()}>
           {screen.state === "loading" ? "Duke analizuar…" : "Analizo"}
         </button>
+        <label className="ask" title="Kërkon modele të trajnuara dhe matje mbi tërë projektin">
+          <input
+            type="checkbox"
+            checked={askModel}
+            aria-label="Pyet edhe modelin"
+            onChange={(e) => setAskModel(e.target.checked)}
+          />
+          Pyet edhe modelin
+        </label>
       </form>
 
       {screen.state === "idle" && (
@@ -180,6 +200,7 @@ export function App() {
       {screen.state === "ready" && (
         <>
           <SummaryBar analysis={screen.analysis} />
+          {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
 
           {screen.analysis.smells.length === 0 ? (
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
@@ -192,10 +213,13 @@ export function App() {
                   kind={kind}
                   order={order}
                   query={query}
+                  agreed={agreed}
+                  hasModel={model !== null}
                   onSeverity={setSeverity}
                   onKind={setKind}
                   onOrder={setOrder}
                   onQuery={setQuery}
+                  onAgreed={setAgreed}
                 />
                 <p className="count">
                   {shown.length} nga {screen.analysis.smells.length}
@@ -217,6 +241,11 @@ export function App() {
                               {smell.method ? `.${smell.method.replace(/\(.*$/, "")}` : ""}
                             </span>
                             <span className="grade">
+                              {agreementOn(model, smell) && (
+                                <abbr className="both" title="Modeli e shënoi po ashtu">
+                                  A∩B
+                                </abbr>
+                              )}
                               {smell.automated && (
                                 <abbr className="auto" title="Motori e rishkruan vetë">
                                   ✎
@@ -236,7 +265,14 @@ export function App() {
               </section>
 
               <section className="detail">
-                {selected ? <Detail smell={selected} path={path} /> : (
+                {selected ? (
+                  <Detail
+                    smell={selected}
+                    path={path}
+                    prediction={agreementOn(model, selected)}
+                    asked={model !== null}
+                  />
+                ) : (
                   <p className="empty">Zgjidh një erë nga lista për ta parë arsyen.</p>
                 )}
               </section>
@@ -267,6 +303,49 @@ function SummaryBar({ analysis }: { analysis: Analysis }) {
   );
 }
 
+/**
+ * What the second approach found, kept apart from what the rules found.
+ *
+ * Deliberately its own row rather than numbers folded into the summary. The two
+ * approaches are not interchangeable: A's count is of published strategies
+ * firing, B's is of a classifier trained on how reviewers labelled MLCQ, and
+ * adding them would suggest a single total that no measurement supports.
+ */
+function ModelBar({ block }: { block: ModelBlock }) {
+  if (!block.available) {
+    return (
+      <p className="note model-note">
+        Modeli nuk u pyet dot: {block.reason}
+      </p>
+    );
+  }
+
+  const skipped = block.smells.reduce((total, report) => total + report.incomplete, 0);
+
+  return (
+    <div className="summary model">
+      {/* The row says whose numbers these are. Without it the second row reads
+          as more of the first, and the two approaches are not additive. */}
+      <div className="figure name">
+        <b>Qasja B</b>
+        <span>modeli i trajnuar</span>
+      </div>
+      {block.smells.map((report) => (
+        <div className="figure" key={report.smell}>
+          <b>{report.flagged}</b>
+          <span>{SMELL_SQ[report.smell] ?? report.smell}</span>
+        </div>
+      ))}
+      {skipped > 0 && (
+        <p className="caption">
+          {skipped} entitete nuk u gjykuan: u mungonte një matje, dhe modeli nuk pyetet mbi një
+          zero të shpikur.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Figure({
   value,
   label,
@@ -292,20 +371,26 @@ function Filters({
   kind,
   order,
   query,
+  agreed,
+  hasModel,
   onSeverity,
   onKind,
   onOrder,
   onQuery,
+  onAgreed,
 }: {
   analysis: Analysis;
   severity: Severity | "all";
   kind: string;
   order: Order;
   query: string;
+  agreed: boolean;
+  hasModel: boolean;
   onSeverity: (value: Severity | "all") => void;
   onKind: (value: string) => void;
   onOrder: (value: Order) => void;
   onQuery: (value: string) => void;
+  onAgreed: (value: boolean) => void;
 }) {
   return (
     <div className="filters">
@@ -348,6 +433,17 @@ function Filters({
           placeholder="klasë, metodë ose skedar"
         />
       </label>
+      {hasModel && (
+        <label className="only-agreed" title="Prerja e dy qasjeve — sinjali më i fortë i matur">
+          <input
+            type="checkbox"
+            checked={agreed}
+            aria-label="Vetëm ku pajtohen të dyja qasjet"
+            onChange={(e) => onAgreed(e.target.checked)}
+          />
+          Vetëm ku pajtohen
+        </label>
+      )}
     </div>
   );
 }

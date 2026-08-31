@@ -29,8 +29,8 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return payload as T;
 }
 
-export function analyse(path: string): Promise<Analysis> {
-  return post<Analysis>("/analyze", { path });
+export function analyse(path: string, includeModel: boolean): Promise<Analysis> {
+  return post<Analysis>("/analyze", { path, include_model: includeModel });
 }
 
 /** Join the project path and the file path the analysis reported. */

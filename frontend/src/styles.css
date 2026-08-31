@@ -907,3 +907,108 @@ select {
   color: var(--accent);
   text-decoration: none;
 }
+
+/* ---------- the second opinion ---------- */
+/* Approach B sits beside Approach A everywhere, never inside it. The rules and
+   the classifier are not interchangeable — one is a published strategy firing,
+   the other a model trained on how reviewers labelled MLCQ — so nothing here
+   adds their counts together or lets one borrow the other's emphasis. */
+
+/* Asking is opt-in, so the control sits with the path it applies to. */
+.search .ask {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+/* The model's own row of figures: the same shape as the summary above it, set
+   quieter, because it is a second reading of the same code and not a headline. */
+.summary.model {
+  margin-top: -18px;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.summary.model .figure b {
+  font-size: 1.25rem;
+  color: var(--ink-soft);
+}
+
+/* The row's own name, set as a name rather than as a measurement: serif like
+   the figures beside it, but sized as running text so it does not read as a
+   number with the units missing. */
+.summary.model .figure.name {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.summary.model .figure.name b {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.summary.model .caption {
+  flex: 1 0 100%;
+  margin: 0;
+  padding: 0 0 10px;
+}
+
+.model-note {
+  margin-top: -18px;
+  margin-bottom: 26px;
+}
+
+/* Both approaches flagged this one. The mark shares the line the severity
+   already occupies, like the rewrite mark beside it, and is set in the accent
+   because agreement between the two is the strongest signal the thesis measured
+   — precision 0.80 to 0.905, against either approach alone. */
+.both {
+  margin-right: 6px;
+  padding: 1px 4px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+
+/* The other filters are a caption stacked over a control; this one is a control
+   with its caption beside it, so it opts out of the grid the rest share. */
+.filters .only-agreed {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  align-self: end;
+  padding-bottom: 6px;
+  white-space: nowrap;
+}
+
+/* The model's verdict, in a line rather than a figure: it is a sentence about
+   one entity, not a number to be compared across a row. */
+.verdict {
+  margin: 0 0 10px;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.verdict b {
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+/* The measurement that, made typical, would reverse the verdict. It is the one
+   thing in the table a reader acts on, so it is the one row set in the ink the
+   rest is not. */
+.contributions .decisive th,
+.contributions .decisive .measured {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.contributions .decisive .excess span {
+  opacity: 0.85;
+}

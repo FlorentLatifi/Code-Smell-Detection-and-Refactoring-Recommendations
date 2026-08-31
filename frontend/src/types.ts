@@ -26,6 +26,53 @@ export interface Smell {
   automated: boolean;
 }
 
+/**
+ * One measurement's share of a single verdict from the model.
+ *
+ * `drop` is how far the predicted probability falls when the measurement is set
+ * to `typical`; `decisive` says that alone takes it below the decision boundary.
+ */
+export interface Contribution {
+  feature: string;
+  value: number;
+  typical: number;
+  drop: number;
+  decisive: boolean;
+}
+
+/** One entity the model flagged, with the measurements that hold the verdict up. */
+export interface Prediction {
+  smell: string;
+  file_path: string;
+  class_name: string;
+  method: string | null;
+  start_line: number;
+  end_line: number;
+  probability: number;
+  contributions: Contribution[];
+}
+
+export interface ModelReport {
+  smell: string;
+  /** The detector smell types that answer the same question, from the backend. */
+  rule_equivalent: string[];
+  considered: number;
+  /** Entities skipped for want of a measurement, rather than judged on a zero. */
+  incomplete: number;
+  flagged: number;
+  predictions: Prediction[];
+}
+
+/**
+ * Approach B's answer, or why there is none.
+ *
+ * `data/models/` is not committed, so a fresh checkout that has not run the
+ * training script gets `available: false` and a reason rather than an error.
+ */
+export type ModelBlock =
+  | { available: true; smells: ModelReport[] }
+  | { available: false; reason: string };
+
 export interface Summary {
   files: number;
   classes: number;
@@ -38,6 +85,8 @@ export interface Summary {
 export interface Analysis {
   summary: Summary;
   smells: Smell[];
+  /** Present only when the request asked for a second opinion. */
+  model?: ModelBlock;
 }
 
 export interface Preview {
