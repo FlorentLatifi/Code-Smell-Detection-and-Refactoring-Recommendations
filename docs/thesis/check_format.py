@@ -17,6 +17,11 @@ tabelash 11pt në qendër, të numëruar pa hapësira; tri regjime numërimi faq
 i faqes poshtë djathtas. Kontrollohet edhe që lista e figurave dhe e tabelave në
 fillim të përputhet me atë që dokumenti përmban vërtet.
 
+Kontrollohen edhe numërimi i njëpasnjëshëm i nënkapitujve dhe mungesa e krerëve pa
+përmbajtje. Në fund listohen vendet `[PLOTËSO]` që i mbeten autorit: ato janë të
+shënuara me qëllim dhe nuk e rrëzojnë kontrollin, por në një dokument prej dhjetëra
+faqesh gjenden vetëm nga kush di t'i kërkojë.
+
 Del me kod jo-zero po qe se ndonjë rregull thyhet, që kontrolli të mund të hyjë në
 CI bashkë me atë të citimeve.
 """
@@ -32,6 +37,7 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Pt
+from docx.text.paragraph import Paragraph
 
 # Numërimi i tri regjimeve, sipas radhës së seksioneve: kopertina pa numra, ballina
 # me romakë duke filluar nga I, kapitujt me arabë duke rifilluar nga 1.
@@ -229,6 +235,77 @@ def _check_page_breaks(doc: Document) -> list[str]:
     return problems
 
 
+def _check_numbering_of_sections(doc: Document) -> list[str]:
+    """Nënkapitujt ecin 1, 2, 3 brenda kapitullit të tyre, pa kërcime.
+
+    Numrat e nënkapitujve shkruhen me dorë te `chapters.py`, ndaj i ka të njëjtat
+    mënyra për të dalë gabim që kishte numërimi i figurave para se të gjenerohej:
+    një seksion i futur në mes dhe numrat e tjerë të palëvizur. Ndryshe nga
+    figurat, këta nuk gjenerohen dot — numri i një nënkapitulli citohet në prozë
+    dhe në planin e punimit — ndaj kontrollohen.
+    """
+    problems = []
+    chapter = 0
+    expected = 0
+    for paragraph in doc.paragraphs:
+        style = paragraph.style.name
+        text = paragraph.text.strip()
+        if style == "Heading 1" and CHAPTER_HEADING.match(text):
+            chapter = int(text.split(" ", 1)[0])
+            expected = 0
+        elif style == "Heading 2" and chapter:
+            number = text.split(" ", 1)[0]
+            expected += 1
+            if number != f"{chapter}.{expected}":
+                problems.append(f"nënkapitulli «{number}» aty ku pritej {chapter}.{expected}")
+                expected = int(number.rsplit(".", 1)[-1]) if "." in number else expected
+    return problems
+
+
+def _check_no_empty_headings(doc: Document) -> list[str]:
+    """Asnjë kre pa asgjë nën të.
+
+    Një kapitull që hapet drejt me nënkapitullin e vet nuk është bosh: përmbajtjen
+    e mbajnë nënkapitujt. Bosh është ai pas të cilit vjen menjëherë një kre i të
+    njëjtit nivel ose më i lartë, pra një titull që premton diçka që faqja nuk e
+    mban — dhe që në përmbajtje duket njësoj si çdo tjetër.
+
+    Ecja bëhet mbi trupin e dokumentit e jo mbi paragrafët, sepse një tabelë është
+    përmbajtje po aq sa proza dhe nuk del fare te `doc.paragraphs`.
+    """
+    levels = {"Heading 1": 1, "Heading 2": 2}
+    body: list[tuple[int | None, str]] = []
+    for element in doc.element.body.iterchildren():
+        tag = element.tag.rsplit("}", 1)[-1]
+        if tag == "tbl":
+            body.append((None, ""))
+        elif tag == "p":
+            paragraph = Paragraph(element, doc)
+            if not paragraph.text.strip():
+                continue
+            body.append((levels.get(paragraph.style.name), paragraph.text.strip()))
+
+    problems = []
+    for index, (level, text) in enumerate(body):
+        if level is None:
+            continue
+        following = body[index + 1 :]
+        empty = not following or (following[0][0] is not None and following[0][0] <= level)
+        if empty:
+            problems.append(f"kre pa përmbajtje: «{text[:40]}»")
+    return problems
+
+
+def remaining_todos(doc: Document) -> list[str]:
+    """Vendet që autori duhet t'i plotësojë, si kujtesë e jo si gabim.
+
+    Të shënuara me qëllim; raportohen sepse në një dokument prej dhjetëra faqesh
+    ato gjenden vetëm nga kush di t'i kërkojë.
+    """
+    marker = "[PLOTËSO]"
+    return [p.text.strip()[:70] for p in doc.paragraphs if marker in p.text]
+
+
 def report(path: Path) -> list[str]:
     doc = Document(str(path))
     problems = []
@@ -256,12 +333,18 @@ def main() -> int:
         return 1
 
     problems = report(path)
-    if not problems:
-        print(f"Formatimi është sipas shabllonit: {path.name}")
-        return 0
-    print(f"Formatimi devijon nga shablloni te {path.name}:")
-    print("\n".join(problems))
-    return 1
+    if problems:
+        print(f"Formatimi devijon nga shablloni te {path.name}:")
+        print("\n".join(problems))
+        return 1
+
+    print(f"Formatimi është sipas shabllonit: {path.name}")
+    todos = remaining_todos(Document(str(path)))
+    if todos:
+        print(f"\nMbeten {len(todos)} vende për t'u plotësuar nga autori:")
+        for entry in todos:
+            print(f"  {entry}")
+    return 0
 
 
 if __name__ == "__main__":
