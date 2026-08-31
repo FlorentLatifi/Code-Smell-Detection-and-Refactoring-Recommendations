@@ -895,7 +895,8 @@ def chapter_5() -> list:
                 "testimit, dhe numri që do të raportohej pas saj do të matte sa mirë u "
                 "zgjodh pragu, jo sa mirë funksionon detektimi. Kalibrimi do të kërkonte "
                 "një bashkësi të ndarë dhe një bashkësi tjetër të paprekur për vlerësim; "
-                "kjo mbetet punë e ardhshme.",
+                "kjo është pikërisht ajo që bëhet më poshtë.",
+                *_calibration_paragraphs(),
             ],
         ),
         *_severity_section(),
@@ -1010,6 +1011,63 @@ def _confidence_section() -> list:
     ]
 
     return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+
+
+def _calibration_paragraphs() -> list:
+    """Sa arrijnë rregullat kur pragjet u kalibrohen ndershmërisht.
+
+    Fshirja tregon sa lëviz rezultati; ajo nuk e jep dot një shifër të re, sepse
+    vlera më e mirë mbi bashkësinë e vlerësimit është përshtatje ndaj saj. Këtu
+    zgjedhja bëhet vetëm mbi foldet e trajnimit dhe pikëzohet mbi foldin e
+    mbajtur jashtë, ndaj shifra qëndron.
+    """
+    data = _load_if_present("threshold_calibration.json")
+    if data is None:
+        return []
+
+    rows = []
+    for smell in sorted(data["per_smell"]):
+        entry = data["per_smell"][smell]
+        published, calibrated = entry["published"], entry["calibrated"]
+        chosen = "; ".join(
+            f"{name} = " + ", ".join(f"{value} ({count}×)" for value, count in values.items())
+            for name, values in entry["chosen"].items()
+        )
+        rows.append([
+            SMELL_SQ[smell],
+            f"{published['mcc']:.3f}",
+            f"{calibrated['mcc']:.3f}",
+            f"{published['recall']:.3f} → {calibrated['recall']:.3f}",
+            f"{published['precision']:.3f} → {calibrated['precision']:.3f}",
+            chosen,
+        ])
+
+    return [
+        f"Kalibrimi u bë me {data['folds']} folde të ndara sipas depos, si te Qasja B. "
+        f"Për secilin fold pragu u zgjodh duke parë vetëm foldet e trajnimit dhe u "
+        f"pikëzua mbi foldin e mbajtur jashtë; parashikimet u bashkuan dhe u pikëzuan "
+        f"një herë, ndaj shifra është jashtë-fold-it në të njëjtin kuptim me atë të "
+        f"modeleve.",
+        ("table", "Rregullat me pragje të kalibruara, të pikëzuara jashtë fold-it",
+         ["Erë", "E botuar", "E kalibruar", "Recall", "Precizion", "Vlerat e zgjedhura"],
+         rows),
+        "Rezultati ndahet në dy pjesë. Për Feature Envy kalibrimi jep fitimin më të "
+        "madh dhe më të besueshmin: **të pesë foldet zgjodhën të njëjtën vlerë**, dhe "
+        "përmirësohen njëkohësisht edhe precizioni edhe recall-i. Kjo e forcon "
+        "vërejtjen e mësipërme se klauzola e numrit të klasave-burim nuk e bën punën "
+        "për të cilën është vendosur. Për Long Method fitimi është gjithashtu i "
+        "qartë, por foldet ndahen mes dy vlerave dhe blihet me precizion.",
+        "Për Blob dhe Data Class kalibrimi nuk ndihmon: te e para lëvizja është e "
+        "vogël, te e dyta rezultati bie nën atë të pragjeve të botuara. Dhe foldet e "
+        "Data Class-it nuk pajtohen as për cilin prag të lëvizin — dy prej tyre "
+        "zgjedhin një prag krejt tjetër nga tre të tjerët. Kur zgjedhja varet kaq "
+        "shumë nga cila pjesë e korpusit shihet, «pragu optimal» është veti e "
+        "bashkësisë dhe jo e gjuhës.",
+        "Vlen të vihet re edhe dallimi me fshirjen. Ajo sugjeronte 0.690 për Long "
+        "Method; kalibrimi i ndershëm jep 0.666. Diferenca është pikërisht ajo që "
+        "fitohet kur zgjedhjes i lejohet ta shohë bashkësinë mbi të cilën do të "
+        "raportohet, dhe arsyeja pse shifra e fshirjes nuk u adoptua.",
+    ]
 
 
 def _combined_paragraphs(ml: dict) -> list:
@@ -1342,10 +1400,11 @@ REPRODUCTION = [
     ("4", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
     ("5", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
     ("6", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
-    ("7", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
-    ("8", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
-    ("9", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
-    ("10", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
+    ("7", "calibrate_thresholds.py", "pragjet e kalibruara jashtë fold-it", "~1 min"),
+    ("8", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
+    ("9", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
+    ("10", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
+    ("11", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"

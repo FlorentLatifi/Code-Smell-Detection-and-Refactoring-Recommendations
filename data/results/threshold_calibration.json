@@ -1,0 +1,150 @@
+{
+  "aggregation": "mean",
+  "environment": {
+    "commit": "f73a2b82e28e836f33e82833e962813b9ef72d69",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "factors": [
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    2.0
+  ],
+  "folds": 5,
+  "per_smell": {
+    "blob": {
+      "calibrated": {
+        "accuracy": 0.774,
+        "f1": 0.2244,
+        "fn": 304,
+        "fp": 14,
+        "mcc": 0.2529,
+        "precision": 0.7667,
+        "recall": 0.1314,
+        "support_positive": 350,
+        "tn": 1043,
+        "tp": 46
+      },
+      "chosen": {
+        "god_class_wmc": {
+          "23.5": 3,
+          "35.25": 2
+        }
+      },
+      "published": {
+        "accuracy": 0.7704,
+        "f1": 0.1781,
+        "fn": 315,
+        "fp": 8,
+        "mcc": 0.2321,
+        "precision": 0.814,
+        "recall": 0.1,
+        "support_positive": 350,
+        "tn": 1049,
+        "tp": 35
+      }
+    },
+    "data class": {
+      "calibrated": {
+        "accuracy": 0.7942,
+        "f1": 0.2747,
+        "fn": 154,
+        "fp": 15,
+        "mcc": 0.2674,
+        "precision": 0.6809,
+        "recall": 0.172,
+        "support_positive": 186,
+        "tn": 620,
+        "tp": 32
+      },
+      "chosen": {
+        "data_class_wmc_low": {
+          "23.25": 1
+        },
+        "data_class_woc": {
+          "0.5": 2,
+          "0.6667": 2
+        }
+      },
+      "published": {
+        "accuracy": 0.7966,
+        "f1": 0.2511,
+        "fn": 158,
+        "fp": 9,
+        "mcc": 0.2752,
+        "precision": 0.7568,
+        "recall": 0.1505,
+        "support_positive": 186,
+        "tn": 626,
+        "tp": 28
+      }
+    },
+    "feature envy": {
+      "calibrated": {
+        "accuracy": 0.9247,
+        "f1": 0.4151,
+        "fn": 50,
+        "fp": 12,
+        "mcc": 0.4111,
+        "precision": 0.6471,
+        "recall": 0.3056,
+        "support_positive": 72,
+        "tn": 739,
+        "tp": 22
+      },
+      "chosen": {
+        "feature_envy_fdp": {
+          "10.0": 5
+        }
+      },
+      "published": {
+        "accuracy": 0.9137,
+        "f1": 0.268,
+        "fn": 59,
+        "fp": 12,
+        "mcc": 0.2709,
+        "precision": 0.52,
+        "recall": 0.1806,
+        "support_positive": 72,
+        "tn": 739,
+        "tp": 13
+      }
+    },
+    "long method": {
+      "calibrated": {
+        "accuracy": 0.9123,
+        "f1": 0.7162,
+        "fn": 52,
+        "fp": 78,
+        "mcc": 0.666,
+        "precision": 0.6777,
+        "recall": 0.7593,
+        "support_positive": 216,
+        "tn": 1189,
+        "tp": 164
+      },
+      "chosen": {
+        "long_method_loc": {
+          "15.0": 3,
+          "22.5": 2
+        }
+      },
+      "published": {
+        "accuracy": 0.909,
+        "f1": 0.5846,
+        "fn": 121,
+        "fp": 14,
+        "mcc": 0.5796,
+        "precision": 0.8716,
+        "recall": 0.4398,
+        "support_positive": 216,
+        "tn": 1253,
+        "tp": 95
+      }
+    }
+  },
+  "variant": "strategy"
+}

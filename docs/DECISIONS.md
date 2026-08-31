@@ -1336,3 +1336,40 @@ numra për çdo fushë, i njëjti numër rreshtash, dhe e njëjta bashkësi rres
 përveç kohës së skedarit në punë e sipër. `--no-resume` mbetet për rastin kur
 skema ndryshon dhe një ekzekutim i ri është vërtet i nevojshëm.
 
+---
+
+### VD-47: Kalibrimi bëhet, por jashtë fold-it dhe pa adoptim
+
+**Konteksti.** VD-34 e refuzoi adoptimin e pragjeve që fshirja i nxori më të mira,
+me një kusht të shkruar qartë: kalibrim mbi një bashkësi dhe vlerësim mbi një
+tjetër, të paprekur. Kushti mbeti i paplotësuar, ndaj Kapitulli 5 e mbylli me
+«punë e ardhshme» ndonëse makineria për ta bërë ekzistonte tashmë — rirenditja
+mbi tabelën e ruajtur kushton sekonda (VD-23).
+
+**Vendimi.** `scripts/calibrate_thresholds.py` e plotëson kushtin: pesë folde të
+ndara sipas depos, pragu zgjidhet duke parë vetëm foldet e trajnimit, pikëzohet
+mbi foldin e mbajtur jashtë, dhe parashikimet bashkohen. Shifra që del është
+jashtë-fold-it në të njëjtin kuptim me atë të Qasjes B, ndaj të dyja anët e
+krahasimit ndahen njësoj.
+
+**Pragjet e botuara mbeten të pandryshuara.** Kalibrimi raportohet si rezultat, jo
+si konfigurim i ri: `thresholds.py` vazhdon të mbajë vlerat e Lanza & Marinescu-t,
+sepse pretendimi kryesor i punimit është sa mirë e riprodhon një strategji e
+**botuar** gjykimin e zhvilluesve, dhe ai pretendim ka kuptim vetëm me vlerat e
+botuara.
+
+**Çka nxori.** Kalibrimi ndihmon te dy erëra dhe jo te dy të tjerat: Feature Envy
+0.271 → 0.411 dhe Long Method 0.580 → 0.666, ndërsa Blob mezi lëviz dhe Data Class
+bie nën vlerën e botuar.
+
+Vlerat e zgjedhura nga foldet janë vetë të dhënë. Te Feature Envy të pesta zgjodhën
+`FDP ≤ 10`, pra unanimisht, dhe përmirësohen njëkohësisht precizioni dhe recall-i —
+konfirmim i pavarur i vërejtjes së VD-34 se ajo klauzolë nuk e bën punën e vet. Te
+Data Class foldet nuk pajtohen as për cilin prag të lëvizin, çka do të thotë se
+«pragu optimal» aty është veti e bashkësisë dhe jo e gjuhës.
+
+**Dallimi me fshirjen, i cili është vetë mësim.** Fshirja sugjeronte 0.690 për Long
+Method; kalibrimi i ndershëm jep 0.666. Ajo diferencë është pikërisht sa fitohet
+kur zgjedhjes i lejohet ta shohë bashkësinë mbi të cilën raportohet — ilustrimi më
+i drejtpërdrejtë i asaj që VD-34 e refuzoi.
+
