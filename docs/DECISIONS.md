@@ -1076,3 +1076,37 @@ dokumentit, dhe hyn në CI bashkë me ndërtimin e dokumentit.
 dhe nuk rindërtohet, kontrolli e mat atë version të redaktuar — çka është pikërisht
 qëllimi — por numërimi atëherë nuk rirregullohet vetë: një tabelë e shtuar me dorë
 në Word duhet numëruar me dorë, dhe kontrolli do ta thotë nëse numri s'përputhet.
+
+---
+
+### VD-40: Paneli i rezultateve i lexon skedarët e komituar, jo API-në
+
+**Konteksti.** Ndërfaqja fitoi një pamje të dytë: rezultatet e vlerësimit — A kundrejt
+B, recall-i sipas ashpërsisë, pajtimi, motori i refaktorimit, fshirja e pragjeve.
+Zinxhiri i varësive te `ENGINEERING.md` §2 e vendos frontend-in pas API-së, ndaj
+pyetja ishte a duhet një endpoint i ri që t'i shërbejë ata numra.
+
+**Vendimi.** Jo. Pamja i importon drejtpërdrejt skedarët e `data/results/` gjatë
+ndërtimit.
+
+Ata numra nuk janë të dhëna të drejtpërdrejta: janë faktet e matura të punimit, të
+prodhuara nga skriptet dhe të komituara, dhe nuk ndryshojnë mes dy ekzekutimeve.
+Një endpoint do t'i shndërronte në diçka që varet nga një server që punon — pra
+paneli do të ishte bosh pikërisht atëherë kur duhet, gjatë një prezantimi ku
+backend-i s'është i ndezur. API-ja mbetet ajo çka është: transport për analizën e
+një projekti të përdoruesit.
+
+**Alternativat.** `GET /results/{emri}`: shton një endpoint që lexon skedarë nga
+disku vetëm për një pamje, plus trajtimin e shtegut që i shoqërohet. Kopjimi i
+JSON-ave te `frontend/`: krijon burim të dytë të së vërtetës për numra që punimi i
+raporton, pra pikërisht ndarja e heshtur që VD-21 dhe VD-38 e ndalojnë.
+
+**Pasojat.** `vite.config.ts` lejon leximin një nivel mbi rrënjën e frontend-it,
+dhe `tsconfig.json` importet JSON. Të pesë skedarët janë rreth 43 KB gjithsej, pra
+kostoja e paketimit është e papërfillshme. Zinxhiri i §2 mbetet i paprekur për çdo
+gjë tjetër: asnjë thirrje analize nuk e anashkalon API-në.
+
+**Kufizimi i pranuar.** Paneli tregon gjendjen e commit-it me të cilin u ndërtua
+frontend-i. Kjo është saktësisht ajo që duhet për një pamje të rezultateve të
+punimit, por do të ishte e gabuar për të dhëna që ndryshojnë — dhe nëse ndonjëherë
+shtohet një pamje e tillë, ajo shkon nëpër API.

@@ -21,7 +21,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
 | Motori i refaktorimit (C) | ✅ e mbyllur | 2 transformime të automatizuara, 3 vetëm këshillë (VD-30) |
 | API | ✅ e plotë | `/analyze`, `/metrics`, `/refactor/preview`, `/health`; pa gjendje (VD-35) |
-| Frontend | ✅ e plotë | React + TypeScript + Vite |
+| Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje: analiza dhe rezultatet (VD-40) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Figurat e punimit | ✅ 6 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
 | Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | mbetet redaktimi dhe formatimi UBT |

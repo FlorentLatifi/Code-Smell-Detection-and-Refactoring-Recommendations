@@ -170,3 +170,85 @@ select {
 .diff .added { background: var(--added-wash); color: var(--added); }
 .diff .removed { background: var(--removed-wash); color: var(--removed); }
 .diff .gap { color: var(--ink-faint); text-align: center; padding: 2px 0; }
+
+/* ---------- rezultatet e vleresimit ---------- */
+.tabs { display: flex; gap: 6px; margin-top: 12px; }
+.tab {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--ink-soft);
+  border-radius: 3px; padding: 5px 12px; font-size: 0.84rem; cursor: pointer;
+}
+.tab:hover { border-color: var(--accent); color: var(--ink); }
+.tab.on { background: var(--accent-wash); border-color: var(--accent); color: var(--accent); }
+
+.results { margin-top: 20px; }
+.results .lede { color: var(--ink-soft); font-size: 0.88rem; max-width: 62ch; margin: 0 0 18px; }
+.results .footnote { margin-top: 22px; font-size: 0.78rem; }
+
+.panel {
+  border: 1px solid var(--rule); border-radius: 4px; background: var(--surface);
+  padding: 16px 18px; margin-bottom: 16px;
+}
+.panel h3 { margin: 0 0 6px; font-size: 0.98rem; }
+.panel h4 { margin: 18px 0 6px; font-size: 0.84rem; color: var(--ink-soft); font-weight: 600; }
+.panel h4:first-of-type { margin-top: 10px; }
+.panel > .quiet { max-width: 68ch; }
+
+.quiet { color: var(--ink-soft); font-size: 0.82rem; margin: 0 0 8px; }
+
+/* Dy kolona kur ka hapësirë, një kur nuk ka: tabelat e fshirjes janë të gjera. */
+.split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 1040px) { .split { grid-template-columns: 1fr 1fr; } }
+.split > .panel { margin-bottom: 0; }
+
+.summary.tight { margin: 0 0 6px; }
+/* Kutia e përmbledhjes e ka sfondin e vet si vijë ndarëse mes shifrave; kur ato
+   nuk e mbushin rreshtin, ajo vijë duket si një bllok bosh. Shtrirja e figurave e
+   mbush rreshtin sido që të jetë numri i tyre. */
+.results .summary .figure { flex: 1; }
+
+/* Tabelat e gjera — fshirja e pragjeve ka shtatë kolona — rrëshqasin brenda
+   panelit të vet; pa këtë, e tërë faqja fiton një shirit horizontal. */
+.panel { overflow-x: auto; }
+.grid { border-collapse: collapse; width: 100%; font-size: 0.83rem; }
+.grid th { text-align: left; font-weight: 600; color: var(--ink-soft); padding: 5px 10px 5px 0; }
+.grid thead th { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--rule); }
+.grid td { padding: 5px 10px 5px 0; vertical-align: middle; }
+.grid tbody tr + tr th, .grid tbody tr + tr td { border-top: 1px solid var(--rule-soft); }
+.grid .figures { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.grid .strong { font-weight: 600; }
+.grid .variant th, .grid .variant td { color: var(--ink-faint); font-weight: 400; }
+.grid .published { background: var(--accent-wash); }
+.sweep th, .sweep td { padding-right: 6px; }
+.sweep code { font-size: 0.74rem; }
+
+.bar { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.bar .fill { height: 8px; border-radius: 2px; min-width: 2px; }
+.bar b { font-variant-numeric: tabular-nums; font-weight: 500; font-size: 0.8rem; }
+.fill.rules { background: var(--ink-faint); }
+.fill.model { background: var(--accent); }
+.fill.severe { background: var(--major); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.chip {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--ink-soft);
+  border-radius: 999px; padding: 3px 11px; font-size: 0.78rem; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip.on { background: var(--accent-wash); border-color: var(--accent); color: var(--accent); }
+
+.stack { display: flex; height: 14px; border-radius: 3px; overflow: hidden; margin: 6px 0 8px; }
+.slice { display: block; min-width: 1px; }
+.slice.both, .swatch.both { background: var(--accent); }
+.slice.rules, .swatch.rules { background: var(--major); }
+.slice.model, .swatch.model { background: var(--ink-faint); }
+.slice.neither, .swatch.neither { background: var(--rule); }
+
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 12px;
+  margin: 0 0 8px; padding: 0; font-size: 0.79rem; color: var(--ink-soft); }
+.legend li { display: flex; align-items: center; gap: 5px; }
+.swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+.features { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.features code { font-family: var(--mono); font-size: 0.76rem; background: var(--paper);
+  border: 1px solid var(--rule-soft); border-radius: 3px; padding: 2px 6px; }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { analyse, preview } from "./api";
 import { Diff } from "./Diff";
+import { Results } from "./Results";
 import type { Analysis, Preview, Severity, Smell } from "./types";
 
 const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
@@ -11,7 +12,12 @@ type Screen =
   | { state: "error"; message: string }
   | { state: "ready"; analysis: Analysis };
 
+// Dy pamje, pa router: një bibliotekë rrugëzimi për dy gjendje do të ishte më
+// shumë kod se vetë kalimi mes tyre.
+type View = "analysis" | "results";
+
 export function App() {
+  const [view, setView] = useState<View>("analysis");
   const [path, setPath] = useState("");
   const [screen, setScreen] = useState<Screen>({ state: "idle" });
   const [severity, setSeverity] = useState<Severity | "all">("all");
@@ -46,8 +52,28 @@ export function App() {
       <header>
         <h1>JavaSmell</h1>
         <p className="tagline">Detektim i code smells dhe rekomandime refaktorimi</p>
+        <nav className="tabs">
+          <button
+            className={view === "analysis" ? "tab on" : "tab"}
+            onClick={() => setView("analysis")}
+            aria-pressed={view === "analysis"}
+          >
+            Analizo një projekt
+          </button>
+          <button
+            className={view === "results" ? "tab on" : "tab"}
+            onClick={() => setView("results")}
+            aria-pressed={view === "results"}
+          >
+            Rezultatet e vlerësimit
+          </button>
+        </nav>
       </header>
 
+      {view === "results" && <Results />}
+
+      {view === "analysis" && (
+      <>
       <form className="search" onSubmit={run}>
         <input
           value={path}
@@ -124,6 +150,8 @@ export function App() {
             </div>
           )}
         </>
+      )}
+      </>
       )}
     </div>
   );

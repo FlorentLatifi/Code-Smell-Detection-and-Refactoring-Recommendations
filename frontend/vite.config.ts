@@ -8,6 +8,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Paneli i rezultateve i importon skedarët e komituar te `data/results/`, të
+    // cilët rrinë jashtë kësaj dosjeje. Kopjimi i tyre këtu do të krijonte një
+    // burim të dytë të së vërtetës për numra që punimi i raporton.
+    fs: { allow: [".."] },
     proxy: { "/api": { target: "http://127.0.0.1:8000", rewrite: (p) => p.replace(/^\/api/, "") } },
   },
 });
