@@ -1399,19 +1399,33 @@ arsyen; rregullat vazhdojnë të përgjigjen normalisht.
 
 **Matja para vendimit.** `scripts/model_without_project.py` i gjykon entitetet dy
 herë — një herë me projektin të matur të tërë, një herë me secilin skedar të matur
-i vetëm — dhe i krahason, mbi depo të marra me farë të fiksuar. Rezultati përmbys
-pritjen që e nisi: modeli **nuk** përgjigjet me siguri të rreme, por degradon në
-të njëjtin drejtim si rregullat, duke rënë në heshtje. Mospajtimi është kryesisht
-detektim i humbur, jo alarm i rremë. Shifrat shkojnë te
-`data/results/model_without_project.json` dhe citohen prej andej, jo prej këtij
-teksti.
+i vetëm — dhe i krahason. Mbi pesë depo të marra me farë 20260901 (11 644 skedarë,
+14 567 entitete klasë dhe 85 753 metodë), rezultati përmbys pritjen që e nisi:
+modeli **nuk** përgjigjet me siguri të rreme. Pajtimi qëndron 96.5%–99.1%.
 
-**Pse refuzohet prapëseprapë.** Jo për verdiktin, por për shpjegimin. Ajo çka
-ndërfaqja shfaq pranë një flamuri të modelit është matja që e mban verdiktin, dhe
-mbi një skedar të vetëm ajo matje mund të jetë pikërisht një artefakt i sa u lexua.
-«CBO-ja është 0, prandaj kjo është Blob» është fjali për kërkesën, jo për kodin.
-Një probabilitet i shfaqur në ndërfaqe lexohet si verdikt sado i shoqëruar me
-paralajmërim, ndaj zbatohet rregulli i shtëpisë: refuzo, mos korrupto.
+Matjet që lëvizin janë pikërisht ato që VD-16 i emëron: `c_ATFD`, `c_CBO`, `c_DIT`,
+`c_NOC`, plus `m_ATFD` e `m_FDP` në anën e metodës. Asnjë matje thjesht lokale nuk
+lëviz.
+
+**Drejtimi i gabimit nuk është i njëjtë për të katërta.** Te Feature Envy dhe Long
+Method humbja dominon (1971 kundrejt 38, dhe 614 kundrejt 150), pra modeli bie në
+heshtje si rregullat. Te Data Class alarmet e rreme e kalojnë humbjen (187 kundrejt
+152) dhe te Blob janë afër (289 kundrejt 226). Pretendimi «degradon njësoj si
+rregullat» qëndron për erërat e metodës dhe jo për ato të klasës.
+
+**Pse refuzohet.** Jo për verdiktin, por për shpjegimin — dhe as ai nuk është
+uniform. Nga shpjegimet e prodhuara mbi skedarin e vetëm, ato që mbështeten në një
+matje që lëvizi janë **42.9%** te Data Class dhe **20.1%** te Blob, kundrejt
+**1.4%** te Feature Envy dhe **0%** te Long Method. Pra «CBO-ja është 0, prandaj
+kjo është Blob» është rrezik real vetëm te erërat e klasës.
+
+Refuzimi mbetet i vetëm dhe i përgjithshëm, jo per-erë, për dy arsye. E para:
+erërat e klasës janë pikërisht ato që pyet dikush që hap një skedar të vetëm, ndaj
+përjashtimi do të hiqte saktësisht rastin e rrezikshëm. E dyta: një API që i
+përgjigjet dy erërave dhe i refuzon dy të tjerat për të njëjtën kërkesë është
+kontratë që duhet shpjeguar sa herë përdoret, për një fitim që matja e tregon të
+vogël. Një probabilitet i shfaqur në ndërfaqe lexohet si verdikt sado i shoqëruar
+me paralajmërim, ndaj zbatohet rregulli i shtëpisë: refuzo, mos korrupto.
 
 **Alternativat.** Ta shërbejë verdiktin me një shenjë «i degraduar» — e refuzuar,
 sepse shenja nuk e ndal leximin e probabilitetit si verdikt. Të matet skedari me

@@ -1,0 +1,147 @@
+{
+  "environment": {
+    "commit": "22a5f5c7877c636fd2ea29f436de4b91b3214e29",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "per_smell": {
+    "blob": {
+      "agree": 14052,
+      "decisive_file_alone": {
+        "c_AMW": 5,
+        "c_CBO": 439,
+        "c_CLOC": 395,
+        "c_MAXCC": 12,
+        "c_NOAM": 767,
+        "c_NOF": 51,
+        "c_NOM": 72,
+        "c_RFC": 332,
+        "c_TCC": 3,
+        "c_WMC": 9,
+        "c_WOC": 102
+      },
+      "decisive_on_a_moved_measurement": 439,
+      "entities": 14567,
+      "explained_file_alone": 2187,
+      "false_alarm": 226,
+      "flagged_file_alone": 2851,
+      "flagged_with_project": 2914,
+      "lost": 289,
+      "measurement_moved": {
+        "c_ATFD": 5183,
+        "c_CBO": 3056,
+        "c_DIT": 1341,
+        "c_NOC": 2765
+      },
+      "measurements_compared": 14567
+    },
+    "data class": {
+      "agree": 14228,
+      "decisive_file_alone": {
+        "c_AMW": 2,
+        "c_ATFD": 1,
+        "c_CBO": 874,
+        "c_CLOC": 535,
+        "c_LCOM": 72,
+        "c_LCOM3": 7,
+        "c_MAXCC": 7,
+        "c_NOAM": 41,
+        "c_NOF": 52,
+        "c_RFC": 9,
+        "c_TCC": 8,
+        "c_WMC": 60,
+        "c_WOC": 373
+      },
+      "decisive_on_a_moved_measurement": 875,
+      "entities": 14567,
+      "explained_file_alone": 2041,
+      "false_alarm": 187,
+      "flagged_file_alone": 2567,
+      "flagged_with_project": 2532,
+      "lost": 152,
+      "measurement_moved": {
+        "c_ATFD": 5183,
+        "c_CBO": 3056,
+        "c_DIT": 1341,
+        "c_NOC": 2765
+      },
+      "measurements_compared": 14567
+    },
+    "feature envy": {
+      "agree": 83744,
+      "decisive_file_alone": {
+        "m_CC": 2,
+        "m_MLOC": 3627,
+        "m_NOAV": 51
+      },
+      "decisive_on_a_moved_measurement": 51,
+      "entities": 85753,
+      "explained_file_alone": 3680,
+      "false_alarm": 38,
+      "flagged_file_alone": 3680,
+      "flagged_with_project": 5613,
+      "lost": 1971,
+      "measurement_moved": {
+        "c_ATFD": 53169,
+        "c_CBO": 36063,
+        "c_DIT": 17483,
+        "c_NOC": 11513,
+        "m_ATFD": 26098,
+        "m_FDP": 26098,
+        "m_LAA": 26024,
+        "m_NOAV": 26098
+      },
+      "measurements_compared": 85753
+    },
+    "long method": {
+      "agree": 84989,
+      "decisive_file_alone": {
+        "c_AMW": 12,
+        "m_CC": 101,
+        "m_CINT": 12,
+        "m_MLOC": 6806
+      },
+      "decisive_on_a_moved_measurement": 0,
+      "entities": 85753,
+      "explained_file_alone": 6931,
+      "false_alarm": 150,
+      "flagged_file_alone": 6962,
+      "flagged_with_project": 7426,
+      "lost": 614,
+      "measurement_moved": {
+        "c_ATFD": 53169,
+        "c_CBO": 36063,
+        "c_DIT": 17483,
+        "c_NOC": 11513,
+        "m_ATFD": 26098,
+        "m_FDP": 26098,
+        "m_LAA": 26024,
+        "m_NOAV": 26098
+      },
+      "measurements_compared": 85753
+    }
+  },
+  "projects": {
+    "Microsoft__team-explorer-everywhere__89ab2a4847ae": {
+      "classes": 2503,
+      "files": 2251
+    },
+    "aws__aws-cloudtrail-processing-library__411315808d8d": {
+      "classes": 69,
+      "files": 78
+    },
+    "eclipse__che__c5498c2ac562": {
+      "classes": 9344,
+      "files": 6954
+    },
+    "eclipse__eclipse.platform.swt__bf870e8ff7e5": {
+      "classes": 2224,
+      "files": 2074
+    },
+    "spring-projects__spring-data-solr__6db215cf2833": {
+      "classes": 437,
+      "files": 287
+    }
+  },
+  "seed": 20260901
+}

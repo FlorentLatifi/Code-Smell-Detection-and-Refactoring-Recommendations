@@ -65,16 +65,19 @@ MAX_CONTRIBUTIONS = 5
 
 # ATFD and CBO are defined against the types of the *project*, so in a one-file
 # "project" they collapse towards zero and the strategies that read them stop
-# firing (VD-16). The model reads the same columns, and measured against a corpus
-# project it degrades the same way rather than worse -- mostly falling quiet, with
-# a small number of flags it would not otherwise raise.
+# firing (VD-16). The model reads the same columns and mostly degrades the same
+# way -- it agrees with itself 96.5% to 99.1% of the time -- though not uniformly:
+# the method-level smells fall quiet, while Data Class raises more flags than it
+# loses.
 #
-# It is refused all the same, and for the explanation rather than the verdict.
-# What the interface shows beside a model flag is the measurement holding it up,
-# and on a single file that is liable to be one whose value is an artefact of how
-# much was read. "CBO is 0, which is why this is a Blob" is a sentence about the
-# request, not about the code. `scripts/model_without_project.py` measures both
-# effects; VD-48 records the decision.
+# It is refused for the explanation rather than the verdict. What the interface
+# shows beside a model flag is the measurement holding it up, and for the
+# class-level smells that measurement is one whose value moved with the analysis
+# scope in 20% (Blob) to 43% (Data Class) of cases -- "CBO is 0, which is why this
+# is a Blob" being a sentence about the request rather than about the code. The
+# refusal is not narrowed to those two smells, because they are precisely the ones
+# a single-file analysis is asking about. `scripts/model_without_project.py`
+# measures all of it; VD-48 records the decision and the numbers.
 MODEL_NEEDS_PROJECT = (
     "a model verdict needs project-wide measurement; analyse the project "
     "directory rather than a single file"
