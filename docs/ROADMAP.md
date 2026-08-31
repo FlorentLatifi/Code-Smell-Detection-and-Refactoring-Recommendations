@@ -4,7 +4,7 @@
 Rregullat se *si* punojmë janë në [`ENGINEERING.md`](ENGINEERING.md); arsyet e vendimeve
 janë në [`DECISIONS.md`](DECISIONS.md).
 
-## Gjendja aktuale (verifikuar më 2026-08-26)
+## Gjendja aktuale (verifikuar më 2026-08-31)
 
 | Komponenti | Gjendja | Vërejtje |
 |---|---|---|
@@ -16,15 +16,18 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
-| Testet | ✅ 124 kalojnë | vlera të derivuara me dorë |
+| Testet | ✅ 289 kalojnë | vlera të derivuara me dorë; 1 anashkalohet pa symlink |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, modele të serializuara |
-| Motori i refaktorimit (C) | ⬜ bosh | `javasmell/refactor/` — **rreziku më i madh tani** |
-| API | ✅ e plotë | FastAPI, tri endpoint-e, pa gjendje |
+| Motori i refaktorimit (C) | ✅ e mbyllur | 2 transformime të automatizuara, 3 vetëm këshillë (VD-30) |
+| API | ✅ e plotë | `/analyze`, `/metrics`, `/refactor/preview`, `/health`; pa gjendje (VD-35) |
 | Frontend | ✅ e plotë | React + TypeScript + Vite |
-| Punimi | 🟡 skeleti + Kapitulli 1 | `docs/thesis/build_thesis.py` |
+| Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
+| Figurat e punimit | ✅ 6 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
+| Punimi | 🟡 kapitujt 1–6 të shkruar | mbetet redaktimi, referencat dhe formatimi UBT |
+| Testet e frontend-it | ⬜ nuk ka | i vetmi shtresim pa teste; i regjistruar si kufizim |
 
-Afati: ~12 javë deri te dorëzimi (~nëntor 2026).
+Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
 
 ## Parimi i renditjes: rreziku i madh i pari
 
@@ -205,7 +208,7 @@ komandë. Këtu fillon të mbushet Kapitulli 5.
 
 ## Faza 2: Detektimi me Machine Learning (javët 3–4)
 
-**Gjendja:** makineria e ndërtuar dhe e testuar; pret tabelën e veçorive.
+**Gjendja:** ✅ e mbyllur më 2026-08-26; tabela e veçorive dhe modelet të komituara.
 
 Doli një parakusht që plani nuk e kishte parë: trajnimi kërkon metrikat për secilën
 mostër të MLCQ-së, pra pikërisht të njëjtin kalim 95-minutësh mbi korpusin. Po ashtu
@@ -316,6 +319,10 @@ tabela e krahasimit A vs B.
 ---
 
 ## Faza 3: Motori i refaktorimit (javët 5–7), pjesa më e madhe
+
+**Gjendja:** ✅ e mbyllur më 2026-08-30. Dy transformime automatizohen dhe tri
+mbeten këshillë, sepse parakushtet e tyre kërkojnë pikat e thirrjes në tërë
+projektin (VD-30). Verifikimi mbi korpus gjeti tri defekte që testet nuk i kapën.
 
 Rendi është sipas rrezikut të korrektësisë, nga më e sigurta te më e vështira.
 
@@ -484,13 +491,17 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
 
 ## Faza 5: Eksperimentet finale dhe shkrimi (javët 10–11)
 
-- **Analiza e ndjeshmërisë**: fshirje e pragjeve rreth vlerave të Lanza & Marinescu,
-  për të treguar sa e qëndrueshme është detektimi. Pikërisht për këtë pragjet
-  qëndrojnë të centralizuara në `thresholds.py`.
-- Kapitulli 2 (Literatura), 3 (Problemi), 4 (Metodologjia, nga `DECISIONS.md`),
-  5 (Rezultatet, nga `data/results/`).
-- Figurat dhe tabelat gjenerohen nga skriptet, jo me kopjim manual. Nëse një numër
+**Gjendja:** 🟡 në vazhdim. Eksperimentet kanë mbaruar; mbetet teksti.
+
+- ✅ **Analiza e ndjeshmërisë**: fshirje e pragjeve rreth vlerave të Lanza &
+  Marinescu, mbi rreshtat e ruajtur të `mlcq_dataset.csv`. Rezultati te
+  `data/results/threshold_sweep.json`. Dy pragje dolën shumë të ndjeshme dhe
+  **nuk u adoptuan** — fshirja mat qëndrueshmërinë, nuk zgjedh pragje (VD-34).
+- ✅ Kapitulli 2 (Literatura), 3 (Problemi), 4 (Metodologjia, nga `DECISIONS.md`),
+  5 (Rezultatet, nga `data/results/`), 6 dhe abstrakti.
+- ✅ Figurat dhe tabelat gjenerohen nga skriptet, jo me kopjim manual. Nëse një numër
   ndryshon, rigjenerohet gjithçka.
+- ⬜ Mbetet: redaktimi i tekstit, verifikimi i referencave dhe formatimi UBT.
 
 ---
 
