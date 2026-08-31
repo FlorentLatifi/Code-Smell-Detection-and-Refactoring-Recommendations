@@ -114,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             results[smell][name] = points
             baseline = next(p for p in points if p["factor"] == 1.00)
-            spread = [p["mcc"] for p in points if p["mcc"] is not None]
+            spread = [v for v in (p["mcc"] for p in points) if isinstance(v, float)]
             print(
                 f"{smell:<13}{name:<28} MCC te vlera e botuar "
                 f"{baseline['mcc']:.3f}, brez {min(spread):.3f}-{max(spread):.3f}",
@@ -138,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 points.append({"factor": factor, "value": round(value, 4), **agreement.to_dict()})
             severity[smell][name] = points
-            spread = [p["kappa_quadratic"] for p in points if p["kappa_quadratic"] is not None]
+            spread = [v for v in (p["kappa_quadratic"] for p in points) if isinstance(v, float)]
             print(
                 f"{smell:<13}{name:<28} kappa brez {min(spread):.3f}-{max(spread):.3f}",
                 flush=True,

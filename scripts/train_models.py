@@ -75,6 +75,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _mcc(entry: dict[str, object]) -> float:
+    """The MCC of one scored model, or a value that always ranks last.
+
+    A confusion matrix with an empty margin reports None, and comparing that
+    against a float is what picking the best model would otherwise do.
+    """
+    value = entry["mcc"]
+    return float(value) if isinstance(value, (int, float)) else -1.0
+
+
 def as_dict(matrix: Confusion) -> dict[str, object]:
     return {
         "tp": matrix.tp,
@@ -148,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
 
         # "Best" is by MCC, the figure that is not fooled by the imbalance.
         ranked = [n for n in scored if n != BASELINE]
-        best = max(ranked, key=lambda n: scored[n]["mcc"] or -1.0)
+        best = max(ranked, key=lambda n: _mcc(scored[n]))
 
         ranking = sorted(
             importances(model_zoo()[best], data, args.folds).items(),

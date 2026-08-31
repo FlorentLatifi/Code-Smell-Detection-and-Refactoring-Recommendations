@@ -148,6 +148,9 @@ If one of these later becomes relevant, log the change in `docs/DECISIONS.md`.
   unnecessary abstraction; keep it that way. No design pattern without a
   concrete second use case.
 - Type hints everywhere; `from __future__ import annotations` at the top.
+  `mypy --strict` covers `scripts/` as well as the package: those scripts produce
+  the numbers the thesis reports, and a value compared as `object` there is the
+  same defect it would be anywhere else.
 - Docstrings explain **why**, not what. The existing modules set the standard:
   match their density and tone.
 - Pure functions where the domain allows; parsing, measurement and detection

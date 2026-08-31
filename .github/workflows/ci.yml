@@ -47,6 +47,12 @@ jobs:
       - name: Type check
         run: mypy
 
+      # The scripts produce every number in the Results chapter, so they are held
+      # to the package's own standard. Run from `backend` so `javasmell` resolves
+      # the way the scripts resolve it at runtime.
+      - name: Type check experiment scripts
+        run: mypy ../scripts
+
       - name: Tests
         run: pytest -q --cov --cov-report=term-missing
 

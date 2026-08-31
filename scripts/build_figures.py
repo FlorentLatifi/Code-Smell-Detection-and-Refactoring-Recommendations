@@ -20,11 +20,13 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 RESULTS = Path("data/results")
 FIGURES = Path("docs/thesis/figures")
@@ -53,15 +55,22 @@ plt.rcParams.update(
 )
 
 
-def load(name: str) -> dict:
+# Një skedar rezultati i lexuar nga JSON-i. `Any` këtu është i qëllimshëm dhe i
+# kufizuar: forma e tij vendoset nga skripti që e shkroi, dhe përshkrimi i saj me
+# TypedDict për tetë skedarë do të ishte më shumë tip sesa figura që vizatojnë.
+Results = dict[str, Any]
+
+
+def load(name: str) -> Results:
     path = RESULTS / name
     if not path.exists():
         print(f"mungon: {path}", file=sys.stderr)
         raise SystemExit(1)
-    return json.loads(path.read_text(encoding="utf-8"))
+    loaded: Results = json.loads(path.read_text(encoding="utf-8"))
+    return loaded
 
 
-def save(fig, slug: str) -> None:
+def save(fig: Figure, slug: str) -> None:
     """Emri i skedarit e përshkruan përmbajtjen, nuk e numëron.
 
     Numri i figurës varet nga radha ku ajo shfaqet në punim, dhe ajo radhë
@@ -76,7 +85,7 @@ def save(fig, slug: str) -> None:
     print(f"  {path}")
 
 
-def figure_rules_vs_ml(rules: dict, ml: dict) -> None:
+def figure_rules_vs_ml(rules: Results, ml: Results) -> None:
     """MCC për të dyja qasjet, erë për erë."""
     smells = sorted(ml["per_smell"])
     approach_a = [
@@ -112,7 +121,7 @@ def figure_rules_vs_ml(rules: dict, ml: dict) -> None:
     save(fig, "mcc_a_vs_b")
 
 
-def figure_recall_by_severity(rules: dict) -> None:
+def figure_recall_by_severity(rules: Results) -> None:
     """Recall-i sipas ashpërsisë që caktuan rishikuesit."""
     rows = []
     for smell in sorted(rules["per_smell"]):
@@ -147,7 +156,7 @@ def figure_recall_by_severity(rules: dict) -> None:
     save(fig, "recall_sipas_ashpersise")
 
 
-def figure_agreement(ml: dict) -> None:
+def figure_agreement(ml: Results) -> None:
     """Çka kap secila qasje vetëm, dhe çka të dyja."""
     smells = sorted(ml["per_smell"])
     both = [ml["per_smell"][s]["vs_rules"]["both"] for s in smells]
@@ -173,7 +182,7 @@ def figure_agreement(ml: dict) -> None:
     save(fig, "pajtimi_a_b")
 
 
-def figure_feature_importance(ml: dict) -> None:
+def figure_feature_importance(ml: Results) -> None:
     """Veçoritë që modelet zgjodhën, për dy erëra."""
     fig, axes = plt.subplots(1, 2, figsize=(6.8, 3.2))
     for ax, smell in zip(axes, ("long method", "feature envy"), strict=True):
@@ -189,7 +198,7 @@ def figure_feature_importance(ml: dict) -> None:
     save(fig, "rendesia_e_vecorive")
 
 
-def figure_dataset_balance(dataset: dict) -> None:
+def figure_dataset_balance(dataset: Results) -> None:
     """Sa mostra për erë, dhe sa prej tyre pozitive."""
     smells = sorted(dataset["by_smell"])
     totals = [dataset["by_smell"][s] for s in smells]
@@ -204,7 +213,7 @@ def figure_dataset_balance(dataset: dict) -> None:
     save(fig, "shperndarja_e_mostrave")
 
 
-def figure_threshold_sweep(sweep: dict) -> None:
+def figure_threshold_sweep(sweep: Results) -> None:
     """Sa lëviz MCC-ja kur një prag zhvendoset rreth vlerës së botuar."""
     interesting = [
         ("long method", "long_method_loc", "Long Method: LOC"),

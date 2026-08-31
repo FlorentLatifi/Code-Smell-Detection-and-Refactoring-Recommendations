@@ -150,7 +150,12 @@ def for_smell(smell: str, args: argparse.Namespace) -> dict[str, object]:
         predictions[name] = out_of_fold.y_pred
         point[name] = out_of_fold.confusion().mcc
 
-    best = max(point, key=lambda name: point[name] if point[name] is not None else -1.0)
+    def rank(name: str) -> float:
+        """An undefined MCC ranks last rather than being compared to a float."""
+        value = point[name]
+        return value if value is not None else -1.0
+
+    best = max(point, key=rank)
     # An alias for whichever model the chapter reports, so every paired
     # difference is taken against the same one the comparison table shows.
     predictions["model"] = predictions[best]
