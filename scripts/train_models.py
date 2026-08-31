@@ -34,6 +34,7 @@ from javasmell.evaluation.scoring import (  # noqa: E402
     Confusion,
     decode_verdict,
 )
+from javasmell.ml.explain import decisive_over_folds  # noqa: E402
 from javasmell.ml.features import DEFAULT_LABEL, load  # noqa: E402
 from javasmell.ml.training import (  # noqa: E402
     BASELINE,
@@ -182,6 +183,9 @@ def main(argv: list[str] | None = None) -> int:
             "importances": dict(ranking),
             "top_features": [name for name, _ in ranking[:TOP_FEATURES]],
             "vs_rules": agreement(rule_verdicts(args.rules, smell), predictions[best]),
+            "explained": decisive_over_folds(
+                model_zoo()[best], data.x, data.y, data.groups, data.names, args.folds
+            ),
             "combined": combined(rule_verdicts(args.rules, smell), predictions[best], truth[best]),
         }
 

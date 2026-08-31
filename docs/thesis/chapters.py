@@ -820,6 +820,7 @@ def chapter_5() -> list:
                 "depos, pra përshkruajnë atë që pritet mbi një projekt që modeli nuk e "
                 "ka parë kurrë.",
                 ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
+                *_explanation_paragraphs(ml),
                  "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
             ],
         ),
@@ -1011,6 +1012,55 @@ def _confidence_section() -> list:
     ]
 
     return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+
+
+def _explanation_paragraphs(ml: dict) -> list:
+    """A mund ta arsyetojë modeli një verdikt të vetëm?
+
+    Rëndësia me permutation thotë cila metrikë ka peshë mbi tërë korpusin. Ajo nuk
+    i thotë asgjë zhvilluesit që ka përpara një klasë të shënuar. Kjo e mat pikërisht
+    atë: sa shpesh një matje e vetme, e kthyer në tipike, e rrëzon verdiktin.
+    """
+    smells = sorted(ml["per_smell"])
+    if not all("explained" in ml["per_smell"][s] for s in smells):
+        return []
+
+    rows = []
+    for smell in smells:
+        entry = ml["per_smell"][smell]["explained"]
+        if not entry["flagged"]:
+            continue
+        top = ", ".join(
+            f"{name} ({count})" for name, count in list(entry["decisive_feature"].items())[:3]
+        )
+        rows.append([
+            SMELL_SQ[smell],
+            str(entry["flagged"]),
+            f"{entry['share']:.1%}",
+            top or "—",
+        ])
+    if not rows:
+        return []
+
+    return [
+        "Rëndësia e veçorive përgjigjet për korpusin, jo për rastin. Një zhvillues që "
+        "ka përpara një klasë të shënuar nuk pyet cila metrikë ka peshë përgjithësisht; "
+        "pyet pse kjo klasë. Qasja A i përgjigjet me ndërtim, sepse raporton kushtet me "
+        "vlerat e matura; Qasja B fiton kudo dhe nuk thotë asgjë. Ky asimetri është "
+        "kundërshtimi standard ndaj detektimit me mësim makine.",
+        "Prandaj çdo entitet i shënuar u pyet edhe një herë: secila matje, një nga një, "
+        "u zëvendësua me vlerën tipike të bashkësisë së trajnimit dhe modeli u pyet "
+        "sërish. Kur ai zëvendësim i vetëm e kthen verdiktin nën kufirin e vendimit, "
+        "ajo matje e mban vetë shënimin — dhe kjo është një fjali që zhvilluesi mund "
+        "ta lexojë: «po të ishte CLOC-u tipik, kjo klasë nuk do të shënohej».",
+        ("table", "Sa shpesh një matje e vetme e mban verdiktin",
+         ["Erë", "Të shënuara", "Me shpjegim", "Matjet vendimtare"], rows),
+        "Shpjegimi jepet jashtë fold-it, si vetë verdiktet: çdo entitet shpjegohet nga "
+        "një model që nuk e ka parë depon e tij. Kufizimi i metodës është se e sheh "
+        "një matje në një kohë dhe nuk dallon dot dy metrika që mbajnë të njëjtin "
+        "informacion; aty ku CLOC dhe NOM thonë të dyja «e madhe», zëvendësimi i njërës "
+        "mund të mos lëvizë asgjë dhe rasti del i pashpjeguar.",
+    ]
 
 
 def _calibration_paragraphs() -> list:
