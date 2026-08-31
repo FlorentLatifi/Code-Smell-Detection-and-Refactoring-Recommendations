@@ -91,6 +91,16 @@ def collect() -> dict[str, object]:
     strategies = [_strategy(d, "class") for d in CLASS_DETECTORS]
     strategies += [_strategy(d, "method") for d in METHOD_DETECTORS]
 
+    # Formula lexohet nga docstring-u me anë të indentimit, dhe indentimi është i
+    # brishtë: formatuesi e hoqi një herë bllokun e një detektori dhe shtojca doli
+    # me një qeli bosh, pa asnjë zë. Një formulë që humbet e ndal eksportin.
+    empty = [entry["smell"] for entry in strategies if not entry["formula"]]
+    if empty:
+        raise SystemExit(
+            f"Detektorëve u mungon formula te docstring-u: {sorted(empty)}. "
+            "Blloku duhet të jetë i indentuar më thellë se proza rreth tij."
+        )
+
     covered = {entry["smell"] for entry in strategies}
     missing = set(REFACTORINGS) - covered
     unexpected = covered - set(REFACTORINGS)

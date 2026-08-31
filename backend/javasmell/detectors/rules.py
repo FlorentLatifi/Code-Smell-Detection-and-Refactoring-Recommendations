@@ -260,6 +260,10 @@ def detect_long_parameter_list(
     """Long Parameter List (Fowler).
 
         NP > FEW
+
+    The bound is the "few" quantifier rather than a number of its own: a
+    parameter list is long when it exceeds what a reader holds at once, which is
+    the same quantity the other strategies are written in.
     """
     np = method.metrics.get("NP", 0.0)
     if np <= t.long_parameter_list_np:

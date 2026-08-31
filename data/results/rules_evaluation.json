@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "35a672e4f40dbb0138b1ac66963cd729017ea1a9",
+    "commit": "7e7595c0ee5fe0b4f4f4bd8d00b11eb8c911a969",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -68,6 +68,29 @@
             "recall": 0.103,
             "support": 330
           }
+        },
+        "severity_agreement": {
+          "exact": 0.0286,
+          "kappa_quadratic": 0.0074,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 11,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "within_one": 0.3714
         }
       },
       "with_size": {
@@ -132,6 +155,29 @@
             "recall": 0.2364,
             "support": 330
           }
+        },
+        "severity_agreement": {
+          "exact": 0.2778,
+          "kappa_quadratic": 0.0084,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 2,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 31,
+              "major": 24,
+              "minor": 23
+            }
+          },
+          "n": 90,
+          "within_one": 0.6556
         }
       }
     },
@@ -203,6 +249,29 @@
             "recall": 0.1302,
             "support": 169
           }
+        },
+        "severity_agreement": {
+          "exact": 0.0357,
+          "kappa_quadratic": 0.061,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 8,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "within_one": 0.5357
         }
       }
     },
@@ -274,6 +343,29 @@
             "recall": 0.1562,
             "support": 64
           }
+        },
+        "severity_agreement": {
+          "exact": 0.1538,
+          "kappa_quadratic": 0.0258,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 3,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "within_one": 0.5385
         }
       }
     },
@@ -340,6 +432,29 @@
             "recall": 0.375,
             "support": 192
           }
+        },
+        "severity_agreement": {
+          "exact": 0.5474,
+          "kappa_quadratic": 0.293,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 9,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 7,
+              "major": 22,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "within_one": 0.9263
         }
       }
     }
@@ -356,6 +471,7 @@
     "data_class_wmc_low": 31,
     "data_class_woc": 0.3333333333333333,
     "deep_nesting": 3,
+    "excess_cap": 5.0,
     "feature_envy_atfd": 5,
     "feature_envy_fdp": 5,
     "feature_envy_laa": 0.3333333333333333,
@@ -365,7 +481,9 @@
     "large_class_loc": 200,
     "large_class_nom": 20,
     "long_method_loc": 30,
-    "long_parameter_list_np": 5
+    "long_parameter_list_np": 5,
+    "severity_critical": 2.5,
+    "severity_major": 1.5
   },
   "unreached": {
     "no_entity": 8,

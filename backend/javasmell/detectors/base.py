@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
+from javasmell.detectors.thresholds import DEFAULT, Thresholds
+
 
 class Severity(StrEnum):
     """Ordinal severity.
@@ -72,23 +74,35 @@ class Smell:
     method: str | None = None
     metrics: dict[str, float] = field(default_factory=dict)
 
-    @property
-    def score(self) -> float:
+    def score_at(self, t: Thresholds) -> float:
         """Mean excess across the conditions, capped so one extreme metric
         cannot by itself push a mild case to critical."""
         if not self.conditions:
             return 1.0
-        capped = [min(c.excess, 5.0) for c in self.conditions]
+        capped = [min(c.excess, t.excess_cap) for c in self.conditions]
         return sum(capped) / len(capped)
+
+    def severity_at(self, t: Thresholds) -> Severity:
+        """The MLCQ-scale label this measurement earns at the given cutoffs.
+
+        Parameterised rather than fixed so the sweep can vary the cutoffs, which
+        is what VD-06 committed to and what inline constants made impossible.
+        """
+        score = self.score_at(t)
+        if score < t.severity_major:
+            return Severity.MINOR
+        if score < t.severity_critical:
+            return Severity.MAJOR
+        return Severity.CRITICAL
+
+    @property
+    def score(self) -> float:
+        """The score at the published configuration, for callers that report one."""
+        return self.score_at(DEFAULT)
 
     @property
     def severity(self) -> Severity:
-        score = self.score
-        if score < 1.5:
-            return Severity.MINOR
-        if score < 2.5:
-            return Severity.MAJOR
-        return Severity.CRITICAL
+        return self.severity_at(DEFAULT)
 
     @property
     def location(self) -> str:

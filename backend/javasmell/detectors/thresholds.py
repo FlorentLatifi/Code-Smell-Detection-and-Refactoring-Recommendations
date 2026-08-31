@@ -76,5 +76,19 @@ class Thresholds:
     large_class_loc: float = HIGH_CLASS_LOC
     large_class_nom: float = HIGH_NOM
 
+    # --- Severity (VD-06) ----------------------------------------------
+    # These three have no published source, and saying so is the point. The
+    # detection thresholds above are Lanza & Marinescu's; these are ours, chosen
+    # to turn measured excess into the MLCQ scale. VD-06 recorded that they must
+    # be swept rather than trusted, which is only possible with them here: while
+    # they sat inline in `base.py` no sweep could reach them.
+    #
+    # They do not change whether a detector fires, only how severe it calls what
+    # it found, so their sweep is scored against agreement with the reviewers'
+    # severity and not against MCC.
+    excess_cap: float = 5.0
+    severity_major: float = 1.5
+    severity_critical: float = 2.5
+
 
 DEFAULT = Thresholds()

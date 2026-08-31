@@ -1,7 +1,7 @@
 {
   "aggregation": "mean",
   "environment": {
-    "commit": "fe63722129d2a913a0c7d77b11efc61710d7a882",
+    "commit": "7e7595c0ee5fe0b4f4f4bd8d00b11eb8c911a969",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -579,6 +579,1232 @@
           "precision": 1.0,
           "recall": 0.13425925925925927,
           "value": 60.0
+        }
+      ]
+    }
+  },
+  "severity": {
+    "blob": {
+      "severity_critical": [
+        {
+          "exact": 0.0286,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0009,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 33,
+              "major": 0,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 1.25,
+          "within_one": 0.0571
+        },
+        {
+          "exact": 0.0286,
+          "factor": 0.75,
+          "kappa_quadratic": 0.0034,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 28,
+              "major": 5,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 1.875,
+          "within_one": 0.2
+        },
+        {
+          "exact": 0.0286,
+          "factor": 1.0,
+          "kappa_quadratic": 0.0074,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 11,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 2.5,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.0286,
+          "factor": 1.25,
+          "kappa_quadratic": 0.012,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 17,
+              "major": 16,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 3.125,
+          "within_one": 0.5143
+        },
+        {
+          "exact": 0.0571,
+          "factor": 1.5,
+          "kappa_quadratic": -0.0071,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 0,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 8,
+              "major": 25,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 3.75,
+          "within_one": 0.7714
+        },
+        {
+          "exact": 0.0571,
+          "factor": 2.0,
+          "kappa_quadratic": -0.0015,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 0,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 2,
+              "major": 31,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 5.0,
+          "within_one": 0.9429
+        }
+      ],
+      "severity_major": [
+        {
+          "exact": 0.0,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0067,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 12,
+              "minor": 0
+            }
+          },
+          "n": 35,
+          "value": 0.75,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.0,
+          "factor": 0.75,
+          "kappa_quadratic": 0.0067,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 12,
+              "minor": 0
+            }
+          },
+          "n": 35,
+          "value": 1.125,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.0286,
+          "factor": 1.0,
+          "kappa_quadratic": 0.0074,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 11,
+              "minor": 1
+            }
+          },
+          "n": 35,
+          "value": 1.5,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.1714,
+          "factor": 1.25,
+          "kappa_quadratic": 0.0107,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 6,
+              "minor": 6
+            }
+          },
+          "n": 35,
+          "value": 1.875,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.2571,
+          "factor": 1.5,
+          "kappa_quadratic": 0.0129,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 22,
+              "major": 3,
+              "minor": 9
+            }
+          },
+          "n": 35,
+          "value": 2.25,
+          "within_one": 0.3714
+        },
+        {
+          "exact": 0.4571,
+          "factor": 2.0,
+          "kappa_quadratic": 0.0244,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 18,
+              "major": 0,
+              "minor": 16
+            }
+          },
+          "n": 35,
+          "value": 3.0,
+          "within_one": 0.4857
+        }
+      ]
+    },
+    "data class": {
+      "severity_critical": [
+        {
+          "exact": 0.0357,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0094,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 21,
+              "major": 0,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 1.25,
+          "within_one": 0.25
+        },
+        {
+          "exact": 0.0357,
+          "factor": 0.75,
+          "kappa_quadratic": 0.0385,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 16,
+              "major": 5,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 1.875,
+          "within_one": 0.4286
+        },
+        {
+          "exact": 0.0357,
+          "factor": 1.0,
+          "kappa_quadratic": 0.061,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 8,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 2.5,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.0714,
+          "factor": 1.25,
+          "kappa_quadratic": 0.0482,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 5,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 12,
+              "major": 9,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 3.125,
+          "within_one": 0.5714
+        },
+        {
+          "exact": 0.25,
+          "factor": 1.5,
+          "kappa_quadratic": -0.0,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 0,
+              "major": 6,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 1,
+              "major": 20,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 3.75,
+          "within_one": 0.9643
+        },
+        {
+          "exact": 0.25,
+          "factor": 2.0,
+          "kappa_quadratic": -0.0,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 0,
+              "major": 6,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 1,
+              "major": 20,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 5.0,
+          "within_one": 0.9643
+        }
+      ],
+      "severity_major": [
+        {
+          "exact": 0.0,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0544,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 9,
+              "minor": 0
+            }
+          },
+          "n": 28,
+          "value": 0.75,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.0,
+          "factor": 0.75,
+          "kappa_quadratic": 0.0544,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 9,
+              "minor": 0
+            }
+          },
+          "n": 28,
+          "value": 1.125,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.0357,
+          "factor": 1.0,
+          "kappa_quadratic": 0.061,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 8,
+              "minor": 1
+            }
+          },
+          "n": 28,
+          "value": 1.5,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.2143,
+          "factor": 1.25,
+          "kappa_quadratic": 0.0953,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 3,
+              "minor": 6
+            }
+          },
+          "n": 28,
+          "value": 1.875,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.25,
+          "factor": 1.5,
+          "kappa_quadratic": 0.1026,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 13,
+              "major": 2,
+              "minor": 7
+            }
+          },
+          "n": 28,
+          "value": 2.25,
+          "within_one": 0.5357
+        },
+        {
+          "exact": 0.3571,
+          "factor": 2.0,
+          "kappa_quadratic": 0.137,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 6,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 12,
+              "major": 0,
+              "minor": 10
+            }
+          },
+          "n": 28,
+          "value": 3.0,
+          "within_one": 0.5714
+        }
+      ]
+    },
+    "feature envy": {
+      "severity_critical": [
+        {
+          "exact": 0.0769,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0231,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 3,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 9,
+              "major": 0,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 1.25,
+          "within_one": 0.3077
+        },
+        {
+          "exact": 0.0769,
+          "factor": 0.75,
+          "kappa_quadratic": 0.053,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 3,
+              "major": 0,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 7,
+              "major": 2,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 1.875,
+          "within_one": 0.4615
+        },
+        {
+          "exact": 0.1538,
+          "factor": 1.0,
+          "kappa_quadratic": 0.0258,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 3,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 2.5,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.1538,
+          "factor": 1.25,
+          "kappa_quadratic": 0.1333,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 2,
+              "major": 7,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 3.125,
+          "within_one": 0.8462
+        },
+        {
+          "exact": 0.2308,
+          "factor": 1.5,
+          "kappa_quadratic": 0.1058,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 2,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 1,
+              "major": 8,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 3.75,
+          "within_one": 0.9231
+        },
+        {
+          "exact": 0.3077,
+          "factor": 2.0,
+          "kappa_quadratic": 0.0488,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 0,
+              "major": 3,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 0,
+              "major": 9,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 5.0,
+          "within_one": 1.0
+        }
+      ],
+      "severity_major": [
+        {
+          "exact": 0.0769,
+          "factor": 0.5,
+          "kappa_quadratic": 0.0102,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 4,
+              "minor": 0
+            }
+          },
+          "n": 13,
+          "value": 0.75,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.0769,
+          "factor": 0.75,
+          "kappa_quadratic": 0.0102,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 4,
+              "minor": 0
+            }
+          },
+          "n": 13,
+          "value": 1.125,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.1538,
+          "factor": 1.0,
+          "kappa_quadratic": 0.0258,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 3,
+              "minor": 1
+            }
+          },
+          "n": 13,
+          "value": 1.5,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.3077,
+          "factor": 1.25,
+          "kappa_quadratic": 0.059,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 1,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 6,
+              "major": 1,
+              "minor": 3
+            }
+          },
+          "n": 13,
+          "value": 1.875,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.2308,
+          "factor": 1.5,
+          "kappa_quadratic": 0.0055,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 0,
+              "minor": 1
+            },
+            "minor": {
+              "critical": 6,
+              "major": 1,
+              "minor": 3
+            }
+          },
+          "n": 13,
+          "value": 2.25,
+          "within_one": 0.5385
+        },
+        {
+          "exact": 0.6154,
+          "factor": 2.0,
+          "kappa_quadratic": 0.2814,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 2,
+              "major": 0,
+              "minor": 1
+            },
+            "minor": {
+              "critical": 2,
+              "major": 0,
+              "minor": 8
+            }
+          },
+          "n": 13,
+          "value": 3.0,
+          "within_one": 0.8462
+        }
+      ]
+    },
+    "long method": {
+      "severity_critical": [
+        {
+          "exact": 0.4526,
+          "factor": 0.5,
+          "kappa_quadratic": 0.1752,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 19,
+              "major": 0,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 29,
+              "major": 0,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 1.25,
+          "within_one": 0.6947
+        },
+        {
+          "exact": 0.5158,
+          "factor": 0.75,
+          "kappa_quadratic": 0.2129,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 13,
+              "major": 6,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 17,
+              "major": 12,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 1.875,
+          "within_one": 0.8211
+        },
+        {
+          "exact": 0.5474,
+          "factor": 1.0,
+          "kappa_quadratic": 0.293,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 9,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 7,
+              "major": 22,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 2.5,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.6,
+          "factor": 1.25,
+          "kappa_quadratic": 0.3076,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 5,
+              "major": 14,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 3,
+              "major": 26,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 3.125,
+          "within_one": 0.9684
+        },
+        {
+          "exact": 0.6421,
+          "factor": 1.5,
+          "kappa_quadratic": 0.2991,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 18,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 1,
+              "major": 28,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 3.75,
+          "within_one": 0.9895
+        },
+        {
+          "exact": 0.6421,
+          "factor": 2.0,
+          "kappa_quadratic": 0.2991,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 1,
+              "major": 18,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 1,
+              "major": 28,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 5.0,
+          "within_one": 0.9895
+        }
+      ],
+      "severity_major": [
+        {
+          "exact": 0.1368,
+          "factor": 0.5,
+          "kappa_quadratic": 0.1025,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 13,
+              "minor": 0
+            },
+            "minor": {
+              "critical": 7,
+              "major": 65,
+              "minor": 0
+            }
+          },
+          "n": 95,
+          "value": 0.75,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.2632,
+          "factor": 0.75,
+          "kappa_quadratic": 0.1539,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 12,
+              "minor": 1
+            },
+            "minor": {
+              "critical": 7,
+              "major": 52,
+              "minor": 13
+            }
+          },
+          "n": 95,
+          "value": 1.125,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.5474,
+          "factor": 1.0,
+          "kappa_quadratic": 0.293,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 9,
+              "minor": 4
+            },
+            "minor": {
+              "critical": 7,
+              "major": 22,
+              "minor": 43
+            }
+          },
+          "n": 95,
+          "value": 1.5,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.6105,
+          "factor": 1.25,
+          "kappa_quadratic": 0.2861,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 3,
+              "minor": 10
+            },
+            "minor": {
+              "critical": 7,
+              "major": 10,
+              "minor": 55
+            }
+          },
+          "n": 95,
+          "value": 1.875,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.6526,
+          "factor": 1.5,
+          "kappa_quadratic": 0.2998,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 10,
+              "major": 1,
+              "minor": 12
+            },
+            "minor": {
+              "critical": 7,
+              "major": 4,
+              "minor": 61
+            }
+          },
+          "n": 95,
+          "value": 2.25,
+          "within_one": 0.9263
+        },
+        {
+          "exact": 0.7263,
+          "factor": 2.0,
+          "kappa_quadratic": 0.2593,
+          "matrix": {
+            "critical": {
+              "critical": 0,
+              "major": 0,
+              "minor": 0
+            },
+            "major": {
+              "critical": 5,
+              "major": 0,
+              "minor": 18
+            },
+            "minor": {
+              "critical": 3,
+              "major": 0,
+              "minor": 69
+            }
+          },
+          "n": 95,
+          "value": 3.0,
+          "within_one": 0.9684
         }
       ]
     }

@@ -1110,3 +1110,52 @@ gjë tjetër: asnjë thirrje analize nuk e anashkalon API-në.
 frontend-i. Kjo është saktësisht ajo që duhet për një pamje të rezultateve të
 punimit, por do të ishte e gabuar për të dhëna që ndryshojnë — dhe nëse ndonjëherë
 shtohet një pamje e tillë, ajo shkon nëpër API.
+
+---
+
+### VD-41: Ashpërsia e derivuar është renditje e brendshme, jo gjykim i riprodhuar
+
+**Konteksti.** VD-06 e zgjodhi shkallën e MLCQ-së për ashpërsinë tonë me një arsye
+të shprehur qartë: «dalja e rregullave krahasohet me etiketat manuale pa hap
+përkthimi». Ai krahasim nuk u bë kurrë. `recall_by_severity` mat diçka tjetër —
+sa kapim te secila ashpërsi e *tyre* — dhe u mor gabimisht si mbulim i pyetjes.
+
+Po ashtu VD-06 shënoi se kufizimi 5× dhe kufijtë 1.5/2.5 «duhet t'i nënshtrohen
+analizës së ndjeshmërisë në Fazën 5». Faza 5 mbaroi pa i prekur, dhe nuk mund t'i
+prekte: ata rrinin si numra të shkruar brenda `detectors/base.py`, ku asnjë fshirje
+nuk i arrin dot. Kjo ishte edhe shkelje e rregullit të vetë projektit që asnjë numër
+magjik nuk qëndron jashtë `thresholds.py`.
+
+**Vendimi.** Të tre kaluan te `Thresholds` dhe ashpërsia derivohet me
+`severity_at(t)`, pra tani fshihet si çdo prag tjetër. Krahasimi u bë, dhe
+pretendimi i VD-06 hiqet: ashpërsia e derivuar është **renditje e brendshme e
+mjetit** — cili rast t'i tregohet i pari përdoruesit — dhe nuk pretendon të
+riprodhojë gjykimin e një zhvilluesi për rëndësinë.
+
+**Matja.** Vetëm aty ku të dyja anët shohin një erë, sepse askund tjetër shkallët
+nuk janë të krahasueshme. Kappa me peshë kuadratike: 0.007 për Blob, 0.061 për Data
+Class, 0.026 për Feature Envy, 0.293 për Long Method. Tri nga katër janë pajtim sa
+rastësia.
+
+Gabimi nuk është i rastësishëm por i njëanshëm: nga 171 krahasime, 111 e vlerësojnë
+rastin më rëndë se rishikuesit dhe vetëm 4 më lehtë. Mjeti e mbivlerëson ashpërsinë.
+
+**Nuk është kalibrim.** Fshirja e të dy kufijve mbi të njëjtin brez si pragjet e
+detektimit e ngre kappa-n më së shumti te 0.308, dhe vetëm për Long Method-in.
+Zhvendosja e kufijve e ndryshon shpërndarjen e etiketave, jo aftësinë e pikës për
+t'i renditur rastet. Shkaku duket strukturor: për Long Method teprica matet mbi një
+metrikë të vetme, ndërsa për strategjitë me disa kushte pika është mesatarja e
+tepricave mbi metrika heterogjene, dhe asgjë nuk e lidh atë mesatare me rëndësinë
+që i jep një njeri.
+
+**Alternativat.** Të mos matej fare dhe pretendimi të mbetej i pashqyrtuar: kjo
+është pikërisht ajo që ndodhi për katër muaj. Ta mësonim ashpërsinë nga të dhënat:
+e mundur, por e kthen një derivim të shpjegueshëm në një model të dytë dhe kërkon
+ndarjen e vet të korpusit; regjistrohet si punë e ardhshme.
+
+**Pasojat.** Kapitulli 5 ka një nënkapitull të ri me këtë rezultat negativ. Vlera e
+`score`-it mbetet aty ku ishte e dobishme — renditja e listës në ndërfaqe — dhe
+`recall_by_severity` mbetet mënyra e vetme e vlefshme në të cilën ashpërsia hyn në
+rezultatet e punimit. Një implementim i vetëm i ashpërsisë (`worst_severity`) i
+shërben si kalimit mbi korpus ashtu edhe rirenditjes, që numri i raportuar të mos
+ndahet nga numri që sheh përdoruesi.

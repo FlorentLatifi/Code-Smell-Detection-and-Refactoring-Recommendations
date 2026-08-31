@@ -503,6 +503,10 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
   nuk transkriptohen nga kodi por nxirren prej tij (VD-38).
 - ✅ Figurat dhe tabelat gjenerohen nga skriptet, jo me kopjim manual. Nëse një numër
   ndryshon, rigjenerohet gjithçka.
+- ✅ Ashpërsia e derivuar u krahasua me atë të rishikuesve, siç e kishte premtuar
+  VD-06. Rezultati është negativ dhe raportohet: pajtim sa rastësia për tri nga
+  katër erërat, me mbivlerësim sistematik. Pragjet e ashpërsisë kaluan te
+  `thresholds.py` që fshirja t'i arrijë (VD-41).
 - ✅ Koherenca e citimeve verifikohet nga `docs/thesis/check_citations.py`, që
   krahason tekstin me listën e referencave në të dy drejtimet dhe hyn në CI (VD-37).
 - ✅ Formatimi UBT verifikohet nga `docs/thesis/check_format.py` mbi vetë skedarin

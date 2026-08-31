@@ -34,7 +34,12 @@ from javasmell.detectors.thresholds import DEFAULT  # noqa: E402
 from javasmell.evaluation.mlcq import Aggregation, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.replay import replay  # noqa: E402
-from javasmell.evaluation.scoring import PRIMARY_VARIANT, VARIANTS, score  # noqa: E402
+from javasmell.evaluation.scoring import (  # noqa: E402
+    PRIMARY_VARIANT,
+    VARIANTS,
+    score,
+    severity_agreement,
+)
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
 DEFAULT_DATASET = Path("data/results/mlcq_dataset.csv")
@@ -56,6 +61,12 @@ SWEPT: dict[str, tuple[str, ...]] = {
 # njëjtat faktorë vlejnë njësoj për një numërim (ATFD = 5) dhe për një raport
 # (TCC = 1/3), ndërsa një hap absolut do të kishte kuptim vetëm për njërin.
 FACTORS = (0.50, 0.75, 1.00, 1.25, 1.50, 2.00)
+
+# Pragjet e ashpërsisë maten veç, sepse ato nuk vendosin nëse një detektor ndez,
+# vetëm sa e rëndë e quan atë që gjeti. Fshirja e tyre kundrejt MCC-së do të jepte
+# një vijë të sheshtë; e vetmja pyetje që u përket është a e afron zhvendosja e
+# tyre ashpërsinë tonë me atë të rishikuesve. VD-06 e premtoi këtë matje.
+SEVERITY_SWEPT = ("severity_major", "severity_critical")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -110,9 +121,33 @@ def main(argv: list[str] | None = None) -> int:
                 flush=True,
             )
 
+    severity: dict[str, dict[str, list[dict[str, object]]]] = {}
+    for smell in SWEPT:
+        severity[smell] = {}
+        for name in SEVERITY_SWEPT:
+            published = float(getattr(DEFAULT, name))
+            points = []
+            for factor in FACTORS:
+                value = published * factor
+                thresholds = replace(DEFAULT, **{name: value})
+                agreement = severity_agreement(
+                    replay(args.dataset, samples, thresholds),
+                    smell,
+                    PRIMARY_VARIANT,
+                    Aggregation.MEAN,
+                )
+                points.append({"factor": factor, "value": round(value, 4), **agreement.to_dict()})
+            severity[smell][name] = points
+            spread = [p["kappa_quadratic"] for p in points if p["kappa_quadratic"] is not None]
+            print(
+                f"{smell:<13}{name:<28} kappa brez {min(spread):.3f}-{max(spread):.3f}",
+                flush=True,
+            )
+
     args.out.mkdir(parents=True, exist_ok=True)
     payload = {
         "per_smell": results,
+        "severity": severity,
         "factors": list(FACTORS),
         "aggregation": Aggregation.MEAN.value,
         "variant": PRIMARY_VARIANT,

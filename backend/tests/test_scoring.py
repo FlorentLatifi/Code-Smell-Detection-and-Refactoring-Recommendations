@@ -9,10 +9,12 @@ changed, not that it was ever right.
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 import pytest
 
 from javasmell.detectors.base import Condition, Smell
+from javasmell.detectors.thresholds import DEFAULT
 from javasmell.evaluation.mlcq import Aggregation, Review, Sample
 from javasmell.evaluation.scoring import (
     PRIMARY_VARIANT,
@@ -25,6 +27,8 @@ from javasmell.evaluation.scoring import (
     encode_verdict,
     recall_by_severity,
     score,
+    severity_agreement,
+    weighted_kappa,
 )
 
 
@@ -267,3 +271,130 @@ def test_an_unrecognised_verdict_stops_the_run():
     """
     with pytest.raises(ValueError, match="not a detector verdict"):
         decode_verdict("yes")
+
+
+def test_weighted_kappa_matches_a_matrix_worked_out_by_hand() -> None:
+    """Four ratings on the three-level scale, kappa derived on paper.
+
+    Pairs (reviewers, ours): (minor, minor), (minor, major), (major, major),
+    (critical, critical).
+
+    Counts, rows = reviewers, columns = ours:
+
+        minor    [1, 1, 0]
+        major    [0, 1, 0]
+        critical [0, 0, 1]
+
+    Row marginals 0.50 / 0.25 / 0.25, column marginals 0.25 / 0.50 / 0.25.
+    Quadratic weights w(i,j) = (i-j)^2 / 4, so w = 0, 0.25 or 1.
+
+    Observed disagreement = (0.25 * 1) / 4 = 0.0625.
+    Expected disagreement, summing w(i,j) * row_i * col_j over the six cells
+    with non-zero weight:
+        0.25*0.50*0.50 + 1*0.50*0.25 + 0.25*0.25*0.25
+      + 0.25*0.25*0.25 + 1*0.25*0.25 + 0.25*0.25*0.50
+      = 0.0625 + 0.125 + 0.015625 + 0.015625 + 0.0625 + 0.03125 = 0.3125.
+
+    kappa = 1 - 0.0625 / 0.3125 = 0.8.
+    """
+    pairs = [
+        ("minor", "minor"),
+        ("minor", "major"),
+        ("major", "major"),
+        ("critical", "critical"),
+    ]
+    assert weighted_kappa(pairs) == pytest.approx(0.8)
+
+
+def test_a_two_step_miss_costs_more_than_two_one_step_misses() -> None:
+    """The reason for quadratic weights, stated as a test.
+
+    Plain kappa cannot tell these apart; here calling one minor case critical
+    must score worse than calling two minor cases major.
+    """
+    far = weighted_kappa([("minor", "critical"), ("major", "major"), ("critical", "critical")])
+    near = weighted_kappa([("minor", "major"), ("major", "major"), ("critical", "critical")])
+    assert far is not None and near is not None
+    assert far < near
+
+
+def test_kappa_is_undefined_when_every_rating_lands_in_one_cell() -> None:
+    """No variation means no expected disagreement, and 1 - 0/0 is not zero."""
+    assert weighted_kappa([("major", "major"), ("major", "major")]) is None
+
+
+def test_severity_is_compared_only_where_both_sides_see_a_smell() -> None:
+    """Three of five pairs are comparable.
+
+    Counted: the two where the detector fired and the reviewers called it a
+    smell. Dropped: the sample the detector missed (no severity of ours to
+    compare), the one the reviewers labelled `none` (a false positive, which is
+    a recall question and not a severity one), and the one of another smell.
+    """
+    predictions = [
+        Prediction(
+            make_sample("1", severities=("major",)),
+            {PRIMARY_VARIANT: True},
+            {PRIMARY_VARIANT: "major"},
+        ),
+        Prediction(
+            make_sample("2", severities=("minor",)),
+            {PRIMARY_VARIANT: True},
+            {PRIMARY_VARIANT: "critical"},
+        ),
+        Prediction(
+            make_sample("3", severities=("major",)),
+            {PRIMARY_VARIANT: False},
+            {PRIMARY_VARIANT: None},
+        ),
+        Prediction(
+            make_sample("4", severities=("none",)),
+            {PRIMARY_VARIANT: True},
+            {PRIMARY_VARIANT: "minor"},
+        ),
+        Prediction(
+            make_sample("5", smell="data class", severities=("major",)),
+            {PRIMARY_VARIANT: True},
+            {PRIMARY_VARIANT: "minor"},
+        ),
+    ]
+    agreement = severity_agreement(predictions, "blob", PRIMARY_VARIANT)
+
+    assert agreement.n == 2
+    assert agreement.exact == pytest.approx(0.5)  # one of the two matches exactly
+    assert agreement.within_one == pytest.approx(0.5)  # minor vs critical is two steps
+    assert agreement.matrix["major"]["major"] == 1
+    assert agreement.matrix["minor"]["critical"] == 1
+
+
+def test_severity_agreement_reports_a_gap_when_nothing_is_comparable() -> None:
+    missed = Prediction(
+        make_sample("1", severities=("major",)),
+        {PRIMARY_VARIANT: False},
+        {PRIMARY_VARIANT: None},
+    )
+    agreement = severity_agreement([missed], "blob", PRIMARY_VARIANT)
+    assert agreement.n == 0
+    assert (agreement.exact, agreement.within_one, agreement.kappa) == (None, None, None)
+
+
+def test_the_severity_cutoffs_can_be_moved() -> None:
+    """VD-06 promised these would be swept, which needs them to be parameters.
+
+    A condition measured at 3x the threshold scores 3.0, which is critical at the
+    published cutoffs (>= 2.5) and merely major once the cutoff moves past it.
+    """
+    smell = Smell(
+        smell_type="GodClass",
+        scope="class",
+        class_name="Ledger",
+        package="com.acme",
+        file_path="Ledger.java",
+        start_line=1,
+        end_line=9,
+        conditions=[Condition("WMC", ">=", 10.0, 30.0)],
+        refactorings=[],
+    )
+    assert smell.score == pytest.approx(3.0)
+    assert smell.severity.value == "critical"
+    assert smell.severity_at(replace(DEFAULT, severity_critical=4.0)).value == "major"

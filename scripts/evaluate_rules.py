@@ -48,6 +48,7 @@ from javasmell.evaluation.scoring import (  # noqa: E402
     encode_verdict,
     recall_by_severity,
     score,
+    severity_agreement,
 )
 from javasmell.evaluation.walk import AnalysedRepository, iter_repositories  # noqa: E402
 
@@ -111,11 +112,16 @@ def score_repository(analysed: AnalysedRepository, thresholds: Thresholds) -> li
         entity_line = (
             resolved.cls.start_line if resolved.method is None else resolved.method.start_line
         )
+        variants = VARIANTS[resolved.sample.smell]
         fired = {
             name: smells.fired(resolved.cls.file_path, entity_line, detectors)
-            for name, detectors in VARIANTS[resolved.sample.smell].items()
+            for name, detectors in variants.items()
         }
-        predictions.append(Prediction(sample=resolved.sample, fired=fired))
+        severity = {
+            name: smells.severity(resolved.cls.file_path, entity_line, detectors, thresholds)
+            for name, detectors in variants.items()
+        }
+        predictions.append(Prediction(sample=resolved.sample, fired=fired, severity=severity))
     return predictions
 
 
@@ -172,6 +178,13 @@ def summarise(predictions: list[Prediction]) -> dict[str, dict[str, dict[str, ob
                     for how in Aggregation
                 },
                 "recall_by_severity": recall_by_severity(predictions, smell, variant),
+                # VD-06 e zgjodhi shkallën e MLCQ-së që ashpërsia jonë të krahasohej
+                # me atë të rishikuesve pa hap përkthimi. Krahasimi vetë mungonte:
+                # `recall_by_severity` mat sa kapim te secila ashpërsi e tyre, jo a
+                # biem dakord me të kur kapim diçka.
+                "severity_agreement": severity_agreement(
+                    predictions, smell, variant, Aggregation.MEAN
+                ).to_dict(),
             }
         per_smell[smell] = entry
     return per_smell
@@ -219,6 +232,21 @@ def report(summary: dict[str, dict[str, dict[str, object]]]) -> None:
             print(
                 f"{smell:<14}{variant:<12}{cell(m['precision']):>8}{cell(m['recall']):>8}"
                 f"{cell(m['f1']):>8}{cell(m['mcc']):>8}{m['support_positive']:>7}"
+            )
+
+    # Ashpërsia raportohet veç sepse mat një pyetje tjetër nga tabela e parë: jo
+    # a e gjetëm erën, por a pajtohemi me rishikuesit se sa e rëndë është.
+    header = f"{'smell':<14}{'variant':<12}{'exact':>8}{'+-1':>8}{'kappa':>8}{'n':>7}"
+    print("\n" + header)
+    print("-" * len(header))
+    for smell, variants in summary.items():
+        for variant, data in variants.items():
+            agreement = data["severity_agreement"]
+            assert isinstance(agreement, dict)
+            print(
+                f"{smell:<14}{variant:<12}{cell(agreement['exact']):>8}"
+                f"{cell(agreement['within_one']):>8}{cell(agreement['kappa_quadratic']):>8}"
+                f"{agreement['n']:>7}"
             )
 
 

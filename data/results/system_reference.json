@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "e47911ef9f9722e23cc7fd6ca9f75d3027272c3b",
+    "commit": "7e7595c0ee5fe0b4f4f4bd8d00b11eb8c911a969",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -135,7 +135,7 @@
     {
       "advisory_reason": "changing a signature needs every call site",
       "automated": null,
-      "formula": "",
+      "formula": "NP > FEW",
       "refactorings": [
         "IntroduceParameterObject",
         "PreserveWholeObject"
@@ -168,6 +168,7 @@
     "data_class_wmc_low": 31,
     "data_class_woc": 0.3333333333333333,
     "deep_nesting": 3,
+    "excess_cap": 5.0,
     "feature_envy_atfd": 5,
     "feature_envy_fdp": 5,
     "feature_envy_laa": 0.3333333333333333,
@@ -177,6 +178,8 @@
     "large_class_loc": 200,
     "large_class_nom": 20,
     "long_method_loc": 30,
-    "long_parameter_list_np": 5
+    "long_parameter_list_np": 5,
+    "severity_critical": 2.5,
+    "severity_major": 1.5
   }
 }

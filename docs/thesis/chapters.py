@@ -762,6 +762,98 @@ def chapter_5() -> list:
                 "kjo mbetet punë e ardhshme.",
             ],
         ),
+        *_severity_section(),
+    ]
+
+
+SEVERITY_SCALE = ("minor", "major", "critical")
+
+
+def _severity_section() -> list:
+    """Sa pajtohet ashpërsia që deriva sistemi me atë që caktuan rishikuesit.
+
+    Shkalla e MLCQ-së u zgjodh pikërisht që ky krahasim të bëhej pa hap përkthimi.
+    Numrat këtu e bëjnë atë krahasim për herë të parë, dhe dalin negativë.
+    """
+    rules = _load("rules_evaluation.json")
+    sweep = _load("threshold_sweep.json")
+    rank = {name: i for i, name in enumerate(SEVERITY_SCALE)}
+
+    rows = []
+    stricter = lenient = compared = 0
+    for smell in sorted(rules["per_smell"]):
+        for variant, data in rules["per_smell"][smell].items():
+            agreement = data["severity_agreement"]
+            if not agreement["n"]:
+                continue
+            label = SMELL_SQ[smell] + ("" if variant == "strategy" else " (+ madhësi)")
+            rows.append([
+                label,
+                f"{agreement['exact']:.3f}",
+                f"{agreement['within_one']:.3f}",
+                "—" if agreement["kappa_quadratic"] is None else f"{agreement['kappa_quadratic']:.3f}",
+                str(agreement["n"]),
+            ])
+            if variant != "strategy":
+                continue
+            for actual, predictions in agreement["matrix"].items():
+                for predicted, count in predictions.items():
+                    compared += count
+                    if rank[predicted] > rank[actual]:
+                        stricter += count
+                    elif rank[predicted] < rank[actual]:
+                        lenient += count
+
+    # Sa larg e çon fshirja e pragjeve të ashpërsisë kappa-n, mbi të gjitha erërat.
+    best = 0.0
+    for per_threshold in sweep.get("severity", {}).values():
+        for points in per_threshold.values():
+            for point in points:
+                if point["kappa_quadratic"] is not None:
+                    best = max(best, point["kappa_quadratic"])
+
+    return [
+        (
+            "5.6",
+            "Ashpërsia e derivuar kundrejt gjykimit të rishikuesve",
+            [
+                "Ashpërsia e sistemit nuk caktohet, por derivohet: ajo është mesatarja e "
+                "tepricës mbi pragje, e shprehur në të njëjtën shkallë që përdorën "
+                "rishikuesit e MLCQ-së. Ajo zgjedhje u bë që të dyja anët të krahasoheshin "
+                "pa hap përkthimi. Ky nënkapitull e bën atë krahasim.",
+                "Matja kufizohet te mostrat ku të dyja anët shohin një erë. Askund tjetër "
+                "shkallët nuk janë të krahasueshme: një detektor që nuk ndez nuk cakton "
+                "ashpërsi, dhe një pozitiv i rremë është pyetje precizioni, jo ashpërsie.",
+                ("table", "Pajtimi i ashpërsisë me rishikuesit",
+                 ["Erë", "Përputhje e saktë", "Brenda një niveli", "κ me peshë", "n"], rows),
+                f"Rezultati është negativ dhe duhet lexuar si i tillë. Për tri nga katër "
+                f"erërat kappa qëndron pranë zeros, pra pajtimi nuk është më i mirë se "
+                f"rastësia. Vetëm Long Method arrin një pajtim të matshëm, dhe edhe atje "
+                f"vetëm i moderuar.",
+                f"Matrica tregon edhe drejtimin e gabimit, i cili është i njëanshëm: nga "
+                f"{compared} krahasime, {stricter} e vlerësojnë rastin më rëndë se "
+                f"rishikuesit dhe vetëm {lenient} më lehtë "
+                f"({stricter / compared:.0%} kundrejt {lenient / compared:.0%}). Sistemi "
+                f"nuk gabon rastësisht: ai e mbivlerëson ashpërsinë.",
+                "Shpjegimi qëndron te vetë ndërtimi i pikës. Për Long Method teprica matet "
+                "mbi një metrikë të vetme, ku dyfishi i pragut ka kuptim të drejtpërdrejtë. "
+                "Për strategjitë me disa kushte, pika është mesatarja e tepricave mbi "
+                "metrika heterogjene — një raport WMC-je, një raport kohezioni, një raport "
+                "qasjesh të huaja — dhe asgjë nuk garanton se mesatarja e tyre përkon me "
+                "atë që një zhvillues e quan problem të rëndë.",
+                f"Nuk është çështje kalibrimi. Fshirja e të dy pragjeve të ashpërsisë mbi "
+                f"të njëjtin brez si pragjet e detektimit e ngre kappa-n më së shumti deri "
+                f"në {best:.3f}, pra edhe konfigurimi më i favorshëm i provuar mbetet "
+                f"pajtim i dobët. Zhvendosja e kufijve e ndryshon shpërndarjen e "
+                f"etiketave, jo aftësinë e pikës për t'i renditur rastet.",
+                "Pasoja për punimin është e drejtpërdrejtë: ashpërsia e derivuar është e "
+                "përdorshme si renditje brenda vetë mjetit — cili rast të shihet i pari — "
+                "por nuk pretendon të riprodhojë gjykimin e një zhvilluesi për rëndësinë. "
+                "Ky pretendim hiqet, dhe ndarja e recall-it sipas ashpërsisë së "
+                "rishikuesve mbetet mënyra e vetme e vlefshme në të cilën ashpërsia hyn "
+                "në rezultatet e këtij punimi.",
+            ],
+        ),
     ]
 
 

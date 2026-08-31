@@ -24,7 +24,7 @@ from javasmell.detectors.rules import detect_entity
 from javasmell.detectors.thresholds import Thresholds
 from javasmell.evaluation.dataset import entities
 from javasmell.evaluation.mlcq import Sample
-from javasmell.evaluation.scoring import VARIANTS, Prediction
+from javasmell.evaluation.scoring import VARIANTS, Prediction, worst_severity
 
 
 def replay(
@@ -43,13 +43,19 @@ def replay(
             if sample is None:
                 continue
             cls, method = entities(record)
-            found = {s.smell_type for s in detect_entity(cls, method, thresholds)}
+            smells = detect_entity(cls, method, thresholds)
+            found = {s.smell_type for s in smells}
+            variants = VARIANTS[sample.smell]
             predictions.append(
                 Prediction(
                     sample=sample,
                     fired={
                         name: not found.isdisjoint(detectors)
-                        for name, detectors in VARIANTS[sample.smell].items()
+                        for name, detectors in variants.items()
+                    },
+                    severity={
+                        name: worst_severity(smells, detectors, thresholds)
+                        for name, detectors in variants.items()
                     },
                 )
             )
