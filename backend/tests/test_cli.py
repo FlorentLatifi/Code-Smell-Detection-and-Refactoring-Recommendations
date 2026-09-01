@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import csv
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from javasmell.cli import main
@@ -154,3 +156,53 @@ def test_smell_filter_is_repeatable(capsys):
     selected = json.loads(capsys.readouterr().out)
 
     assert {s["smell_type"] for s in selected} == {"DataClass", "FeatureEnvy"}
+
+
+def test_patch_format_emits_a_diff_and_keeps_the_account_off_it(capsys):
+    """stdout has to be nothing but the patch, or the pipe into git breaks."""
+    assert main([FIXTURES, "--format", "patch"]) == 0
+
+    captured = capsys.readouterr()
+    assert captured.out.startswith("--- a/")
+    assert "+++ b/" in captured.out
+    # How many changes, what was declined: useful, and not part of a diff.
+    assert "change(s)" in captured.err
+    assert "change(s)" not in captured.out
+
+
+def test_the_patch_written_to_a_file_keeps_its_line_endings(tmp_path):
+    """A translated newline is enough to make git refuse the whole patch.
+
+    The fixtures use LF. On Windows a text stream would write CRLF, every
+    context line would then fail to match, and `git apply` would report trailing
+    whitespace on each one -- so the bytes are what this asserts, not the text.
+    """
+    out = tmp_path / "fixes.patch"
+    assert main([FIXTURES, "--format", "patch", "--out", str(out)]) == 0
+
+    raw = out.read_bytes()
+    assert raw.count(b"\r\n") == 0
+    assert raw.count(b"\n") > 0
+
+
+def test_a_redirected_patch_keeps_its_line_endings(tmp_path):
+    """Run for real, because the defect only exists in a stream pytest replaces.
+
+    `capsys` hands the CLI an object that is not a text stream, so the newline
+    translation this guards against cannot happen under it -- and a test using
+    capsys would pass against the bug. Only an actual process writing to an
+    actual redirected file exercises it.
+    """
+    out = tmp_path / "redirected.patch"
+    with out.open("wb") as handle:
+        finished = subprocess.run(
+            [sys.executable, "-m", "javasmell", FIXTURES, "--format", "patch"],
+            cwd=Path(__file__).parent.parent,
+            stdout=handle,
+            stderr=subprocess.PIPE,
+        )
+
+    assert finished.returncode == 0, finished.stderr.decode()
+    raw = out.read_bytes()
+    assert raw.count(b"\n") > 0
+    assert raw.count(b"\r\n") == 0

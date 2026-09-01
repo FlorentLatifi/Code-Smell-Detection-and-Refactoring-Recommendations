@@ -6,6 +6,11 @@ scriptable entry point that does not depend on the API being up.
 
     python -m javasmell path/to/java/project
     python -m javasmell path/to/project --format csv --out smells.csv
+    python -m javasmell path/to/project --format patch --out fixes.patch
+
+The patch format is the only one that proposes a change rather than describing
+one. It still writes nothing: the diff goes to stdout or to ``--out``, and
+applying it stays the author's decision (ENGINEERING.md §4).
 
 Exit codes are part of that scriptable contract, so each failure gets its own:
 0 on success, 1 when the path was analysable but held no Java class, 2 when the
@@ -17,7 +22,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -29,6 +36,7 @@ from javasmell.detectors.rules import detect_all
 from javasmell.detectors.thresholds import DEFAULT
 from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel
+from javasmell.refactor.patch import plan, unified
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
 
@@ -40,9 +48,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("path", help="Directory or .java file to analyse")
     parser.add_argument(
         "--format",
-        choices=("text", "json", "csv", "metrics"),
+        choices=("text", "json", "csv", "metrics", "patch"),
         default="text",
-        help="text: readable report; metrics: the per-class feature matrix",
+        help="text: readable report; metrics: the per-class feature matrix; "
+        "patch: a unified diff of what the engine would rewrite",
     )
     parser.add_argument("--out", help="Write to this file instead of stdout")
     parser.add_argument(
@@ -115,8 +124,50 @@ def _emit(fmt: str, project: ProjectModel, smells: list[Smell], stream: TextIO) 
         _write_smell_csv(stream, smells)
     elif fmt == "metrics":
         _write_metric_csv(stream, project)
+    elif fmt == "patch":
+        _write_patch(stream, project, smells)
     else:
         _write_report(stream, project, smells)
+
+
+def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
+    """The diff to stdout, the account of it to stderr.
+
+    Kept apart on purpose: the patch has to be pipeable into ``git apply``, so
+    anything that is not diff goes to the other stream. A reader still gets told
+    what was deferred and what was dropped, because a patch that silently omits
+    half of what was found is one nobody can trust.
+    """
+    # A diff has to reach git byte for byte. On Windows a text stream rewrites
+    # every "\n" as "\r\n", and against an LF source file every context line then
+    # fails to match -- `git apply` reports trailing whitespace and refuses the
+    # patch. `--out` already opens with newline="", but stdout does not, and
+    # redirecting stdout is the usage this format documents.
+    if isinstance(stream, io.TextIOWrapper):
+        stream.reconfigure(newline="")
+
+    javac = shutil.which("javac")
+    result = plan(Path(project.root), smells, javac)
+    stream.write(unified(result.patches))
+
+    print(
+        f"{result.changes} change(s) in {len(result.patches)} file(s)"
+        + ("" if javac else "; javac not found, so verification stopped at syntax"),
+        file=sys.stderr,
+    )
+    if result.declined:
+        print(
+            f"{result.declined} site(s) had no safe rewrite and were declined.",
+            file=sys.stderr,
+        )
+    if result.deferred:
+        print(
+            f"{result.deferred} deferred: their edits overlap a change already in the patch. "
+            "Apply this patch and run again to be offered them.",
+            file=sys.stderr,
+        )
+    for drop in result.dropped:
+        print(f"dropped {drop.relative}: {drop.verdict.value} -- {drop.detail}", file=sys.stderr)
 
 
 def _write_report(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
