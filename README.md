@@ -60,6 +60,28 @@ docs/thesis/   Punimi sipas shabllonit të UBT-së
 **Klasë:** CLOC, NOM, NOF, WMC, AMW, MAXCC, TCC, LCOM, LCOM\*, ATFD, CBO, RFC, WOC, NOPA, NOAM, DIT, NOC
 **Metodë:** MLOC, CC, NP, MAXNESTING, ATFD, FDP, LAA, NOAV, CINT
 
+## Përdorimi nga rreshti i komandës
+
+```bash
+python -m javasmell path/to/project
+```
+
+Rishkrimet që motori i konsideron të sigurta dalin si patch i unifikuar. Asgjë
+nuk shkruhet mbi kodin: diff-i lexohet i pari, dhe aplikimi mbetet vendim i
+autorit (VD-49).
+
+```bash
+python -m javasmell path/to/project --format patch --out fixes.patch
+```
+
+```bash
+git apply --check fixes.patch
+```
+
+Numri i ndryshimeve, i vendeve të refuzuara dhe i atyre të shtyra shkon te
+stderr, që stdout të mbetet vetëm patch dhe të mund të tubohet drejt e te
+`git apply`. Një vend i shtyrë ofrohet sërish në ekzekutimin pasardhës.
+
 ## Zhvillimi
 
 Përgatitja e mjedisit:

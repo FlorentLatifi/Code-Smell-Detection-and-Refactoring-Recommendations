@@ -58,6 +58,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-46 | Ekzekutimi i gjatë rifillon saktësisht, jo afërsisht | 2026-08-31 | aktiv |
 | VD-47 | Kalibrimi bëhet, por jashtë fold-it dhe pa adoptim | 2026-08-31 | aktiv |
 | VD-48 | Qasja B shërbehet mbi projekt, kurrë mbi një skedar të vetëm | 2026-09-01 | aktiv |
+| VD-49 | Rishkrimi dorëzohet si patch, kurrë si shkrim në vend | 2026-09-01 | aktiv |
 
 ---
 
@@ -1470,3 +1471,53 @@ i ndërfaqes nuk citohet kurrë si dëshmi saktësie. Entitetet të cilave u mun
 matje nuk gjykohen mbi një zero të shpikur, por numërohen si të pagjykuara.
 `data/models/` nuk komitohet, ndaj një checkout i pastër merr `available: false`
 me udhëzimin për të trajnuar — humbet mendimi i dytë, kurrë i pari.
+
+---
+
+### VD-49: Rishkrimi dorëzohet si patch, kurrë si shkrim në vend
+
+**Konteksti.** Motori dinte të rishkruante dhe nuk dinte të dorëzonte. API-ja
+tregonte një parapamje për një vend të vetëm, CLI-ja raportonte gjetje, dhe hapi
+i fundit — ta marrë autori ndryshimin — mungonte. ENGINEERING.md §4 e ka të
+shkruar çfarë lejohet: **dalje te një kopje ose te një patch**, kurrë shkrim në
+vend pa flamur të posaçëm dhe pemë të pastër.
+
+**Vendimi.** `--format patch` te CLI-ja nxjerr një diff të unifikuar. Nuk shkruan
+asgjë: diff-i shkon te stdout ose te `--out`, dhe aplikimi mbetet vendim i
+autorit, i marrë pasi e lexon. Forma është ajo që `git apply` pranon, pra edhe
+`git apply --check` mund ta provojë pa prekur asgjë.
+
+**Disa gjetje, një skedar.** Një metodë e vetme mbart njëkohësisht Long Method,
+Deep Nesting dhe Long Parameter List, dhe secili transformim i llogarit editimet
+mbi bajtat **origjinalë**. `edits.check` tashmë e refuzon një çift që mbivendoset
+në vend që t'i shpikë një radhë, ndaj patch-i i pranon transformimet një nga një
+dhe mban vetëm ato që nuk përplasen me çka është pranuar. Të tjerat **shtyhen**,
+nuk humbasin: raportohen, dhe një ekzekutim i dytë mbi pemën e patch-uar i ofron
+sërish nga një skedar që ka lëvizur.
+
+Kjo u verifikua mbi fikstuarat: Extract Method dhe Introduce Parameter Object
+zbatohen të dyja mbi `priceOrder` pa u përplasur, Guard Clauses mbi një metodë
+tjetër, dhe të tria bashkë kompilojnë pas `git apply`.
+
+**Tri mënyra për të mos ndryshuar diçka, të mbajtura ndaras**, sepse do të thonë
+gjëra të ndryshme: motori **e refuzoi** (s'ka rishkrim të sigurt për atë vend),
+**e shtyu** (ka rishkrim, por përplaset me një të pranuar tashmë), ose **u hoq**
+(rishkrimi nuk kaloi verifikimin). Asnjë vend nuk zhduket pa u numëruar.
+
+**Asgjë nuk hyn e paverifikuar.** Çdo skedar i rishkruar kalon nga `verify.check`:
+sintaksa gjithmonë, `javac` kur gjendet. Një skedar që nuk kalon hiqet tërësisht
+nga patch-i, jo ofrohet me paralajmërim — sepse një patch është gjë që njerëzit e
+aplikojnë.
+
+**Alternativat.** Shkrim në vend me flamur: e lejon §4, por kërkon pemë të pastër
+dhe e bën gabimin të pakthyeshëm pa git; patch-i e jep të njëjtën gjë me një hap
+shtesë që është vetë rishikimi. Dalje te një dosje kopje: e humb rishikueshmërinë,
+sepse lexuesi duhet të krahasojë vetë dy pemë.
+
+**Pasojat.** Radha e pranimit është sipas pozitës në skedar — arbitrare, por e
+fiksuar, që dy ekzekutime mbi të njëjtën hyrje të japin të njëjtin patch; një
+patch që ndryshon nga ekzekutimi në ekzekutim nuk rishikohet dot. Një defekt u
+gjet duke e provuar kundrejt vetë git-it e jo kundrejt lexuesit tonë: mbi Windows
+një rrjedhë teksti e përkthen çdo `\n` në `\r\n`, dhe kundrejt një skedari me LF
+çdo rresht konteksti dështon; `--out` e kishte të mbyllur këtë, stdout jo, pikërisht
+te përdorimi që dokumentohet.
