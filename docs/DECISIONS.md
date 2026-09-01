@@ -15,7 +15,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-03 | Pa LLM në rrugën e produktit | 2026-08-25 | aktiv |
 | VD-04 | Tri qasje të pavarura dhe të krahasueshme | 2026-08-25 | aktiv |
 | VD-05 | MLCQ si e vërtetë bazë | 2026-08-25 | aktiv |
-| VD-06 | Ashpërsia derivohet nga teprica, në shkallën e MLCQ | 2026-08-25 | aktiv |
+| VD-06 | Ashpërsia derivohet nga teprica, në shkallën e MLCQ | 2026-08-25 | i rishikuar nga VD-41 |
 | VD-07 | Pragjet të centralizuara dhe të citueshme | 2026-08-25 | aktiv |
 | VD-08 | Detektorët kthejnë kushtet, jo boolean | 2026-08-25 | aktiv |
 | VD-09 | Large Class e ndarë nga God Class | 2026-08-25 | aktiv |
@@ -29,6 +29,35 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-17 | Shtigjet e gjata të Windows-it zgjidhen në kod, jo në sistem | 2026-08-25 | aktiv |
 | VD-18 | Fushat që Java i deklaron në heshtje maten si fusha | 2026-08-25 | aktiv |
 | VD-19 | Përputhja MLCQ↔entitet ankorohet te rreshtat, verifikohet me emrin | 2026-08-25 | aktiv |
+| VD-20 | Depot e zhvendosura ndiqen, por vetëm kur commit-i zgjidhet | 2026-08-26 | aktiv |
+| VD-21 | LOC-u është numërim logjik, me një implementim të vetëm | 2026-08-26 | aktiv |
+| VD-22 | `blob` krahasohet me God Class, madhësia raportohet si variant | 2026-08-26 | aktiv |
+| VD-23 | Tabela e veçorive ndërtohet një herë dhe komitohet | 2026-08-27 | aktiv |
+| VD-24 | Katër modele, pa rrjeta neurale, me baseline të detyrueshëm | 2026-08-27 | aktiv |
+| VD-25 | A dhe B piketohen nga i njëjti kod | 2026-08-27 | aktiv |
+| VD-26 | Kalimi i shtrenjtë shkruan atomikisht dhe rifillon | 2026-08-27 | aktiv |
+| VD-27 | Motori i refaktorimit riparson skedarin dhe punon mbi bajta | 2026-08-27 | aktiv |
+| VD-28 | Refuzimi është enum i numërueshëm, jo tekst i lirë | 2026-08-27 | aktiv |
+| VD-29 | Kushti negohet duke u mbështjellë, jo duke u përmbysur | 2026-08-27 | aktiv |
+| VD-30 | Radha e transformimeve përcaktohet nga lokaliteti, jo nga vështirësia | 2026-08-27 | aktiv |
+| VD-31 | Nyjet e tree-sitter krahasohen me `==`, kurrë me `is` | 2026-08-27 | aktiv |
+| VD-32 | Verifikimi bëhet në tri nivele, jo në një | 2026-08-27 | aktiv |
+| VD-33 | Çdo kalim i gjatë shkruan me rrjedhë dhe rifillon | 2026-08-28 | aktiv |
+| VD-34 | Fshirja e pragjeve mat qëndrueshmërinë, nuk zgjedh pragje | 2026-08-29 | aktiv |
+| VD-35 | API-ja është pa gjendje, pa identifikues projekti | 2026-08-30 | aktiv |
+| VD-36 | Një refuzim i motorit kthehet si sukses, jo si gabim | 2026-08-30 | aktiv |
+| VD-37 | Koherenca e citimeve verifikohet nga një kontroll, jo nga leximi | 2026-08-31 | aktiv |
+| VD-38 | Shtojca nxirret nga kodi, nuk transkriptohet prej tij | 2026-08-31 | aktiv |
+| VD-39 | Figurat dhe tabelat numërohen gjatë ndërtimit, jo në tekst | 2026-08-31 | aktiv |
+| VD-40 | Paneli i rezultateve i lexon skedarët e komituar, jo API-në | 2026-08-31 | aktiv |
+| VD-41 | Ashpërsia e derivuar është renditje e brendshme, jo gjykim i riprodhuar | 2026-08-31 | aktiv |
+| VD-42 | Introduce Parameter Object aplikohet te metodat private, pa e prekur trupin | 2026-08-31 | aktiv |
+| VD-43 | Edhe abstrakti i merr shifrat nga rezultatet | 2026-08-31 | aktiv |
+| VD-44 | Matet edhe nëse rishkrimi e hoqi erën, jo vetëm nëse kompilon | 2026-08-31 | aktiv |
+| VD-45 | Rishkrimi matet me tri pyetje, jo me një | 2026-08-31 | aktiv |
+| VD-46 | Ekzekutimi i gjatë rifillon saktësisht, jo afërsisht | 2026-08-31 | aktiv |
+| VD-47 | Kalibrimi bëhet, por jashtë fold-it dhe pa adoptim | 2026-08-31 | aktiv |
+| VD-48 | Qasja B shërbehet mbi projekt, kurrë mbi një skedar të vetëm | 2026-09-01 | aktiv |
 
 ---
 
