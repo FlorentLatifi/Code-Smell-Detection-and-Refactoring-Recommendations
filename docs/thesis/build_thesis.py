@@ -171,11 +171,25 @@ def blank(doc: Document, count: int = 1) -> None:
 
 
 def body(doc: Document, text: str) -> None:
+    """One body paragraph, with **emphasis** rendered rather than printed.
+
+    The chapters were written with Markdown-style emphasis and it used to reach
+    the page as literal asterisks: four paragraphs of the built document carried
+    them, and nothing caught it, because the format check reads fonts and sizes
+    rather than punctuation. Splitting on the marker keeps the emphasis the
+    author meant and keeps the asterisks off the page; `check_format` fails the
+    build if any survive.
+    """
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     paragraph.paragraph_format.line_spacing = LINE_SPACING
     paragraph.paragraph_format.first_line_indent = Pt(18)
-    _set_font(paragraph.add_run(text))
+    # Odd pieces are plain, even pieces are emphasised: "a **b** c" splits into
+    # ["a ", "b", " c"]. An unmatched marker leaves one piece and stays literal,
+    # which the check then reports rather than hiding.
+    for index, piece in enumerate(text.split("**")):
+        if piece:
+            _set_font(paragraph.add_run(piece), bold=index % 2 == 1)
 
 
 def unnumbered_heading(doc: Document, text: str) -> None:

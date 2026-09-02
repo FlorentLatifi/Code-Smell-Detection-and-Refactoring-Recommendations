@@ -160,6 +160,28 @@ def _check_captions(doc: Document) -> list[str]:
     return problems
 
 
+def _check_markup(doc: Document) -> list[str]:
+    """No Markdown marker may survive into the page.
+
+    The chapters are written with ``**emphasis**`` and the builder turns it into
+    bold runs. When that failed, four paragraphs reached the document with the
+    asterisks visible and every other check still passed: fonts, sizes,
+    numbering and captions were all correct, and none of them reads punctuation.
+    This is the check that would have caught it.
+    """
+    problems = []
+    for paragraph in doc.paragraphs:
+        if "**" in paragraph.text:
+            start = max(0, paragraph.text.index("**") - 30)
+            problems.append(f"shenjë markdown e mbetur te «{paragraph.text[start:][:70]}»")
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                if "**" in cell.text:
+                    problems.append(f"shenjë markdown e mbetur te qeliza «{cell.text[:50]}»")
+    return problems
+
+
 def _check_numbering(doc: Document) -> list[str]:
     """Numrat e figurave dhe të tabelave ecin 1, 2, 3 sipas radhës së shfaqjes.
 
@@ -314,6 +336,7 @@ def report(path: Path) -> list[str]:
         _check_fonts,
         _check_body,
         _check_captions,
+        _check_markup,
         _check_numbering,
         _check_lists,
         _check_sections,
