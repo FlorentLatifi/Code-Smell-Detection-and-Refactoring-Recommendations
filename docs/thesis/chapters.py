@@ -923,6 +923,53 @@ RESOLUTION_SQ = {
 }
 
 
+def _crossing_share(intervals: dict) -> str:
+    """Sa e ruajnë shenjën rimostrimet, te era e vetme që e kalon zeron.
+
+    E nxjerrë e jo e shkruar: po të ndryshojë korpusi ose numri i rimostrimeve,
+    fjalia lëviz bashkë me tabelën mbi të cilën mbështetet.
+    """
+    crossing = [
+        band["intervals"]["difference_model_minus_rules_swept"]
+        for band in intervals["per_smell"].values()
+        if band["intervals"]["difference_model_minus_rules_swept"]["low"] <= 0
+    ]
+    return f"{min(c['share_positive'] for c in crossing):.1%}" if crossing else "—"
+
+
+def _swept_best() -> str:
+    """MCC-ja më e mirë që fshirja gjen për Long Method, nga vetë fshirja."""
+    sweep = _load_if_present("threshold_sweep.json")
+    if sweep is None:
+        return "—"
+    points = [
+        point
+        for variant in sweep["per_smell"]["long method"].values()
+        for point in variant
+        if point["mcc"] is not None
+    ]
+    return f"{max(p['mcc'] for p in points):.3f}" if points else "—"
+
+
+def _intersection_floor(ml: dict) -> str:
+    """Precizioni më i ulët i prerjes mbi erërat, pra dyshemeja e pretendimit."""
+    values = [
+        v["combined"]["intersection"]["precision"]
+        for v in ml["per_smell"].values()
+        if "combined" in v
+    ]
+    return f"{min(values):.2f}" if values else "—"
+
+
+def _intersection_best(ml: dict) -> str:
+    values = [
+        v["combined"]["intersection"]["precision"]
+        for v in ml["per_smell"].values()
+        if "combined" in v
+    ]
+    return f"{max(values):.3f}" if values else "—"
+
+
 def _confidence_section() -> list:
     """Intervalet e besimit dhe tavani i pajtimit njerëzor.
 
@@ -980,7 +1027,8 @@ def _confidence_section() -> list:
          ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
          swept_rows),
         "Për tri erërat e para përparësia mbetet. Për Long Method-in ajo zhduket: "
-        "intervali e përfshin zeron dhe shenja ruhet vetëm në 88.6% të rimostrimeve. "
+        f"intervali e përfshin zeron dhe shenja ruhet vetëm në {_crossing_share(intervals)} "
+        "të rimostrimeve. "
         "Pra pretendimi «modeli e tejkalon rregullin» qëndron përgjithësisht, por jo "
         "për erën ku rregulli tashmë punonte më mirë, sapo atij rregulli i lejohet të "
         "kalibrohet. Ky është kufizimi i vetëm i rëndësishëm i krahasimit A↔B.",
@@ -1124,8 +1172,9 @@ def _calibration_paragraphs() -> list:
         "zgjedhin një prag krejt tjetër nga tre të tjerët. Kur zgjedhja varet kaq "
         "shumë nga cila pjesë e korpusit shihet, «pragu optimal» është veti e "
         "bashkësisë dhe jo e gjuhës.",
-        "Vlen të vihet re edhe dallimi me fshirjen. Ajo sugjeronte 0.690 për Long "
-        "Method; kalibrimi i ndershëm jep 0.666. Diferenca është pikërisht ajo që "
+        f"Vlen të vihet re edhe dallimi me fshirjen. Ajo sugjeronte {_swept_best()} për Long "
+        f"Method; kalibrimi i ndershëm jep {data['per_smell']['long method']['calibrated']['mcc']:.3f}. "
+        "Diferenca është pikërisht ajo që "
         "fitohet kur zgjedhjes i lejohet ta shohë bashkësinë mbi të cilën do të "
         "raportohet, dhe arsyeja pse shifra e fshirjes nuk u adoptua.",
     ]
@@ -1170,8 +1219,9 @@ def _combined_paragraphs(ml: dict) -> list:
         "sepse bashkë me trembëdhjetë rastet që rregulli i kap vijnë edhe pozitivët e "
         "tij të rremë.",
         "Prerja tregon të kundërtën dhe është më e dobishmja e të dyjave. Kur të dyja "
-        "qasjet pajtohen, precizioni ngrihet mbi 0.80 te çdo erë dhe deri në 0.905 te "
-        "Long Method — dukshëm mbi secilën qasje veç. Recall-i bie ndjeshëm, ndaj "
+        f"qasjet pajtohen, precizioni ngrihet te ose mbi {_intersection_floor(ml)} te çdo erë "
+        f"dhe deri në {_intersection_best(ml)} te Long Method — dukshëm mbi secilën qasje "
+        "veç. Recall-i bie ndjeshëm, ndaj "
         "MCC-ja del e ulët, por për një përdorues që kërkon pak alarme të rreme "
         "pajtimi i dy qasjeve të pavarura është sinjali më i fortë që sistemi prodhon.",
     ]
@@ -1382,7 +1432,7 @@ def _project_context_paragraphs() -> list:
 def _refusal_severity_paragraphs() -> list:
     """Ku refuzon motori: te rastet e buta apo te ato të rënda?
 
-    Norma e vetme 20.4% nuk e dallon një mjet që rishkruan gjithçka lehtë nga një
+    Norma e vetme e transformimit nuk e dallon një mjet që rishkruan gjithçka lehtë nga një
     që tërhiqet pikërisht aty ku kodi është më i keq. Kjo është pyetja tjetër, dhe
     përgjigjja e saj nuk lexohet dot nga tabela e mësipërme.
     """
@@ -1391,6 +1441,7 @@ def _refusal_severity_paragraphs() -> list:
         return []
 
     per_smell = data["per_smell"]
+    overall = data["overall"]
     rows = []
     for smell in sorted(per_smell):
         for level in ("critical", "major", "minor"):
@@ -1415,7 +1466,8 @@ def _refusal_severity_paragraphs() -> list:
     critical_lowest = sum(1 for name in lowest.values() if name == "critical")
 
     return [
-        "Norma e përgjithshme nuk thotë cilat vende u refuzuan. Një mjet që rishkruan "
+        f"Norma e përgjithshme prej {overall['application_rate']:.1%} nuk thotë cilat "
+        "vende u refuzuan. Një mjet që rishkruan "
         "rastet e buta dhe tërhiqet nga ato të rënda vlen shumë më pak se sa sugjeron "
         "ajo shifër, ndaj çdo vend u nda edhe sipas ashpërsisë që i cakton vetë "
         "sistemi.",
