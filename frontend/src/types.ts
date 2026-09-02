@@ -99,6 +99,46 @@ export interface Preview {
   after?: string;
 }
 
+/** One rewrite that made it into the patch. */
+export interface AppliedChange {
+  file_path: string;
+  refactoring: string;
+  smell_type: string;
+  class_name: string;
+  method: string | null;
+  start_line: number;
+}
+
+/** A file the engine rewrote but would not offer, because it did not verify. */
+export interface DroppedFile {
+  file_path: string;
+  verdict: string;
+  detail: string;
+}
+
+/**
+ * Every rewrite the engine can make under a path, as one unified diff.
+ *
+ * The counts are not decoration: a patch is short for four different reasons,
+ * and only naming them separately lets a reader tell "nothing to fix" from
+ * "ran out of time".
+ */
+export interface PatchResult {
+  diff: string;
+  files: number;
+  changes: number;
+  /** Sites with no safe rewrite. */
+  declined: number;
+  /** Rewrites that collide with one already in the patch; offered again next run. */
+  deferred: number;
+  /** Files the time budget never reached. */
+  unreached: number;
+  /** False when javac was absent, so the rewrite was only checked for syntax. */
+  verified_with_javac: boolean;
+  dropped: DroppedFile[];
+  applied: AppliedChange[];
+}
+
 export interface ApiError {
   error: { code: string; message: string };
 }

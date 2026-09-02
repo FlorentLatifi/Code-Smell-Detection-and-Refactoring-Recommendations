@@ -1,4 +1,4 @@
-import type { Analysis, ApiError, Preview, Smell, Source } from "./types";
+import type { Analysis, ApiError, PatchResult, Preview, Smell, Source } from "./types";
 
 // The server answers a failure with { error: { code, message } } and never with
 // a stack trace, so the message is safe to put in front of a user unchanged.
@@ -46,6 +46,11 @@ export function preview(path: string, smell: Smell): Promise<Preview> {
     start_line: smell.start_line,
     smell_type: smell.smell_type,
   });
+}
+
+/** Every safe rewrite under the analysed path, as one diff. Writes nothing. */
+export function patch(path: string): Promise<PatchResult> {
+  return post<PatchResult>("/refactor/patch", { path });
 }
 
 export function source(path: string, smell: Smell): Promise<Source> {

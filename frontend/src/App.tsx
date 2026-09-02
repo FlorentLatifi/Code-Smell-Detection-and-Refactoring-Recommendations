@@ -3,6 +3,7 @@ import { analyse } from "./api";
 import { Detail } from "./Detail";
 import { SMELL_SQ } from "./evaluation";
 import { agreementOn, indexModel } from "./model";
+import { Patch } from "./Patch";
 import { Results } from "./Results";
 import type { Analysis, ModelBlock, Severity, Smell } from "./types";
 
@@ -208,6 +209,8 @@ export function App() {
           {screen.analysis.smells.length === 0 ? (
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
           ) : (
+            <>
+            <Patch path={path} />
             <div className="layout">
               <section className="list" ref={listRef} onKeyDown={navigate}>
                 <Filters
@@ -280,6 +283,7 @@ export function App() {
                 )}
               </section>
             </div>
+            </>
           )}
         </>
       )}

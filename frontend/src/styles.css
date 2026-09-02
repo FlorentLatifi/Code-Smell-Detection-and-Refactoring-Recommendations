@@ -1012,3 +1012,96 @@ select {
 .contributions .decisive .excess span {
   opacity: 0.85;
 }
+
+/* ---------- the patch ---------- */
+/* The engine's last step, and the only place the tool offers to change the
+   author's code. It reads as an offer rather than an action: the diff is above
+   the buttons that take it away, and nothing here writes anything. */
+.patch {
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.patch-bar {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.patch-bar .caption {
+  flex: 1 1 320px;
+  margin: 0;
+}
+
+.patch-summary {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.patch-summary p {
+  margin: 0;
+}
+
+.patch-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.patch .quiet {
+  color: var(--ink-faint);
+}
+
+.dropped {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+/* The diff exactly as the server wrote it. Coloured by the leading character
+   and nothing else: what is shown must be what the copy button hands over. */
+.unified {
+  max-height: 460px;
+  margin-top: 12px;
+  overflow: auto;
+  padding: 10px 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  font: 0.8rem/1.5 var(--mono);
+}
+
+.unified .line {
+  display: block;
+  padding: 0 12px;
+  white-space: pre;
+}
+
+.unified .file {
+  color: var(--ink-faint);
+}
+
+.unified .hunk {
+  margin: 6px 0 2px;
+  color: var(--accent);
+}
+
+.unified .added {
+  background: var(--added-wash);
+  color: var(--added);
+}
+
+.unified .removed {
+  background: var(--removed-wash);
+  color: var(--removed);
+}
+
+.unified .gap {
+  color: var(--ink-faint);
+  font-style: italic;
+}
