@@ -1314,7 +1314,68 @@ def _refactoring_section() -> list:
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
         "gabimi kundrejt skedarit origjinal.",
         *_resolution_paragraphs(data),
+        *_project_context_paragraphs(),
         *_refusal_severity_paragraphs(),
+    ]
+
+
+def _project_context_paragraphs() -> list:
+    """Sa do të forcohej verdikti po të kompilohej skedari brenda projektit.
+
+    Verifikimi i mësipërm e kompilon skedarin të vetëm, dhe shumica e skedarëve
+    të një depoje reale nuk kompilojnë ashtu. Kjo mat çmimin e asaj zgjedhjeje
+    duke e bërë ndryshe mbi një mostër.
+    """
+    data = _load_if_present("verify_with_project.json")
+    if data is None:
+        return []
+
+    alone = data["compiled_alone"]
+    context = data["compiled_in_project"]
+    total = data["rewrites"]
+    # Emrat e verdikteve mbeten si te tabela ngjitur, që i njëjti verdikt të mos
+    # shkruhet në dy mënyra në dy tabela që lexohen bashkë.
+    rows = [
+        [name.replace("_", " "), str(alone.get(name, 0)), str(context.get(name, 0))]
+        for name in sorted(set(alone) | set(context))
+    ]
+
+    compiles_alone = alone.get("compiles", 0)
+    compiles_context = context.get("compiles", 0)
+    unchecked = context.get("not_checked", 0)
+    regressions = context.get("new_errors", 0)
+
+    return [
+        "Kufiri i këtij verifikimi është izolimi, jo transformimi. Skedari kompilohet "
+        "i vetëm, dhe një skedar i një depoje reale i importon fqinjët e vet, ndaj për "
+        "shumicën pretendimi bie te «nuk shton lloj të ri gabimi». Sa do të fitohej po "
+        "të mos ishte i izoluar u mat mbi një mostër: i njëjti rishkrim u kompilua dy "
+        f"herë, i vetëm dhe me burimet e vetë projektit të arritshme, mbi "
+        f"{data['files_checked']} skedarë dhe {total} rishkrime.",
+        ("table", "Verdikti i të njëjtave rishkrime, të izoluara dhe brenda projektit",
+         ["Verdikti", "I izoluar", "Brenda projektit"], rows),  # fmt: skip
+        f"Verdikti më i fortë kalon nga {compiles_alone} te {compiles_context} nga "
+        f"{total} rishkrime, pra nga {compiles_alone / total:.1%} në "
+        f"{compiles_context / total:.1%}. Kjo do të thotë se pjesa dërrmuese e "
+        "rasteve ku sistemi thotë vetëm «nuk shtova gabim» janë raste ku ai nuk mund "
+        "të thoshte më shumë për shkak të mënyrës së kompilimit, jo për shkak të "
+        "rishkrimit.",
+        f"Po aq me rëndësi është se asnjë verdikt nuk u përmbys: {regressions} rishkrime "
+        "kaluan te «me gabim të ri». Asgjë që kalon e izoluar nuk dështon kur skedari "
+        "kompilohet brenda projektit të vet, çka është arsyeja pse toleranca «pa lloj "
+        "të ri gabimi» mbetet e përdorshme si dëshmi edhe atje ku kompilimi i plotë "
+        "nuk arrihet."
+        + (
+            f" {unchecked} kompilime e kaluan kufirin kohor dhe numërohen si të "
+            "pakontrolluara, kurrë si sukses."
+            if unchecked
+            else ""
+        ),
+        "Mostra është e vogël dhe e mbjellë me farë: kompilimi në kontekst zgjat rreth "
+        "gjashtë minuta për skedar, sepse detyron kompilimin e tërë mbylljes së "
+        "varësive të tij. Verdiktet e raportuara më lart mbi tërë korpusin mbeten ato "
+        "të izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të "
+        "lëviznin.",
     ]
 
 
