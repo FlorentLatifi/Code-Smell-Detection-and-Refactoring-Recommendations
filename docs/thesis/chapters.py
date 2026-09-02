@@ -1305,6 +1305,152 @@ def _refactoring_section() -> list:
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
         "gabimi kundrejt skedarit origjinal.",
         *_resolution_paragraphs(data),
+        *_refusal_severity_paragraphs(),
+    ]
+
+
+def _refusal_severity_paragraphs() -> list:
+    """Ku refuzon motori: te rastet e buta apo te ato të rënda?
+
+    Norma e vetme 20.4% nuk e dallon një mjet që rishkruan gjithçka lehtë nga një
+    që tërhiqet pikërisht aty ku kodi është më i keq. Kjo është pyetja tjetër, dhe
+    përgjigjja e saj nuk lexohet dot nga tabela e mësipërme.
+    """
+    data = _load_if_present("refusals_by_severity.json")
+    if data is None:
+        return []
+
+    per_smell = data["per_smell"]
+    rows = []
+    for smell in sorted(per_smell):
+        for level in ("critical", "major", "minor"):
+            cell = per_smell[smell].get(level)
+            if cell is None or cell["application_rate"] is None:
+                continue
+            judged = cell["applied"] + cell["refused"]
+            rows.append(
+                [smell, level, str(judged), str(cell["applied"]),
+                 f"{cell['application_rate']:.1%}"]
+            )  # fmt: skip
+
+    lowest = {}
+    for smell, levels in per_smell.items():
+        rates = {
+            name: c["application_rate"]
+            for name, c in levels.items()
+            if c["application_rate"] is not None
+        }
+        if rates:
+            lowest[smell] = min(rates, key=lambda name: rates[name])
+    critical_lowest = sum(1 for name in lowest.values() if name == "critical")
+
+    return [
+        "Norma e përgjithshme nuk thotë cilat vende u refuzuan. Një mjet që rishkruan "
+        "rastet e buta dhe tërhiqet nga ato të rënda vlen shumë më pak se sa sugjeron "
+        "ajo shifër, ndaj çdo vend u nda edhe sipas ashpërsisë që i cakton vetë "
+        "sistemi.",
+        ("table", "Norma e transformimit sipas erës dhe ashpërsisë",
+         ["Erë", "Ashpërsia", "Vende të gjykuara", "Të transformuara", "Norma"], rows),
+        f"Pritja se «sa më e rëndë, aq më pak rishkruhet» nuk qëndron si rregull. "
+        f"Niveli kritik ka normën më të ulët te {critical_lowest} nga {len(lowest)} "
+        "erërat, por jo te të gjitha, dhe lidhja nuk është as monotone: te Brain Method "
+        "dhe Long Method niveli i mesëm rri mbi atë të butin.",
+        *_pooling_warning(data),
+        *_refusal_reason_shift(data),
+        "Ashpërsia e përdorur këtu është ajo e derivuar nga teprica mbi pragje, të "
+        "cilën seksioni i mëparshëm e tregoi se nuk e riprodhon gjykimin e rishikuesve. "
+        "Prandaj ky rezultat flet për motorin kundrejt renditjes së vetë mjetit, dhe jo "
+        "kundrejt asaj se sa i rëndë është kodi në gjykimin e një zhvilluesi.",
+    ]
+
+
+def _pooling_warning(data: dict) -> list:
+    """Pse shifra e bashkuar mbi erërat nuk citohet.
+
+    E bashkuar, ajo e përmbys shenjën e vetë matjes. Kjo nuk është hollësi
+    statistikore por kusht leximi: pa të, e njëjta tabelë mbështet përfundimin e
+    kundërt.
+    """
+    per_smell = data["per_smell"]
+    pooled: dict[str, list[int]] = {"critical": [0, 0], "tjera": [0, 0]}
+    for levels in per_smell.values():
+        for name, cell in levels.items():
+            bucket = pooled["critical" if name == "critical" else "tjera"]
+            bucket[0] += cell["applied"]
+            bucket[1] += cell["applied"] + cell["refused"]
+
+    crit = pooled["critical"]
+    rest = pooled["tjera"]
+    if not crit[1] or not rest[1]:
+        return []
+
+    shares = []
+    for smell, levels in sorted(per_smell.items()):
+        judged = sum(c["applied"] + c["refused"] for c in levels.values())
+        applied = sum(c["applied"] for c in levels.values())
+        critical = levels.get("critical")
+        share = ((critical["applied"] + critical["refused"]) / judged) if critical else 0.0
+        shares.append((smell, applied / judged if judged else 0.0, share))
+
+    # Zgjedhur sipas peshës së vendeve kritike e jo sipas normës, sepse mekanizmi
+    # është pikërisht ai: era që sjell më shumë vende kritike në bashkim është
+    # edhe ajo që rishkruhet lehtë, ndaj bashkimi e ngre nivelin kritik.
+    high = max(shares, key=lambda row: row[2])
+    low = min(shares, key=lambda row: row[2])
+
+    return [
+        f"Kjo tabelë nuk bashkohet mbi erërat. E bashkuar, niveli kritik del me "
+        f"{crit[0] / crit[1]:.1%} kundrejt {rest[0] / rest[1]:.1%} të niveleve të tjera "
+        "— pra e kundërta e asaj që shohin erërat veç e veç. Është paradoks i "
+        "Simpson-it, dhe shkaku është përbërja: "
+        f"{high[0]} ka normë {high[1]:.1%} dhe {high[2]:.1%} të vendeve të veta kritike, "
+        f"ndërsa {low[0]} ka {low[1]:.1%} dhe vetëm {low[2]:.1%}. Bashkimi i jep nivelit "
+        "kritik peshë nga erërat që rishkruhen lehtë dhe e përmbys shenjën, ndaj shifra "
+        "e bashkuar nuk raportohet askund në këtë punim.",
+    ]
+
+
+def _refusal_reason_shift(data: dict) -> list:
+    """Ajo që lëviz me ashpërsinë nuk është sa refuzon, por pse.
+
+    Kjo është gjetja e vërtetë e seksionit: monotone, e madhe, dhe me shpjegim
+    mekanik në vetë përkufizimin e transformimit.
+    """
+    per_smell = data["per_smell"]
+    totals: dict[str, dict[str, int]] = {}
+    for levels in per_smell.values():
+        for name, cell in levels.items():
+            bucket = totals.setdefault(name, {})
+            for reason, count in cell["refused_by_reason"].items():
+                bucket[reason] = bucket.get(reason, 0) + count
+
+    order = [name for name in ("minor", "major", "critical") if totals.get(name)]
+    if len(order) < 2:
+        return []
+
+    reasons = sorted(
+        {reason for bucket in totals.values() for reason in bucket},
+        key=lambda reason: -sum(bucket.get(reason, 0) for bucket in totals.values()),
+    )
+    rows = []
+    for reason in reasons:
+        cells = []
+        for name in order:
+            bucket = totals[name]
+            total = sum(bucket.values())
+            cells.append(f"{bucket.get(reason, 0) / total:.0%}" if total else "-")
+        rows.append([reason.replace("_", " "), *cells])
+
+    return [
+        "Ajo që lëviz me ashpërsinë nuk është sa shpesh refuzon motori, por përse.",
+        ("table", "Përbërja e arsyeve të refuzimit brenda çdo niveli",
+         ["Arsyeja", *order], rows),
+        "Sa më e rëndë metoda, aq më rrallë refuzimi vjen nga forma e kodit dhe aq më "
+        "shpesh nga rrjedha e kontrollit. Shpjegimi është mekanik: një metodë e gjatë "
+        "ose e ndërfutur thellë mban më shumë return, break e continue brenda bllokut, "
+        "dhe Extract Method nuk e ngre dot një bllok nga i cili rrjedha del. Motori "
+        "nuk refuzon më shpesh te rastet e rënda; refuzon për një arsye tjetër, dhe "
+        "ajo arsye është ajo që zgjidhet më vështirë.",
     ]
 
 
