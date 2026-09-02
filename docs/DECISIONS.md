@@ -65,6 +65,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-53 | Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi | 2026-09-02 | aktiv |
 | VD-54 | Frontend-i testohet te logjika e vet, jo te DOM-i | 2026-09-02 | aktiv |
 | VD-55 | Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë | 2026-09-02 | aktiv |
+| VD-56 | Shifrat e Kapitullit 5 nxirren, nuk shtypen | 2026-09-02 | aktiv |
 
 ---
 
@@ -1780,3 +1781,42 @@ i funksionit që të mos riprovohet.
 rishkrime nga 3633 (4.2%). Verdiktet e Kapitullit 5 mbeten ato të matura mbi tërë
 korpusin, të izoluara; kjo nuk i zëvendëson, por tregon sa do të fitohej po të
 kompilohej gjithçka në kontekst — me çmimin gjashtë minuta për skedar.
+
+---
+
+### VD-56: Shifrat e Kapitullit 5 nxirren, nuk shtypen
+
+**Konteksti.** VD-43 e vendosi këtë për abstraktin: shifrat aty llogariten nga të
+njëjtët skedarë që ushqejnë Kapitullin 5, sepse faqja e parë është pikërisht ajo
+ku një numër i rigjeneruar dhe një i shkruar mund të ndahen heshtazi. I njëjti
+rrezik ekzistonte edhe brenda kapitujve, ku disa fjali i mbanin shifrat të
+shtypura.
+
+Rreziku nuk është teorik. Vlerësimi i refaktorimeve u riekzekutua në këtë punë
+dhe numri i vendeve të transformuara lëvizi nga 3478 në 3633; çdo fjali që e
+mbante atë raport të shtypur do të kishte mbetur e vjetruar pa asnjë shenjë.
+
+**Auditimi.** Të gjithë literalët numerikë në vargjet e thjeshta të
+`chapters.py` u nxorën dhe u ndanë nga numrat e nënkapitujve dhe vitet e
+citimeve. Mbetën pesë shifra rezultatesh, dhe të pesta u verifikuan kundrejt
+rezultateve të komituara: 20.4% kundrejt `applied/detected`, 0.690 kundrejt
+maksimumit të fshirjes, 0.666 kundrejt MCC-së së kalibruar, 88.6% kundrejt
+`share_positive`, dhe 0.80/0.905 kundrejt precizionit të prerjes. **Asnjëra nuk
+kishte devijuar.**
+
+**Vendimi.** Të pesta u zëvendësuan me nxjerrje nga vetë të dhënat, sepse një
+shifër që sot është e saktë dhe nesër nuk provohet dot është defekt i shtyrë, jo
+i shmangur. Teksti i ndërtuar u krahasua fjalë për fjalë me atë të mëparshmin: i
+njëjti kuptim, të njëjtat shifra.
+
+**Një saktësim gjatë punës.** Fjalia thoshte se precizioni i prerjes ngrihet
+«mbi 0.80 te çdo erë». Dyshemeja e matur është saktësisht 0.80 te Data Class,
+jo mbi të; fjalia tani thotë «te ose mbi».
+
+**Çka mbetet e shtypur, dhe pse.** Një kufi i rrumbullakosur te Kapitulli 6 —
+«rishikuesit pajtohen me MCC nën 0.24» — mbetet i shkruar. Ai qëndron te
+`CHAPTER_6`, një listë e nivelit të modulit pa qasje te rezultatet, ndryshe nga
+katër vendet e tjera që rrinë brenda funksionesh që i kanë ngarkuar tashmë.
+Nxjerrja e tij do të kërkonte ristrukturim të kapitullit për një kufi që u
+verifikua i saktë (maksimumi i matur 0.2382). Regjistrohet si i verifikuar dhe i
+pa-nxjerrë, jo si i harruar.
