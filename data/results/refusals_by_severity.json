@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "4d34b71e194fd3a6844b708e9598a24def2c7c3f",
+    "commit": "fb8c2d41672de611165e2b18623ba44f0e04d8ca",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -186,5 +186,6 @@
         "unlocatable": 0
       }
     }
-  }
+  },
+  "seconds": 144.3
 }

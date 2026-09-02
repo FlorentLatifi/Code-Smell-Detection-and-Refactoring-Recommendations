@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "22a5f5c7877c636fd2ea29f436de4b91b3214e29",
+    "commit": "fb8c2d41672de611165e2b18623ba44f0e04d8ca",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -143,5 +143,6 @@
       "files": 287
     }
   },
+  "seconds": 91.2,
   "seed": 20260901
 }

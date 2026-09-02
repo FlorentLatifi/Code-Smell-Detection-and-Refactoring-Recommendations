@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -194,6 +195,7 @@ def main() -> int:
         print(f"corpus not found: {args.corpus}", file=sys.stderr)
         return 1
 
+    started = time.perf_counter()
     files = sampled_files(args.mlcq, Corpus(args.corpus))
     if args.limit:
         files = files[: args.limit]
@@ -226,6 +228,9 @@ def main() -> int:
         "overall": overall.to_json(),
         "files": len(files),
         "matches_full_evaluation": check,
+        # Recorded so the reproduction table in the thesis quotes a measured
+        # figure rather than a remembered one.
+        "seconds": round(time.perf_counter() - started, 1),
         "environment": environment(),
     }
     path = args.out / RESULT_NAME

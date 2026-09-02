@@ -37,6 +37,7 @@ import argparse
 import json
 import random
 import sys
+import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -228,6 +229,7 @@ def main() -> int:
         return 1
     chosen = random.Random(args.seed).sample(available, min(args.projects, len(available)))
 
+    started = time.perf_counter()
     models = load_models(args.models, args.dataset)
     totals = {model.smell: Comparison() for model in models}
     per_project: dict[str, dict[str, int]] = {}
@@ -253,6 +255,8 @@ def main() -> int:
         "per_smell": {smell: counts.to_json() for smell, counts in totals.items()},
         "projects": per_project,
         "seed": args.seed,
+        # Recorded so the reproduction table quotes a measured figure.
+        "seconds": round(time.perf_counter() - started, 1),
         "environment": environment(),
     }
     path = args.out / RESULT_NAME
