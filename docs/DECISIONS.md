@@ -66,6 +66,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-54 | Frontend-i testohet te logjika e vet, jo te DOM-i | 2026-09-02 | aktiv |
 | VD-55 | Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë | 2026-09-02 | aktiv |
 | VD-56 | Shifrat e Kapitullit 5 nxirren, nuk shtypen | 2026-09-02 | aktiv |
+| VD-57 | Theksimi renderohet, dhe një kontroll e siguron | 2026-09-02 | aktiv |
 
 ---
 
@@ -1820,3 +1821,31 @@ katër vendet e tjera që rrinë brenda funksionesh që i kanë ngarkuar tashmë
 Nxjerrja e tij do të kërkonte ristrukturim të kapitullit për një kufi që u
 verifikua i saktë (maksimumi i matur 0.2382). Regjistrohet si i verifikuar dhe i
 pa-nxjerrë, jo si i harruar.
+
+---
+
+### VD-57: Theksimi renderohet, dhe një kontroll e siguron
+
+**Konteksti.** Kapitujt shkruhen me theksim në stilin Markdown, `**kështu**`. Por
+`body()` e shtonte tekstin si një run të vetëm, pa e interpretuar shenjën. Pasoja:
+**katër paragrafë të dokumentit të ndërtuar mbanin yje të dukshëm** në faqe.
+
+Asnjë kontroll nuk e kapte. `check_format.py` verifikon fontin, madhësitë,
+numërimin e seksioneve dhe koherencën e listave të figurave e tabelave — asnjëri
+prej tyre nuk lexon pikësim. Dokumenti nuk është hapur kurrë në Word, ndaj as syri
+nuk e kishte kapur. Tre nga të katërt ishin aty para kësaj pune.
+
+**Vendimi.** `body()` e ndan tekstin te shenja dhe i emeton copat tek-çift si
+runs normale dhe të theksuara. Theksimi që autori shkroi tani shfaqet si
+theksim, dhe yjet nuk shkojnë në faqe.
+
+**Rregullimi vjen me kontrollin e vet.** `_check_markup` e rrëzon ndërtimin nëse
+ndonjë shenjë Markdown mbijeton te paragrafët ose te qelizat e tabelave. U provua
+duke e rikthyer defektin qëllimisht: kontrolli i raportoi të katërta, dhe kaloi
+sërish kur rregullimi u kthye. Një shenjë e pambyllur lë një copë të vetme dhe
+mbetet literale — pra edhe ajo raportohet, në vend që të fshihet.
+
+**Pse ka rëndësi përtej katër paragrafëve.** Ky është defekti i parë i gjetur që
+prek pamjen e dokumentit të dorëzuar dhe që kalonte tërë portën e cilësisë. Ai
+tregon se kontrolli i formatit mbulonte tipografinë e jo përmbajtjen e dukshme,
+dhe se mungesa e një hapjeje të vetme në Word e la të pavërejtur për javë.
