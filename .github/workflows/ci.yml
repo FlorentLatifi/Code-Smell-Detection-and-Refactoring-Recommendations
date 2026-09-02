@@ -126,6 +126,12 @@ jobs:
       - name: Type check
         working-directory: frontend
         run: npm run typecheck
+      # The join between the two approaches and the diff the interface computes
+      # itself are the only real logic on this side, and both have already had a
+      # defect that types could not catch.
+      - name: Tests
+        working-directory: frontend
+        run: npm test
       - name: Build
         working-directory: frontend
         run: npm run build
