@@ -28,7 +28,21 @@ Skriptet varen nga njëri-tjetri në këtë radhë. Koha është për një lapto
 | 2 | `report_matching.py` | `mlcq_matching.json` | ~2 min |
 | 3 | `build_dataset.py` | `mlcq_dataset.csv` | **~95 min** |
 | 4 | `evaluate_rules.py` | `rules_evaluation.json` | ~95 min |
-| 5 | `train_models.py` | `ml_evaluation.json` | sekonda |
+| 5 | `train_models.py` | `ml_evaluation.json`, `data/models/` | sekonda |
+| 6 | `sweep_thresholds.py` | `threshold_sweep.json` | sekonda |
+| 7 | `evaluate_refactorings.py` | `refactoring_evaluation.json`, `refactoring_sites.csv` | **orë** |
+| 8 | `calibrate_thresholds.py` | `threshold_calibration.json` | ~1 min |
+| 9 | `reviewer_agreement.py` | `reviewer_agreement.json` | sekonda |
+| 10 | `bootstrap_intervals.py` | `bootstrap_intervals.json` | nën një minutë |
+| 11 | `refusals_by_severity.py` | `refusals_by_severity.json` | minuta |
+| 12 | `verify_with_project.py` | `verify_with_project.json` | ~18 min (mostër) |
+| 13 | `model_without_project.py` | `model_without_project.json` | minuta |
+| 14 | `export_system_reference.py` | `system_reference.json` | sekonda |
+| 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
+
+Hapat 1, 3, 4 dhe 7 janë të vetmit që kushtojnë vërtet. Hapat 11–13 nuk kërkojnë
+`javac` përveç hapit 12, i cili e ekzekuton atë një herë për çdo rishkrim dhe
+prandaj punon mbi një mostër me farë të fiksuar.
 
 Hapi 3 është kalimi i vetëm i shtrenjtë që duhet paguar (VD-23): ai mat çdo entitet
 të mostruar një herë, dhe gjithçka pas tij lexon rreshtat e tij. Meqë `mlcq_dataset.csv`

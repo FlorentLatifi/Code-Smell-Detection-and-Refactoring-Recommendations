@@ -1661,18 +1661,24 @@ REFUSAL_SQ = {
 }
 
 # Radha e ekzekutimit të eksperimenteve, me kohët e matura në një laptop pa GPU.
+# Aty ku skripti e regjistron vetë kohëzgjatjen te dalja, shifra këtu është ajo e
+# matur dhe jo e kujtuar.
 REPRODUCTION = [
     ("1", "fetch_corpus.py", "korpusi, jashtë git-it", "orë, një herë"),
-    ("2", "build_dataset.py", "tabela e veçorive, e komituar", "~95 min"),
-    ("3", "evaluate_rules.py --from-dataset", "numrat e Qasjes A", "sekonda"),
-    ("4", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
-    ("5", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
-    ("6", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
-    ("7", "calibrate_thresholds.py", "pragjet e kalibruara jashtë fold-it", "~1 min"),
-    ("8", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
-    ("9", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
-    ("10", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
-    ("11", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
+    ("2", "report_matching.py", "mbulimi i përputhjes MLCQ↔entitet", "~2 min"),
+    ("3", "build_dataset.py", "tabela e veçorive, e komituar", "~95 min"),
+    ("4", "evaluate_rules.py --from-dataset", "numrat e Qasjes A", "sekonda"),
+    ("5", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
+    ("6", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
+    ("7", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
+    ("8", "calibrate_thresholds.py", "pragjet e kalibruara jashtë fold-it", "~1 min"),
+    ("9", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
+    ("10", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
+    ("11", "refusals_by_severity.py", "refuzimet sipas erës dhe ashpërsisë", "~2 min"),
+    ("12", "verify_with_project.py", "verdikti brenda kontekstit të projektit", "~18 min"),
+    ("13", "model_without_project.py", "Qasja B pa kontekstin e projektit", "~2 min"),
+    ("14", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
+    ("15", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"
