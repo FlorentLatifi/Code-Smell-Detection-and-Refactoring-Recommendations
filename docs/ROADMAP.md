@@ -19,7 +19,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Testet | ✅ 396 kalojnë | vlera të derivuara me dorë; 1 anashkalohet pa symlink |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
-| Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); dorëzim si patch (VD-49) |
+| Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55) |
 | API | ✅ e plotë | `/analyze` (me `include_model`), `/metrics`, `/source`, `/refactor/preview`, `/refactor/patch` (VD-50), `/health`; pa gjendje (VD-35) |
 | Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48); 19 teste me vitest (VD-54) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |

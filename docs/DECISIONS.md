@@ -64,6 +64,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-52 | Prejardhja nuk redaktohet, por rifitohet | 2026-09-02 | aktiv |
 | VD-53 | Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi | 2026-09-02 | aktiv |
 | VD-54 | Frontend-i testohet te logjika e vet, jo te DOM-i | 2026-09-02 | aktiv |
+| VD-55 | Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë | 2026-09-02 | aktiv |
 
 ---
 
@@ -1733,3 +1734,49 @@ i deklaruar `^6.0.0` është optimist. Ngritja te `vite` 6.4.3, brenda të njëj
 major, e zgjidhi si papajtueshmërinë ashtu edhe këshillimin e mëparshëm te
 `esbuild` që `npm audit` e raportonte si të lartë: nga dy dobësi te **zero**.
 Ai këshillim ishte aty para këtij ndryshimi; u verifikua te lockfile-i i komituar.
+
+---
+
+### VD-55: Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë
+
+**Konteksti.** VD-53 e regjistroi si të pabërë të vetmin forcim të mundshëm pa
+rimarrje korpusi: kompilimi i skedarit të rishkruar me burimet e vetë projektit
+te sourcepath-i. Motori sot e kompilon skedarin **të vetëm**, dhe një skedar i një
+depoje reale nuk kompilon i vetëm — 92% e korpusit dështon te `javac` para se të
+preket gjë. Prandaj pretendimi bie nga «kompilon» te «nuk shton lloj të ri
+gabimi». Kjo hyrje e mat sa fitohet duke e ngritur atë.
+
+**Vendimi.** `scripts/verify_with_project.py` e kompilon çdo rishkrim dy herë —
+të vetëm dhe në kontekst — mbi një mostër skedarësh me farë të fiksuar. Të dy
+verdiktet dalin nga i njëjti kalim, ndaj përshkruajnë të njëjtin rishkrim nga
+ndërtimi; bashkimi me `refactoring_sites.csv` u shmang sepse ai skedar nuk mban
+numër rreshti dhe çelësi do të ishte i paqartë te metodat e mbingarkuara.
+
+**Rezultati.** Mbi 30 skedarë dhe 152 rishkrime: verdikti më i fortë, «kompilon»,
+kalon nga **1 (0.7%) te 20 (13.2%)**. Nëntëmbëdhjetë rishkrime ngrihen nga «pa
+gabim të ri» te «kompilon». Pesë kompilime e kaluan pragun 180-sekondësh dhe
+numërohen si **të pakontrolluara**, kurrë si sukses.
+
+**Asnjë regres.** Zero rishkrime kaluan te «me gabim të ri». Asgjë që kalon e
+izoluar nuk dështon kur skedari kompilohet brenda projektit të vet — pikërisht
+gjetja që i jep peshë tolerancës «pa lloj të ri gabimi» të Kapitullit 5.
+
+**Rrënjët e burimit, jo rrënja e projektit.** Një paketë hapet nga rrënja e vet e
+burimit, dhe një projekt Maven ose Gradle mban disa — një këtu ka 463. Drejtimi i
+`javac`-ut te rrënja e depos nuk zgjidh **asgjë**, dhe kjo ishte gjëja e parë që
+kjo matje e bëri gabim: numrat e gabimeve dilnin identikë me ata të izoluar dhe
+dukej sikur ideja nuk funksiononte. Rrënjët nxirren nga vetë deklarimet `package`.
+
+**Një shkurtore u provua dhe u refuzua.** Ndërtimi i mbylljes një herë për skedar
+dhe kompilimi i çdo rishkrimi kundrejt atyre klasave është dyfish më i shpejtë.
+E krahasuar me metodën e ngadaltë mbi skedarët tashmë të matur, ajo ktheu **katër
+verdikte «kompilon» në «pa gabim të ri»**: një projekt pa jar-et e veta nuk
+kompilon pastër, ndaj mbylljes i mungojnë klasat që `javac` s'i nxori dot, dhe
+kompilimi kundrejt saj raporton «cannot find symbol» për klasa që nga burimi
+zgjidhen. Nuk ishte e njëjta matje, vetëm më e shpejtë. Arsyeja rri te docstring-u
+i funksionit që të mos riprovohet.
+
+**Kufiri i mostrës.** 30 skedarë nga 845 me të paktën një rishkrim (3.5%), 152
+rishkrime nga 3633 (4.2%). Verdiktet e Kapitullit 5 mbeten ato të matura mbi tërë
+korpusin, të izoluara; kjo nuk i zëvendëson, por tregon sa do të fitohej po të
+kompilohej gjithçka në kontekst — me çmimin gjashtë minuta për skedar.
