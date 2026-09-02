@@ -62,6 +62,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-50 | Patch-i shërbehet edhe nga API-ja, nën një buxhet kohe | 2026-09-01 | aktiv |
 | VD-51 | Refuzimet lexohen brenda erës, kurrë të bashkuara | 2026-09-02 | aktiv |
 | VD-52 | Prejardhja nuk redaktohet, por rifitohet | 2026-09-02 | aktiv |
+| VD-53 | Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi | 2026-09-02 | aktiv |
 
 ---
 
@@ -1651,3 +1652,44 @@ paneli i ndërfaqes dhe kapitujt e rezultateve **riprodhohet** — pikërisht ku
 prejardhjes. Të dymbëdhjetë skedarët e rezultateve tani mbajnë commit-e të
 arritshme nga `main`. Nëse historia rishkruhet sërish, ky kontroll duhet përsëritur:
 arritshmëria, jo ekzistenca, është ajo që mat një checkout i pastër.
+
+---
+
+### VD-53: Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi
+
+**Konteksti.** ENGINEERING.md §4 e kërkon verifikimin e sjelljes: për depot që
+sjellin suitë testesh, ekzekutoje para dhe pas. Deri sot ai rresht pretendonte se
+«kompilon dhe testet e vetë projektit kalojnë» ishte pretendimi që bën ky punim.
+Nuk ishte. Punimi pretendon «kompilon, ose nuk shton lloj të ri gabimi», dhe e
+deklaron këtë si kufizim te Kapitujt 4 e 6.
+
+**Çka e bën të pamundur.** Jo mungesë kohe, por vetë ndërtimi i korpusit.
+`fetch_corpus.py` shpaketon **vetëm** anëtarët që mbarojnë me `.java`:
+
+    if not member.isfile() or not member.name.endswith(".java"):
+        continue
+
+Kjo është garanci e kodit, jo mostër. Pasoja: korpusi nuk ka `pom.xml`, nuk ka
+`build.gradle`, nuk ka jar-e varësish dhe nuk ka burime testesh jo-Java. Skedarët
+e testeve ekzistojnë — janë `.java` — por pa përkufizim ndërtimi dhe pa varësi
+nuk kompilohen dot, e as nuk ekzekutohen. U verifikua edhe empirikisht mbi katër
+depo të marra nga skajet e listës: 100% e skedarëve janë `.java`.
+
+**Vendimi.** Verifikimi i sjelljes nuk bëhet, dhe §4 korrigjohet që të mos
+pretendojë se bëhet. Alternativa do të ishte të shkruhej një pretendim që
+artefakti nuk e mbështet, çka është pikërisht ajo që §3.4 e ndalon.
+
+**Sa do të kushtonte vërtet.** Rimarrje e plotë e 512 arkivave, jo vetëm e
+`.java`-ve; zgjidhje varësish nga rrjeti për secilën; një JDK i përshtatshëm për
+epokën e secilës; dhe ndërtimi të kalojë. Depot janë të ngulitura te commit-e
+historike, ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara dhe
+artefakte të palëvizshme. Numri i depove ku kjo do të funksiononte nuk dihet, dhe
+matja e tij kërkon vetë rimarrjen — pra edhe vlerësimi i kostos është i shtrenjtë.
+
+**Rruga e mundshme, e regjistruar si e tillë.** Një forcim i pretendimit **pa**
+rimarrje ekziston: kompilimi i skedarit të rishkruar bashkë me tërë `.java`-t e
+projektit të vet, në vend të izoluar. Varësitë e jashtme mbeten të munguara, ndaj
+toleranca «pa lloj të ri gabimi» mbetet, por bazëza e gabimeve bie shumë dhe
+simbolet brenda projektit zgjidhen. Motori i transformon vetëm gjërat lokale me
+qëllim (VD-30, VD-42), ndaj kjo do ta provonte pikërisht atë lokalitet. Nuk u
+bë; regjistrohet si hapi i parë i mundshëm, jo si i kryer.
