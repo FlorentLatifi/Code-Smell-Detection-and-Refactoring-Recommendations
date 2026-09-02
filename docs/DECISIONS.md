@@ -63,6 +63,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-51 | Refuzimet lexohen brenda erës, kurrë të bashkuara | 2026-09-02 | aktiv |
 | VD-52 | Prejardhja nuk redaktohet, por rifitohet | 2026-09-02 | aktiv |
 | VD-53 | Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi | 2026-09-02 | aktiv |
+| VD-54 | Frontend-i testohet te logjika e vet, jo te DOM-i | 2026-09-02 | aktiv |
 
 ---
 
@@ -1693,3 +1694,42 @@ toleranca «pa lloj të ri gabimi» mbetet, por bazëza e gabimeve bie shumë dh
 simbolet brenda projektit zgjidhen. Motori i transformon vetëm gjërat lokale me
 qëllim (VD-30, VD-42), ndaj kjo do ta provonte pikërisht atë lokalitet. Nuk u
 bë; regjistrohet si hapi i parë i mundshëm, jo si i kryer.
+
+---
+
+### VD-54: Frontend-i testohet te logjika e vet, jo te DOM-i
+
+**Konteksti.** Ndërfaqja nuk kishte teste. Kontrolli i tipave e kap shumëçka, por
+jo defektet e logjikës — dhe të dyja pjesët me logjikë të vërtetë në këtë anë
+kishin nga një defekt që tipat nuk e panë: bashkimi i dy qasjeve i vendoste dy
+mbingarkesa të së njëjtës metodë nën një çelës, dhe filtri i pajtimit e zbrazte
+listën pa lënë mënyrë për ta çaktivizuar.
+
+**Vendimi.** Vetëm **një** varësi e re: `vitest`, e pinuar te 4.1.11, MIT, që e
+ripërdor tubacionin e Vite-s. Testet mbulojnë logjikën e pastër — bashkimin te
+`model.ts` dhe diff-in me nënvarg të përbashkët më të gjatë te `Diff.tsx` — dhe
+jo renderimin.
+
+**Pse jo teste komponentësh.** Do të kërkonin `jsdom` dhe `@testing-library`,
+pra tri varësi në vend të një, për të mbuluar kod që kryesisht i kalon të dhënat
+një shablloni. §7 lejon një varësi vetëm kur alternativa është të shkruash diçka
+të konsiderueshme vetë; për renderimin alternativa është thjesht të mos e
+testosh, dhe ajo është zgjedhje e pranueshme këtu. Nëse ndonjë defekt i
+ardhshëm rrjedh nga renderimi, kjo rishikohet.
+
+**Dy funksione u eksportuan për testet.** `diff` dhe `withContext` te `Diff.tsx`
+ishin private. Ai skedar e shpjegon vetë pse algoritmi shkruhet aty në vend që të
+importohet — sepse është i saktë, jo heuristik — dhe saktësia është veti që
+verifikohet, ndaj eksportimi është çmimi i drejtë. Pritjet janë të nxjerra me
+dorë nga dy hyrjet, kurrë nga një ekzekutim.
+
+**Testet u provuan se kapin.** Çelësi i bashkimit u kthye qëllimisht te forma e
+vjetër, ajo pa numrin e rreshtit: dy teste dështuan menjëherë. Një suitë që nuk
+provohet kundrejt defektit që pretendon se e ruan është vetëm dekor.
+
+**Nënprodukt: një këshillim sigurie u mbyll.** `vitest` 4 nuk niset dot me
+`vite` 6.0.5 — ndërfaqja `ModuleRunner` ndryshoi brenda vijës 6.x, ndaj diapazoni
+i deklaruar `^6.0.0` është optimist. Ngritja te `vite` 6.4.3, brenda të njëjtit
+major, e zgjidhi si papajtueshmërinë ashtu edhe këshillimin e mëparshëm te
+`esbuild` që `npm audit` e raportonte si të lartë: nga dy dobësi te **zero**.
+Ai këshillim ishte aty para këtij ndryshimi; u verifikua te lockfile-i i komituar.
