@@ -102,8 +102,15 @@ can destroy work, so it gets the strictest rules:
 - **Compile-verified.** Every applied transformation is checked with `javac`
   against the project. It does not count as applied until it compiles.
 - **Behaviour-checked where possible.** For corpus projects that ship a test
-  suite, run it before and after. "Compiles and the project's own tests still
-  pass" is the empirical claim the thesis makes; nothing weaker.
+  suite, run it before and after: "compiles and the project's own tests still
+  pass" is the claim worth making, and remains the target. It is **not** the
+  claim this thesis makes, and saying otherwise here would misdescribe the
+  artefact. `fetch_corpus.py` keeps only `.java` members, so the corpus holds no
+  `pom.xml`, no `build.gradle` and no dependency jars: nothing in it can be
+  built, and no test suite in it can be run, without re-fetching every archive
+  in full. The claim actually made is "compiles, or adds no new kind of error",
+  and the gap is stated as a limitation in the thesis rather than quietly
+  narrowed (VD-53).
 - **Never write in place by default.** Output to a copy or a patch. In-place
   modification requires an explicit flag and a clean working tree.
 - Analysed code is **data, never executed**, except deliberately, in the
