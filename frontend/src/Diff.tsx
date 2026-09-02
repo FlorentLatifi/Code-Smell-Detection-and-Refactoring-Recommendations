@@ -1,4 +1,8 @@
-interface Line {
+// `diff` and `withContext` are exported for their tests rather than for other
+// modules: this is the one piece of algorithm the frontend implements itself
+// instead of importing, so it is the one piece that has to be checked against
+// hand-worked expectations rather than against its own past output.
+export interface Line {
   kind: "same" | "added" | "removed";
   text: string;
   before?: number;
@@ -13,7 +17,7 @@ interface Line {
  * and is exact, which is what matters when the reader is deciding whether to
  * trust a change to their own source.
  */
-function diff(before: string, after: string): Line[] {
+export function diff(before: string, after: string): Line[] {
   const left = before.split("\n");
   const right = after.split("\n");
 
@@ -50,7 +54,7 @@ function diff(before: string, after: string): Line[] {
 }
 
 /** Hide long stretches of unchanged code, keeping a few lines for context. */
-function withContext(lines: Line[], context = 3): (Line | "gap")[] {
+export function withContext(lines: Line[], context = 3): (Line | "gap")[] {
   const keep = new Set<number>();
   lines.forEach((line, index) => {
     if (line.kind === "same") return;
