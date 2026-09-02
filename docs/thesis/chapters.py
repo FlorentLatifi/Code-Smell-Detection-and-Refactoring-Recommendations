@@ -604,6 +604,15 @@ CHAPTER_6 = [
             "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
             "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Verifikimi "
             "me suitat e testeve të vetë projekteve mbetet punë e ardhshme.",
+            "Arsyeja pse ai verifikim nuk u bë është vetë ndërtimi i korpusit, jo "
+            "mungesa e kohës. Shkarkuesi ruan me qëllim vetëm skedarët me prapashtesë "
+            "«.java», sepse kjo është gjithçka që i duhet analizës dhe e mban korpusin "
+            "të vogël. Pasoja është se korpusi nuk mban asnjë përkufizim ndërtimi dhe "
+            "asnjë varësi: skedarët e testeve janë aty, por pa «pom.xml» ose "
+            "«build.gradle» dhe pa bibliotekat e treta ata as kompilohen dhe as "
+            "ekzekutohen. Ekzekutimi i tyre do të kërkonte rimarrjen e plotë të të "
+            "gjitha arkivave dhe ndërtimin e secilës depo në commit-in e vet historik, "
+            "ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara.",
             "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
             "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
             "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
