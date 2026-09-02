@@ -82,6 +82,11 @@ Numri i ndryshimeve, i vendeve të refuzuara dhe i atyre të shtyra shkon te
 stderr, që stdout të mbetet vetëm patch dhe të mund të tubohet drejt e te
 `git apply`. Një vend i shtyrë ofrohet sërish në ekzekutimin pasardhës.
 
+I njëjti patch shërbehet nga `POST /refactor/patch` dhe nga ndërfaqja, nën
+`JAVASMELL_TIMEOUT_S`: verifikimi ekzekuton `javac` për çdo skedar të rishkruar,
+ndaj koha kufizohet dhe një buxhet i mbaruar jep patch më të shkurtër me numrin e
+skedarëve të paarritur, jo kërkesë të dështuar (VD-50).
+
 ## Zhvillimi
 
 Përgatitja e mjedisit:

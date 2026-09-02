@@ -59,6 +59,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-47 | Kalibrimi bëhet, por jashtë fold-it dhe pa adoptim | 2026-08-31 | aktiv |
 | VD-48 | Qasja B shërbehet mbi projekt, kurrë mbi një skedar të vetëm | 2026-09-01 | aktiv |
 | VD-49 | Rishkrimi dorëzohet si patch, kurrë si shkrim në vend | 2026-09-01 | aktiv |
+| VD-50 | Patch-i shërbehet edhe nga API-ja, nën një buxhet kohe | 2026-09-01 | aktiv |
 
 ---
 
@@ -1521,3 +1522,46 @@ gjet duke e provuar kundrejt vetë git-it e jo kundrejt lexuesit tonë: mbi Wind
 një rrjedhë teksti e përkthen çdo `\n` në `\r\n`, dhe kundrejt një skedari me LF
 çdo rresht konteksti dështon; `--out` e kishte të mbyllur këtë, stdout jo, pikërisht
 te përdorimi që dokumentohet.
+
+---
+
+### VD-50: Patch-i shërbehet edhe nga API-ja, nën një buxhet kohe
+
+**Konteksti.** VD-49 e futi dorëzimin si patch, por vetëm te CLI-ja. Ndërfaqja web
+mbetej te `/refactor/preview`: një vend i vetëm, pa mundësi për ta marrë
+ndryshimin. Sistemi pretendon një ndërfaqe mbi tri qasjet, dhe hapi i fundit i
+motorit — t'ia japë autorit ndryshimin — nuk ishte aty.
+
+Kjo nxjerr një problem që CLI-ja nuk e kishte. Verifikimi ekzekuton `javac` **një
+herë për çdo skedar të rishkruar**, dhe një kompilim i një skedari të gjeneruar u
+mat 12.4 sekonda. Pra kjo është e vetmja rrugë e API-së kostoja e së cilës rritet
+me sa **gjen**, jo me sa **lexon** — pikërisht rasti «kufizo kohën e përgjithshme
+të analizës» i ENGINEERING.md §6.
+
+**Vendimi.** `POST /refactor/patch` kthen diff-in e unifikuar plus numërimet, dhe
+punon nën `timeout_s`. Asgjë nuk shkruhet: patch-i është tekst që kalon te
+thirrësi, çka është e tëra që §4 e lejon pa flamur të posaçëm dhe pemë të pastër.
+
+**Buxheti i shpenzuar jep patch më të shkurtër, jo kërkesë të dështuar.** Ajo çka
+u planifikua deri atëherë është e verifikuar dhe e aplikueshme njësoj; skedarët që
+nuk u arritën numërohen dhe raportohen si `unreached`, që një përgjigje e pjesshme
+të mos lexohet si e plotë. Kontrolli bëhet **mes skedarëve, kurrë brenda njërit**:
+një skedar i planifikuar përgjysmë do të ishte rishkrim që s'e verifikoi askush.
+
+**Çka doli gjatë punës.** `timeout_s` ekzistonte te `Settings` që nga fillimi dhe
+**nuk përdorej askund** — një konfigurim që premtonte një garanci të §6 dhe nuk
+zbatonte asgjë. Kjo rrugë është përdorimi i tij i parë real.
+
+**Alternativat.** Pa buxhet fare: e lë serverin të zënë sa të dojë projekti, çka
+§6 e ndalon shprehimisht. Gabim kur mbaron koha: e humb punën e verifikuar tashmë,
+pa asnjë përfitim. Verifikim vetëm me sintaksë për ta bërë të shpejtë: do të
+shkelte §4, që kërkon kompilim, dhe do ta bënte patch-in e ndërfaqes më të dobët
+se atë të CLI-së pa e thënë.
+
+**Pasojat.** Ndërfaqja e shfaq diff-in ashtu si e shkroi serveri dhe e verifikon
+se teksti i shfaqur është bajt për bajt ai që kopjohet — përndryshe lexuesi
+miraton një gjë dhe aplikon një tjetër. Numërimet shoqërojnë diff-in sepse një
+patch i shkurtër ka katër kuptime të ndryshme (asgjë për të rregulluar, asgjë e
+sigurt, përplasje, kohë e mbaruar), dhe pa i ndarë ato «3 ndryshime» lexohet si
+«3 probleme». Kur `javac` mungon, përgjigjja e thotë: «i verifikuar» do të thotë
+dy gjëra të ndryshme aty.
