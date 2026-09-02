@@ -1,28 +1,68 @@
 {
-  "applied": 3478,
+  "applied": 3633,
   "applied_by_refactoring": {
     "ExtractMethod": 3367,
+    "IntroduceParameterObject": 155,
     "ReplaceNestedConditionalWithGuardClauses": 111
   },
-  "detected": 15991,
+  "detected": 17833,
   "environment": {
-    "commit": "b3ae5a84eb60f0c98b89884873137dfb291d3baf",
+    "commit": "5f62b7b7906d4676c5bf66fce1d08d9cc1aecd3c",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "files": 4409,
-  "refused": 12496,
+  "introduced_smells": {
+    "BrainMethod": 63,
+    "DeepNesting": 146,
+    "FeatureEnvy": 134,
+    "GodClass": 47,
+    "LargeClass": 8,
+    "LongMethod": 167,
+    "LongParameterList": 372
+  },
+  "metric_shift": {
+    "BrainMethod": {
+      "metric_after": 19.0,
+      "metric_before": 56.0,
+      "sites": 819
+    },
+    "DeepNesting": {
+      "metric_after": 3.0,
+      "metric_before": 4.0,
+      "sites": 100
+    },
+    "LongMethod": {
+      "metric_after": 21.0,
+      "metric_before": 45.0,
+      "sites": 2092
+    },
+    "LongParameterList": {
+      "metric_after": 1.0,
+      "metric_before": 7.0,
+      "sites": 155
+    }
+  },
+  "refused": 14183,
   "refused_by_reason": {
+    "ambiguous_overload": 52,
     "control_flow_escapes": 4185,
     "multiple_outputs": 368,
     "not_definitely_assigned": 628,
-    "shape_not_matched": 7315
+    "shape_not_matched": 8935,
+    "unresolved_name": 15
+  },
+  "resolution": {
+    "persists": 825,
+    "resolved": 2341,
+    "unknown": 467
   },
   "unlocatable": 17,
   "verdicts": {
     "compiles": 13,
-    "new_errors": 56,
-    "no_new_errors": 3409
+    "new_errors": 58,
+    "no_new_errors": 3558,
+    "parses": 4
   },
   "verified_with_javac": true
 }
