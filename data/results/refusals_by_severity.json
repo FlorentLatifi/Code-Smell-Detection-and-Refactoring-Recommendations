@@ -1,0 +1,190 @@
+{
+  "environment": {
+    "commit": "4d34b71e194fd3a6844b708e9598a24def2c7c3f",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "files": 4409,
+  "matches_full_evaluation": {
+    "agrees": true,
+    "committed": {
+      "applied": 3633,
+      "refused": 14183,
+      "unlocatable": 17
+    },
+    "here": {
+      "applied": 3633,
+      "refused": 14183,
+      "unlocatable": 17
+    }
+  },
+  "overall": {
+    "application_rate": 0.2039,
+    "applied": 3633,
+    "detected": 17833,
+    "refused": 14183,
+    "refused_by_reason": {
+      "ambiguous_overload": 52,
+      "control_flow_escapes": 4185,
+      "multiple_outputs": 368,
+      "not_definitely_assigned": 628,
+      "shape_not_matched": 8935,
+      "unresolved_name": 15
+    },
+    "unlocatable": 17
+  },
+  "per_smell": {
+    "BrainMethod": {
+      "critical": {
+        "application_rate": 0.2507,
+        "applied": 381,
+        "detected": 1520,
+        "refused": 1139,
+        "refused_by_reason": {
+          "control_flow_escapes": 931,
+          "multiple_outputs": 77,
+          "not_definitely_assigned": 65,
+          "shape_not_matched": 66
+        },
+        "unlocatable": 0
+      },
+      "major": {
+        "application_rate": 0.3411,
+        "applied": 525,
+        "detected": 1540,
+        "refused": 1014,
+        "refused_by_reason": {
+          "control_flow_escapes": 613,
+          "multiple_outputs": 61,
+          "not_definitely_assigned": 146,
+          "shape_not_matched": 194
+        },
+        "unlocatable": 1
+      },
+      "minor": {
+        "application_rate": 0.2283,
+        "applied": 63,
+        "detected": 276,
+        "refused": 213,
+        "refused_by_reason": {
+          "control_flow_escapes": 28,
+          "multiple_outputs": 1,
+          "not_definitely_assigned": 14,
+          "shape_not_matched": 170
+        },
+        "unlocatable": 0
+      }
+    },
+    "DeepNesting": {
+      "critical": {
+        "application_rate": 0.0096,
+        "applied": 4,
+        "detected": 416,
+        "refused": 412,
+        "refused_by_reason": {
+          "shape_not_matched": 412
+        },
+        "unlocatable": 0
+      },
+      "major": {
+        "application_rate": 0.0204,
+        "applied": 42,
+        "detected": 2054,
+        "refused": 2012,
+        "refused_by_reason": {
+          "shape_not_matched": 2012
+        },
+        "unlocatable": 0
+      },
+      "minor": {
+        "application_rate": 0.0215,
+        "applied": 65,
+        "detected": 3021,
+        "refused": 2954,
+        "refused_by_reason": {
+          "shape_not_matched": 2954
+        },
+        "unlocatable": 2
+      }
+    },
+    "LongMethod": {
+      "critical": {
+        "application_rate": 0.2942,
+        "applied": 401,
+        "detected": 1367,
+        "refused": 962,
+        "refused_by_reason": {
+          "control_flow_escapes": 673,
+          "multiple_outputs": 68,
+          "not_definitely_assigned": 58,
+          "shape_not_matched": 163
+        },
+        "unlocatable": 4
+      },
+      "major": {
+        "application_rate": 0.3522,
+        "applied": 821,
+        "detected": 2336,
+        "refused": 1510,
+        "refused_by_reason": {
+          "control_flow_escapes": 865,
+          "multiple_outputs": 72,
+          "not_definitely_assigned": 121,
+          "shape_not_matched": 452
+        },
+        "unlocatable": 5
+      },
+      "minor": {
+        "application_rate": 0.3403,
+        "applied": 1176,
+        "detected": 3461,
+        "refused": 2280,
+        "refused_by_reason": {
+          "control_flow_escapes": 1075,
+          "multiple_outputs": 89,
+          "not_definitely_assigned": 224,
+          "shape_not_matched": 892
+        },
+        "unlocatable": 5
+      }
+    },
+    "LongParameterList": {
+      "critical": {
+        "application_rate": 0.022,
+        "applied": 2,
+        "detected": 91,
+        "refused": 89,
+        "refused_by_reason": {
+          "ambiguous_overload": 3,
+          "shape_not_matched": 85,
+          "unresolved_name": 1
+        },
+        "unlocatable": 0
+      },
+      "major": {
+        "application_rate": 0.081,
+        "applied": 40,
+        "detected": 494,
+        "refused": 454,
+        "refused_by_reason": {
+          "ambiguous_overload": 19,
+          "shape_not_matched": 433,
+          "unresolved_name": 2
+        },
+        "unlocatable": 0
+      },
+      "minor": {
+        "application_rate": 0.0899,
+        "applied": 113,
+        "detected": 1257,
+        "refused": 1144,
+        "refused_by_reason": {
+          "ambiguous_overload": 30,
+          "shape_not_matched": 1102,
+          "unresolved_name": 12
+        },
+        "unlocatable": 0
+      }
+    }
+  }
+}
