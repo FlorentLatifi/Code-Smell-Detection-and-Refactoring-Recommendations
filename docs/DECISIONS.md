@@ -1849,3 +1849,11 @@ mbetet literale — pra edhe ajo raportohet, në vend që të fshihet.
 prek pamjen e dokumentit të dorëzuar dhe që kalonte tërë portën e cilësisë. Ai
 tregon se kontrolli i formatit mbulonte tipografinë e jo përmbajtjen e dukshme,
 dhe se mungesa e një hapjeje të vetme në Word e la të pavërejtur për javë.
+
+**Backtick-u trajtohet ndryshe, dhe qëllimisht.** Skanimi i dokumentit nxori edhe
+një shenjë kodi të mbetur në tekst. Ajo nuk renderohet dot si yjet: punimi lejon
+një font të vetëm — dhe `_check_fonts` e detyron atë — pra nuk ka monospace ku ta
+shndërrosh. Prandaj yjet renderohen ndërsa backtick-u **ndalohet**: aty ku synimi
+i autorit realizohet brenda rregullave, realizohet; aty ku nuk realizohet dot,
+ndërtimi dështon dhe teksti rishkruhet me thonjëzat «» që punimi i përdor
+tashmë për identifikuesit. Të dyja i kap i njëjti kontroll.
