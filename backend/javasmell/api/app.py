@@ -21,6 +21,8 @@ confirms what exists outside it.
 
 from __future__ import annotations
 
+import shutil
+import time
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -46,6 +48,7 @@ from javasmell.model.entities import ProjectModel
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
+from javasmell.refactor.patch import Plan, plan, unified
 from javasmell.refactor.registry import ADVISORY_ONLY, for_smell
 
 API_TITLE = "JavaSmell"
@@ -247,7 +250,62 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         outcome = automated[1](site)
         return _outcome_json(outcome, source)
 
+    @app.post("/refactor/patch", response_model=None)
+    def patch(request: PathRequest) -> dict[str, Any]:
+        """Every rewrite the engine can make under this path, as one diff.
+
+        Still writes nothing. The diff comes back as text for the caller to read
+        and apply itself, which is the whole of what ENGINEERING.md §4 permits
+        without an explicit flag and a clean tree.
+
+        The work is bounded by ``timeout_s``. Verification runs ``javac`` once
+        per rewritten file, so this is the one route whose cost grows with what
+        it finds rather than with what it reads; a budget is what keeps a large
+        project from occupying the server. Running out of it yields a shorter
+        patch, never a failed request -- and the response says how many files
+        were left, so a partial answer cannot be mistaken for a complete one.
+        """
+        target = confine(request.path, config.root)
+        java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
+
+        project = analyze_path(str(target))
+        smells = detect_all(project)
+        javac = shutil.which("javac")
+        result = plan(target, smells, javac, deadline=time.monotonic() + config.timeout_s)
+        return _plan_json(result, javac)
+
     return app
+
+
+def _plan_json(result: Plan, javac: str | None) -> dict[str, Any]:
+    """The diff, plus every reason something is not in it."""
+    return {
+        "diff": unified(result.patches),
+        "files": len(result.patches),
+        "changes": result.changes,
+        "declined": result.declined,
+        "deferred": result.deferred,
+        "unreached": result.unreached,
+        # Without javac the rewrite was only checked for syntax. The caller is
+        # told, because "verified" means two different things here.
+        "verified_with_javac": javac is not None,
+        "dropped": [
+            {"file_path": d.relative, "verdict": d.verdict.value, "detail": d.detail}
+            for d in result.dropped
+        ],
+        "applied": [
+            {
+                "file_path": p.relative,
+                "refactoring": c.refactoring,
+                "smell_type": c.smell_type,
+                "class_name": c.class_name,
+                "method": c.method,
+                "start_line": c.start_line,
+            }
+            for p in result.patches
+            for c in p.applied
+        ],
+    }
 
 
 def _counted(values: Iterable[str]) -> dict[str, int]:

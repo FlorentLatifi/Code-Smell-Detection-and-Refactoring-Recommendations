@@ -29,6 +29,7 @@ offered with a warning, because a patch is a thing people apply.
 from __future__ import annotations
 
 import difflib
+import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -194,6 +195,8 @@ class Plan:
     dropped: tuple[Rejected, ...]
     #: Sites where the transformation itself reported "not applicable".
     declined: int
+    #: Files the run never got to, because the time budget ran out first.
+    unreached: int = 0
 
     @property
     def changes(self) -> int:
@@ -204,8 +207,25 @@ class Plan:
         return sum(len(p.deferred) for p in self.patches)
 
 
-def plan(root: Path, smells: Iterable[Smell], javac: str | None) -> Plan:
-    """Group the findings by file and plan each file's rewrite."""
+def plan(
+    root: Path,
+    smells: Iterable[Smell],
+    javac: str | None,
+    deadline: float | None = None,
+) -> Plan:
+    """Group the findings by file and plan each file's rewrite.
+
+    ``deadline`` is a ``time.monotonic`` reading to stop at. Verification runs
+    ``javac`` once per rewritten file and a compile of a large generated file was
+    measured at over twelve seconds, so a whole-project patch is exactly the
+    "cap total analysis time" case ENGINEERING.md §6 describes. Running out of
+    budget is not an error: what was planned so far is verified and applicable
+    just the same, and the files never reached are counted so the caller can say
+    the patch is partial rather than implying it is complete.
+
+    The check happens between files, never inside one. A half-planned file would
+    be a rewrite nobody verified.
+    """
     by_file: dict[str, list[Smell]] = {}
     for smell in smells:
         by_file.setdefault(smell.file_path, []).append(smell)
@@ -213,14 +233,18 @@ def plan(root: Path, smells: Iterable[Smell], javac: str | None) -> Plan:
     patches: list[FilePatch] = []
     dropped: list[Rejected] = []
     declined = 0
+    unreached = 0
     for file_path in sorted(by_file):
+        if deadline is not None and time.monotonic() >= deadline:
+            unreached += 1
+            continue
         planned, refused = plan_file(Path(file_path), root, by_file[file_path], javac)
         declined += refused
         if isinstance(planned, FilePatch):
             patches.append(planned)
         elif isinstance(planned, Rejected):
             dropped.append(planned)
-    return Plan(tuple(patches), tuple(dropped), declined)
+    return Plan(tuple(patches), tuple(dropped), declined, unreached)
 
 
 def _mark_missing_newline(lines: list[str]) -> list[str]:

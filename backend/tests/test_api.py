@@ -313,3 +313,70 @@ def test_source_refuses_a_backwards_range(client):
     )
     assert answer.status_code == 400
     assert answer.json()["error"]["code"] == "bad_range"
+
+
+# ----------------------------------------------------------------------
+# Patch
+# ----------------------------------------------------------------------
+
+
+def test_patch_returns_a_diff_and_writes_nothing(client, tmp_path):
+    before = (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes()
+    body = client.post("/refactor/patch", json={"path": "src"}).json()
+
+    assert body["diff"].startswith("--- a/")
+    assert body["changes"] >= 1
+    # The whole point of a patch: the tree it describes is untouched.
+    assert (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes() == before
+
+
+def test_patch_accounts_for_everything_it_did_not_change(client):
+    body = client.post("/refactor/patch", json={"path": "src"}).json()
+
+    # A number for each way of not changing something, so a short patch can be
+    # read as short rather than as complete.
+    for key in ("declined", "deferred", "unreached", "files", "changes"):
+        assert isinstance(body[key], int)
+    assert isinstance(body["dropped"], list)
+    assert isinstance(body["verified_with_javac"], bool)
+
+
+def test_patch_names_each_change_it_made(client):
+    applied = client.post("/refactor/patch", json={"path": "src"}).json()["applied"]
+
+    assert applied, "the fixture holds a Long Method the engine rewrites"
+    first = applied[0]
+    assert set(first) == {
+        "file_path",
+        "refactoring",
+        "smell_type",
+        "class_name",
+        "method",
+        "start_line",
+    }
+    # Relative, like every other path this API reports.
+    assert not first["file_path"].startswith("/")
+    assert ":" not in first["file_path"]
+
+
+def test_patch_refuses_a_path_outside_the_root(client):
+    response = client.post("/refactor/patch", json={"path": "../secret"})
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "path_rejected"
+
+
+def test_a_spent_budget_yields_a_shorter_patch_not_an_error(tmp_path):
+    """Running out of time is a partial answer, never a failed request."""
+    root = tmp_path / "workspace"
+    (root / "src").mkdir(parents=True)
+    (root / "src" / "Ledger.java").write_text(SMELLY, encoding="utf-8")
+
+    spent = TestClient(
+        create_app(Settings(root=root, max_files=50, max_bytes=1_000_000, timeout_s=0))
+    )
+    body = spent.post("/refactor/patch", json={"path": "src"}).json()
+
+    assert body["diff"] == ""
+    assert body["changes"] == 0
+    assert body["unreached"] == 1
