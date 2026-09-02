@@ -60,6 +60,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-48 | Qasja B shërbehet mbi projekt, kurrë mbi një skedar të vetëm | 2026-09-01 | aktiv |
 | VD-49 | Rishkrimi dorëzohet si patch, kurrë si shkrim në vend | 2026-09-01 | aktiv |
 | VD-50 | Patch-i shërbehet edhe nga API-ja, nën një buxhet kohe | 2026-09-01 | aktiv |
+| VD-51 | Refuzimet lexohen brenda erës, kurrë të bashkuara | 2026-09-02 | aktiv |
 
 ---
 
@@ -1565,3 +1566,54 @@ patch i shkurtër ka katër kuptime të ndryshme (asgjë për të rregulluar, as
 sigurt, përplasje, kohë e mbaruar), dhe pa i ndarë ato «3 ndryshime» lexohet si
 «3 probleme». Kur `javac` mungon, përgjigjja e thotë: «i verifikuar» do të thotë
 dy gjëra të ndryshme aty.
+
+---
+
+### VD-51: Refuzimet lexohen brenda erës, kurrë të bashkuara
+
+**Konteksti.** Vlerësimi raporton se 20.4% e vendeve u transformuan dhe pjesa
+tjetër u refuzua, dhe VD-28 e vendosi se refuzimi është rezultat i saktë. Asnjëra
+nuk thotë **cilat** vende ishin. Një mjet që rishkruan rastet e buta dhe tërhiqet
+nga ato të rëndat vlen shumë më pak se sa sugjeron ajo përqindje e vetme, dhe
+përqindja vetë nuk e dallon dot.
+
+**Vendimi.** `scripts/refusals_by_severity.py` i ndan rezultatet sipas erës dhe
+ashpërsisë. Nuk bën bashkim me `refactoring_sites.csv`: ai skedar mban përfundimin
+e çdo vendi por jo ashpërsinë e tij, dhe as numrin e rreshtit — ndaj çelësi
+(skedar, klasë, metodë, erë) do të ishte i paqartë pikërisht aty ku një klasë ka
+metoda të mbingarkuara, çka është e zakonshme. Të dyja anët nxirren nga i njëjti
+kalim, pra bashkimi nuk nevojitet fare.
+
+**Pse është e lirë.** Vetëm verifikimi është i shtrenjtë. Nëse një transformim
+zbatohet dhe pse refuzon vendosen nga pema e analizës, ndaj ky kalim zgjat minuta
+aty ku vlerësimi i plotë zgjaste orë. Si provë se të dyja shohin të njëjtin
+korpus, `applied`, `refused` dhe `unlocatable` krahasohen me ekzekutimin e
+komituar: **3633 / 14183 / 17 në të dyja anët.**
+
+**Rezultati nuk bashkohet kurrë mbi erërat.** I bashkuar, niveli `critical` del
+me 23.2% kundrejt 19.7% të `major+minor` — pra i **kundërt** me atë që shohin tri
+nga katër erërat veç e veç. Është paradoks i Simpson-it: BrainMethod ka normë të
+përgjithshme 29.1% dhe 45.6% të vendeve të veta kritike, ndërsa DeepNesting ka
+2.0% dhe vetëm 7.6% kritike, ndaj bashkimi i jep nivelit kritik peshë nga erërat
+që rishkruhen lehtë dhe e përmbys shenjën. Shifra e bashkuar nuk citohet.
+
+**Çka thonë erërat veç e veç.** Kritiku ka normën më të ulët te tri nga katër —
+DeepNesting 1.0% kundrejt 2.0/2.1%, Long Method 29.4% kundrejt 35.2/34.0%, Long
+Parameter List 2.2% kundrejt 8.1/9.0%. Te Brain Method jo: aty më e ulëta është
+`minor` (22.8%). Lidhja nuk është as monotone: te Brain Method dhe Long Method
+`major` rri mbi `minor`. Pra «sa më e rëndë, aq më pak rishkruhet» **nuk** është
+e vërtetë si rregull.
+
+**Ajo që është monotone është arsyeja.** Ndër refuzimet, `shape_not_matched` bie
+78% → 62% → 28% nga `minor` te `critical`, ndërsa `control_flow_escapes` ngrihet
+17% → 30% → **62%**. Kjo ka shpjegim mekanik: një metodë e gjatë ose e thellë sa
+më e rëndë, aq më shumë `return`, `break` e `continue` mban brenda bllokut, dhe
+Extract Method nuk e ngre dot një bllok nga i cili rrjedha del. Motori nuk
+refuzon më shpesh te rastet e rënda; refuzon **për arsye tjetër**, dhe ajo arsye
+është më e vështira.
+
+**Kufizim i trashëguar nga VD-41.** Ashpërsia këtu është ajo e derivuar nga
+teprica, të cilën VD-41 e provoi se **nuk** e riprodhon gjykimin e rishikuesve
+(kappa 0.007–0.293). Pra ky rezultat flet për motorin kundrejt renditjes së vetë
+mjetit, jo kundrejt asaj se sa i keq është kodi vërtet. Pa atë kusht fjalia do të
+pretendonte pikërisht atë që VD-41 e hoqi.
