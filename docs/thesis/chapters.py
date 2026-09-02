@@ -675,6 +675,16 @@ CHAPTER_6 = [
             "strategjive; dhe një pjesë e vogël por reale e rasteve të detektuara mund "
             "të transformohet automatikisht, ku shumica e refuzimeve vjen nga forma e "
             "kodit dhe nga rrjedha e kontrollit.",
+            "Pyetja e tretë kërkon dy gjëra, dhe ato u arritën në shkallë të "
+            "ndryshme. Kompilueshmëria u verifikua për çdo rishkrim të aplikuar: "
+            "shumica nuk shton asnjë lloj të ri gabimi, një pakicë e vogël e shton "
+            "dhe numërohet si e tillë, dhe kur skedari kompilohet brenda projektit "
+            "të vet e jo i izoluar, pjesa që kompilon plotësisht rritet ndjeshëm pa "
+            "asnjë verdikt të përmbysur. Ruajtja e sjelljes, përkundrazi, **nuk u "
+            "mat**: ajo do të kërkonte ekzekutimin e suitave të testeve të vetë "
+            "depove, të cilat korpusi nuk i mban. Prandaj përgjigjja ndaj asaj "
+            "pyetjeje është e plotë për gjysmën e parë dhe e hapur për të dytën, dhe "
+            "kjo deklarohet këtu me po aq qartësi sa te Nënkapitulli 6.3.",
             "Dy rezultate negative i shoqërojnë ato dhe nuk duhen lexuar veç: ashpërsia "
             "e derivuar nuk e riprodhon gjykimin e rishikuesve, dhe vetë rishikuesit "
             "pajtohen mes tyre aq pak sa çdo shifër e kësaj fushe duhet lexuar mbi një "
