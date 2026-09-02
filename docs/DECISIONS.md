@@ -61,6 +61,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-49 | Rishkrimi dorëzohet si patch, kurrë si shkrim në vend | 2026-09-01 | aktiv |
 | VD-50 | Patch-i shërbehet edhe nga API-ja, nën një buxhet kohe | 2026-09-01 | aktiv |
 | VD-51 | Refuzimet lexohen brenda erës, kurrë të bashkuara | 2026-09-02 | aktiv |
+| VD-52 | Prejardhja nuk redaktohet, por rifitohet | 2026-09-02 | aktiv |
 
 ---
 
@@ -1617,3 +1618,36 @@ teprica, të cilën VD-41 e provoi se **nuk** e riprodhon gjykimin e rishikuesve
 (kappa 0.007–0.293). Pra ky rezultat flet për motorin kundrejt renditjes së vetë
 mjetit, jo kundrejt asaj se sa i keq është kodi vërtet. Pa atë kusht fjalia do të
 pretendonte pikërisht atë që VD-41 e hoqi.
+
+---
+
+### VD-52: Prejardhja nuk redaktohet, por rifitohet
+
+**Konteksti.** Historia u rishkrua një herë për të hequr rreshtat e bashkautorësisë
+(§9). Rishkrimi i ndryshoi hash-et, dhe `data/results/mlcq_dataset.json` mbeti duke
+treguar te `35a672e4f40d` — një commit që ekziston ende lokalisht si objekt i varur,
+por që **nuk arrihet nga `main`**. Pra për këdo që e klonon depon, prejardhja e
+tabelës qendrore të veçorive tregonte te asgjë.
+
+Testi i dobët e fsheh këtë: `git cat-file -e` thotë «ekziston», sepse objekti rri
+në depon lokale. Testi i vërtetë është arritshmëria. Nga dymbëdhjetë skedarët e
+rezultateve, vetëm ky e kishte problemin.
+
+**Vendimi.** Hash-i nuk u redaktua me dorë. Skripti u riekzekutua dhe prejardhja u
+mor nga vetë ekzekutimi. Një hash i shkruar me dorë do të pretendonte se një
+ekzekutim ndodhi te një commit ku nuk ndodhi — pra do të ishte pikërisht ajo
+gënjeshtër që fusha e prejardhjes ekziston për ta parandaluar. Nëse prejardhja nuk
+vlen sa një ekzekutim i ri, atëherë nuk vlen fare.
+
+**Nënprodukti është prova.** Ekzekutimi shkoi te një dosje e veçuar, jo mbi
+skedarin e komituar, që rezultati të krahasohej para se të zëvendësonte çdo gjë.
+Tabela e re doli **identike bajt për bajt** me atë të komituar: 1 604 740 bajt, i
+njëjti sha256, të njëjtat 4534 rreshta nga 522 depo. Kjo është dëshmia e parë e
+drejtpërdrejtë se artefakti mbi të cilin varen shtatë skripte, modelet e shërbyera,
+paneli i ndërfaqes dhe kapitujt e rezultateve **riprodhohet** — pikërisht kufizimi
+«i riprodhueshëm nga një palë e tretë» i §1, i provuar në vend që të supozohet.
+
+**Pasojat.** Asnjë rezultat rrjedhës nuk u prek, sepse asgjë nuk ndryshoi përveç
+prejardhjes. Të dymbëdhjetë skedarët e rezultateve tani mbajnë commit-e të
+arritshme nga `main`. Nëse historia rishkruhet sërish, ky kontroll duhet përsëritur:
+arritshmëria, jo ekzistenca, është ajo që mat një checkout i pastër.
