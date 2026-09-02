@@ -160,6 +160,14 @@ def _check_captions(doc: Document) -> list[str]:
     return problems
 
 
+# Shenjat e Markdown-it që nuk guxojnë të mbërrijnë te faqja. Yjet e dyfishta i
+# rendereron `body()` si të theksuara, ndaj një mbetje aty do të thotë shenjë e
+# pambyllur. Backtick-u nuk renderohet dot fare: dokumenti lejon një font të
+# vetëm, pra nuk ka monospace ku ta shndërrosh, dhe konventa e këtij punimi për
+# identifikuesit janë thonjëzat «».
+MARKERS = ("**", "`")
+
+
 def _check_markup(doc: Document) -> list[str]:
     """No Markdown marker may survive into the page.
 
@@ -170,15 +178,16 @@ def _check_markup(doc: Document) -> list[str]:
     This is the check that would have caught it.
     """
     problems = []
-    for paragraph in doc.paragraphs:
-        if "**" in paragraph.text:
-            start = max(0, paragraph.text.index("**") - 30)
-            problems.append(f"shenjë markdown e mbetur te «{paragraph.text[start:][:70]}»")
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                if "**" in cell.text:
-                    problems.append(f"shenjë markdown e mbetur te qeliza «{cell.text[:50]}»")
+    for marker in MARKERS:
+        for paragraph in doc.paragraphs:
+            if marker in paragraph.text:
+                start = max(0, paragraph.text.index(marker) - 30)
+                problems.append(f"shenjë «{marker}» e mbetur te «{paragraph.text[start:][:70]}»")
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if marker in cell.text:
+                        problems.append(f"shenjë «{marker}» e mbetur te qeliza «{cell.text[:50]}»")
     return problems
 
 

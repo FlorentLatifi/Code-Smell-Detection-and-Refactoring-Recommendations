@@ -353,7 +353,7 @@ CHAPTER_3 = [
             "deklaruar e zgjedhjes.",
             "Kufiri nuk është gjithmonë aty ku duket. Ndryshimi i një nënshkrimi "
             "kërkon çdo pikë thirrjeje, por Java-ja i kufizon vetë thirrjet e një "
-            "metode `private` brenda skedarit ku ajo jeton. Prandaj Introduce "
+            "metode «private» brenda skedarit ku ajo jeton. Prandaj Introduce "
             "Parameter Object aplikohet pikërisht atje dhe refuzon kudo tjetër: "
             "modifikuesi i qasjes, e jo vështirësia e transformimit, është kushti që "
             "e bën të provueshëm.",
