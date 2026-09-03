@@ -4,7 +4,7 @@
 Rregullat se *si* punojmë janë në [`ENGINEERING.md`](ENGINEERING.md); arsyet e vendimeve
 janë në [`DECISIONS.md`](DECISIONS.md).
 
-## Gjendja aktuale (verifikuar më 2026-08-31)
+## Gjendja aktuale (verifikuar më 2026-09-03)
 
 | Komponenti | Gjendja | Vërejtje |
 |---|---|---|
@@ -24,8 +24,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Frontend | ✅ e plotë | React + TypeScript + Vite; dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48); 19 teste me vitest (VD-54) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Figurat e punimit | ✅ 8 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
-| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | mbetet redaktimi dhe formatimi UBT |
-| Testet e frontend-it | ⬜ nuk ka | i vetmi shtresim pa teste; i regjistruar si kufizim |
+| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); mbetet vetëm `[PLOTËSO]` e falënderimeve |
 
 Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
 
@@ -524,9 +523,11 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
   Xplore, Springer) për tetë hyrjet kryesore; të tetë dolën të sakta. Ndarja mes
   të verifikuarave dhe të paverifikuarave mbahet te `references.py` dhe e ruan
   `check_citations.py`, që një hyrje e re me faqe të mos rrijë heshtazi jashtë saj.
-- ⬜ Mbetet: redaktimi i tekstit dhe plotësimi i vendeve `[PLOTËSO]` — mentorja,
-  data e dorëzimit, falënderimet, data e qasjes te tree-sitter, dhe kufizimet
-  shtesë te Kapitulli 6.
+- ⬜ Mbetet: redaktimi i tekstit. Nga vendet e shënuara `[PLOTËSO]`, katër u
+  mbushën në sesione të mëparshme (mentorja, data e dorëzimit, data e qasjes te
+  tree-sitter, kufizimet e §1.5 — VD-53); vetëm falënderimet mbeten, sepse janë
+  fjalët e vetë autorit. `check_format.py` e raporton këtë numër vetë, në fund të
+  çdo ndërtimi.
 
 ---
 
