@@ -657,8 +657,21 @@ INTRODUCTION = [
             "Grupi i code smells të mbuluara është i kufizuar te ata për të cilët "
             "ekzistojnë strategji detektimi të publikuara dhe të dhëna të "
             "etiketuara, çka mundëson vlerësim empirik të besueshëm.",
-            f"{TODO}: Shto këtu çdo kufizim tjetër që dalin gjatë punës, "
-            "për shembull madhësia e korpusit ose kufizimet e verifikimit.",
+            "Korpusi mbi të cilin matet gjithçka ndërtohet duke shkarkuar depot që "
+            "përmend MLCQ-ja dhe duke ruajtur prej tyre vetëm skedarët me prapashtesë "
+            "«.java». Rrjedhimisht ai nuk përmban as skedarë ndërtimi, as varësi: asnjë "
+            "projekt në të nuk kompilohet si i tërë dhe asnjë suitë testesh e tij nuk "
+            "ekzekutohet dot pa u rishkarkuar çdo arkiv i plotë. Një pjesë e depove nuk "
+            "ishte më e arritshme në kohën e shkarkimit, ndaj mbulimi i mostrave të "
+            "MLCQ-së nuk është i plotë; shifra e saktë jepet te Kapitulli 5.",
+            "Nga ky kufizim rrjedh drejtpërdrejt fusha e pretendimit për refaktorimet. "
+            "Çdo rishkrim kontrollohet me kompilator, por kontrolli mund të thotë vetëm "
+            "nëse skedari kompilon apo nëse nuk shton një lloj të ri gabimi — jo nëse "
+            "programi vazhdon të sillet si më parë. Ruajtja e sjelljes, që përmendet te "
+            "pyetja e tretë kërkimore, **nuk verifikohet empirikisht në këtë punim** dhe "
+            "mbetet e tillë me vetëdije: ajo kërkon ekzekutimin e testeve të vetë "
+            "projektit para dhe pas ndryshimit, çka korpusi i përshkruar më sipër nuk e "
+            "lejon. Kapitulli 6 e rimerr këtë dallim kur i përgjigjet asaj pyetjeje.",
         ],
     ),
     (

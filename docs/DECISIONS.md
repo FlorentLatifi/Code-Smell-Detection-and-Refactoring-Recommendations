@@ -1701,6 +1701,15 @@ simbolet brenda projektit zgjidhen. Motori i transformon vetëm gjërat lokale m
 qëllim (VD-30, VD-42), ndaj kjo do ta provonte pikërisht atë lokalitet. Nuk u
 bë; regjistrohet si hapi i parë i mundshëm, jo si i kryer.
 
+**Ku thuhet, dhe pse PK3 nuk u prek.** Pyetja e tretë kërkimore kërkon
+refaktorime që ruajnë «kompilueshmërinë dhe sjelljen». Ngushtimi i saj do ta
+fshihte boshllëkun duke rishkruar pyetjen derisa përgjigjja të bëhej e vërtetë,
+çka është e kundërta e raportimit të një rezultati negativ. Prandaj formulimi i
+PK3-shit mbetet siç e shkroi autori, dhe kufizimi thuhet dy herë atje ku lexuesi
+e has: te §1.5, si kufi i shpallur i fushëveprimit para se të lexohet ndonjë
+rezultat, dhe te §6.5, ku pyetjes i jepet përgjigje e ndarë — kompilueshmëria e
+matur, sjellja e pamatur.
+
 ---
 
 ### VD-54: Frontend-i testohet te logjika e vet, jo te DOM-i
