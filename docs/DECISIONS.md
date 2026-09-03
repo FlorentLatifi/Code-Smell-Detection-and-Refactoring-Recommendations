@@ -71,6 +71,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-59 | Prejardhja raportohet për çdo skedar, jo si një commit i vetëm | 2026-09-03 | aktiv |
 | VD-60 | Edhe varësitë tranzitive të shtresës web piketohen | 2026-09-03 | aktiv |
 | VD-61 | Tabela e veçorive u riprodhua bajt për bajt | 2026-09-03 | aktiv |
+| VD-62 | Formatimi verifikohet kundrejt shabllonit të UBT-së, jo kundrejt vetes | 2026-09-03 | aktiv |
 
 ---
 
@@ -2022,3 +2023,66 @@ hapa të tjerë — një shifër e vlerësuar dhe kurrë e matur, e mbetur në t
 vetëm hapi 1 (kërkon rishkarkim të korpusit të plotë, jashtë git-it me qëllim) dhe
 hapi 7 (disa orë ekzekutimi); për ta pretendimi mbetet i pakontrolluar, siç thuhet
 te §8.5.
+
+
+### VD-62: Formatimi verifikohet kundrejt shabllonit të UBT-së, jo kundrejt vetes
+
+**Konteksti.** `check_format.py` i importonte `FONT`, `BODY_SIZE`, `TITLE_SIZE`,
+`CAPTION_SIZE` nga vetë `build_thesis.py`. Verifikimi ishte në rreth: dokumenti
+kontrollohej kundrejt konstanteve që e ndërtuan, ndaj një ndryshim aksidental i
+njërës do ta ndiqte tjetra pa u vënë re asnjëherë. Përtej kësaj, margjinat e faqes
+nuk vendoseshin askund — dokumenti përdorte parazgjedhjet e python-docx (2.54cm
+sipër/poshtë, 3.175cm anash) — dhe nuk kishte nga t'i vinte vlerat e sakta, sepse
+vetë shablloni i UBT-së nuk ishte në depo.
+
+**Burimi.** Autori dërgoi `UBT Instruksione per teme_v2 (8) (2) (6) (2) (1).doc`
+më 3 shtator 2026. Metadata e skedarit e regjistron si `Template: UBT Thesis
+Structure[3]`, «Last Saved By: Lavdim Menxhiqi» — pra vetë skedari është prodhuar
+nga shablloni i UBT-së, jo shkruar lirshëm, çka e bën gjeometrinë e tij të
+besueshme si të shabllonit dhe jo thjesht si zakon i një dokumenti të vetëm.
+Skedari është `.doc` i vjetër (OLE compound document); python-docx nuk e hap dot,
+ndaj u lexua përmes automatizimit COM të Word-it (PowerShell), duke nxjerrë
+tekstin dhe gjeometrinë e faqes në një kalim.
+
+**Çfarë doli.** Dy lloje fakti, të lexuara ndryshe. Rregullat e shkruara
+shprehimisht nën «INSTRUKSIONE» — Times New Roman kudo, tituj 14pt bold kapital,
+nëntituj 12pt bold, tekst rrjedhës 12pt i drejtuar, hapësirë rreshtash të paktën
+1.5, çdo kapitull në faqe të re, numri i faqes poshtë djathtas — përputheshin
+tashmë saktësisht me kodin; asnjë nuk ndryshoi. Madhësia e faqes (612×792pt,
+Letter) doli gjithashtu tashmë e saktë. **Margjinat** nuk përmenden në tekst, por
+gjeometria e vetë dokumentit tregon 85.05pt njëtrajtësisht në të katër anët — rreth
+3.00cm — dhe kjo nuk përputhej me atë që kodi prodhonte.
+
+**Vendimi.** Konstantet u shpërngulën në `ubt_format.py`, modul i ri, i pavarur,
+me citim të plotë të burimit në docstring. `build_thesis.py` dhe `check_format.py`
+tani e importojnë të dy prej andej — dy zbatime të pavarura të të njëjtit burim,
+jo njëri kontroll i tjetrit. Margjinat vendosen tani në çdo seksion
+(`_page_geometry`, thirrur si `_page_numbering` dhe `_footer_page_number`) dhe
+`check_format.py` fitoi një kontroll të ri, `_check_geometry`, që verifikon
+madhësinë e faqes dhe të katër margjinat në çdo seksion.
+
+**Njësia matëse ishte pjesë e gabimit.** Rregullimi i parë përdori `Cm(3.0)`, dhe
+kontrolli e rrëzoi vetveten: `Cm(3.0)` jep 1.080.000 EMU, që s'bie mbi një vlerë të
+plotë twips-esh (njësia në të cilën OOXML i ruan margjinat, 1/20 pikë) — Word e
+rrumbullakos në ruajtje, dhe krahasimi me barazi të saktë dështonte kundër vetes.
+`Pt(85.05)`, vlera që Word COM e raportoi drejtpërdrejt, bie saktësisht mbi
+1701 twips dhe mbijeton ruajtje/rihapje pa u prekur. Mbahet në pikë, jo në
+centimetra, sepse ajo është njësia në të cilën u mor matja dhe njësia që
+mbijeton rrumbullakimin.
+
+**Çfarë nuk ndryshoi.** `CAPTION_SIZE = Pt(11)` nuk vjen nga instruksionet — ato
+kërkojnë përshkrim të numëruar për çdo figurë e tabelë, por nuk japin madhësi
+shkronjash. Mbetet siç ishte, e shënuar tani në `ubt_format.py` si zgjedhje e
+autorit, jo si fakt i shabllonit — që të mos i shpiket një provenienca që s'e ka.
+
+**Skedari burim nuk komitohet.** Është dokumenti instruksional i vetë UBT-së, jo
+përmbajtje e këtij punimi, dhe qëndron jashtë depos, në dosjen personale të
+autorit. Riprodhueshmëria mbetet e ruajtur në mënyrën që kjo depo e ruan tashmë
+për korpusin dhe MLCQ-në: burimi i papërpunuar nuk komitohet, por vlerat e
+nxjerra prej tij komitohen, me citim të plotë dhe me arsyetimin e nxjerrjes.
+
+**U provua.** Kontrolli i ri u ekzekutua para rregullimit (raportoi katërmbëdhjetë
+devijime margjinash, tre seksione herë katër anë), pas rregullimit (kaloi), dhe
+kundër një dokumenti me një margjinë të prishur qëllimisht (e kapi). Të gjitha
+portat e cilësisë u ekzekutuan të plota: ruff, mypy, 396 testet e backend-it,
+citimet, tabela e riprodhimit, formatimi.

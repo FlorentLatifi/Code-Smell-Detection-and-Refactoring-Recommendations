@@ -515,8 +515,11 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
 - ✅ Koherenca e citimeve verifikohet nga `docs/thesis/check_citations.py`, që
   krahason tekstin me listën e referencave në të dy drejtimet dhe hyn në CI (VD-37).
 - ✅ Formatimi UBT verifikohet nga `docs/thesis/check_format.py` mbi vetë skedarin
-  `.docx`: fonti, madhësitë, hapësira e rreshtave, tri regjimet e numërimit të
-  faqeve, ndarja e kapitujve dhe numërimi i figurave sipas radhës (VD-39).
+  `.docx`: fonti, madhësitë, hapësira e rreshtave, madhësia e faqes dhe margjinat,
+  tri regjimet e numërimit të faqeve, ndarja e kapitujve dhe numërimi i figurave
+  sipas radhës (VD-39). Rregullat kundrejt të cilave verifikohet vijnë tani nga
+  vetë shablloni i UBT-së, jo nga ndërtuesi i dokumentit — rreziku i regjistruar
+  më parë këtu si rreth verifikimi u mbyll kur autori e dërgoi shabllonin (VD-62).
 - ✅ Numrat e faqeve u rikontrolluan kundrejt regjistrave të botuesve (DBLP, IEEE
   Xplore, Springer) për tetë hyrjet kryesore; të tetë dolën të sakta. Ndarja mes
   të verifikuarave dhe të paverifikuarave mbahet te `references.py` dhe e ruan

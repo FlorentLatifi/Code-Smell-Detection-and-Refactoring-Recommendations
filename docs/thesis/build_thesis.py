@@ -24,11 +24,25 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
-FONT = "Times New Roman"
-BODY_SIZE = Pt(12)
-TITLE_SIZE = Pt(14)
-CAPTION_SIZE = Pt(11)
-LINE_SPACING = 1.5
+from ubt_format import (
+    BODY_SIZE,
+    CAPTION_SIZE,
+    FONT,
+    MARGIN_BOTTOM,
+    MARGIN_LEFT,
+    MARGIN_RIGHT,
+    MARGIN_TOP,
+    MIN_LINE_SPACING,
+    PAGE_HEIGHT,
+    PAGE_WIDTH,
+    TITLE_SIZE,
+)
+
+# The instructions state a minimum, not a fixed value; this build uses exactly
+# that minimum. Renamed at the use site only, so `configure_styles` and every
+# paragraph that sets its own spacing keep reading as "the line spacing this
+# document uses" rather than "the line spacing the rule requires".
+LINE_SPACING = MIN_LINE_SPACING
 
 from chapters import (  # noqa: E402
     CHAPTER_2,
@@ -94,6 +108,24 @@ def _field(paragraph, instruction: str, placeholder: str = "") -> None:
     for element in (begin, instr, separate, text, end):
         run._r.append(element)
     _set_font(run)
+
+
+def _page_geometry(section) -> None:
+    """Page size and margins, per section because `add_section` only inherits them.
+
+    python-docx copies the previous section's `sectPr` when a new section is
+    added, so this would already hold without calling it a second and third
+    time. It is called on all three anyway, for the same reason `_page_numbering`
+    and `_footer_page_number` are: a reader of `build()` should see every
+    section's geometry set at the point the section is created, not trust an
+    inheritance rule that lives in a different file.
+    """
+    section.page_width = PAGE_WIDTH
+    section.page_height = PAGE_HEIGHT
+    section.top_margin = MARGIN_TOP
+    section.bottom_margin = MARGIN_BOTTOM
+    section.left_margin = MARGIN_LEFT
+    section.right_margin = MARGIN_RIGHT
 
 
 def _page_numbering(section, fmt: str | None, start: int | None) -> None:
@@ -460,6 +492,7 @@ def build() -> str:
 
     # --- Section 1: cover pages, unnumbered -----------------------------
     cover = doc.sections[0]
+    _page_geometry(cover)
     _page_numbering(cover, None, None)
     _footer_page_number(cover, enabled=False)
     build_cover(doc)
@@ -467,12 +500,14 @@ def build() -> str:
 
     # --- Section 2: front matter, roman numerals ------------------------
     front = doc.add_section(WD_SECTION.NEW_PAGE)
+    _page_geometry(front)
     _page_numbering(front, "upperRoman", 1)
     _footer_page_number(front, enabled=True)
     build_front_matter(doc, figures, tables)
 
     # --- Section 3: chapters, arabic restarting at 1 --------------------
     main = doc.add_section(WD_SECTION.NEW_PAGE)
+    _page_geometry(main)
     _page_numbering(main, "decimal", 1)
     _footer_page_number(main, enabled=True)
     build_introduction(doc, numbering)

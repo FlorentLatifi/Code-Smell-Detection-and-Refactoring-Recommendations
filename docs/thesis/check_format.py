@@ -10,12 +10,20 @@ stilin e kreut, dhe asnjëra prej të dyjave nuk duket ndryshe në ekran derisa 
 i mat. Komisioni e vlerëson përputhshmërinë me shabllonin, ndaj ato dallime
 kushtojnë pikë.
 
-Rregullat e kontrolluara janë ato të shabllonit: Times New Roman kudo; tekst 12pt i
-drejtuar me hapësirë rreshtash së paku 1.5; tituj kapitujsh 14pt bold me shkronja
-kapitale, secili në faqe të re; nëntituj 12pt bold; përshkrime figurash e tituj
-tabelash 11pt në qendër, të numëruar pa hapësira; tri regjime numërimi faqesh; numri
-i faqes poshtë djathtas. Kontrollohet edhe që lista e figurave dhe e tabelave në
-fillim të përputhet me atë që dokumenti përmban vërtet.
+Rregullat e kontrolluara vijnë nga `ubt_format.py`, jo nga `build_thesis.py`. Deri
+më VD-62 vinin që andej, çka do të thoshte se ky kontroll verifikonte dokumentin
+kundrejt vetes së ndërtuesit — një ndryshim aksidental i njërës do ta ndiqte
+tjetra pa u vënë re. `ubt_format.py` i nxjerr nga vetë shablloni i UBT-së dhe
+importohet nga të dy anët, ndaj tani janë dy zbatime të pavarura të të njëjtit
+burim, jo njëri kontroll i tjetrit.
+
+Rregullat: Times New Roman kudo; tekst 12pt i drejtuar me hapësirë rreshtash së
+paku 1.5; tituj kapitujsh 14pt bold me shkronja kapitale, secili në faqe të re;
+nëntituj 12pt bold; përshkrime figurash e tituj tabelash 11pt në qendër, të
+numëruar pa hapësira; tri regjime numërimi faqesh; numri i faqes poshtë djathtas;
+faqe Letter (8.5×11 inç) me margjina 3cm nga të katër anët. Kontrollohet edhe që
+lista e figurave dhe e tabelave në fillim të përputhet me atë që dokumenti përmban
+vërtet.
 
 Kontrollohen edhe numërimi i njëpasnjëshëm i nënkapitujve dhe mungesa e krerëve pa
 përmbajtje. Në fund listohen vendet `[PLOTËSO]` që i mbeten autorit: ato janë të
@@ -32,12 +40,25 @@ import re
 import sys
 from pathlib import Path
 
-from build_thesis import BODY_SIZE, CAPTION_SIZE, FONT, OUTPUT, TITLE_SIZE
+from build_thesis import OUTPUT
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Pt
 from docx.text.paragraph import Paragraph
+from ubt_format import (
+    BODY_SIZE,
+    CAPTION_SIZE,
+    FONT,
+    MARGIN_BOTTOM,
+    MARGIN_LEFT,
+    MARGIN_RIGHT,
+    MARGIN_TOP,
+    MIN_LINE_SPACING,
+    PAGE_HEIGHT,
+    PAGE_WIDTH,
+    TITLE_SIZE,
+)
 
 # Numërimi i tri regjimeve, sipas radhës së seksioneve: kopertina pa numra, ballina
 # me romakë duke filluar nga I, kapitujt me arabë duke rifilluar nga 1.
@@ -49,10 +70,6 @@ EXPECTED_SECTIONS = (
 
 CAPTION = re.compile(r"^(Figura|Tabela) (\d+)\.")
 CHAPTER_HEADING = re.compile(r"^\d+ ")
-
-# Hapësira minimale e rreshtave për tekstin rrjedhës. Përshkrimet, qelizat e
-# tabelave dhe fundfaqja janë me qëllim më të ngjeshura, ndaj nuk hyjnë këtu.
-MIN_LINE_SPACING = 1.5
 
 
 def _size_ok(run, expected: Pt) -> bool:
@@ -255,6 +272,34 @@ def _check_sections(doc: Document) -> list[str]:
     return problems
 
 
+def _check_geometry(doc: Document) -> list[str]:
+    """Madhësia e faqes dhe margjinat, në çdo seksion.
+
+    `add_section` i trashëgon nga seksioni paraprak, ndaj një gabim këtu do të
+    thotë se dikush e ka mbivendosur me dorë gjatë redaktimit, jo se ndërtuesi
+    e ka humbur trashëgimin.
+    """
+    problems = []
+    for index, section in enumerate(doc.sections):
+        if section.page_width != PAGE_WIDTH or section.page_height != PAGE_HEIGHT:
+            problems.append(
+                f"seksioni {index + 1}: faqe {section.page_width} x "
+                f"{section.page_height}, pritej {PAGE_WIDTH} x {PAGE_HEIGHT}"
+            )
+        margins = {
+            "sipër": (section.top_margin, MARGIN_TOP),
+            "poshtë": (section.bottom_margin, MARGIN_BOTTOM),
+            "majtas": (section.left_margin, MARGIN_LEFT),
+            "djathtas": (section.right_margin, MARGIN_RIGHT),
+        }
+        for side, (actual, expected) in margins.items():
+            if actual != expected:
+                problems.append(
+                    f"seksioni {index + 1}: margjina {side} {actual}, pritej {expected}"
+                )
+    return problems
+
+
 def _check_page_breaks(doc: Document) -> list[str]:
     """Çdo kapitull fillon në faqe të re, siç e kërkon shablloni."""
     problems = []
@@ -349,6 +394,7 @@ def report(path: Path) -> list[str]:
         _check_numbering,
         _check_lists,
         _check_sections,
+        _check_geometry,
         _check_page_breaks,
     ):
         problems += [f"  {line}" for line in check(doc)]
