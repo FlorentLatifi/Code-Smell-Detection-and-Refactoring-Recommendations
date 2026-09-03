@@ -1748,14 +1748,15 @@ REFUSAL_SQ = {
 }
 
 # Radha e ekzekutimit të eksperimenteve, me kohët e matura në një laptop pa GPU.
-# Çdo hap nën njëzet minuta u krye dhe u krono më 2026-09-03; hapat 1, 3 dhe 7
-# mbeten vlerësime, sepse matja e tyre kërkon orë dhe rishkarkim të korpusit. Dy
-# shifra dolën të gabuara në atë matje dhe u ndreqën: hapi 5 shkruante «sekonda»
-# për 190 sekonda pune, dhe hapi 8 shkruante «~1 min» për nëntë.
+# Çdo hap veç 1 dhe 7 u krye dhe u krono më 2026-09-03. Hapi 1 kërkon rishkarkimin
+# e korpusit; hapi 7 disa orë. Disa shifra dolën të gabuara në atë matje dhe u
+# ndreqën: hapi 3 shkruante «~95 min» për 56, hapi 5 shkruante «sekonda» për 190
+# sekonda pune, hapi 8 shkruante «~1 min» për nëntë, dhe hapi 12 mori një brez —
+# 18-78 min — pasi kohëzgjatja e tij varet nga sa e korpusit është në cache.
 REPRODUCTION = [
     ("1", "fetch_corpus.py", "korpusi, jashtë git-it", "orë, një herë"),
     ("2", "report_matching.py", "mbulimi i përputhjes MLCQ↔entitet", "~2 min"),
-    ("3", "build_dataset.py", "tabela e veçorive, e komituar", "~95 min"),
+    ("3", "build_dataset.py", "tabela e veçorive, e komituar", "~56 min"),
     ("4", "evaluate_rules.py --from-dataset data/results/mlcq_dataset.csv",
      "numrat e Qasjes A", "sekonda"),
     ("5", "train_models.py", "numrat e Qasjes B dhe modelet", "~3 min"),
@@ -1941,11 +1942,15 @@ def chapter_8() -> list:
                 "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",
-                "Ky premtim u vu në provë më 3 shtator 2026. Dymbëdhjetë nga të "
-                "pesëmbëdhjetë hapat u ri-ekzekutuan mbi të njëjtat hyrje. Njëmbëdhjetë "
-                "prej tyre dhanë skedarë identikë me ata të komituarit, përveç commit-it "
-                "dhe kohëzgjatjes që secili regjistron; të katër modelet e stërvitura "
-                "dolën identike bajt për bajt; dhe asnjëra prej figurave nuk ndryshoi.",
+                "Ky premtim u vu në provë më 3 shtator 2026. Trembëdhjetë nga të "
+                "pesëmbëdhjetë hapat u ri-ekzekutuan mbi të njëjtat hyrje, përfshirë "
+                "hapin që ndërton vetë tabelën e veçorive nga korpusi — ankora prej së "
+                "cilës rrjedhin të gjithë numrat e mëpasshëm. Ai skedar CSV, 4.534 "
+                "rreshta, doli bajt për bajt identik me atë të komituarin. Dymbëdhjetë "
+                "hapa të tjerë dhanë po ashtu skedarë identikë me ata të komituarit, "
+                "përveç commit-it dhe kohëzgjatjes që secili regjistron; të katër "
+                "modelet e stërvitura dolën identike bajt për bajt; dhe asnjëra prej "
+                "figurave nuk ndryshoi.",
                 "Hapi i dymbëdhjetë nuk dha skedar identik, dhe arsyeja i përket vetë "
                 "matjes. Numrat që mbajnë pretendimin u riprodhuan saktësisht — po aq "
                 "rishkrime, po aq verdikte «kompilon», asnjë përmbysje — por pesë "
@@ -1955,9 +1960,9 @@ def chapter_8() -> list:
                 "qëndrueshme, ndërsa ndarja mes «i kontrolluar» dhe «i pakontrolluar» "
                 "nuk është. Edhe kohëzgjatja e tij ndryshoi katërfish mes dy "
                 "ekzekutimeve, prej të njëjtës arsye.",
-                "Hapat 1, 3 dhe 7 kërkojnë nga një orë e lart, dhe nuk u ri-ekzekutuan: "
-                "për ta riprodhimi mbetet pretendim i pakontrolluar, dhe thuhet këtu si "
-                "i tillë.",
+                "Hapat 1 dhe 7 mbeten të pariekzekutuar: i pari kërkon rishkarkimin e "
+                "korpusit të plotë, i dyti disa orë ekzekutimi mbi të. Për ta riprodhimi "
+                "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",
             ],
         ),
     ]

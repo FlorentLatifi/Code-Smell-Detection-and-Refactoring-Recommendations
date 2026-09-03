@@ -70,6 +70,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-58 | Tabela e riprodhimit kontrollohet kundrejt skripteve | 2026-09-03 | aktiv |
 | VD-59 | Prejardhja raportohet për çdo skedar, jo si një commit i vetëm | 2026-09-03 | aktiv |
 | VD-60 | Edhe varësitë tranzitive të shtresës web piketohen | 2026-09-03 | aktiv |
+| VD-61 | Tabela e veçorive u riprodhua bajt për bajt | 2026-09-03 | aktiv |
 
 ---
 
@@ -1997,3 +1998,27 @@ të dyja piketohen sërish më lart bashkë.
 zhurmshëm: çdo ngritje kërkon ndryshim të dorës. Kjo është kosto e vetëdijshme;
 punimi pretendon riprodhueshmëri, dhe një mjedis që zgjidhet ndryshe çdo javë nuk
 e mban atë pretendim.
+
+
+### VD-61: Tabela e veçorive u riprodhua bajt për bajt
+
+**Konteksti.** `mlcq_dataset.csv` është ankora e zinxhirit të riprodhimit: numrat e
+Qasjes A e riluajnë atë (VD-46), modelet e Qasjes B stërviten mbi të, fshirja e
+pragjeve dhe intervalet e besimit e ri-mostrojnë. Deri më tani ishte hapi më i
+shtrenjtë i pariekzekutuar nga tabela e §8.5 — dhe pikërisht sepse çdo gjë tjetër
+varet prej tij, dështimi i tij do të kishte qenë gjetja më e rëndë e mundshme.
+
+**Matja.** `build_dataset.py` u ri-ekzekutua më 3 shtator 2026, mbi të njëjtin
+korpus dhe të njëjtin snapshot MLCQ. Skedari CSV, 4.534 rreshta, doli **bajt për
+bajt identik** me atë të komituarin — jo vetëm i barasvlershëm si përmbajtje, por
+i njëjti skedar. `mlcq_dataset.json` ndryshoi vetëm te fusha e prejardhjes
+(commit, kohëzgjatje); numrat brenda tij janë të njëjtë.
+
+**Koha ishte e shtypur gabim.** Tabela pretendonte «~95 min»; matja dha 56.
+Ndreqet bashkë me VD-58, që tashmë e kishte gjetur të njëjtin lloj gabimi te
+hapa të tjerë — një shifër e vlerësuar dhe kurrë e matur, e mbetur në tekst.
+
+**Pasoja.** Pretendimi i riprodhimit ngrihet nga 12 në 13 nga 15 hapa. Mbeten
+vetëm hapi 1 (kërkon rishkarkim të korpusit të plotë, jashtë git-it me qëllim) dhe
+hapi 7 (disa orë ekzekutimi); për ta pretendimi mbetet i pakontrolluar, siç thuhet
+te §8.5.
