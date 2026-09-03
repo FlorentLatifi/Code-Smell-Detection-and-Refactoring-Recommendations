@@ -1454,11 +1454,13 @@ def _project_context_paragraphs() -> list:
             if unchecked
             else ""
         ),
-        "Mostra është e vogël dhe e mbjellë me farë: kompilimi në kontekst zgjat rreth "
-        "gjashtë minuta për skedar, sepse detyron kompilimin e tërë mbylljes së "
-        "varësive të tij. Verdiktet e raportuara më lart mbi tërë korpusin mbeten ato "
-        "të izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të "
-        "lëviznin.",
+        "Mostra është e vogël dhe e mbjellë me farë, sepse kompilimi në kontekst është "
+        f"i shtrenjtë: rreth {data['seconds'] / data['files_checked']:.0f} sekonda për "
+        "skedar në ekzekutimin që prodhoi këto shifra, pasi detyron kompilimin e tërë "
+        "mbylljes së varësive të tij. Kostoja për skedar varion shumë mes ekzekutimeve, "
+        "sepse varet nga sa prej korpusit ndodhet tashmë në cache-in e sistemit të "
+        "skedarëve. Verdiktet e raportuara më lart mbi tërë korpusin mbeten ato të "
+        "izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të lëviznin.",
     ]
 
 
@@ -1763,7 +1765,7 @@ REPRODUCTION = [
     ("9", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
     ("10", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
     ("11", "refusals_by_severity.py", "refuzimet sipas erës dhe ashpërsisë", "~2 min"),
-    ("12", "verify_with_project.py", "verdikti brenda kontekstit të projektit", "~18 min"),
+    ("12", "verify_with_project.py", "verdikti brenda kontekstit të projektit", "18–78 min"),
     ("13", "model_without_project.py", "Qasja B pa kontekstin e projektit", "~2 min"),
     ("14", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
     ("15", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),
@@ -1939,14 +1941,23 @@ def chapter_8() -> list:
                 "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",
-                "Ky premtim u vu në provë më 3 shtator 2026. Njëmbëdhjetë nga të "
-                "pesëmbëdhjetë hapat — të gjithë ata që mbarojnë brenda pak minutash — u "
-                "ri-ekzekutuan mbi të njëjtat hyrje. Çdo skedar rezultati doli identik me "
-                "atë të komituar, përveç commit-it dhe kohëzgjatjes që secili regjistron; "
-                "të katër modelet e stërvitura dolën identike bajt për bajt; dhe asnjëra "
-                "prej figurave nuk ndryshoi. Hapat 1, 3, 7 dhe 12 kërkojnë nga dhjetëra "
-                "minuta deri në orë dhe nuk u ri-ekzekutuan atë ditë: për ta, riprodhimi "
-                "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",
+                "Ky premtim u vu në provë më 3 shtator 2026. Dymbëdhjetë nga të "
+                "pesëmbëdhjetë hapat u ri-ekzekutuan mbi të njëjtat hyrje. Njëmbëdhjetë "
+                "prej tyre dhanë skedarë identikë me ata të komituarit, përveç commit-it "
+                "dhe kohëzgjatjes që secili regjistron; të katër modelet e stërvitura "
+                "dolën identike bajt për bajt; dhe asnjëra prej figurave nuk ndryshoi.",
+                "Hapi i dymbëdhjetë nuk dha skedar identik, dhe arsyeja i përket vetë "
+                "matjes. Numrat që mbajnë pretendimin u riprodhuan saktësisht — po aq "
+                "rishkrime, po aq verdikte «kompilon», asnjë përmbysje — por pesë "
+                "kompilime që në ekzekutimin e parë e kishin kaluar kufirin kohor të "
+                "kompilatorit, në të dytin përfunduan brenda tij dhe morën verdikt. Ky "
+                "hap, pra, varet nga ngarkesa e makinës: verdiktet e tij janë të "
+                "qëndrueshme, ndërsa ndarja mes «i kontrolluar» dhe «i pakontrolluar» "
+                "nuk është. Edhe kohëzgjatja e tij ndryshoi katërfish mes dy "
+                "ekzekutimeve, prej të njëjtës arsye.",
+                "Hapat 1, 3 dhe 7 kërkojnë nga një orë e lart, dhe nuk u ri-ekzekutuan: "
+                "për ta riprodhimi mbetet pretendim i pakontrolluar, dhe thuhet këtu si "
+                "i tillë.",
             ],
         ),
     ]

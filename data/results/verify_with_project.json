@@ -5,11 +5,10 @@
   },
   "compiled_in_project": {
     "compiles": 20,
-    "no_new_errors": 127,
-    "not_checked": 5
+    "no_new_errors": 132
   },
   "environment": {
-    "commit": "c6eee8ef8da27c047c9f85ad8bd5a9eacafa1b00",
+    "commit": "7a200751def6b16c7908af9c73736dccc123966b",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -18,11 +17,10 @@
   "moved": {
     "compiles -> compiles": 1,
     "no_new_errors -> compiles": 19,
-    "no_new_errors -> no_new_errors": 127,
-    "no_new_errors -> not_checked": 5
+    "no_new_errors -> no_new_errors": 132
   },
   "rewrites": 152,
   "sample": 30,
-  "seconds": 1095.1,
+  "seconds": 4649.4,
   "seed": 20260902
 }

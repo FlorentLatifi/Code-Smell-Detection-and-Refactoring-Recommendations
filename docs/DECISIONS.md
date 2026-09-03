@@ -1793,7 +1793,26 @@ i funksionit që të mos riprovohet.
 **Kufiri i mostrës.** 30 skedarë nga 845 me të paktën një rishkrim (3.5%), 152
 rishkrime nga 3633 (4.2%). Verdiktet e Kapitullit 5 mbeten ato të matura mbi tërë
 korpusin, të izoluara; kjo nuk i zëvendëson, por tregon sa do të fitohej po të
-kompilohej gjithçka në kontekst — me çmimin gjashtë minuta për skedar.
+kompilohej gjithçka në kontekst. Çmimi për skedar u vlerësua fillimisht rreth gjashtë
+minuta dhe ai vlerësim ishte i gabuar në të dy drejtimet: dy ekzekutimet e matura
+dhanë 37 dhe 155 sekonda për skedar. Shifra në punim nxirret tani nga kohëzgjatja që
+regjistron vetë ekzekutimi, e nuk shtypet më me dorë.
+
+**Riprodhimi i kësaj matjeje, dhe kufiri që zbuloi.** Hapi u ri-ekzekutua më
+3 shtator 2026 me të njëjtën farë dhe të njëjtën mostër. Numrat që mbajnë
+pretendimin dolën të njëjtë: po aq rishkrime, njëzet verdikte «kompilon», asnjë
+përmbysje. Por skedari nuk doli identik. Pesë kompilime që herën e parë e kishin
+kaluar kufirin kohor prej 180 sekondash, herën e dytë përfunduan brenda tij dhe
+morën verdikt — dhe ekzekutimi zgjati katërfish më shumë, sepse korpusi ndodhej
+ndryshe në cache-in e sistemit të skedarëve.
+
+Prej kësaj rrjedhin dy gjëra. E para: ndarja mes «i kontrolluar» dhe «i
+pakontrolluar» nuk është veti e kodit por e makinës, ndaj nuk raportohet si e
+tillë; verdiktet e vërteta janë të qëndrueshme dhe ato mbajnë pretendimin. E dyta:
+rezultati i ri, ku të 152 rishkrimet morën verdikt, e zëvendëson të parin, sepse
+është matje më e plotë e së njëjtës gjë, jo matje tjetër. Kufiri kohor nuk u
+ngrit: ngritja e tij do të kërkonte ri-ekzekutimin e gjithçkaje pa e ndryshuar
+asnjë verdikt që numërohet.
 
 ---
 
