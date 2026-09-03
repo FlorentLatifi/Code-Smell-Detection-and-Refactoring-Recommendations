@@ -69,6 +69,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-57 | Theksimi renderohet, dhe një kontroll e siguron | 2026-09-02 | aktiv |
 | VD-58 | Tabela e riprodhimit kontrollohet kundrejt skripteve | 2026-09-03 | aktiv |
 | VD-59 | Prejardhja raportohet për çdo skedar, jo si një commit i vetëm | 2026-09-03 | aktiv |
+| VD-60 | Edhe varësitë tranzitive të shtresës web piketohen | 2026-09-03 | aktiv |
 
 ---
 
@@ -1933,3 +1934,38 @@ lejohet.
 **Python-i dhe platforma bashkohen, nuk pretendohen.** Nëse ndonjë rezultat do të
 rigjenerohej ndonjëherë në një makinë tjetër, shtojca do të shtypte të dyja vlerat
 në vend që të zgjidhte njërën heshtazi.
+
+
+### VD-60: Edhe varësitë tranzitive të shtresës web piketohen
+
+**Konteksti.** `requirements.txt` e deklaron vetë politikën: «Pinned exactly so
+that a reported result can be reproduced at the version that produced it», dhe për
+scikit-learn i liston edhe pinat tranzitive «so the environment is fully
+determined». Për shtresën web kjo nuk ishte bërë: `fastapi`, `uvicorn` dhe
+`pydantic` ishin të piketuara, ndërsa `starlette`, `anyio` dhe të tjerat
+zgjidheshin në kohën e instalimit.
+
+**Çfarë ndodhi.** Më 3 shtator 2026 CI-ja u prish pa u ndryshuar asnjë rresht
+kodi. `anyio` 4.15.0 e shpalli të vjetruar aliasin `anyio.abc.BlockingPortal`, të
+cilin `starlette` e prek gjatë importit të `TestClient`; `filterwarnings = error`
+te `pyproject.toml` e kthen paralajmërimin në gabim, dhe të gjitha testet e API-së
+dështuan në mbledhje. Lokalisht suita kalonte, sepse mjedisi lokal kishte
+`anyio` 4.14.2 — pra dallimi mes dy makinave ishte pikërisht ai që politika e
+piketimit ekziston për ta hequr.
+
+**Vendimi.** Mbyllja e zgjedhur nuk është heshtja e paralajmërimit, edhe pse
+`pyproject.toml` ka tashmë një përjashtim të tillë për një deprecation të NumPy-t.
+Heshtja do të fshihte një ndryshim të vërtetë të varësisë dhe do ta linte mjedisin
+po aq të papërcaktuar sa ishte. Në vend të saj piketohet mbyllja tranzitive e
+shtresës web — `starlette`, `anyio`, `idna`, `annotated-doc`, `annotated-types`,
+`pydantic-core`, `typing-extensions`, `typing-inspection`, `click`, `h11` — dhe
+ajo e `httpx2` te varësitë e zhvillimit, te versionet me të cilat suita kalon.
+
+**Kur hiqet.** Pina e `anyio`-s është e lidhur me një defekt të starlette-s, jo me
+një nevojë tonën. Kur starlette të kalojë te `anyio.from_thread.BlockingPortal`,
+të dyja piketohen sërish më lart bashkë.
+
+**Kufizim i pranuar.** Piketimi i mbylljes tranzitive e bën përditësimin më të
+zhurmshëm: çdo ngritje kërkon ndryshim të dorës. Kjo është kosto e vetëdijshme;
+punimi pretendon riprodhueshmëri, dhe një mjedis që zgjidhet ndryshe çdo javë nuk
+e mban atë pretendim.

@@ -4,3 +4,7 @@ pytest-cov==7.1.0
 ruff==0.16.4
 mypy==2.3.1
 httpx2==2.12.0
+
+# Pinat tranzitive te httpx2, per te njejten arsye si te requirements.txt.
+httpcore2==2.12.0
+truststore==0.10.4
