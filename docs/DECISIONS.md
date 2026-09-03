@@ -67,6 +67,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-55 | Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë | 2026-09-02 | aktiv |
 | VD-56 | Shifrat e Kapitullit 5 nxirren, nuk shtypen | 2026-09-02 | aktiv |
 | VD-57 | Theksimi renderohet, dhe një kontroll e siguron | 2026-09-02 | aktiv |
+| VD-58 | Tabela e riprodhimit kontrollohet kundrejt skripteve | 2026-09-03 | aktiv |
 
 ---
 
@@ -1857,3 +1858,47 @@ shndërrosh. Prandaj yjet renderohen ndërsa backtick-u **ndalohet**: aty ku syn
 i autorit realizohet brenda rregullave, realizohet; aty ku nuk realizohet dot,
 ndërtimi dështon dhe teksti rishkruhet me thonjëzat «» që punimi i përdor
 tashmë për identifikuesit. Të dyja i kap i njëjti kontroll.
+
+
+### VD-58: Tabela e riprodhimit kontrollohet kundrejt skripteve
+
+**Konteksti.** Shtojca 8.5 është premtimi qendror i punimit: pesëmbëdhjetë hapa,
+në radhë, që një anëtar i komisionit i ndjek mbi një klon të pastër dhe rinxjerr
+çdo shifër. Atë premtim nuk e verifikonte asgjë. Tabela është një listë stringjesh
+te `chapters.py`, skriptet janë skedarë te `scripts/`, dhe të dyja anët ndryshojnë
+veç e veç: as ndërtimi i dokumentit, as testet, as kontrolli i formatit nuk i
+krahasojnë me njëra-tjetrën.
+
+**Çfarë doli.** Hapi 4 shtypej si `evaluate_rules.py --from-dataset`. Ai opsion
+pret një shteg — `type=Path`, pa vlerë të nënkuptuar — ndaj komanda e shtypur në
+punim del me kod 2 pa prodhuar asgjë: «argument --from-dataset: expected one
+argument». **Lexuesi që e ndjek tabelën fjalë për fjalë ndalet te hapi i katërt.**
+
+Doli edhe një shifër e gabuar: hapi 5, `train_models.py`, shkruante «sekonda»
+për një punë prej 250 sekondash. Komenti mbi tabelën e thoshte vetë pse — vetëm
+aty ku skripti e regjistron kohën te dalja shifra ishte e matur; të tjerat ishin
+të kujtuara. Hapi 8 gabonte në drejtimin tjetër, «~1 min» për nëntë sekonda.
+
+**Vendimi.** Komanda shtypet e plotë, me shtegun që opsioni kërkon — që është edhe
+më informative, sepse tregon se hapi 4 konsumon daljen e komituar të hapit 3.
+Kohët u matën dhe u ndreqën. Dhe `check_reproduction.py` hyn në CI, që asnjëra
+prej të dyjave të mos kthehet pa u vënë re.
+
+**Çfarë kontrollon.** Që çdo rresht emërton një skript që ekziston; që asnjë skript
+te `scripts/` nuk mbetet jashtë tabelës — drejtimi që rrëshqet, sepse një
+eksperiment i ri prodhon një numër që hyn te Kapitulli 5 ndërsa tabela nuk e
+përmend; dhe që komanda parsohet, pra opsionet janë opsione të njohura dhe ato që
+presin vlerë e kanë atë vlerë të shtypur. Kur vlera është shteg nën
+`data/results/`, kontrollohet edhe se skedari është vërtet në depo: vetëm ajo
+nëndosje e `data/`-s komitohet, pra vetëm për të mund të pretendohet se gjendet te
+kloni i pastër që tabela presupozon.
+
+**Skriptet lexohen, nuk importohen.** Opsionet nxirren me `ast` nga burimi. Puna e
+CI-së që i ekzekuton kontrollet e punimit instalon vetëm `python-docx`; importimi
+i skripteve do të sillte `javasmell`, `sklearn` dhe `matplotlib` në një punë që
+nuk ka nevojë për asnjërën.
+
+**U provua** duke shkaktuar të katër mënyrat e dështimit: një rresht që emërton
+skript joekzistues, një opsion që skripti nuk e njeh, një vlerë që emërton skedar
+jashtë depos, dhe një skript të lënë jashtë tabelës. Të katërat u raportuan.
+

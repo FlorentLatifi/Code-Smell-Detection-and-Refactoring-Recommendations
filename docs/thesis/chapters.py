@@ -1723,17 +1723,20 @@ REFUSAL_SQ = {
 }
 
 # Radha e ekzekutimit të eksperimenteve, me kohët e matura në një laptop pa GPU.
-# Aty ku skripti e regjistron vetë kohëzgjatjen te dalja, shifra këtu është ajo e
-# matur dhe jo e kujtuar.
+# Çdo hap nën njëzet minuta u krye dhe u krono më 2026-09-03; hapat 1, 3 dhe 7
+# mbeten vlerësime, sepse matja e tyre kërkon orë dhe rishkarkim të korpusit. Dy
+# shifra dolën të gabuara në atë matje dhe u ndreqën: hapi 5 shkruante «sekonda»
+# për 190 sekonda pune, dhe hapi 8 shkruante «~1 min» për nëntë.
 REPRODUCTION = [
     ("1", "fetch_corpus.py", "korpusi, jashtë git-it", "orë, një herë"),
     ("2", "report_matching.py", "mbulimi i përputhjes MLCQ↔entitet", "~2 min"),
     ("3", "build_dataset.py", "tabela e veçorive, e komituar", "~95 min"),
-    ("4", "evaluate_rules.py --from-dataset", "numrat e Qasjes A", "sekonda"),
-    ("5", "train_models.py", "numrat e Qasjes B dhe modelet", "sekonda"),
+    ("4", "evaluate_rules.py --from-dataset data/results/mlcq_dataset.csv",
+     "numrat e Qasjes A", "sekonda"),
+    ("5", "train_models.py", "numrat e Qasjes B dhe modelet", "~3 min"),
     ("6", "sweep_thresholds.py", "analiza e ndjeshmërisë", "sekonda"),
     ("7", "evaluate_refactorings.py", "tabela N/M/K e Qasjes C", "orë"),
-    ("8", "calibrate_thresholds.py", "pragjet e kalibruara jashtë fold-it", "~1 min"),
+    ("8", "calibrate_thresholds.py", "pragjet e kalibruara jashtë fold-it", "sekonda"),
     ("9", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
     ("10", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
     ("11", "refusals_by_severity.py", "refuzimet sipas erës dhe ashpërsisë", "~2 min"),
@@ -1900,6 +1903,14 @@ def chapter_8() -> list:
                 "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",
+                "Ky premtim u vu në provë më 3 shtator 2026. Njëmbëdhjetë nga të "
+                "pesëmbëdhjetë hapat — të gjithë ata që mbarojnë brenda pak minutash — u "
+                "ri-ekzekutuan mbi të njëjtat hyrje. Çdo skedar rezultati doli identik me "
+                "atë të komituar, përveç commit-it dhe kohëzgjatjes që secili regjistron; "
+                "të katër modelet e stërvitura dolën identike bajt për bajt; dhe asnjëra "
+                "prej figurave nuk ndryshoi. Hapat 1, 3, 7 dhe 12 kërkojnë nga dhjetëra "
+                "minuta deri në orë dhe nuk u ri-ekzekutuan atë ditë: për ta, riprodhimi "
+                "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",
             ],
         ),
     ]

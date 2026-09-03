@@ -99,6 +99,13 @@ jobs:
         working-directory: docs/thesis
         run: python check_citations.py
 
+      # The appendix promises that a clean checkout regenerates every number by
+      # following its table. Nothing else checks that the commands printed there
+      # are commands the scripts accept, and one of them was not.
+      - name: Check the reproduction table
+        working-directory: docs/thesis
+        run: python check_reproduction.py
+
       - name: Build the document
         working-directory: docs/thesis
         run: python build_thesis.py
