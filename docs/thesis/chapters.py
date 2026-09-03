@@ -45,6 +45,29 @@ def _load_if_present(name: str) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
+def _provenance() -> tuple[dict[str, str], set[str], set[str]]:
+    """Which run produced each result file.
+
+    Every script records its own environment, and those environments are not one
+    environment: the experiments were run in the order they were written, over
+    several days, so the commit differs from file to file. Quoting a single commit
+    for the whole thesis would read more tidily and would be untrue of every file
+    but one, which is the sort of claim a reader can check in a minute.
+    """
+    commits: dict[str, str] = {}
+    pythons: set[str] = set()
+    platforms: set[str] = set()
+    for path in sorted(RESULTS.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        environment = data.get("environment") if isinstance(data, dict) else None
+        if not environment:
+            continue
+        commits[path.name] = environment["commit"]
+        pythons.add(environment["python"])
+        platforms.add(environment["platform"])
+    return commits, pythons, platforms
+
+
 # ======================================================================
 # Abstrakti
 # ======================================================================
@@ -1799,7 +1822,11 @@ def chapter_8() -> list:
         for reason in reference["refusal_reasons"]
     ]
 
-    environment = reference["environment"]
+    commits, pythons, platforms = _provenance()
+    # Joined rather than asserted: if a result were ever regenerated on another
+    # machine, the appendix should say so instead of quoting one of the two.
+    python_version = ", ".join(sorted(pythons))
+    platform = ", ".join(sorted(platforms))
 
     return [
         (
@@ -1896,10 +1923,19 @@ def chapter_8() -> list:
                     [list(row) for row in REPRODUCTION],
                 ),
                 "Çdo skript shkruan rezultatin si CSV ose JSON në data/results/, bashkë me "
-                "commit-in, versionin e Python-it dhe platformën që e prodhuan. Numrat e "
-                "këtij punimi u prodhuan me commit-in "
-                f"{environment['commit'][:10]}, Python {environment['python']}, "
-                f"{environment['platform']}.",
+                "commit-in, versionin e Python-it dhe platformën që e prodhuan. Interpretuesi "
+                f"dhe platforma janë të njëjtët për të gjithë: Python {python_version}, "
+                f"{platform}. Commit-i jo. Eksperimentet u ekzekutuan sipas radhës në të "
+                "cilën u shkruan, ndaj secili skedar mban commit-in e vet, dhe ai është "
+                "commit-i që duhet përdorur nëse dikush do të riprodhojë pikërisht atë "
+                "skedar. Një commit i vetëm i deklaruar për të gjithë punimin do të lexohej "
+                "më mirë dhe do të ishte i pasaktë për të gjithë skedarët veç njërit.",
+                (
+                    "table",
+                    "Commit-i që prodhoi çdo skedar rezultati",
+                    ["Skedari", "Commit-i"],
+                    [[name, commit[:10]] for name, commit in sorted(commits.items())],
+                ),
                 "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",

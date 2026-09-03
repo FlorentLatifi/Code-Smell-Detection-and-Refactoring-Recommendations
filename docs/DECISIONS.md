@@ -68,6 +68,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-56 | Shifrat e Kapitullit 5 nxirren, nuk shtypen | 2026-09-02 | aktiv |
 | VD-57 | Theksimi renderohet, dhe një kontroll e siguron | 2026-09-02 | aktiv |
 | VD-58 | Tabela e riprodhimit kontrollohet kundrejt skripteve | 2026-09-03 | aktiv |
+| VD-59 | Prejardhja raportohet për çdo skedar, jo si një commit i vetëm | 2026-09-03 | aktiv |
 
 ---
 
@@ -1902,3 +1903,33 @@ nuk ka nevojë për asnjërën.
 skript joekzistues, një opsion që skripti nuk e njeh, një vlerë që emërton skedar
 jashtë depos, dhe një skript të lënë jashtë tabelës. Të katërat u raportuan.
 
+
+### VD-59: Prejardhja raportohet për çdo skedar, jo si një commit i vetëm
+
+**Konteksti.** Shtojca 8.5 mbyllej me një fjali që dukej si prejardhje e rregullt:
+«Numrat e këtij punimi u prodhuan me commit-in X, Python Y, Z». Ajo X lexohej nga
+`system_reference.json` — pra nga eksporti i tabelave të vetë shtojcës.
+
+**Çfarë doli.** Skedarët e rezultateve nuk regjistrojnë një mjedis, por secili të
+vetin, dhe commit-et e tyre ndryshojnë: eksperimentet u ekzekutuan sipas radhës në
+të cilën u shkruan, gjatë disa ditësh. **Fjalia ishte e vërtetë vetëm për një
+skedar** — dhe pikërisht për atë që nuk mban asnjë numër të Kapitullit 5. Për
+gjithçka tjetër ajo emërtonte një commit që nuk e kishte prodhuar rezultatin.
+
+Interpretuesi dhe platforma janë vërtet të njëjtat kudo; vetëm commit-i jo. Pra
+fjalia nuk ishte tërësisht e gabuar, gjë që e bënte më të vështirë për t'u vënë re.
+
+**Vendimi.** Fjalia thotë atë që është e njëjtë për të gjithë — Python-i dhe
+platforma — dhe pastaj thotë hapur se commit-i nuk është, me një tabelë që jep
+commit-in për çdo skedar rezultati. Tabela nxirret nga vetë skedarët në kohën e
+ndërtimit, ndaj nuk vjetërohet dot: një rezultat i rigjeneruar e sjell commit-in e
+vet në faqe pa e prekur askush tekstin.
+
+**Pse tabela e jo një varg.** Një fjali që thotë «commit-et ndryshojnë sipas
+skedarit» është e ndershme por e paverifikueshme; lexuesi që do të riprodhojë një
+shifër të vetme ka nevojë të dijë me cilin commit. Shtojca është vendi ku dendësia
+lejohet.
+
+**Python-i dhe platforma bashkohen, nuk pretendohen.** Nëse ndonjë rezultat do të
+rigjenerohej ndonjëherë në një makinë tjetër, shtojca do të shtypte të dyja vlerat
+në vend që të zgjidhte njërën heshtazi.
