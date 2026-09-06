@@ -2,7 +2,11 @@
 
     python scripts/verify_with_project.py
 
-Writes ``data/results/verify_with_project.json``.
+Writes ``data/results/verify_with_project.json`` and, beside it,
+``verify_with_project_samples.csv`` -- one row per rewrite, carrying both
+verdicts. The counts answer *how many*; only the rows answer *which*, and the
+difference stopped being academic when a rewrite was found to regress in project
+context and the run that found it kept no record of which rewrite that was.
 
 The engine verifies a rewrite by compiling the file **alone**, and a file from a
 real repository does not compile alone: it imports its neighbours. 92% of the
@@ -51,6 +55,7 @@ import tempfile
 import time
 from collections import Counter
 from pathlib import Path
+from typing import NamedTuple
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
@@ -69,6 +74,7 @@ DEFAULT_CORPUS = Path("data/corpus")
 DEFAULT_OUT = Path("data/results")
 
 RESULT_NAME = "verify_with_project.json"
+SAMPLES_NAME = "verify_with_project_samples.csv"
 PROGRESS_NAME = "verify_with_project.progress.json"
 
 #: Files, not sites -- and the distinction is the whole cost model. A context
@@ -208,8 +214,26 @@ def verdict_for(before: set[str] | None, after: set[str] | None) -> Verdict:
     return Verdict.NO_NEW_ERRORS if after <= before else Verdict.NEW_ERRORS
 
 
-def rewrites_in(path: Path, source: bytes) -> list[tuple[str, bytes]]:
-    """Every rewrite the engine applies in this file, as (smell, new bytes).
+class Rewrite(NamedTuple):
+    """One applied rewrite, named well enough to be found again in the source.
+
+    The class, the method and the starting line travel with the rewritten bytes
+    because a count of regressions is not an answer a reader can check. This
+    measurement reported one rewrite that regressed in project context while
+    keeping no way to say which, and the site is what closes that gap. The line
+    number in particular is the part `refactoring_sites.csv` lacks, and lacking
+    it is what makes a site ambiguous wherever a class overloads a method.
+    """
+
+    smell: str
+    class_name: str
+    method: str
+    start_line: int
+    source: bytes
+
+
+def rewrites_in(path: Path, source: bytes) -> list[Rewrite]:
+    """Every rewrite the engine applies in this file.
 
     Enumerated exactly as the corpus run enumerates them, so the set of rewrites
     checked here is the set it verified -- only the compilation differs.
@@ -220,7 +244,7 @@ def rewrites_in(path: Path, source: bytes) -> list[tuple[str, bytes]]:
         return []
 
     index = FileIndex(str(path), source, JavaParser().parse_tree(source))
-    found: list[tuple[str, bytes]] = []
+    found: list[Rewrite] = []
     for unit in project.units:
         for cls in unit.classes:
             for smell in detect_in_class(cls):
@@ -232,7 +256,15 @@ def rewrites_in(path: Path, source: bytes) -> list[tuple[str, bytes]]:
                     continue
                 outcome = automated[1](site)
                 if outcome.applied:
-                    found.append((smell.smell_type, apply_edits(source, outcome.edits)))
+                    found.append(
+                        Rewrite(
+                            smell.smell_type,
+                            cls.name,
+                            smell.method,
+                            smell.start_line,
+                            apply_edits(source, outcome.edits),
+                        )
+                    )
     return found
 
 
@@ -299,15 +331,18 @@ def main() -> int:
             context_before = compile_in_context(javac, path, source, roots, work)
 
         outcomes: list[list[str]] = []
-        for smell, after_bytes in rewritten:
+        for rewrite in rewritten:
             with tempfile.TemporaryDirectory() as tmp:
                 work = Path(tmp)
                 (work / "alone").mkdir()
-                alone_after = compile_alone(javac, path.name, after_bytes, work / "alone")
-                context_after = compile_in_context(javac, path, after_bytes, roots, work)
+                alone_after = compile_alone(javac, path.name, rewrite.source, work / "alone")
+                context_after = compile_in_context(javac, path, rewrite.source, roots, work)
             outcomes.append(
                 [
-                    smell,
+                    rewrite.smell,
+                    rewrite.class_name,
+                    rewrite.method,
+                    str(rewrite.start_line),
                     verdict_for(alone_before, alone_after).value,
                     verdict_for(context_before, context_after).value,
                 ]
@@ -321,7 +356,7 @@ def main() -> int:
     context_counts: Counter[str] = Counter()
     moved: Counter[str] = Counter()
     for outcomes in done.values():
-        for _, alone, context in outcomes:
+        for *_site, alone, context in outcomes:
             alone_counts[alone] += 1
             context_counts[context] += 1
             moved[f"{alone} -> {context}"] += 1
@@ -348,8 +383,25 @@ def main() -> int:
     }
     result = args.out / RESULT_NAME
     result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    # The per-rewrite rows, kept rather than discarded. They existed all along in
+    # the progress file and were deleted with it on success, which cost a real
+    # answer: the run that raised the sample to sixty found one rewrite that
+    # regressed in project context, and by then there was nothing left to say
+    # which one it was. A count states that something happened; these rows are
+    # what let a reader go and look at it.
+    samples = args.out / SAMPLES_NAME
+    with samples.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(
+            ["file", "smell", "class_name", "method", "start_line", "alone", "in_project"]
+        )
+        for file_path in sorted(done):
+            for row in done[file_path]:
+                writer.writerow([file_path, *row])
+
     progress_path.unlink(missing_ok=True)
-    print(f"\nWrote {result}")
+    print(f"\nWrote {result} and {sum(len(v) for v in done.values())} sample rows")
     return 0
 
 

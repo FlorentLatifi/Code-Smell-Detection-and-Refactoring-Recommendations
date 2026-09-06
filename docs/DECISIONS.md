@@ -1789,9 +1789,26 @@ Pretendimi që mbetet i vlefshëm është më i dobët se ai i mëparshmi: toler
 lloj të ri gabimi» është dëshmi e përdorshme atje ku kompilimi i plotë nuk
 arrihet, **jo garanci** se kompilimi me kontekstin e projektit do të pajtohej.
 
-**Rasti nuk u veçua.** Matja mban vetëm numra të grumbulluar, ndaj nuk dihet cili
-rishkrim ishte, në cilin skedar, as çfarë gabimi shtoi. Identifikimi kërkon një
-ekzekutim të synuar dhe regjistrohet si punë e pabërë, jo si e kryer.
+**Rasti nuk u veçua, dhe arsyeja ishte e shmangshme.** Matja e ruante detajin
+për-rishkrim te skedari i progresit dhe e fshinte atë skedar kur ekzekutimi
+mbaronte me sukses. Pra informacioni ekzistonte gjatë tërë ekzekutimit shtatë-orësh
+dhe u hodh pikërisht në çastin kur u bë i vlefshëm. Mbetën vetëm numrat e
+grumbulluar, ndaj nuk dihet cili rishkrim ishte, në cilin skedar, as çfarë gabimi
+shtoi.
+
+**Rreshtat tani ruhen.** Ekzekutimi shkruan `verify_with_project_samples.csv`
+krahas JSON-it: një rresht për rishkrim, me skedarin, erën, klasën, metodën,
+rreshtin fillestar dhe të dy verdiktet. Numri thotë *sa*; vetëm rreshti thotë
+*cili*, dhe dallimi pushoi së qeni akademik kur u raportua një regres që askush
+s'e gjente dot më.
+
+Rreshti fillestar hyn me qëllim: `refactoring_sites.csv` nuk e mban, dhe pa të një
+vend është i paqartë kudo ku një klasë mbingarkon një metodë — kufizim që vetë
+docstring-u i këtij skripti e kishte shënuar. Tani dy rishkrime `LongMethod` në të
+njëjtin skedar dallohen nga rreshti, dhe dy erëra në të njëjtin vend nga emri.
+
+Identifikimi i regresit konkret kërkon një ri-ekzekutim, sepse rreshtat e
+ekzekutimit që e gjeti nuk ekzistojnë më. Regjistrohet si punë e pabërë.
 
 **Rrënjët e burimit, jo rrënja e projektit.** Një paketë hapet nga rrënja e vet e
 burimit, dhe një projekt Maven ose Gradle mban disa — një këtu ka 463. Drejtimi i
