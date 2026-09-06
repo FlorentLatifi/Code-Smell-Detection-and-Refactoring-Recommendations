@@ -1402,6 +1402,36 @@ def _refactoring_section() -> list:
     ]
 
 
+def _overturned(regressions: int, total: int) -> str:
+    """What the project-context pass says about rewrites that looked safe alone.
+
+    Written as a branch rather than a sentence with a number in it, because the
+    two outcomes mean opposite things and the earlier draft asserted the good one
+    in prose while reading the number from the data. When the sample was doubled
+    and the count moved from zero to one, that paragraph began contradicting
+    itself: it claimed nothing had been overturned and then printed how many had.
+    """
+    if not regressions:
+        return (
+            f"Po aq me rëndësi është se asnjë verdikt nuk u përmbys: {regressions} "
+            "rishkrime kaluan te «me gabim të ri». Asgjë që kalon e izoluar nuk dështon "
+            "kur skedari kompilohet brenda projektit të vet, çka është arsyeja pse "
+            "toleranca «pa lloj të ri gabimi» mbetet e përdorshme si dëshmi edhe atje "
+            "ku kompilimi i plotë nuk arrihet."
+        )
+    return (
+        f"Përmbysjet nuk janë zero. {regressions} nga {total} rishkrime e ndryshojnë "
+        "verdiktin në drejtimin e keq: të izoluara nuk shtonin lloj të ri gabimi, "
+        "brenda projektit të vet shtojnë. Numri është i vogël dhe pjesa dërrmuese e "
+        "rishkrimeve nuk sillet kështu, por ekzistenca e tij e kufizon pretendimin që "
+        "mund të bëhet. Toleranca «pa lloj të ri gabimi» mbetet dëshmi e përdorshme "
+        "atje ku kompilimi i plotë nuk arrihet; ajo nuk është garanci se kompilimi me "
+        "kontekstin e projektit do të pajtohej me të. Rasti nuk u veçua: matja mban "
+        "numra të grumbulluar, ndaj identifikimi i tij kërkon një ekzekutim të synuar "
+        "dhe mbetet punë e pabërë."
+    )
+
+
 def _project_context_paragraphs() -> list:
     """Sa do të forcohej verdikti po të kompilohej skedari brenda projektit.
 
@@ -1443,11 +1473,7 @@ def _project_context_paragraphs() -> list:
         "rasteve ku sistemi thotë vetëm «nuk shtova gabim» janë raste ku ai nuk mund "
         "të thoshte më shumë për shkak të mënyrës së kompilimit, jo për shkak të "
         "rishkrimit.",
-        f"Po aq me rëndësi është se asnjë verdikt nuk u përmbys: {regressions} rishkrime "
-        "kaluan te «me gabim të ri». Asgjë që kalon e izoluar nuk dështon kur skedari "
-        "kompilohet brenda projektit të vet, çka është arsyeja pse toleranca «pa lloj "
-        "të ri gabimi» mbetet e përdorshme si dëshmi edhe atje ku kompilimi i plotë "
-        "nuk arrihet."
+        _overturned(regressions, total)
         + (
             f" {unchecked} kompilime e kaluan kufirin kohor dhe numërohen si të "
             "pakontrolluara, kurrë si sukses."
@@ -1455,12 +1481,15 @@ def _project_context_paragraphs() -> list:
             else ""
         ),
         "Mostra është e vogël dhe e mbjellë me farë, sepse kompilimi në kontekst është "
-        f"i shtrenjtë: rreth {data['seconds'] / data['files_checked']:.0f} sekonda për "
-        "skedar në ekzekutimin që prodhoi këto shifra, pasi detyron kompilimin e tërë "
-        "mbylljes së varësive të tij. Kostoja për skedar varion shumë mes ekzekutimeve, "
-        "sepse varet nga sa prej korpusit ndodhet tashmë në cache-in e sistemit të "
-        "skedarëve. Verdiktet e raportuara më lart mbi tërë korpusin mbeten ato të "
-        "izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të lëviznin.",
+        "i shtrenjtë: çdo rishkrim detyron kompilimin e tërë mbylljes së varësive të "
+        f"skedarit, dhe seanca e fundit e kësaj matjeje zgjati rreth "
+        f"{data['seconds'] / 3600:.0f} orë. Kohëzgjatja e regjistruar mbulon vetëm atë "
+        "seancë e jo tërë matjen, sepse ekzekutimi është i rifillueshëm. Kostoja nuk "
+        "ndahet baraz mbi skedarët: ajo paguhet një herë për çdo rishkrim, dhe skedarët "
+        "janë tepër të pabarabartë — njëri në këtë mostër mban 118 rishkrime, ndërsa "
+        "shumica mbajnë disa. Verdiktet e raportuara më lart mbi tërë korpusin mbeten "
+        "ato të izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të "
+        "lëviznin.",
     ]
 
 
@@ -1751,8 +1780,10 @@ REFUSAL_SQ = {
 # Çdo hap veç 1 dhe 7 u krye dhe u krono më 2026-09-03. Hapi 1 kërkon rishkarkimin
 # e korpusit; hapi 7 disa orë. Disa shifra dolën të gabuara në atë matje dhe u
 # ndreqën: hapi 3 shkruante «~95 min» për 56, hapi 5 shkruante «sekonda» për 190
-# sekonda pune, hapi 8 shkruante «~1 min» për nëntë, dhe hapi 12 mori një brez —
-# 18-78 min — pasi kohëzgjatja e tij varet nga sa e korpusit është në cache.
+# sekonda pune, dhe hapi 8 shkruante «~1 min» për nëntë. Hapi 12 nuk merr dot
+# shifër: kostoja e tij shkon sipas rishkrimit e jo sipas skedarit, dhe skedarët
+# janë aq të pabarabartë — njëri mban 118 rishkrime — sa dyfishimi i mostrës nga 30
+# skedarë në 60 e rriti punën nga 152 rishkrime në 405.
 REPRODUCTION = [
     ("1", "fetch_corpus.py", "korpusi, jashtë git-it", "orë, një herë"),
     ("2", "report_matching.py", "mbulimi i përputhjes MLCQ↔entitet", "~2 min"),
@@ -1766,7 +1797,7 @@ REPRODUCTION = [
     ("9", "reviewer_agreement.py", "tavani i pajtimit mes rishikuesve", "sekonda"),
     ("10", "bootstrap_intervals.py", "intervalet e besimit", "nën një minutë"),
     ("11", "refusals_by_severity.py", "refuzimet sipas erës dhe ashpërsisë", "~2 min"),
-    ("12", "verify_with_project.py", "verdikti brenda kontekstit të projektit", "18–78 min"),
+    ("12", "verify_with_project.py", "verdikti brenda kontekstit të projektit", "orë"),
     ("13", "model_without_project.py", "Qasja B pa kontekstin e projektit", "~2 min"),
     ("14", "export_system_reference.py", "tabelat e kësaj shtojce", "sekonda"),
     ("15", "build_figures.py", "figurat e Kapitullit 5", "sekonda"),

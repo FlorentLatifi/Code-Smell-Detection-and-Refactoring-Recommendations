@@ -1,26 +1,31 @@
 {
   "compiled_alone": {
-    "compiles": 1,
-    "no_new_errors": 151
+    "compiles": 2,
+    "no_new_errors": 403
   },
   "compiled_in_project": {
-    "compiles": 20,
-    "no_new_errors": 132
+    "compiles": 46,
+    "new_errors": 1,
+    "no_new_errors": 343,
+    "not_checked": 15
   },
   "environment": {
-    "commit": "7a200751def6b16c7908af9c73736dccc123966b",
+    "commit": "195c22ef45d988d5cebf8354a20777f2372ad873",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
-  "files_checked": 30,
+  "files_checked": 60,
   "javac_timeout_s": 180,
   "moved": {
     "compiles -> compiles": 1,
-    "no_new_errors -> compiles": 19,
-    "no_new_errors -> no_new_errors": 132
+    "compiles -> not_checked": 1,
+    "no_new_errors -> compiles": 45,
+    "no_new_errors -> new_errors": 1,
+    "no_new_errors -> no_new_errors": 343,
+    "no_new_errors -> not_checked": 14
   },
-  "rewrites": 152,
-  "sample": 30,
-  "seconds": 4649.4,
+  "rewrites": 405,
+  "sample": 60,
+  "seconds": 25044.2,
   "seed": 20260902
 }

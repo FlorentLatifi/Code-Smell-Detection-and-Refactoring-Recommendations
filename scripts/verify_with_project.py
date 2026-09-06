@@ -71,11 +71,19 @@ DEFAULT_OUT = Path("data/results")
 RESULT_NAME = "verify_with_project.json"
 PROGRESS_NAME = "verify_with_project.progress.json"
 
-#: Files, not sites. Each costs roughly six minutes -- a context compile
-#: resolves and compiles the file's whole dependency closure, and that is paid
-#: once per rewrite. Thirty files is what fits in an evening; the seed is
-#: recorded so a longer run extends this one rather than replacing it.
-DEFAULT_SAMPLE = 30
+#: Files, not sites -- and the distinction is the whole cost model. A context
+#: compile resolves and compiles the file's dependency closure, and that is paid
+#: once per *rewrite*, so files are wildly unequal: most carry a handful of
+#: rewrites, while one file in this sample carries 118. Sampling by file
+#: therefore says little about how long a run takes, and two runs of different
+#: sizes are not proportionally expensive.
+#:
+#: The seed matters as much as the number. `random.sample` draws sequentially, so
+#: a larger sample begins with exactly the files a smaller one drew: raising this
+#: extends the measurement instead of replacing it, and the subtotals of the
+#: first thirty are still findable inside the sixty. That was checked before this
+#: was raised from 30.
+DEFAULT_SAMPLE = 60
 SEED = 20260902
 
 # Generous, because a context compile pulls in a dependency closure rather than

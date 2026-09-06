@@ -1768,14 +1768,30 @@ verdiktet dalin nga i njëjti kalim, ndaj përshkruajnë të njëjtin rishkrim n
 ndërtimi; bashkimi me `refactoring_sites.csv` u shmang sepse ai skedar nuk mban
 numër rreshti dhe çelësi do të ishte i paqartë te metodat e mbingarkuara.
 
-**Rezultati.** Mbi 30 skedarë dhe 152 rishkrime: verdikti më i fortë, «kompilon»,
-kalon nga **1 (0.7%) te 20 (13.2%)**. Nëntëmbëdhjetë rishkrime ngrihen nga «pa
-gabim të ri» te «kompilon». Pesë kompilime e kaluan pragun 180-sekondësh dhe
+**Rezultati.** Mbi 60 skedarë dhe 405 rishkrime: verdikti më i fortë, «kompilon»,
+kalon nga **2 (0.5%) te 46 (11.4%)**. Dyzet e pesë rishkrime ngrihen nga «pa gabim
+të ri» te «kompilon». Pesëmbëdhjetë kompilime e kaluan pragun 180-sekondësh dhe
 numërohen si **të pakontrolluara**, kurrë si sukses.
 
-**Asnjë regres.** Zero rishkrime kaluan te «me gabim të ri». Asgjë që kalon e
-izoluar nuk dështon kur skedari kompilohet brenda projektit të vet — pikërisht
-gjetja që i jep peshë tolerancës «pa lloj të ri gabimi» të Kapitullit 5.
+**Një regres, dhe u gjet vetëm duke e dyfishuar mostrën.** Matja e parë, mbi 30
+skedarë dhe 152 rishkrime, dha efektin kryesor pothuaj të njëjtë — 1 (0.7%) te 20
+(13.2%) — dhe **zero** rishkrime që kalonin te «me gabim të ri». Mbi 60 skedarë ka
+një: një rishkrim që i izoluar nuk shtonte lloj të ri gabimi, brenda projektit të
+vet shton.
+
+Pasoja nuk është te shifra por te pretendimi. Teksti i Kapitullit 5 e pohonte
+mungesën e përmbysjeve në prozë ndërsa numrin e lexonte nga të dhënat, ndaj sapo
+numri lëvizi nga zero, paragrafi filloi ta kundërshtonte vetveten: thoshte se
+asgjë nuk u përmbys dhe menjëherë shtypte se sa u përmbysën. Tani teksti degëzohet
+sipas vlerës dhe të dy rastet janë të shkruara veç (`_overturned`).
+
+Pretendimi që mbetet i vlefshëm është më i dobët se ai i mëparshmi: toleranca «pa
+lloj të ri gabimi» është dëshmi e përdorshme atje ku kompilimi i plotë nuk
+arrihet, **jo garanci** se kompilimi me kontekstin e projektit do të pajtohej.
+
+**Rasti nuk u veçua.** Matja mban vetëm numra të grumbulluar, ndaj nuk dihet cili
+rishkrim ishte, në cilin skedar, as çfarë gabimi shtoi. Identifikimi kërkon një
+ekzekutim të synuar dhe regjistrohet si punë e pabërë, jo si e kryer.
 
 **Rrënjët e burimit, jo rrënja e projektit.** Një paketë hapet nga rrënja e vet e
 burimit, dhe një projekt Maven ose Gradle mban disa — një këtu ka 463. Drejtimi i
@@ -1792,13 +1808,23 @@ kompilimi kundrejt saj raporton «cannot find symbol» për klasa që nga burimi
 zgjidhen. Nuk ishte e njëjta matje, vetëm më e shpejtë. Arsyeja rri te docstring-u
 i funksionit që të mos riprovohet.
 
-**Kufiri i mostrës.** 30 skedarë nga 845 me të paktën një rishkrim (3.5%), 152
-rishkrime nga 3633 (4.2%). Verdiktet e Kapitullit 5 mbeten ato të matura mbi tërë
+**Kufiri i mostrës.** 60 skedarë nga 845 me të paktën një rishkrim (7.1%), 405
+rishkrime nga 3633 (11.1%). Verdiktet e Kapitullit 5 mbeten ato të matura mbi tërë
 korpusin, të izoluara; kjo nuk i zëvendëson, por tregon sa do të fitohej po të
-kompilohej gjithçka në kontekst. Çmimi për skedar u vlerësua fillimisht rreth gjashtë
-minuta dhe ai vlerësim ishte i gabuar në të dy drejtimet: dy ekzekutimet e matura
-dhanë 37 dhe 155 sekonda për skedar. Shifra në punim nxirret tani nga kohëzgjatja që
-regjistron vetë ekzekutimi, e nuk shtypet më me dorë.
+kompilohej gjithçka në kontekst.
+
+**Kostoja nuk matet dot për skedar, dhe kjo u kuptua vonë.** Çmimi u vlerësua
+fillimisht rreth gjashtë minuta për skedar; matjet dhanë 37 dhe pastaj 155 sekonda,
+ndaj shifra u zëvendësua me një të nxjerrë nga kohëzgjatja e regjistruar, pjesëtuar
+me numrin e skedarëve. Edhe ajo ishte e gabuar, për dy arsye. E para: ekzekutimi
+është i rifillueshëm, ndaj kohëzgjatja e regjistruar mbulon seancën e fundit e jo
+tërë matjen — pjesëtimi i saj me të gjashtëdhjetë skedarët jep 417 sekonda ku e
+vërteta e asaj seance është 511. E dyta, dhe më e rëndësishmja: **skedari nuk është
+njësia e kostos**. Kompilimi paguhet një herë për çdo rishkrim, dhe skedarët janë
+tepër të pabarabartë — njëri në këtë mostër mban 118 rishkrime, shumica mbajnë nga
+disa. Një mesatare për skedar fsheh një shpërndarje ku një element i vetëm mban
+çerekun e punës. Punimi tani jep kohëzgjatjen e seancës, e thotë se është seancë,
+dhe e shpjegon se kostoja shkon sipas rishkrimit.
 
 **Riprodhimi i kësaj matjeje, dhe kufiri që zbuloi.** Hapi u ri-ekzekutua më
 3 shtator 2026 me të njëjtën farë dhe të njëjtën mostër. Numrat që mbajnë
