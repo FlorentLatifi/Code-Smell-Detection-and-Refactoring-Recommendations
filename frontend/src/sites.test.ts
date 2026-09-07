@@ -4,7 +4,15 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bySeverity, byFile, byScore, countByWorst, groupBySite } from "./sites";
+import {
+  automatable,
+  bySeverity,
+  byFile,
+  byScore,
+  countByWorst,
+  groupBySite,
+  hotspots,
+} from "./sites";
 import type { Severity, Smell } from "./types";
 
 function smell(overrides: Partial<Smell> = {}): Smell {
@@ -190,5 +198,60 @@ describe("numërimi i vendeve sipas ashpërsisë", () => {
 
     expect(tally.critical + tally.major + tally.minor).toBe(sites.length);
     expect(sites.length).toBe(2);
+  });
+});
+
+describe("ku përqendrohet puna", () => {
+  it("i rendit skedarët sipas numrit të vendeve", () => {
+    const sites = groupBySite([
+      smell({ file_path: "a.java", start_line: 1 }),
+      smell({ file_path: "a.java", start_line: 20 }),
+      smell({ file_path: "b.java", start_line: 1 }),
+    ]);
+
+    expect(hotspots(sites).map((h) => [h.file, h.sites])).toEqual([
+      ["a.java", 2],
+      ["b.java", 1],
+    ]);
+  });
+
+  it("numëron edhe erërat, jo vetëm vendet", () => {
+    const sites = groupBySite([
+      smell({ file_path: "a.java", smell_type: "LongMethod" }),
+      smell({ file_path: "a.java", smell_type: "BrainMethod" }),
+    ]);
+
+    expect(hotspots(sites)[0]).toEqual({ file: "a.java", sites: 1, smells: 2 });
+  });
+
+  it("kthen vetëm aq sa i kërkohen", () => {
+    const sites = groupBySite(
+      ["a", "b", "c", "d"].map((name) => smell({ file_path: `${name}.java` })),
+    );
+
+    expect(hotspots(sites, 2)).toHaveLength(2);
+  });
+
+  it("i ndan barazimet me emrin, që radha të mos varet nga hyrja", () => {
+    const one = groupBySite([smell({ file_path: "z.java" }), smell({ file_path: "a.java" })]);
+    const other = groupBySite([smell({ file_path: "a.java" }), smell({ file_path: "z.java" })]);
+
+    expect(hotspots(one).map((h) => h.file)).toEqual(hotspots(other).map((h) => h.file));
+  });
+});
+
+describe("sa mund ta rishkruajë motori", () => {
+  it("numëron vendet me të paktën një rishkrim të automatizuar", () => {
+    const sites = groupBySite([
+      smell({ class_name: "A", smell_type: "LongMethod", automated: false }),
+      smell({ class_name: "A", smell_type: "BrainMethod", automated: true }),
+      smell({ class_name: "B", automated: false }),
+    ]);
+
+    expect(automatable(sites)).toBe(1);
+  });
+
+  it("është zero kur motori nuk prek asgjë", () => {
+    expect(automatable(groupBySite([smell({ automated: false })]))).toBe(0);
   });
 });

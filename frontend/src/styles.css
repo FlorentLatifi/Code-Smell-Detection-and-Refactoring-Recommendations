@@ -1282,3 +1282,81 @@ select:hover {
   align-self: center;
   margin-right: 0.1rem;
 }
+
+/* ---------- where the work is ---------- */
+/* The right-hand panel was an empty sentence until something was selected, and
+   that emptiness took half the screen. This answers the question a reader has
+   before clicking anywhere: which file to open first. */
+.hotspots h2 {
+  margin: 0;
+  font: 400 var(--t-lead) / 1.2 var(--serif);
+}
+
+.hotspots .caption {
+  margin: var(--s-1) 0 var(--s-3);
+  color: var(--ink-faint);
+  font-size: var(--t-small);
+}
+
+.hotspots ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hotspots li + li {
+  margin-top: var(--s-1);
+}
+
+.spot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px auto;
+  gap: var(--s-3);
+  align-items: center;
+  width: 100%;
+  padding: var(--s-2) var(--s-2) var(--s-2) 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 400 var(--t-small) var(--sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.spot:hover {
+  background: var(--sunken);
+}
+
+.spot .name {
+  overflow: hidden;
+  font-family: var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The bar is comparative, not quantitative: it is scaled to the busiest file so
+   the shape of the distribution reads at a glance. The number beside it is the
+   measurement. */
+.spot .track {
+  height: 4px;
+  background: var(--rule-soft);
+}
+
+.spot .fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.spot .tally {
+  color: var(--ink-faint);
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The patch bar's headline figure. */
+.patch .caption b {
+  color: var(--ink);
+  font-weight: 600;
+}

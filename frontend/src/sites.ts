@@ -134,3 +134,49 @@ export function countByWorst(sites: Site[]): Record<Severity, number> {
   for (const site of sites) tally[site.worst] += 1;
   return tally;
 }
+
+/** Sa vende mban secili skedar, nga më i ngarkuari. */
+export interface Hotspot {
+  file: string;
+  sites: number;
+  smells: number;
+}
+
+/**
+ * Ku përqendrohet puna.
+ *
+ * Ndarja nuk është e barabartë dhe as afër: mbi `commons-math/analysis` të 74
+ * vendet bien në vetëm 34 skedarë nga 146 të analizuar, dhe një skedar i vetëm
+ * mban 23 prej tyre — gati një të tretën. Kush do efektin më të madh me punën më
+ * të vogël e hap atë të parin, dhe asgjë në ekran nuk e thoshte.
+ *
+ * Ky nuk është filtër: është pikënisje. Prandaj kthen pak rreshta e jo një pamje
+ * të tërë skedarësh — nëse do të gjithë, lista poshtë renditet tashmë sipas
+ * skedarit.
+ */
+export function hotspots(sites: Site[], limit = 5): Hotspot[] {
+  const byFile = new Map<string, Hotspot>();
+  for (const site of sites) {
+    const existing = byFile.get(site.file_path);
+    if (existing) {
+      existing.sites += 1;
+      existing.smells += site.smells.length;
+    } else {
+      byFile.set(site.file_path, { file: site.file_path, sites: 1, smells: site.smells.length });
+    }
+  }
+  return [...byFile.values()]
+    .sort((a, b) => b.sites - a.sites || b.smells - a.smells || a.file.localeCompare(b.file))
+    .slice(0, limit);
+}
+
+/**
+ * Sa vende mban të paktën një rishkrim që motori e provon vetë.
+ *
+ * Butoni «Përgatit patch-in» rrinte në ekran pa thënë sa punë do të bënte, ndaj
+ * shtypej pa ditur nëse do të dilnin dy ndryshime apo dyqind. Kjo është ajo
+ * shifër, dhe llogaritet nga e njëjta fushë që vë shenjën ✎ te çdo rresht.
+ */
+export function automatable(sites: Site[]): number {
+  return sites.filter((site) => site.automated).length;
+}

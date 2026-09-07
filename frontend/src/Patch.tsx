@@ -15,7 +15,7 @@ import type { PatchResult } from "./types";
  * collide, or the budget ran out -- and a reader who cannot tell them apart
  * would read "3 changes" as "3 problems".
  */
-export function Patch({ path }: { path: string }) {
+export function Patch({ path, ready, total }: { path: string; ready: number; total: number }) {
   const [result, setResult] = useState<PatchResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
@@ -53,8 +53,14 @@ export function Patch({ path }: { path: string }) {
           {busy ? "Duke përgatitur…" : "Përgatit patch-in"}
         </button>
         <p className="caption">
-          Nxjerr një diff të unifikuar për çdo rishkrim që motori e provon të sigurt. Asnjë
-          skedar nuk preket; aplikimi mbetet vendimi yt.
+          {/* Shkalla para shtypjes: butoni rrinte këtu pa thënë nëse do të dilnin dy
+              ndryshime apo dyqind, dhe ajo shifër llogaritet nga e njëjta fushë që vë
+              shenjën ✎ te çdo rresht. */}
+          <b>
+            {ready} nga {total} {total === 1 ? "vend" : "vende"}
+          </b>{" "}
+          {ready === 1 ? "mban" : "mbajnë"} të paktën një rishkrim që motori e provon të sigurt. Nxjerr një diff të
+          unifikuar për to; asnjë skedar nuk preket, dhe aplikimi mbetet vendimi yt.
         </p>
       </div>
 

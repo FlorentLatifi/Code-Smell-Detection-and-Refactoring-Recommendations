@@ -79,6 +79,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-67 | Paneli i rezultateve raporton çdo commit, jo një | 2026-09-07 | aktiv |
 | VD-68 | Lista grupohet sipas vendit, jo sipas erës | 2026-09-07 | aktiv |
 | VD-69 | Dizajni rifreskohet brenda drejtimit, jo duke e zëvendësuar | 2026-09-07 | aktiv |
+| VD-70 | Ekrani përgjigjet «nga t'ia nis» dhe «sa punë është» | 2026-09-07 | aktiv |
 
 ---
 
@@ -2496,3 +2497,37 @@ vijat dhe hapësira, paleta mbetet ajo e figurave të punimit — dhe u ndreq zb
 **Verifikuar në shfletues** në të dy modalitetet, të çelët dhe të errët, dhe në
 të dyja pamjet: 39 testet, kontrolli i tipave dhe ndërtimi kalojnë, dhe asnjë
 sjellje nuk ndryshoi — ndryshimi është tërësisht te paraqitja.
+
+### VD-70: Ekrani përgjigjet «nga t'ia nis» dhe «sa punë është»
+
+**Konteksti.** Kërkesa ishte më shumë përmbajtje në ekran, me kushtin që të ishte
+e dobishme. Kriteri i zgjedhjes ishte: vetëm gjëra që të dhënat i mbajnë tashmë
+dhe që i përgjigjen një pyetjeje që lexuesi e ka para se të klikojë kudo.
+
+**Pyetja e parë: sa punë do të bëjë butoni.** «Përgatit patch-in» rrinte në ekran
+pa thënë asgjë për shkallën, ndaj shtypej pa ditur nëse do të dilnin dy ndryshime
+apo dyqind. Mbi projektin e provës, **68 nga 74 vende** mbajnë të paktën një
+rishkrim që motori e provon të sigurt — 92%, shifër që e ndryshon plotësisht
+pritshmërinë. Llogaritet nga e njëjta fushë që vë shenjën ✎ te çdo rresht.
+
+**Pyetja e dytë: nga t'ia nis.** Paneli i djathtë ishte një fjali boshe derisa
+zgjidhej diçka, dhe ai bosh zinte gjysmën e ekranit. Ndarja e vendeve nëpër
+skedarë nuk është as afër e barabartë: 74 vende bien në **34 skedarë nga 146 të
+analizuar**, dhe një skedar i vetëm mban **23** — gati një të tretën. Kush do
+efektin më të madh me punën më të vogël e hap atë të parin, dhe asgjë nuk e
+thoshte.
+
+Paneli tani i rendit pesë skedarët më të ngarkuar, me një shirit të shkallëzuar
+ndaj më të ngarkuarit. Shiriti është krahasues e jo sasior: forma e shpërndarjes
+është ajo që lexohet me një shikim, ndërsa numri pranë tij është matja.
+
+**Klikimi nuk shtoi dimension filtrimi.** Ai shkruan te kërkimi, i cili tashmë
+filtron edhe mbi shtegun. Një filtër i ri «sipas skedarit» do të kishte qenë
+gjendje e dytë që bën të njëjtën punë.
+
+**Zëvendësim, jo shtesë.** Të dyja zunë vend që ishte bosh ose i pathënë; asnjë
+element ekzistues nuk u shtyp më poshtë për t'u bërë vend. Kjo ishte kushti: më
+shumë për të lexuar, jo më shumë për të parë.
+
+Gjashtë teste të reja për të dy ndihmësit, përfshirë barazimet e renditura sipas
+emrit që radha të mos varet nga radha e hyrjes. **45 teste frontend nga 39.**
