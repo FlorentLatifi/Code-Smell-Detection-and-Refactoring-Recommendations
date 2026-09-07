@@ -80,6 +80,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-68 | Lista grupohet sipas vendit, jo sipas erës | 2026-09-07 | aktiv |
 | VD-69 | Dizajni rifreskohet brenda drejtimit, jo duke e zëvendësuar | 2026-09-07 | aktiv |
 | VD-70 | Ekrani përgjigjet «nga t'ia nis» dhe «sa punë është» | 2026-09-07 | aktiv |
+| VD-71 | Prezantimi gjenerohet nga të njëjtat burime si punimi | 2026-09-07 | aktiv |
 
 ---
 
@@ -2531,3 +2532,46 @@ shumë për të lexuar, jo më shumë për të parë.
 
 Gjashtë teste të reja për të dy ndihmësit, përfshirë barazimet e renditura sipas
 emrit që radha të mos varet nga radha e hyrjes. **45 teste frontend nga 39.**
+
+### VD-71: Prezantimi gjenerohet nga të njëjtat burime si punimi
+
+**Konteksti.** Prezantimi i mbrojtjes ishte i vetmi artefakt i detyrueshëm që
+mungonte fare: `ROADMAP.md` Faza 6 e emërton, dhe në depo nuk kishte asnjë skedar.
+
+**Vendimi: gjenerohet, nuk shkruhet me dorë.** Sllajdet mbajnë të njëjtat shifra
+si Kapitulli 5, dhe një prezantim i shkruar me dorë është pikërisht vendi ku ato
+ndahen nga punimi pa e vënë re askush — një numër përditësohet te `data/results/`,
+punimi rindërtohet, sllajdi mbetet i vjetruar, dhe dallimi zbulohet para
+komisionit. `build_slides.py` i lexon shifrat përmes të njëjtit ngarkues që përdor
+`chapters.py`, ndaj një sllajd i vjetruar nuk mund të ekzistojë (VD-38, VD-56).
+
+Figurat janë ato të komituarat, të prodhuara nga `build_figures.py`. Asnjë grafik
+nuk vizatohet te sllajdet: dy vizatues për të njëjtën figurë do të ishin dy burime
+të vërtete, e cila është arsyeja pse VD-21 ekziston.
+
+**Struktura ndjek pyetjet, jo kapitujt.** Shtatëmbëdhjetë sllajde: problemi, tri
+pyetjet, çka u ndërtua, të dhënat, si matet, një sllajd për çdo pyetje, tavani i
+pajtimit mes rishikuesve, verifikimi dhe kufiri i tij, përgjigjet, kufizimet,
+kontributi, dhe dy rezervë.
+
+Dy zgjedhje aty vlejnë të shënohen. **Tavani ka sllajdin e vet**, sepse pyetja
+«pse MCC-ja juaj është kaq e ulët» është e sigurt dhe përgjigjja — që vetë
+rishikuesit pajtohen me MCC 0.022–0.238 — është më e fortë e thënë vetë sesa e
+nxjerrë me pyetje. **Kufizimet po ashtu**, për të njëjtën arsye.
+
+**Argumenti jeton te shënimet e folësit.** Sllajdet mbajnë pak fjalë me qëllim;
+çdo sllajd ka shënim që thotë çka shtohet me gojë, përfshirë përgjigjet e
+përgatitura për pyetjet e mundshme.
+
+**`check_slides.py` hyn në CI.** Kontrollon se çdo figurë e kërkuar ekziston, se
+çdo sllajd ka shënim folësi, se asnjë kuti teksti nuk është bosh — një kuti bosh
+nuk duket derisa dikush klikon mbi të — dhe se shifrat kryesore shfaqen vërtet në
+sllajde. E fundit e kap rastin ku ndërtuesi ndryshon dhe një shifër zhduket në
+heshtje. Të katërta u provuan duke i shkaktuar.
+
+**Varësia u shtua me kujdes.** `python-pptx` është falas, MIT, e mirëmbajtur, dhe
+alternativa — shkrimi i XML-së së PowerPoint-it me dorë — do të ishte substanciale.
+E piketuar si të tjerat.
+
+**Dalja është skelet, jo forma përfundimtare**, si te `build_thesis.py`: renditja,
+koha dhe fjalët e folura mbeten të autorit, dhe rregullimi bëhet në PowerPoint.

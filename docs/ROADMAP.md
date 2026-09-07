@@ -536,6 +536,11 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
 Kapitulli 6, abstrakti, referencat, verifikimi i formatimit UBT, prezantimi.
 Kjo javë është edhe rezervë; historikisht diçka rrëshqet.
 
+- ✅ Prezantimi gjenerohet nga `docs/thesis/build_slides.py` mbi të njëjtat
+  skedarë rezultati si kapitujt, me shënime folësi për çdo sllajd, dhe
+  verifikohet nga `check_slides.py` në CI (VD-71). Skeleti është gati; renditja
+  dhe fjalët e folura mbeten të autorit.
+
 ---
 
 ## Rreziqet kryesore

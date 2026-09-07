@@ -114,6 +114,16 @@ jobs:
         working-directory: docs/thesis
         run: python check_format.py
 
+      # The deck reads the same result files as the chapters, so a builder that
+      # stops working is a defence with no slides — found on the day, otherwise.
+      - name: Build the slides
+        working-directory: docs/thesis
+        run: python build_slides.py
+
+      - name: Check the slides
+        working-directory: docs/thesis
+        run: python check_slides.py
+
   # The interface is typed, so a broken contract with the API surfaces here
   # rather than in a browser. Kept separate from the Python job for the same
   # reason the toolchain job is: a failure should name its own cause.
