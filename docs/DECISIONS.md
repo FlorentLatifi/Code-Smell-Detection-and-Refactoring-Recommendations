@@ -78,6 +78,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-66 | Shtresimi i ENGINEERING.md §2 verifikohet nga importet | 2026-09-07 | aktiv |
 | VD-67 | Paneli i rezultateve raporton çdo commit, jo një | 2026-09-07 | aktiv |
 | VD-68 | Lista grupohet sipas vendit, jo sipas erës | 2026-09-07 | aktiv |
+| VD-69 | Dizajni rifreskohet brenda drejtimit, jo duke e zëvendësuar | 2026-09-07 | aktiv |
 
 ---
 
@@ -2456,3 +2457,42 @@ Shifrat e ashpërsisë ndryshuan kuptim, ndaj edhe etiketë: 17/43/46 erëra u b
 11/32/31 vende, të shënuara «(vende)». Ndryshimi i heshtur i kuptimit të një
 shifre pa ndryshuar emrin e saj do të ishte pikërisht defekti që kjo ditë e gjeti
 gjashtë herë diku tjetër.
+
+### VD-69: Dizajni rifreskohet brenda drejtimit, jo duke e zëvendësuar
+
+**Konteksti.** Kërkesa ishte një pamje më moderne, «që të duket sikur e ka bërë
+një dizajner e jo një AI». Vlerësimi im fillestar ishte se pamja ekzistuese e
+shmangte tashmë atë që i tradhton ndërfaqet e gjeneruara — karta, hije, qoshe të
+rrumbullakosura, gradiente — dhe se shtimi i tyre do të afronte pikërisht atë
+pamje. Autori nuk u pajtua, e pa vetë, dhe kjo është zgjedhja e tij.
+
+**Ku ishte vërtet dobësia.** Kur u matën, ankesat ishin konkrete dhe të sakta:
+
+- **Shkalla tipografike ishte e ngjeshur** — nëntë hapa mes 0.70 dhe 1.60rem, aq
+  afër sa hierarkia lexohej e sheshtë edhe pse ishte e menduar.
+- **Shiriti përmbledhës ishte tetë numra në një radhë të padiferencuar**, dhe pas
+  VD-68 u bë edhe më i gjatë. Asgjë nuk thoshte cili numër kishte rëndësi.
+- **Ritmi hapësinor ishte uniform** — çdo seksion me të njëjtën dendësi, ndaj syri
+  s'kishte ku të pushonte.
+
+**Vendimi.** Drejtimi u mbajt — tipografia e mban dizajnin, struktura vjen nga
+vijat dhe hapësira, paleta mbetet ajo e figurave të punimit — dhe u ndreq zbatimi:
+
+- Një **shkallë tipografike me hapa të dukshëm** dhe një **shkallë hapësire**, të
+  dyja si tokena, që dendësia të mos jetë më hamendje për çdo rregull.
+- **Sipërfaqe për panelet.** Lista, shiriti dhe detaji fituan një sipërfaqe dhe
+  një vijë floku, që të lexohen si objekte e jo si tekst i lirë. Asnjë hije, asnjë
+  qoshe e rrumbullakosur: një vijë e thotë të njëjtën gjë më qetë.
+- **Hierarki te shifrat.** Shifra që lexuesi kërkon është dukshëm më e madhe dhe
+  me ngjyrën e theksit; të tjerat zbresin.
+- **Tri ashpërsitë u bashkuan në një qelizë të vetme.** Tri figura të veçanta
+  konkurronin me numrin që e ndajnë, dhe etiketat duhej ta përsërisnin njësinë —
+  «(vende)» tri herë, secila e mbështjellë në dy rreshta. Të bashkuara, njësia
+  thuhet një herë dhe marrëdhënia duket.
+- **Rrjetë në vend të flex-it te shiriti.** Flex-i i linte dy figurat e fundit në
+  një rresht të dytë me ndarëset në vende të gabuara — pikërisht pamja e
+  papërfunduar që u ankua.
+
+**Verifikuar në shfletues** në të dy modalitetet, të çelët dhe të errët, dhe në
+të dyja pamjet: 39 testet, kontrolli i tipave dhe ndërtimi kalojnë, dhe asnjë
+sjellje nuk ndryshoi — ndryshimi është tërësisht te paraqitja.

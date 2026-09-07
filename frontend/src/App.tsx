@@ -371,11 +371,18 @@ function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Site[] }) 
       <Figure value={summary.methods} label="metoda" />
       <Figure value={summary.smells} label="erëra" />
       <Figure value={sites.length} label={sites.length === 1 ? "vend" : "vende"} accent />
-      {(["critical", "major", "minor"] as const).map((level) =>
-        byWorst[level] ? (
-          <Figure key={level} value={byWorst[level]} label={`${level} (vende)`} tone={level} />
-        ) : null,
-      )}
+      <div className="figure breakdown">
+        <b>
+          {(["critical", "major", "minor"] as const).map((level) =>
+            byWorst[level] ? (
+              <span key={level} className={level}>
+                {byWorst[level]} {level}
+              </span>
+            ) : null,
+          )}
+        </b>
+        <span>vende sipas më të rëndës</span>
+      </div>
     </div>
   );
 }

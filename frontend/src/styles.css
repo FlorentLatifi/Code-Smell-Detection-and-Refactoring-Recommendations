@@ -1,16 +1,26 @@
 /* One stylesheet, no framework. The interface has two views and a list; a design
    system would be more code than the thing it dresses.
 
-   The direction is an instrument, not a product page. Three rules hold it:
+   The direction is an instrument, not a product page — and the refresh kept that
+   rather than replacing it. Cards, drop shadows, rounded corners and gradients
+   are the house style of generated interfaces, so reaching for them to look
+   "designed" moves towards that look, not away from it. What was actually weak
+   was measurable: the type scale was compressed, the summary was eight
+   undifferentiated numbers, and every section carried the same density, so the
+   eye had nowhere to rest.
 
-   1. Typography carries the design. Headings and headline numbers are set in the
-      same serif family the thesis uses, so the tool and the document read as one
-      artefact; identifiers and measurements are always monospaced, because every
-      one of them is a literal from the source or a number to be compared.
-   2. Structure comes from rules and alignment, not from boxes. No shadows, no
-      rounded corners, no floating cards. A hairline and a shared baseline say
-      "these belong together" more quietly and more precisely than a container.
-   3. The palette is the one `build_figures.py` draws the thesis figures in. A
+   Four rules hold it:
+
+   1. Typography carries the design. A real scale with visible steps, set in the
+      same serif the thesis uses for headings and headline numbers, so the tool
+      and the document read as one artefact. Identifiers and measurements are
+      always monospaced, because every one of them is a literal from the source
+      or a number to be compared.
+   2. Structure comes from rules, alignment and space, not from boxes. Panels
+      earn a surface and a hairline; nothing floats.
+   3. Space is a scale, not a guess. Sections breathe in proportion to their
+      weight, which is what makes a page look composed rather than filled.
+   4. The palette is the one `build_figures.py` draws the thesis figures in. A
       screenshot of this screen and a figure from Chapter 5 sit on the same page
       without clashing, which is the whole reason to have a palette at all.
 
@@ -20,17 +30,19 @@
 :root {
   /* Ink and paper. Cool greys rather than pure black on pure white: a screen
      read for an hour is easier at slightly less than full contrast. */
-  --ink: #1a1d21;
+  --ink: #16191d;
   --ink-soft: #4c5560;
-  --ink-faint: #838d99;
-  --paper: #f4f3f1;
+  --ink-faint: #7d8792;
+  --paper: #f5f4f2;
   --surface: #ffffff;
+  --sunken: #efeeeb;
   --rule: #c9cbcd;
-  --rule-soft: #e3e3e1;
+  --rule-soft: #e4e3e0;
 
   /* Straight from the figure palette in scripts/build_figures.py. */
   --accent: #1f4e79;
   --accent-wash: #e7edf3;
+  --accent-line: #4c7ba6;
 
   --critical: #8c2f22;
   --major: #8a5a12;
@@ -45,19 +57,41 @@
     Georgia, "Times New Roman", serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "SF Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* A type scale with steps you can see. The old one ran 0.70 to 1.60rem in
+     nine barely distinguishable increments, which is why the hierarchy read as
+     flat even though it was thought through. */
+  --t-micro: 0.7rem;
+  --t-small: 0.8rem;
+  --t-body: 0.94rem;
+  --t-lead: 1.06rem;
+  --t-title: 1.5rem;
+  --t-display: 2.1rem;
+  --t-masthead: 2.4rem;
+
+  /* Space as a scale rather than a guess. */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 14px;
+  --s-4: 22px;
+  --s-5: 34px;
+  --s-6: 52px;
+  --s-7: 76px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #e6e4e0;
+    --ink: #e8e6e2;
     --ink-soft: #a8adb4;
-    --ink-faint: #767d86;
-    --paper: #14161a;
-    --surface: #1b1e23;
+    --ink-faint: #7c848d;
+    --paper: #101317;
+    --surface: #171b20;
+    --sunken: #0c0f12;
     --rule: #363b42;
-    --rule-soft: #262a30;
+    --rule-soft: #23272d;
 
     --accent: #7ba7d1;
+    --accent-line: #4d7ea8;
     --accent-wash: #1c2733;
 
     --critical: #d98276;
@@ -79,41 +113,48 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 15px/1.5 var(--sans);
+  font: 15px/1.6 var(--sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .page {
-  max-width: 1180px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 34px 26px 84px;
+  padding: var(--s-6) var(--s-5) var(--s-7);
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: var(--s-4) var(--s-3) var(--s-6);
+  }
 }
 
 /* ---------- masthead ---------- */
 /* A rule under the title, the weight a printed page would give it. */
 header {
-  border-bottom: 1px solid var(--ink);
-  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--s-3);
 }
 
 h1 {
   margin: 0;
-  font: 400 1.85rem/1.1 var(--serif);
-  letter-spacing: -0.01em;
+  font: 400 var(--t-masthead) / 1.05 var(--serif);
+  letter-spacing: -0.02em;
 }
 
 .tagline {
-  margin: 5px 0 0;
-  color: var(--ink-soft);
-  font-size: 0.88rem;
+  margin: var(--s-1) 0 0;
+  color: var(--ink-faint);
+  font-size: var(--t-body);
 }
 
 /* ---------- view switch ---------- */
 /* Underlined, like a running head; not buttons pretending to be tabs. */
 .tabs {
   display: flex;
-  gap: 22px;
-  margin-top: 18px;
+  gap: var(--s-4);
+  margin-top: var(--s-4);
 }
 
 .tab {
@@ -140,17 +181,22 @@ h1 {
 /* ---------- search ---------- */
 .search {
   display: flex;
-  gap: 8px;
-  margin: 26px 0 22px;
+  gap: var(--s-2);
+  margin: var(--s-5) 0 var(--s-4);
 }
 
 .search input {
   flex: 1;
-  padding: 9px 11px;
+  padding: 11px var(--s-3);
   border: 1px solid var(--rule);
   background: var(--surface);
   color: var(--ink);
-  font: 0.9rem var(--mono);
+  font: var(--t-body) var(--mono);
+  transition: border-color 120ms ease;
+}
+
+.search input:hover {
+  border-color: var(--ink-faint);
 }
 
 .search input::placeholder {
@@ -158,18 +204,26 @@ h1 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: 2px solid var(--accent-line);
+  outline-offset: 2px;
 }
 
 button {
-  padding: 9px 20px;
+  padding: 11px var(--s-4);
   border: 1px solid var(--accent);
   background: var(--accent);
   color: #fff;
-  font: 600 0.86rem var(--sans);
+  font: 600 var(--t-small) var(--sans);
   letter-spacing: 0.02em;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-line);
+  border-color: var(--accent-line);
 }
 
 button:disabled {
@@ -194,43 +248,50 @@ button:disabled {
 }
 
 /* ---------- measured figures ---------- */
-/* A row of numbers, separated by rules. The number is the object; the label is
-   the caption under it, as in a table of figures. */
+/* Eight numbers in an even row read as a wall: nothing said which of them the
+   reader came for. The accented figure is now genuinely larger, the rest step
+   down, and the group sits on a surface so it reads as one object rather than
+   as the top of the page. */
 .summary {
-  display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 26px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  margin-bottom: var(--s-5);
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
 }
 
+/* A grid rather than a wrapping flex row. Flex left the last two figures on a
+   second line at an arbitrary width with the separators in the wrong places,
+   which is what a wall of numbers looks like when nothing is holding it. */
 .figure {
-  flex: 1;
-  min-width: 104px;
-  padding: 12px 22px 12px 0;
+  padding: var(--s-3) var(--s-4);
+  border-left: 1px solid var(--rule-soft);
 }
 
-.figure + .figure {
-  padding-left: 22px;
-  border-left: 1px solid var(--rule-soft);
+.figure:first-child {
+  border-left: 0;
 }
 
 .figure b {
   display: block;
-  font: 400 1.6rem/1.1 var(--serif);
+  font: 400 var(--t-title) / 1.05 var(--serif);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .figure span {
   display: block;
-  margin-top: 3px;
+  margin-top: var(--s-1);
   color: var(--ink-faint);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
+/* The one figure the reader came for. */
 .figure.accent b {
   color: var(--accent);
+  font-size: var(--t-display);
 }
 
 .figure.critical b {
@@ -241,6 +302,33 @@ button:disabled {
   color: var(--major);
 }
 
+/* The three severities as one cell rather than three. Three separate figures
+   competed with the count they subdivide, and their labels had to repeat the
+   unit — "(vende)" three times, wrapping to two lines each. Grouped, the unit
+   is said once and the relationship is visible. */
+.figure.breakdown {
+  grid-column: span 2;
+}
+
+.figure.breakdown b {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  font: 400 var(--t-lead) / 1.2 var(--serif);
+}
+
+.figure.breakdown b .critical {
+  color: var(--critical);
+}
+
+.figure.breakdown b .major {
+  color: var(--major);
+}
+
+.figure.breakdown b .minor {
+  color: var(--minor);
+}
+
 /* ---------- two columns ---------- */
 /* `minmax(0, ...)` rather than `1fr`: a grid item's automatic minimum is its
    content, so a long path inside the list would widen the page instead of
@@ -249,7 +337,7 @@ button:disabled {
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 30px;
+  gap: var(--s-4);
 }
 
 .layout > * {
@@ -266,10 +354,11 @@ button:disabled {
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 18px;
+  gap: var(--s-3) var(--s-4);
   align-items: end;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--ink);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-3);
+  border-bottom: 1px solid var(--rule-soft);
+  background: var(--sunken);
 }
 
 /* A flex item will not shrink below its content unless told to, and the content
@@ -292,22 +381,35 @@ button:disabled {
 }
 
 select {
-  padding: 4px 6px;
+  padding: 7px 9px;
   border: 1px solid var(--rule);
   background: var(--surface);
   color: var(--ink);
-  font: 0.86rem var(--sans);
+  font: var(--t-small) var(--sans);
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+select:hover {
+  border-color: var(--ink-faint);
 }
 
 .count {
   margin: 0 0 0 auto;
-  color: var(--ink-faint);
-  font-size: 0.76rem;
+  color: var(--ink-soft);
+  font-size: var(--t-small);
   font-variant-numeric: tabular-nums;
 }
 
 /* ---------- the list ---------- */
-/* Ruled rows on the page itself, not a bordered card: the list is the page. */
+/* A surface, so the column reads as one panel beside the detail rather than as
+   loose text on the page. Still ruled rows inside it: the rule is what says
+   "these are the same kind of thing", and a card per row would say the opposite. */
+.list {
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+}
+
 .list ul {
   margin: 0;
   padding: 0;
@@ -320,20 +422,21 @@ select {
 
 .row {
   display: grid;
-  grid-template-columns: 9px minmax(0, 1fr);
-  gap: 0 11px;
+  grid-template-columns: 3px minmax(0, 1fr);
+  gap: 0 var(--s-3);
   width: 100%;
-  padding: 9px 10px 9px 0;
+  padding: var(--s-3) var(--s-3) var(--s-3) 0;
   border: 0;
   background: none;
   color: var(--ink);
-  font: 400 0.88rem var(--sans);
+  font: 400 var(--t-body) var(--sans);
   text-align: left;
   cursor: pointer;
+  transition: background-color 90ms ease;
 }
 
 .row:hover {
-  background: var(--accent-wash);
+  background: var(--sunken);
 }
 
 .row.selected {
@@ -359,7 +462,7 @@ select {
 .row .headline {
   display: flex;
   align-items: baseline;
-  gap: 9px;
+  gap: var(--s-3);
 }
 
 .row .kind {
@@ -368,34 +471,44 @@ select {
 
 .row .where {
   overflow: hidden;
-  color: var(--ink-soft);
+  color: var(--ink);
   font-family: var(--mono);
-  font-size: 0.8rem;
+  font-size: var(--t-small);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .row .file {
-  margin-top: 2px;
+  margin-top: var(--s-1);
   color: var(--ink-faint);
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: var(--t-micro);
 }
 
 .row .grade {
   flex: none;
   margin-left: auto;
   color: var(--ink-faint);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  font-size: var(--t-micro);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.row.critical .grade {
+  color: var(--critical);
+}
+
+.row.major .grade {
+  color: var(--major);
 }
 
 /* ---------- detail ---------- */
 .detail {
   align-self: start;
-  padding-top: 2px;
+  padding: var(--s-4);
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
 }
 
 .detail h2 {
