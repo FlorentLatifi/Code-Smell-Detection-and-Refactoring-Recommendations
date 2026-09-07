@@ -326,6 +326,18 @@ def test_the_pooled_rate_is_reweighted_by_the_true_stratum_sizes():
     assert summary["acceptable_reweighted"] == 0.625
 
 
+def test_the_pooled_rate_is_absent_when_no_stratum_size_is_known():
+    """A sheet whose transformations the sites file does not name.
+
+    The weights are all zero, so nothing can be reweighted. Reporting 0.0 would
+    read as "none of them were acceptable", which is a claim about the rewrites
+    rather than about the missing sizes.
+    """
+    summary = summarise([judgement("EM01", "ExtractMethod", Acceptance.AS_IS)], {})
+
+    assert summary["acceptable_reweighted"] is None
+
+
 def test_a_rewrite_needing_an_edit_still_counts_as_acceptable():
     """Only a rejection is a failure; a bad name is a minute of a reviewer's time."""
     judgements = [judgement("EM01", "ExtractMethod", Acceptance.AFTER_EDIT)]

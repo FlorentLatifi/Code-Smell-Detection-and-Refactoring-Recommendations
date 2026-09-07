@@ -320,7 +320,11 @@ def do_score(args: argparse.Namespace) -> int:
             f"{f'[{low:.2f}, {high:.2f}]':>18}"
         )
     print()
-    print(f"reweighted over all applied sites: {summary['acceptable_reweighted']}")
+    pooled = summary["acceptable_reweighted"]
+    print(
+        "reweighted over all applied sites: "
+        + ("not computable, no stratum size known" if pooled is None else str(pooled))
+    )
     print(f"Wrote {result_path}")
     return 0
 

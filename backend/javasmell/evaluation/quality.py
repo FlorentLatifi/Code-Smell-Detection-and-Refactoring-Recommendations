@@ -361,8 +361,10 @@ def summarise(
             "acceptable_ci": list(wilson(merged, len(group))),
         }
 
+    # None rather than zero when no stratum has a known size: the reweighting
+    # cannot be done, and "0% acceptable" is a claim, not an absence of one.
     covered = sum(sizes.get(name, 0) for name in per)
-    pooled = 0.0
+    pooled: float | None = None
     if covered:
         pooled = round(
             sum(
