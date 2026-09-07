@@ -73,6 +73,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-61 | Tabela e veçorive u riprodhua bajt për bajt | 2026-09-03 | aktiv |
 | VD-62 | Formatimi verifikohet kundrejt shabllonit të UBT-së, jo kundrejt vetes | 2026-09-03 | aktiv |
 | VD-63 | README-ja dhe Shtojca 8.5 mbahen një tabelë e vetme | 2026-09-07 | aktiv |
+| VD-64 | Kodi që prodhon numrat e punimit testohet si kodi që i përdor | 2026-09-07 | aktiv |
 
 ---
 
@@ -2181,3 +2182,41 @@ i shtresave. Të dyja u ndreqën, dhe lista tani krahasohet me
 Radha nuk krahasohet. README-ja i grupon për lexim, eksporti i rendit për makinë,
 dhe detyrimi i njërës të ndjekë tjetrën do të ishte rregull për paraqitjen, jo për
 të vërtetën.
+
+### VD-64: Kodi që prodhon numrat e punimit testohet si kodi që i përdor
+
+**Konteksti.** Mbulimi i testeve ishte 90%, çka fsheh se ku ndodhet e mbetura.
+Matja për-modul nxori se disa module të `evaluation/`-it ishin në **zero**, dhe
+ato nuk janë module dytësore: `replay.py` prodhon çdo shifër të Qasjes A që
+raporton Kapitulli 5 — pikët kryesore, fshirjen e pragjeve, kalibrimin — ndërsa
+`provenance.py` shkruan bllokun e mjedisit në **çdo** skedar nën `data/results/`.
+
+Të dyja i pata përdorur javë me radhë gjatë auditimit të riprodhimit pa vënë re
+se asnjëra nuk kishte test.
+
+**Dështimi që kërkonte mbulim, jo mbulimi si shifër.** `replay` e anashkalon pa
+zë çdo rresht që nuk gjen mostrën e vet. Kjo është e saktë për një tabelë më të
+gjerë se bashkësia e mostrave, dhe është njëkohësisht ajo që sheh një bashkim i
+prishur: ndrysho çelësin në njërën anë dhe çdo rresht anashkalohet, funksioni
+kthen listë boshe, dhe vlerësimi më poshtë raporton mbi asgjë në vend që të
+dështojë. Testi që e pin këtë dallim është arsyeja kryesore e këtij vendimi.
+
+Te `provenance.py` rasti i qetë është tjetër: `git_commit` i gëlltit të gjitha
+dështimet dhe kthen varg bosh, ndaj një ekzekutim jashtë një checkout-i shkruan
+rezultat pa revizion. Ajo zgjedhje është e drejtë — një eksperiment shtatë-orësh
+nuk duhet ta humbë rezultatin sepse git-i mungon — por do të thotë se commit-i
+bosh është gjendje reale që lexuesi mund ta hasë, dhe tani është e shënuar si e
+qëllimshme.
+
+**Pritshmëritë nxirren me dorë, si kudo tjetër.** Long Method ndez mbi
+`MLOC > 30`, dhe numëruesi i rreshtave e mat metodën si një rresht për firmën
+plus një për çdo deklarim, pa e numëruar kllapën e vetme mbyllëse. Prandaj
+tridhjetë deklarime masin 31 dhe e kalojnë pragun, ndërsa njëzet e nëntë masin 30
+dhe jo. Ajo aritmetikë pohohet në një test të vetin, që të mos rrijë e nënkuptuar
+te katër të tjerët.
+
+**U provua se testet bien.** Çelësi i bashkimit i ndryshuar rrëzoi katër teste;
+pragu i ulur nga 30 në 25 rrëzoi dy, përfshirë atë kufitar; ngushtimi i kapjes së
+gabimeve te prejardhja rrëzoi dy. Të tria u kthyen dhe suita kaloi sërish.
+
+Rezultati: 407 teste nga 396, mbulimi 91%, dhe të dy modulet në 100%.
