@@ -155,11 +155,17 @@ export const REFUSAL_SQ: Record<string, string> = {
   unparseable: "skedar që nuk parsohet",
 };
 
+// Çdo verdikt që `Verdict` mund të prodhojë, jo vetëm ata që korpusi nxori. Një
+// verdikt pa përkthim nuk e prish pamjen — tabela bie te vetë çelësi — por e
+// shfaq atë çelës anglisht mes etiketave shqip, dhe pikërisht kështu `parses`
+// qëndroi i papërkthyer në panel.
 export const VERDICT_SQ: Record<string, string> = {
   no_new_errors: "pa gabim të ri",
   compiles: "kompilon plotësisht",
+  parses: "parsohet, pa kontroll kompilimi",
   new_errors: "me gabim të ri",
   broken_syntax: "sintaksë e prishur",
+  not_checked: "i pakontrolluar",
 };
 
 /** Rezultati i rregullave për një erë, në variantin parësor dhe agregimin e dhënë. */

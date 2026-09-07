@@ -74,6 +74,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-62 | Formatimi verifikohet kundrejt shabllonit të UBT-së, jo kundrejt vetes | 2026-09-03 | aktiv |
 | VD-63 | README-ja dhe Shtojca 8.5 mbahen një tabelë e vetme | 2026-09-07 | aktiv |
 | VD-64 | Kodi që prodhon numrat e punimit testohet si kodi që i përdor | 2026-09-07 | aktiv |
+| VD-65 | Etiketat shqip të ndërfaqes kontrollohen kundrejt të dhënave | 2026-09-07 | aktiv |
 
 ---
 
@@ -2287,3 +2288,32 @@ Rezultati përfundimtar: **428 teste, mbulimi 95%, dhe asnjë modul nën 90%.**
 më parë, gati e tëra nga rëndësia me permutacion, e cila ripërshtat një model për
 çdo fold. Kjo pranohet: testet që u shtuan mbrojnë ndarjen e grupuar dhe matjen
 jashtë fold-it, të cilat janë dy pretendimet mbi të cilat qëndron Qasja B.
+
+### VD-65: Etiketat shqip të ndërfaqes kontrollohen kundrejt të dhënave
+
+**Konteksti.** `evaluation.ts` mban katër fjalorë që përkthejnë çelësat e
+backend-it në shqip: erërat, modelet, arsyet e refuzimit dhe verdiktet. Ata janë
+kopje me dorë e emrave që prodhon kodi matës, dhe të dyja anët ndryshojnë veç e
+veç — i njëjti motiv që VD-63 gjeti te README-ja, në një skedar tjetër.
+
+**Çfarë doli.** Verdikti `parses` ekziston te `refactoring_evaluation.json`, me
+katër raste, dhe nuk kishte përkthim.
+
+Defekti nuk dukej si defekt, dhe kjo është pjesa me rëndësi. `Distribution` e
+rendereron etiketën si `labels[key] ?? key`, ndaj asgjë nuk prishet dhe asgjë nuk
+del bosh: paneli thjesht shfaq identifikuesin anglisht `parses` mes etiketash
+shqip. Në një panel që tregohet gjatë mbrojtjes, ajo lexohet si pakujdesi e jo si
+gabim, dhe pikërisht prandaj kishte mbijetuar.
+
+**Vendimi.** `parses` dhe `not_checked` u shtuan — të dy verdikte që `Verdict`
+mund t'i prodhojë — dhe një test e kontrollon mbulimin kundrejt vetë JSON-eve që
+ndërfaqja importon.
+
+**Vetëm një drejtim kontrollohet.** Një etiketë për diçka që korpusi nuk e nxori
+është e saktë dhe e pritshme: motori mund ta prodhojë atë verdikt ose atë arsye
+refuzimi, thjesht nuk e prodhoi në këtë ekzekutim. Kërkesa që fjalori të mos ketë
+çelësa të tepërt do ta detyronte ndërfaqen të ndiqte një ekzekutim të vetëm të
+korpusit, çka është e kundërta e asaj që duhet.
+
+**U provua** duke e hequr sërish përkthimin e `parses`: testi e raportoi me emër.
+23 teste frontend nga 19; `tsc` dhe ndërtimi kalojnë.
