@@ -2169,3 +2169,15 @@ më pak se dy tabela që ndahen heshtazi.
 **U provua** me të tria mënyrat e ndarjes: një kohë e ndryshuar, një rresht i
 hequr, dhe komanda pa argument e rikthyer. Të trija u raportuan me rreshtin
 përkatës, dhe kontrolli kaloi sërish kur README-ja u rikthye.
+
+**Lista e metrikave ishte kopja tjetër, dhe kishte rrëshqitur po ashtu.** README-ja
+e quante metrikën e kohezionit `LCOM*`, ndërsa kodi dhe shtojca e quajnë `LCOM3` —
+i njëjti metrik i Henderson-Sellers-it, por një lexues që krahason të dyja gjen te
+njëra një emër që nuk del askund te tjetra. Mungonte edhe paketa `evaluation/` nga
+pema e strukturës, e vetmja që `ENGINEERING.md` e vizaton shprehimisht te diagrami
+i shtresave. Të dyja u ndreqën, dhe lista tani krahasohet me
+`system_reference.json`, që eksportohet nga vetë kodi matës.
+
+Radha nuk krahasohet. README-ja i grupon për lexim, eksporti i rendit për makinë,
+dhe detyrimi i njërës të ndjekë tjetrën do të ishte rregull për paraqitjen, jo për
+të vërtetën.

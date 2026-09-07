@@ -11,7 +11,9 @@ shtoi te tabela, ose një opsion i shtypur pa vlerën që ai kërkon nuk e prish
 ndërtimin, as testet, as kontrollin e formatit. Prishin vetëm riprodhimin, dhe
 vetëm te dikush që nuk mund ta raportojë më.
 
-Kontrollohen tri gjëra:
+Kontrollohen katër gjëra, dhe dy të fundit vlejnë për README-në, e cila i mban të
+njëjtat fakte të kopjuara me dorë: tabelën e riprodhimit dhe listën e metrikave.
+Të dyja kishin rrëshqitur, dhe asgjë nuk i krahasonte (VD-63).
 
 **Që skripti ekziston.** Rreshti e emërton me shteg relativ ndaj `scripts/`.
 
@@ -25,18 +27,24 @@ kontroll që kërkon të lexohet vetë skripti, dhe lexohet si tekst me `ast`: i
 i tyre do të sillte `javasmell`, `sklearn` dhe `matplotlib` në një punë CI-je që
 instalon vetëm `python-docx`.
 
+**Që README-ja thotë të njëjtën gjë.** Tabela e saj krahasohet qelizë për qelizë me
+atë të Shtojcës 8.5, dhe lista e metrikave me atë që eksporton vetë kodi matës.
+
 Del me kod jo-zero që kontrolli të mund të hyjë në CI bashkë me atë të citimeve.
 """
 
 from __future__ import annotations
 
 import ast
+import json
+import re
 import sys
 from pathlib import Path
 
 from chapters import REPRODUCTION
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
+RESULTS = Path(__file__).resolve().parents[2] / "data" / "results"
 
 #: Vetëm kjo nëndosje e `data/` është e komituar, ndaj vetëm për shtigjet brenda saj
 #: mund të pretendohet se skedari gjendet te kloni i pastër që tabela presupozon.
@@ -138,6 +146,37 @@ def _check_readme(root: Path) -> list[str]:
     return problems
 
 
+def _check_readme_metrics(root: Path) -> list[str]:
+    """The README lists the metrics by hand; the code decides what they are.
+
+    `system_reference.json` is exported from the measurement code, so it is the
+    only list that cannot be wrong. The README's copy had already drifted twice:
+    it named the Henderson-Sellers cohesion metric `LCOM*` where the code and the
+    appendix both call it `LCOM3`, so a reader comparing the two found a metric
+    in one that appears nowhere in the other.
+
+    Order is not compared. The README groups them for reading; the export sorts
+    them for machines, and forcing either to follow the other would be a rule
+    about presentation rather than about truth.
+    """
+    reference = json.loads((RESULTS / "system_reference.json").read_text(encoding="utf-8"))
+    readme = (root / "README.md").read_text(encoding="utf-8")
+
+    problems = []
+    for label, key in (("Klasë", "class"), ("Metodë", "method")):
+        match = re.search(rf"\*\*{label}:\*\* (.+)", readme)
+        if match is None:
+            problems.append(f"README-ja nuk e liston fare rreshtin «{label}:» të metrikave")
+            continue
+        listed = {name.strip().replace("\\", "") for name in match.group(1).split(",")}
+        measured = set(reference["metrics"][key])
+        for missing in sorted(measured - listed):
+            problems.append(f"metrika {missing} matet por README-ja nuk e liston ({label})")
+        for extra in sorted(listed - measured):
+            problems.append(f"README-ja liston {extra} por asgjë nuk e mat ({label})")
+    return problems
+
+
 def report() -> list[str]:
     root = SCRIPTS.parent
     problems = []
@@ -150,7 +189,7 @@ def report() -> list[str]:
         if script.name not in named:
             problems.append(f"{script.name} nuk përmendet te tabela e riprodhimit")
 
-    return problems + _check_readme(root)
+    return problems + _check_readme(root) + _check_readme_metrics(root)
 
 
 def main() -> int:

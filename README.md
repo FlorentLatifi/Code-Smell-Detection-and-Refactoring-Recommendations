@@ -49,6 +49,7 @@ backend/javasmell/
   detectors/   Detektorët me rregulla
   ml/          Trajnimi dhe inferenca e modelit
   refactor/    Motori i transformimeve mbi AST
+  evaluation/  Përputhja me MLCQ-në dhe harness-i i vlerësimit
   api/         FastAPI
 backend/tests/ Teste me vlera të derivuara me dorë
 frontend/      React + TypeScript
@@ -57,7 +58,7 @@ docs/thesis/   Punimi sipas shabllonit të UBT-së
 
 ## Metrikat e implementuara
 
-**Klasë:** CLOC, NOM, NOF, WMC, AMW, MAXCC, TCC, LCOM, LCOM\*, ATFD, CBO, RFC, WOC, NOPA, NOAM, DIT, NOC
+**Klasë:** CLOC, NOM, NOF, WMC, AMW, MAXCC, TCC, LCOM, LCOM3, ATFD, CBO, RFC, WOC, NOPA, NOAM, DIT, NOC
 **Metodë:** MLOC, CC, NP, MAXNESTING, ATFD, FDP, LAA, NOAV, CINT
 
 ## Përdorimi nga rreshti i komandës
