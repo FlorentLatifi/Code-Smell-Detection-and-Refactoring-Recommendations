@@ -72,6 +72,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-60 | Edhe varësitë tranzitive të shtresës web piketohen | 2026-09-03 | aktiv |
 | VD-61 | Tabela e veçorive u riprodhua bajt për bajt | 2026-09-03 | aktiv |
 | VD-62 | Formatimi verifikohet kundrejt shabllonit të UBT-së, jo kundrejt vetes | 2026-09-03 | aktiv |
+| VD-63 | README-ja dhe Shtojca 8.5 mbahen një tabelë e vetme | 2026-09-07 | aktiv |
 
 ---
 
@@ -2129,3 +2130,42 @@ devijime margjinash, tre seksione herë katër anë), pas rregullimit (kaloi), d
 kundër një dokumenti me një margjinë të prishur qëllimisht (e kapi). Të gjitha
 portat e cilësisë u ekzekutuan të plota: ruff, mypy, 396 testet e backend-it,
 citimet, tabela e riprodhimit, formatimi.
+
+
+### VD-63: README-ja dhe Shtojca 8.5 mbahen një tabelë e vetme
+
+**Konteksti.** VD-58 e mbylli tabelën e riprodhimit të Shtojcës 8.5 me një kontroll
+që verifikon se çdo rresht emërton skript ekzistues, se asnjë skript nuk mbetet
+jashtë, dhe se komanda parsohet. Ai kontroll shikonte vetëm punimin. README-ja
+mbante një kopje të dorës të së njëjtës tabelë, dhe atë nuk e shikonte asgjë.
+
+**Çfarë doli.** Kopja e README-së kishte rrëshqitur më keq se origjinali para
+rregullimit:
+
+- **Njëmbëdhjetë hapa nga pesëmbëdhjetë.** Mungonin `report_matching.py`,
+  `refusals_by_severity.py`, `verify_with_project.py` dhe `model_without_project.py`.
+- **Një rresht i dyfishtë.** `build_figures.py` ishte listuar dy herë, si hapi 11
+  dhe si hapi 7 — dy numra për të njëjtin skript, në të njëjtën tabelë.
+- **Komanda që nuk ekzekutohet.** `evaluate_rules.py --from-dataset` pa shtegun që
+  opsioni kërkon: pikërisht defekti i VD-58, i mbetur këtu javë pasi u ndreq atje.
+- **Tri kohë të gabuara.** Po ato që VD-58 dhe VD-61 i matën e i ndreqën te punimi:
+  hapi i tabelës së veçorive «~95 min» për 56, `train_models.py` «sekonda» për 190,
+  `calibrate_thresholds.py` «~1 min» për nëntë.
+
+Doli edhe një mospërputhje jashtë tabelës: README-ja shkruante «Viti akademik
+2023/2024» ndërsa punimi shkruan 2025-2026.
+
+**Vendimi.** Tabela e README-së nuk shkruhet më me dorë: rreshtat u rigjeneruan nga
+`REPRODUCTION` te `chapters.py`, dhe `check_reproduction.py` tani i krahason të dyja
+qelizë për qelizë. Burimi i vërtetë mbetet një, dhe kopja provohet se është kopje.
+
+**Pse krahasim i saktë e jo i përafërt.** Një kontroll që lejon dallime në tekst do
+të kishte lejuar pikërisht dallimet që u gjetën — kohët e ndryshme dhe komandën pa
+argument janë të dyja «afërsisht» të njëjta me origjinalin. Çmimi është se një
+rresht mban formulimin e shtojcës edhe në README, ku «tabelat e kësaj shtojce»
+lexohet paksa çuditshëm. Kjo pranohet: një formulim i vockël i sikletshëm kushton
+më pak se dy tabela që ndahen heshtazi.
+
+**U provua** me të tria mënyrat e ndarjes: një kohë e ndryshuar, një rresht i
+hequr, dhe komanda pa argument e rikthyer. Të trija u raportuan me rreshtin
+përkatës, dhe kontrolli kaloi sërish kur README-ja u rikthye.

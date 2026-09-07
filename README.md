@@ -1,7 +1,7 @@
 # Code Smell Detection and Refactoring Recommendations
 
 Punim diplome Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
-Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2023/2024 · Dorëzimi: 2026
+Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2025/2026 · Dorëzimi: 2026
 
 Sistem që analizon projekte **Java**, detekton *code smells* me tri qasje të pavarura
 dhe gjeneron rekomandime refaktorimi të verifikueshme.
@@ -142,23 +142,31 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | # | Skripti | Prodhon | Kohë |
 |---|---|---|---|
 | 1 | `fetch_corpus.py` | korpusi, jashtë git-it | orë, një herë |
-| 2 | `build_dataset.py` | tabela e veçorive, e komituar | ~95 min |
-| 3 | `evaluate_rules.py --from-dataset` | numrat e Qasjes A | sekonda |
-| 4 | `train_models.py` | numrat e Qasjes B dhe modelet | sekonda |
-| 5 | `sweep_thresholds.py` | analiza e ndjeshmërisë | sekonda |
-| 6 | `evaluate_refactorings.py` | tabela N/M/K e Qasjes C | orë |
-| 7 | `calibrate_thresholds.py` | pragjet e kalibruara jashtë fold-it | ~1 min |
-| 8 | `reviewer_agreement.py` | tavani i pajtimit mes rishikuesve | sekonda |
-| 9 | `bootstrap_intervals.py` | intervalet e besimit mbi çdo shifër | nën një minutë |
-| 10 | `export_system_reference.py` | tabelat e Shtojcës (pragjet, strategjitë) | sekonda |
-| 11 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
-| 7 | `build_figures.py` | figurat e punimit | sekonda |
+| 2 | `report_matching.py` | mbulimi i përputhjes MLCQ↔entitet | ~2 min |
+| 3 | `build_dataset.py` | tabela e veçorive, e komituar | ~56 min |
+| 4 | `evaluate_rules.py --from-dataset data/results/mlcq_dataset.csv` | numrat e Qasjes A | sekonda |
+| 5 | `train_models.py` | numrat e Qasjes B dhe modelet | ~3 min |
+| 6 | `sweep_thresholds.py` | analiza e ndjeshmërisë | sekonda |
+| 7 | `evaluate_refactorings.py` | tabela N/M/K e Qasjes C | orë |
+| 8 | `calibrate_thresholds.py` | pragjet e kalibruara jashtë fold-it | sekonda |
+| 9 | `reviewer_agreement.py` | tavani i pajtimit mes rishikuesve | sekonda |
+| 10 | `bootstrap_intervals.py` | intervalet e besimit | nën një minutë |
+| 11 | `refusals_by_severity.py` | refuzimet sipas erës dhe ashpërsisë | ~2 min |
+| 12 | `verify_with_project.py` | verdikti brenda kontekstit të projektit | orë |
+| 13 | `model_without_project.py` | Qasja B pa kontekstin e projektit | ~2 min |
+| 14 | `export_system_reference.py` | tabelat e kësaj shtojce | sekonda |
+| 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
 
-Hapi 2 është i vetmi kalim i shtrenjtë që duhet paguar: ai mat çdo entitet një herë,
-dhe hapat 3 deri 5 lexojnë rreshtat e tij. Meqë tabela komitohet, një anëtar komisioni
-me një checkout të pastër i riprodhon numrat pa korpusin 4.4 GB.
+Hapi 3 është kalimi i shtrenjtë që duhet paguar një herë: ai mat çdo entitet, dhe
+hapat 4 deri 6 lexojnë rreshtat e tij. Meqë tabela komitohet, një anëtar komisioni me
+një checkout të pastër i riprodhon numrat pa korpusin 4.4 GB.
 
-Hapat 2 dhe 6 shkruajnë në mënyrë inkrementale dhe rifillojnë aty ku mbetën.
+Hapat 7 dhe 12 shkruajnë në mënyrë inkrementale dhe rifillojnë aty ku mbetën.
+
+Kjo tabelë nuk mirëmbahet me dorë: `docs/thesis/check_reproduction.py` e krahason me
+atë të Shtojcës 8.5 dhe e rrëzon ndërtimin nëse ndahen. Ajo ndarje kishte ndodhur —
+README-ja mbeti me njëmbëdhjetë hapa, një rresht të dyfishtë, dhe një komandë që nuk
+ekzekutohej — dhe pikërisht ajo e shtoi kontrollin.
 
 ## Referencat metodologjike
 

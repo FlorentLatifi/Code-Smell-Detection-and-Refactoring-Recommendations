@@ -98,6 +98,46 @@ def _check_command(command: str, root: Path) -> list[str]:
     return problems
 
 
+def _readme_rows(root: Path) -> list[tuple[str, str, str, str]]:
+    """The reproduction table as README.md prints it, row by row.
+
+    Matched on the pipe-delimited shape rather than parsed as Markdown: the file
+    holds several tables and only this one carries a backticked script name in
+    its second cell, which is a cheaper discriminator than a parser dependency.
+    """
+    rows = []
+    for line in (root / "README.md").read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) == 4 and cells[1].startswith("`") and cells[1].endswith("`"):
+            rows.append((cells[0], cells[1].strip("`"), cells[2], cells[3]))
+    return rows
+
+
+def _check_readme(root: Path) -> list[str]:
+    """The README prints the same table, and printed it wrong for a long time.
+
+    Both tables promise a committee member the same fifteen steps, and they were
+    written twice and maintained once: the README kept eleven of them, listed
+    `build_figures.py` under two different numbers, and repeated the
+    `--from-dataset` command that could not run months after the appendix was
+    fixed. Nothing compared them, so the drift was free.
+    """
+    expected = [(n, c, p, t) for n, c, p, t in REPRODUCTION]
+    found = _readme_rows(root)
+    if found == expected:
+        return []
+
+    problems = []
+    if len(found) != len(expected):
+        problems.append(
+            f"README-ja liston {len(found)} hapa, Shtojca 8.5 liston {len(expected)}"
+        )
+    for number, (mine, theirs) in enumerate(zip(found, expected, strict=False), 1):
+        if mine != theirs:
+            problems.append(f"rreshti {number} ndryshon: README «{mine}» kundrejt «{theirs}»")
+    return problems
+
+
 def report() -> list[str]:
     root = SCRIPTS.parent
     problems = []
@@ -109,7 +149,8 @@ def report() -> list[str]:
     for script in sorted(SCRIPTS.glob("*.py")):
         if script.name not in named:
             problems.append(f"{script.name} nuk përmendet te tabela e riprodhimit")
-    return problems
+
+    return problems + _check_readme(root)
 
 
 def main() -> int:
