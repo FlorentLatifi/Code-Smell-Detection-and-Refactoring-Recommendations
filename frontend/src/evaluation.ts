@@ -79,7 +79,7 @@ interface MlEvaluation {
   label: string;
   folds: number;
   seed: number;
-  per_smell: Record<string, ModelSmell>;
+  per_smell: Record<string, ModelSmell>;  environment: { commit: string; python: string; platform: string };
 }
 
 interface RefactoringEvaluation {
@@ -90,7 +90,7 @@ interface RefactoringEvaluation {
   unlocatable: number;
   refused_by_reason: Record<string, number>;
   verdicts: Record<string, number>;
-  applied_by_refactoring: Record<string, number>;
+  applied_by_refactoring: Record<string, number>;  environment: { commit: string; python: string; platform: string };
 }
 
 interface Dataset {
@@ -98,7 +98,7 @@ interface Dataset {
   samples_considered: number;
   repositories: number;
   by_smell: Record<string, number>;
-  by_entity_type: Record<string, number>;
+  by_entity_type: Record<string, number>;  environment: { commit: string; python: string; platform: string };
 }
 
 export interface SweepPoint {
@@ -113,7 +113,7 @@ export interface SweepPoint {
 
 interface Sweep {
   factors: number[];
-  per_smell: Record<string, Record<string, SweepPoint[]>>;
+  per_smell: Record<string, Record<string, SweepPoint[]>>;  environment: { commit: string; python: string; platform: string };
 }
 
 export const rules = rulesJson as unknown as RulesEvaluation;
@@ -179,3 +179,18 @@ export function variantScore(smell: string, aggregation: Aggregation): Score | n
   const extra = Object.keys(variants).find((name) => name !== PRIMARY_VARIANT);
   return extra ? variants[extra].by_aggregation[aggregation] : null;
 }
+
+/**
+ * Çdo commit që qëndron pas numrave të këtij paneli, pa përsëritje.
+ *
+ * Paneli i lexon pesë skedarë rezultati dhe secili mban mjedisin e vet.
+ * Eksperimentet u ekzekutuan sipas radhës në të cilën u shkruan, ndaj ata
+ * mjedise nuk janë një: fusnota shtypte commit-in e `rules_evaluation.json`
+ * sikur t'i kishte prodhuar të gjithë, dhe ai ishte i saktë vetëm për dy nga
+ * pesë. I njëjti defekt te punimi u ndreq si VD-59.
+ */
+export const COMMITS: string[] = [
+  ...new Set(
+    [rules, ml, refactoring, dataset, sweep].map((source) => source.environment.commit.slice(0, 10)),
+  ),
+].sort();

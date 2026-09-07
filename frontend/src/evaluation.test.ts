@@ -13,13 +13,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  COMMITS,
   MODEL_SQ,
   REFUSAL_SQ,
   SMELL_SQ,
   VERDICT_SQ,
   ml,
+  dataset,
   refactoring,
   rules,
+  sweep,
 } from "./evaluation";
 
 describe("etiketat mbulojnë të dhënat", () => {
@@ -48,5 +51,25 @@ describe("etiketat mbulojnë të dhënat", () => {
     }
     expect(measured.size).toBeGreaterThan(0);
     expect([...measured].filter((key) => !(key in MODEL_SQ))).toEqual([]);
+  });
+});
+
+describe("prejardhja", () => {
+  it("mbledh çdo commit që qëndron pas panelit, pa përsëritje", () => {
+    const sources = [rules, ml, refactoring, dataset, sweep];
+    const expected = [...new Set(sources.map((s) => s.environment.commit.slice(0, 10)))].sort();
+
+    expect(COMMITS).toEqual(expected);
+    expect(COMMITS.length).toBeGreaterThan(0);
+  });
+
+  it("nuk pretendon një commit të vetëm kur skedarët mbajnë disa", () => {
+    // Fusnota shtypte commit-in e `rules_evaluation.json` sikur t'i kishte
+    // prodhuar të gjitha shifrat. Nëse skedarët mbajnë më shumë se një, lista
+    // duhet t'i mbajë të gjitha — ndryshe defekti është kthyer.
+    const distinct = new Set(
+      [rules, ml, refactoring, dataset, sweep].map((s) => s.environment.commit),
+    );
+    expect(COMMITS.length).toBe(distinct.size);
   });
 });

@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import {
+  COMMITS,
   AGGREGATION_SQ,
   AGGREGATIONS,
   MODEL_SQ,
@@ -24,6 +25,7 @@ const PRIMARY: Aggregation = "mean";
 
 export function Results() {
   const [smell, setSmell] = useState<string>(SMELLS[0]);
+  const commits = COMMITS;
   const [aggregation, setAggregation] = useState<Aggregation>(PRIMARY);
 
   const coverage = (dataset.rows / dataset.samples_considered) * 100;
@@ -216,9 +218,25 @@ export function Results() {
       </Panel>
 
       <p className="quiet footnote">
-        Prodhuar me commit-in <code>{rules.environment.commit.slice(0, 10)}</code>, Python{" "}
-        {rules.environment.python}, {rules.environment.platform}. Ndarja mes trajnimit dhe
-        testimit është e grupuar sipas depos, kurrë e rastësishme sipas rreshtave.
+        Prodhuar me Python {rules.environment.python}, {rules.environment.platform}
+        {commits.length === 1 ? (
+          <>
+            , commit-i <code>{commits[0]}</code>
+          </>
+        ) : (
+          <>
+            . Commit-i ndryshon sipas skedarit të rezultatit — {commits.length} gjithsej,{" "}
+            {commits.map((commit, index) => (
+              <span key={commit}>
+                {index > 0 && ", "}
+                <code>{commit}</code>
+              </span>
+            ))}{" "}
+            — sepse eksperimentet u ekzekutuan sipas radhës në të cilën u shkruan
+          </>
+        )}
+        . Ndarja mes trajnimit dhe testimit është e grupuar sipas depos, kurrë e rastësishme
+        sipas rreshtave.
       </p>
     </div>
   );

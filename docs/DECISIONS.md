@@ -76,6 +76,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-64 | Kodi që prodhon numrat e punimit testohet si kodi që i përdor | 2026-09-07 | aktiv |
 | VD-65 | Etiketat shqip të ndërfaqes kontrollohen kundrejt të dhënave | 2026-09-07 | aktiv |
 | VD-66 | Shtresimi i ENGINEERING.md §2 verifikohet nga importet | 2026-09-07 | aktiv |
+| VD-67 | Paneli i rezultateve raporton çdo commit, jo një | 2026-09-07 | aktiv |
 
 ---
 
@@ -2356,3 +2357,25 @@ importi.
 Secila rrëzoi testin e vet dhe vetëm atë.
 
 432 teste.
+
+### VD-67: Paneli i rezultateve raporton çdo commit, jo një
+
+**Konteksti.** VD-59 e ndreqi këtë te punimi: shtojca thoshte «numrat u prodhuan
+me commit-in X», ku X vinte nga një skedar i vetëm, ndërsa skedarët e rezultateve
+mbajnë commit-e të ndryshme. Ndërfaqja mbante të njëjtën fjali dhe askush nuk e
+kishte parë.
+
+**Çfarë doli.** Fusnota e panelit lexonte `rules.environment.commit` dhe e shtypte
+si commit-in që prodhoi gjithçka. Paneli lexon **pesë** skedarë rezultati, dhe ata
+mbajnë **tri** commit-e të ndryshme. Fjalia ishte e saktë për dy nga pesë burimet,
+dhe e pasaktë për numrat e motorit të refaktorimit që shfaqen pak rreshta më lart.
+
+**Vendimi.** `COMMITS` i mbledh commit-et e të pesë burimeve, pa përsëritje, dhe
+fusnota i liston. Kur mbetet një i vetëm, fjalia lexohet si më parë; kur janë disa,
+e thotë hapur pse. Dy teste e mbrojnë: që lista përputhet me burimet, dhe që numri
+i saj barazon numrin e commit-eve të dallueshme — pra pretendimi i një commit-i të
+vetëm nuk mund të kthehet pa u vënë re.
+
+Kjo është hera e dytë që i njëjti pretendim gjendet i kopjuar diku tjetër. Punimi
+dhe ndërfaqja i lexojnë të njëjtët skedarë dhe të dy e kishin ngjeshur prejardhjen
+në një rresht që dukej i rregullt.
