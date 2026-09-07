@@ -81,6 +81,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-69 | Dizajni rifreskohet brenda drejtimit, jo duke e zëvendësuar | 2026-09-07 | aktiv |
 | VD-70 | Ekrani përgjigjet «nga t'ia nis» dhe «sa punë është» | 2026-09-07 | aktiv |
 | VD-71 | Prezantimi gjenerohet nga të njëjtat burime si punimi | 2026-09-07 | aktiv |
+| VD-72 | Cilësia e rishkrimeve matet me rubrikë, jo me kompilim | 2026-09-07 | aktiv |
 
 ---
 
@@ -2575,3 +2576,74 @@ E piketuar si të tjerat.
 
 **Dalja është skelet, jo forma përfundimtare**, si te `build_thesis.py`: renditja,
 koha dhe fjalët e folura mbeten të autorit, dhe rregullimi bëhet në PowerPoint.
+
+
+### VD-72: Cilësia e rishkrimeve matet me rubrikë, jo me kompilim
+
+**Konteksti.** Çdo kontroll automatik i Qasjes C i përgjigjet pyetjes së
+kompiluesit. `refactoring_evaluation.json` raporton se 3 558 nga 3 633 rishkrime
+nuk shtojnë lloj të ri gabimi, dhe askund nuk raportohet nëse ndonjëri prej tyre
+ia vlen të pranohet. Fowler-i e përkufizon refaktorimin si ndryshim që **ruan
+sjelljen** *dhe* **përmirëson strukturën e brendshme**. Motori e mat gjysmën e
+parë dhe nuk pohon asgjë për të dytën. Një metodë e nxjerrë në një kufi arbitrar,
+e emërtuar për asgjë, e kalon çdo kontroll që ekziston sot.
+
+**Vendimi.** `scripts/review_rewrites.py` nxjerr një mostër me farë të fiksuar
+nga vendet që motori i rishkroi vërtet, e rigjeneron secilin rishkrim, dhe
+shkruan dy gjëra: një tufë diff-esh për t'u lexuar dhe një fletë për t'u mbushur.
+Rubrika ka tre përmasa, të fiksuara para se të lexohej diff-i i parë:
+
+| përmasa | vlerat | çfarë pyet |
+|---|---|---|
+| `behaviour` | preserved / unclear / changed | gjysma e parë e Fowler-it |
+| `benefit` | improves / neutral / worsens | gjysma e dytë |
+| `acceptance` | as_is / after_edit / reject | a do ta bashkonte rishikuesi |
+
+`neutral` është kategoria për të cilën ekziston kjo matje: rishkrimi që lëviz
+bajte pa përmirësuar asgjë, të cilin çdo kontroll automatik i pipeline-it e
+numëron si sukses. `after_edit` ndahet nga të dyja anët sepse emërtimi është
+pikërisht pjesa që një motor deterministik nuk e bën dhe që njeriu e ndreq për
+një minutë; ta quash dështim do ta nënvlerësonte motorin, ta quash sukses të
+plotë do ta mbivlerësonte.
+
+**Fleta është e verbër.** Rreshtat që mbushen nuk mbajnë as verdiktin e
+`javac`-ut, as `resolution`, as zhvendosjen e metrikës. Ato bashkohen vetëm në
+çastin e vlerësimit. Një rishikues që e sheh se rishkrimi kompiloi e ka marrë
+përgjigjen e gjysmës së pyetjes para se t'i bëhet, dhe kryqëzimi i të dyjave është
+ndër gjërat më të vlefshme që kjo matje prodhon: ai thotë nëse kontrolli i
+kompiluesit është zëvendësues i pranueshmërisë apo thjesht i korreluar me të.
+
+**E shtresuar, jo proporcionale.** ExtractMethod zë 93% të vendeve të aplikuara.
+Një mostër proporcionale prej gjashtëdhjetë rreshtash do të mbante dy a tre
+rishkrime të llojeve të tjera dhe nuk do të thoshte asgjë për to. Secili
+transformim merret njëzet herë dhe raportohet veç; shifra e përbashkët
+ripeshohet me madhësitë e vërteta të shtresave, sepse mostra qëllimisht nuk e
+përfaqëson popullatën nga e cila u nxor. Intervali është Wilson (1927), jo
+përafrimi normal, i cili me njëzet vëzhgime dhe një përpjesë pranë skajit jep
+kufij jashtë [0, 1] — rasti për të cilin Brown, Cai & DasGupta (2001) e
+këshillojnë kundër tij.
+
+**Çelësi i vendit është pozicioni, jo emri.** `refactoring_sites.csv` nuk mban
+numër rreshti — mungesa që VD-55 e hasi — ndaj një klasë që mbingarkon një metodë
+ka dy rreshta që emri nuk i dallon. Fikstura `OrderManager.priceOrder` e tregon
+kufirin në formën e pastër: një metodë e vetme mban tri erëra të automatizueshme,
+tre rreshta që të tre thonë `OrderManager.priceOrder`. Rreshtat shkruhen në
+rendin e ecjes, ndaj pozicioni brenda skedarit është çelësi i vetëm pa
+paqartësi. Që ai rend të mos rrëshqasë, ecja u zhvendos nga skripti te
+`javasmell/evaluation/sites.py` dhe përdoret nga të dyja anët: një kopje e dytë
+do të ishte e saktë ditën që bëhet dhe e gabuar herën e parë që njëra ndryshon,
+siç ndodhi me dy numëruesit e LOC-ut (VD-21).
+
+**Vlerësuesi është autori, dhe kjo është kufizim, jo veçori.** Një rishikues i
+vetëm, i cili është njëkohësisht autori i motorit, është forma më e dobët që kjo
+matje mund të marrë. Është forma e disponueshme: alternativa është një rishikues
+i dytë që nuk ka si të rekrutohet. Punimi e raporton si gjykim të një rishikuesi,
+me rubrikën e fiksuar paraprakisht dhe fletën e komituar, që lexuesi të mund të
+mos pajtohet me një rresht të emërtuar e jo me një numër. Pajtimi mes
+rishikuesve, që `reviewer_agreement.py` e mat për etiketat e MLCQ-së, këtu nuk
+mund të matet fare, dhe kjo hyn te kufizimet.
+
+**Vetëm vendet e aplikuara.** Nëse motori pati **të drejtë të refuzonte**
+katërmbëdhjetë mijë herë është pyetje tjetër me dizajn tjetër, dhe përzierja e të
+dyjave do të jepte një normë që nuk i përgjigjet asnjërës. Shpërndarja e
+refuzimeve raportohet veç (VD-28).

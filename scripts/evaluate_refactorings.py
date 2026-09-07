@@ -34,11 +34,10 @@ from statistics import median
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
-from javasmell.analysis import analyze_source  # noqa: E402
-from javasmell.detectors.rules import detect_in_class  # noqa: E402
 from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
+from javasmell.evaluation.sites import sites_in  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 from javasmell.refactor.base import Refusal, Tally  # noqa: E402
@@ -114,25 +113,6 @@ def sampled_files(mlcq: Path, corpus: Corpus) -> list[Path]:
         path = corpus.source_path(sample)
         found.setdefault(str(path), path)
     return [found[key] for key in sorted(found)]
-
-
-def sites_in(source: bytes, path: str) -> list[tuple[str, str, str, str, int]]:
-    """Every smell the engine automates, as (class, method, smell, refactoring, line)."""
-    try:
-        project = analyze_source(source.decode("utf-8"), path)
-    except (UnicodeDecodeError, ValueError):
-        return []
-
-    found = []
-    for unit in project.units:
-        for cls in unit.classes:
-            for smell in detect_in_class(cls):
-                automated = for_smell(smell.smell_type)
-                if automated is None or smell.method is None:
-                    continue
-                name = smell.method.partition("(")[0]
-                found.append((cls.name, name, smell.smell_type, automated[0], smell.start_line))
-    return found
 
 
 def _metric_shift(path: Path) -> dict[str, dict[str, float]]:

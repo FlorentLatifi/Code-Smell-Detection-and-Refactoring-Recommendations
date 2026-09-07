@@ -157,6 +157,8 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | 13 | `model_without_project.py` | Qasja B pa kontekstin e projektit | ~2 min |
 | 14 | `export_system_reference.py` | tabelat e kësaj shtojce | sekonda |
 | 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
+| 16 | `review_rewrites.py --sample` | mostra e rishkrimeve dhe fleta e vlerësimit | sekonda |
+| 17 | `review_rewrites.py --score` | cilësia e rishkrimeve sipas rishikuesit | sekonda |
 
 Hapi 3 është kalimi i shtrenjtë që duhet paguar një herë: ai mat çdo entitet, dhe
 hapat 4 deri 6 lexojnë rreshtat e tij. Meqë tabela komitohet, një anëtar komisioni me

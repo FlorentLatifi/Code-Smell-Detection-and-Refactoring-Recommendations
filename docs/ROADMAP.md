@@ -430,6 +430,17 @@ tip, dhe klauzola `throws` nuk bartej. Të treja prodhonin kod që nuk kompilon.
 **Kriteri i daljes:** ✅ tabela N/M/K mbi një korpus të deklaruar, plus shpërndarja
 e arsyeve të refuzimit.
 
+**3.4 Cilësia e rishkrimeve** ⬜ aparati gati, gjykimi mbetet
+
+Çdo kontroll i mësipërm i përgjigjet kompiluesit. Asnjëri nuk thotë nëse një
+rishkrim është diçka që një zhvillues do ta mbante, që është gjysma e dytë e
+përkufizimit të Fowler-it. `scripts/review_rewrites.py --sample` nxjerr gjashtëdhjetë
+rishkrime me farë të fiksuar, njëzet për transformim, dhe shkruan tufën e diff-eve
+bashkë me një fletë të verbër; `--score` e përmbledh atë fletë (VD-72).
+
+Mostra dhe fleta janë gjeneruar. Mbetet gjykimi: fleta mbushet me dorë nga autori,
+dhe deri atëherë asnjë numër i kësaj matjeje nuk ekziston.
+
 ---
 
 ### Shënim mbi verifikimin
