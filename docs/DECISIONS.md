@@ -2244,5 +2244,23 @@ prej 300 pemësh, një test i vetëm zinte tre të katërtat e kohës së suitë
 përdorin një pyll prej dhjetë pemësh, sepse ajo që matet është mekanika rreth
 modelit, jo numri i pemëve.
 
-Rezultati përfundimtar: **416 teste, mbulimi 92%**, dhe `training.py` në 100%.
-Mbeten `walk.py` në zero dhe `explain.py` në 60%, të shënuara si të pambuluara.
+**Pastaj `ml/explain.py`, ku rruga e pambuluar ishte shifra e korpusit.**
+`explain_many` kishte tashmë test; ajo që nuk kishte ishte
+`decisive_over_folds`, funksioni që prodhon shifrën «sa shpesh një matje e vetme
+e mban verdiktin» dhe ndarjen e saj sipas veçorisë. Dy veti u fiksuan: që medianat
+me të cilat krahasohet një shpjegim vijnë vetëm nga rreshtat e trajnimit — ndryshe
+depoja e mbajtur mënjanë rrjedh brenda shpjegimit të entiteteve të veta, në
+heshtje, sepse verdiktet nuk ndryshojnë e vetëm arsyet po — dhe që një grup pa
+asnjë entitet të sinjalizuar raporton `None`, jo zero. Zero do të lexohej si
+«modeli sinjalizon e nuk shpjegon asnjë», që është diagnozë e kundërt me «modeli
+nuk sinjalizoi asgjë».
+
+**Edhe këtu një pritshmëri e imja ishte e gabuar.** Drafti i parë e barazoi numrin
+e entiteteve të sinjalizuara me nëntë rreshtat e etiketuar pozitivë. Nuk është ai:
+çdo entitet gjykohet nga një model i trajnuar pa depon e vet, dhe sa prej të nëntëve
+e rikthen ai varet nga ku e vendos pemën çdo fold. Testi tani pohon vetinë që
+shifra ekziston për të raportuar — që aty ku modeli sinjalizon, një matje e vetme
+e kthen verdiktin — e jo një numër që s'nxirret dot me dorë pa simuluar katër pemë.
+
+Rezultati përfundimtar: **420 teste, mbulimi 93%**; `training.py` në 100% dhe
+`explain.py` në 99%. Mbetet `walk.py` në zero, i shënuar si i pambuluar.
