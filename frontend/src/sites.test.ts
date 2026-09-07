@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { bySeverity, byFile, byScore, groupBySite } from "./sites";
+import { bySeverity, byFile, byScore, countByWorst, groupBySite } from "./sites";
 import type { Severity, Smell } from "./types";
 
 function smell(overrides: Partial<Smell> = {}): Smell {
@@ -164,5 +164,31 @@ describe("renditja e vendeve", () => {
     bySeverity(sites);
 
     expect(sites.map((s) => s.class_name)).toEqual(before);
+  });
+});
+
+describe("numërimi i vendeve sipas ashpërsisë", () => {
+  it("e numëron çdo vend një herë, sipas erës së tij më të rëndë", () => {
+    // Katër erëra, por dy vende: njëri critical (sepse mban një critical), tjetri minor.
+    const sites = groupBySite([
+      smell({ class_name: "Heavy", smell_type: "LongMethod", severity: "minor" }),
+      smell({ class_name: "Heavy", smell_type: "BrainMethod", severity: "critical" }),
+      smell({ class_name: "Light", smell_type: "LongMethod", severity: "minor" }),
+      smell({ class_name: "Light", smell_type: "BrainMethod", severity: "minor" }),
+    ]);
+
+    expect(countByWorst(sites)).toEqual({ critical: 1, major: 0, minor: 1 });
+  });
+
+  it("shuma e tij barazon numrin e vendeve, jo të erërave", () => {
+    const sites = groupBySite([
+      smell({ smell_type: "LongMethod" }),
+      smell({ smell_type: "BrainMethod" }),
+      smell({ class_name: "Other", smell_type: "LongMethod" }),
+    ]);
+    const tally = countByWorst(sites);
+
+    expect(tally.critical + tally.major + tally.minor).toBe(sites.length);
+    expect(sites.length).toBe(2);
   });
 });

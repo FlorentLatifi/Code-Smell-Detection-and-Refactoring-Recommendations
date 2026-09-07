@@ -5,7 +5,7 @@ import { SMELL_SQ } from "./evaluation";
 import { agreementOn, indexModel } from "./model";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
-import { byFile, byScore, bySeverity, groupBySite } from "./sites";
+import { byFile, byScore, bySeverity, countByWorst, groupBySite } from "./sites";
 import type { Site } from "./sites";
 import type { Analysis, ModelBlock, Severity, Smell } from "./types";
 
@@ -224,7 +224,7 @@ export function App() {
 
       {screen.state === "ready" && (
         <>
-          <SummaryBar analysis={screen.analysis} />
+          <SummaryBar analysis={screen.analysis} sites={allSites} />
           {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
 
           {screen.analysis.smells.length === 0 ? (
@@ -283,6 +283,9 @@ export function App() {
                             </span>
                           </span>
                           <span className="kinds">
+                            {site.smells.length > 1 && (
+                              <span className="tally">{site.smells.length} erëra</span>
+                            )}
                             {site.smells.map((s) => (
                               <span
                                 key={s.smell_type}
@@ -346,17 +349,31 @@ function countSmells(sites: Site[]): number {
   return sites.reduce((total, site) => total + site.smells.length, 0);
 }
 
-function SummaryBar({ analysis }: { analysis: Analysis }) {
+/**
+ * Sa u mat, në të njëjtat njësi që përdor lista poshtë.
+ *
+ * Erërat dhe vendet janë të dyja aty me qëllim: numri i erërave është ai që
+ * raporton motori, numri i vendeve është ai që lexuesi do të hapë. Pa të dytin,
+ * shiriti thoshte 106 dhe lista thoshte 74 pa asgjë që ta shpjegonte dallimin.
+ *
+ * Ashpërsia numërohet **sipas vendit**, me të njëjtin rregull që përdor
+ * distinktivi i çdo rreshti: më e rënda që mban vendi. Kështu shuma e tri
+ * shifrave barazon numrin e vendeve, dhe klikimi nga shiriti te lista nuk
+ * ndryshon njësi në rrugë.
+ */
+function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Site[] }) {
   const { summary } = analysis;
+  const byWorst = countByWorst(sites);
   return (
     <div className="summary">
       <Figure value={summary.files} label="skedarë" />
       <Figure value={summary.classes} label="klasa" />
       <Figure value={summary.methods} label="metoda" />
-      <Figure value={summary.smells} label="erëra" accent />
+      <Figure value={summary.smells} label="erëra" />
+      <Figure value={sites.length} label={sites.length === 1 ? "vend" : "vende"} accent />
       {(["critical", "major", "minor"] as const).map((level) =>
-        summary.by_severity[level] ? (
-          <Figure key={level} value={summary.by_severity[level]} label={level} tone={level} />
+        byWorst[level] ? (
+          <Figure key={level} value={byWorst[level]} label={`${level} (vende)`} tone={level} />
         ) : null,
       )}
     </div>

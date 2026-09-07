@@ -1159,3 +1159,13 @@ select {
   border-color: var(--accent);
   background: var(--accent-wash);
 }
+
+/* Numri i erërave të një vendi, para etiketave. Shifra kursen numërimin me sy
+   kur një metodë mban katër. */
+.row .kinds .tally {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  align-self: center;
+  margin-right: 0.1rem;
+}

@@ -2440,3 +2440,19 @@ lexohet si «më trego gjërat e vogla», dhe e saktë nëse lexohet si prioriti
 distinktivi është veti e vendit, dhe fshehja e tij do ta zbeh problemin. U mbajt
 uniform me llojin, sepse dy semantika filtrimi në të njëjtën shirit kontrollesh
 janë më të vështira për t'u shpjeguar sesa kjo e papritur e vetme.
+
+**Numri i erërave shfaqet si shifër.** Etiketat e tregonin numrin vetëm duke u
+numëruar me sy, dhe pikërisht ai numër është kriteri i dytë i renditjes: rreshti
+tani e thotë «4 erëra» para tyre. Shfaqet vetëm kur vendi mban më shumë se një,
+sepse «1 erë» do të ishte zhurmë në shtatëdhjetë e katër rreshta.
+
+**Shiriti përmbledhës kaloi te vendet.** Ai numëronte erëra — 106 — ndërsa lista
+poshtë tij numëronte vende — 74 — dhe asgjë nuk e shpjegonte dallimin. Tani mban
+të dyja, dhe **ashpërsia numërohet sipas vendit**, me të njëjtin rregull që përdor
+distinktivi i çdo rreshti: më e rënda që mban vendi. Shuma e tri shifrave barazon
+numrin e vendeve, dhe kalimi nga shiriti te lista nuk ndryshon njësi në rrugë.
+
+Shifrat e ashpërsisë ndryshuan kuptim, ndaj edhe etiketë: 17/43/46 erëra u bënë
+11/32/31 vende, të shënuara «(vende)». Ndryshimi i heshtur i kuptimit të një
+shifre pa ndryshuar emrin e saj do të ishte pikërisht defekti që kjo ditë e gjeti
+gjashtë herë diku tjetër.

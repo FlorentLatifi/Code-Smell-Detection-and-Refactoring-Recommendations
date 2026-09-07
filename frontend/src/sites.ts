@@ -119,3 +119,18 @@ export function byFile(sites: Site[]): Site[] {
     (a, b) => a.file_path.localeCompare(b.file_path) || a.start_line - b.start_line,
   );
 }
+
+/**
+ * Sa vende bien nën secilën ashpërsi, sipas më të rëndës që mban secili.
+ *
+ * Shiriti përmbledhës numëronte erëra ndërsa lista poshtë tij numëron vende, dhe
+ * të dy flisnin për të njëjtën analizë me njësi të ndryshme: 106 kundrejt 74, pa
+ * asgjë që ta shpjegonte dallimin. Kjo e mat ashpërsinë me të njëjtin rregull që
+ * përdor distinktivi i rreshtit, ndaj shifra lart dhe distinktivët poshtë
+ * pajtohen gjithmonë.
+ */
+export function countByWorst(sites: Site[]): Record<Severity, number> {
+  const tally: Record<Severity, number> = { critical: 0, major: 0, minor: 0 };
+  for (const site of sites) tally[site.worst] += 1;
+  return tally;
+}
