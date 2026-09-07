@@ -1105,3 +1105,48 @@ select {
   color: var(--ink-faint);
   font-style: italic;
 }
+
+/* Erërat e një vendi, si etiketa nën emrin e tij. Një metodë mund të mbajë
+   katër, dhe pikërisht ai numër është sinjali që lista e fshihte kur secila
+   erë zinte rreshtin e vet. */
+.row .kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.2rem 0 0.15rem;
+}
+
+.row .kinds .kind {
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+  color: var(--ink-soft);
+  background: var(--surface);
+}
+
+/* Zgjedhësi i erës brenda një vendi, mbi panelin e detajit. */
+.which {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.which .pick {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.which .pick.on {
+  color: var(--ink);
+  border-color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}

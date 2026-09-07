@@ -5,9 +5,10 @@ import { SMELL_SQ } from "./evaluation";
 import { agreementOn, indexModel } from "./model";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
+import { byFile, byScore, bySeverity, groupBySite } from "./sites";
+import type { Site } from "./sites";
 import type { Analysis, ModelBlock, Severity, Smell } from "./types";
 
-const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
 
 /** How the list is ordered. Severity first is the default a reader wants. */
 type Order = "severity" | "score" | "file";
@@ -66,13 +67,17 @@ export function App() {
   // untrained checkout has no models, and the difference has to stay visible.
   const [askModel, setAskModel] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [selected, setSelected] = useState<Smell | null>(null);
+  const [selected, setSelected] = useState<Site | null>(null);
+  // Cila erë e vendit të zgjedhur shfaqet djathtas. Rivendoset te më e rënda
+  // sa herë zgjidhet një vend tjetër, sepse ajo është ajo që lexuesi kërkoi.
+  const [shownSmell, setShownSmell] = useState<Smell | null>(null);
   const listRef = useRef<HTMLElement>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
     setScreen({ state: "loading" });
     setSelected(null);
+    setShownSmell(null);
     try {
       setScreen({ state: "ready", analysis: await analyse(path, askModel) });
       remember(REMEMBERED_PATH, path);
@@ -105,17 +110,13 @@ export function App() {
       .filter((s) => !agreed || model === null || agreementOn(model, s) !== null)
       .filter(matches);
 
-    if (order === "file") {
-      return ordered.sort(
-        (a, b) => a.file_path.localeCompare(b.file_path) || a.start_line - b.start_line,
-      );
-    }
-    if (order === "score") {
-      return ordered.sort((a, b) => b.score - a.score);
-    }
-    return ordered.sort(
-      (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || b.score - a.score,
-    );
+    // Filtruar së pari, grupuar pastaj: një filtër lloji duhet ta lërë rreshtin
+    // duke treguar atë që u kërkua, jo tërë vendin. Kështu edhe numërimi mbetet
+    // i ndershëm — «N nga M» flet për atë që u filtrua.
+    const sites = groupBySite(ordered);
+    if (order === "file") return byFile(sites);
+    if (order === "score") return byScore(sites);
+    return bySeverity(sites);
   }, [smells, severity, kind, query, order, agreed, model]);
 
   /**
@@ -134,8 +135,14 @@ export function App() {
     const current = selected ? shown.indexOf(selected) : -1;
     const step = event.key === "ArrowDown" ? 1 : -1;
     const next = Math.min(Math.max(current + step, 0), shown.length - 1);
-    setSelected(shown[next]);
+    choose(shown[next]);
     listRef.current?.querySelectorAll<HTMLButtonElement>("button.row")[next]?.focus();
+  }
+
+  /** Zgjedh një vend, dhe me të erën e tij më të rëndë. */
+  function choose(site: Site): void {
+    setSelected(site);
+    setShownSmell(site.smells[0]);
   }
 
   return (
@@ -228,40 +235,47 @@ export function App() {
                   onAgreed={setAgreed}
                 />
                 <p className="count">
-                  {shown.length} nga {screen.analysis.smells.length}
+                  {shown.length} {shown.length === 1 ? "vend" : "vende"}, {countSmells(shown)} nga{" "}
+                  {screen.analysis.smells.length} erëra
                 </p>
                 <ul>
-                  {shown.map((smell, index) => (
-                    <li key={`${smell.file_path}:${smell.start_line}:${smell.smell_type}:${index}`}>
+                  {shown.map((site) => (
+                    <li key={site.key}>
                       <button
-                        className={`row ${smell.severity}${selected === smell ? " selected" : ""}`}
-                        onClick={() => setSelected(smell)}
-                        aria-current={selected === smell}
+                        className={`row ${site.worst}${selected?.key === site.key ? " selected" : ""}`}
+                        onClick={() => choose(site)}
+                        aria-current={selected?.key === site.key}
                       >
                         <span className="mark" aria-hidden="true" />
                         <span>
                           <span className="headline">
-                            <span className="kind">{smell.smell_type}</span>
                             <span className="where">
-                              {smell.class_name}
-                              {smell.method ? `.${smell.method.replace(/\(.*$/, "")}` : ""}
+                              {site.class_name}
+                              {site.method ? `.${site.method.replace(/\(.*$/, "")}` : ""}
                             </span>
                             <span className="grade">
-                              {agreementOn(model, smell) && (
+                              {site.smells.some((s) => agreementOn(model, s)) && (
                                 <abbr className="both" title="Modeli e shënoi po ashtu">
                                   A∩B
                                 </abbr>
                               )}
-                              {smell.automated && (
+                              {site.automated && (
                                 <abbr className="auto" title="Motori e rishkruan vetë">
                                   ✎
                                 </abbr>
                               )}
-                              {smell.severity}
+                              {site.worst}
                             </span>
                           </span>
+                          <span className="kinds">
+                            {site.smells.map((s) => (
+                              <span key={s.smell_type} className="kind">
+                                {s.smell_type}
+                              </span>
+                            ))}
+                          </span>
                           <span className="file">
-                            {smell.file_path}:{smell.start_line}
+                            {site.file_path}:{site.start_line}
                           </span>
                         </span>
                       </button>
@@ -271,15 +285,31 @@ export function App() {
               </section>
 
               <section className="detail">
-                {selected ? (
-                  <Detail
-                    smell={selected}
-                    path={path}
-                    prediction={agreementOn(model, selected)}
-                    asked={model !== null}
-                  />
+                {selected && shownSmell ? (
+                  <>
+                    {selected.smells.length > 1 && (
+                      <nav className="which" aria-label="Erërat e këtij vendi">
+                        {selected.smells.map((s) => (
+                          <button
+                            key={s.smell_type}
+                            className={s.smell_type === shownSmell.smell_type ? "pick on" : "pick"}
+                            onClick={() => setShownSmell(s)}
+                            aria-pressed={s.smell_type === shownSmell.smell_type}
+                          >
+                            {s.smell_type}
+                          </button>
+                        ))}
+                      </nav>
+                    )}
+                    <Detail
+                      smell={shownSmell}
+                      path={path}
+                      prediction={agreementOn(model, shownSmell)}
+                      asked={model !== null}
+                    />
+                  </>
                 ) : (
-                  <p className="empty">Zgjidh një erë nga lista për ta parë arsyen.</p>
+                  <p className="empty">Zgjidh një vend nga lista për ta parë arsyen.</p>
                 )}
               </section>
             </div>
@@ -291,6 +321,11 @@ export function App() {
       )}
     </div>
   );
+}
+
+/** Sa erëra mbajnë këto vende bashkë. */
+function countSmells(sites: Site[]): number {
+  return sites.reduce((total, site) => total + site.smells.length, 0);
 }
 
 function SummaryBar({ analysis }: { analysis: Analysis }) {

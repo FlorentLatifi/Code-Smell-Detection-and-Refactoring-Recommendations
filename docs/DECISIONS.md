@@ -77,6 +77,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-65 | Etiketat shqip të ndërfaqes kontrollohen kundrejt të dhënave | 2026-09-07 | aktiv |
 | VD-66 | Shtresimi i ENGINEERING.md §2 verifikohet nga importet | 2026-09-07 | aktiv |
 | VD-67 | Paneli i rezultateve raporton çdo commit, jo një | 2026-09-07 | aktiv |
+| VD-68 | Lista grupohet sipas vendit, jo sipas erës | 2026-09-07 | aktiv |
 
 ---
 
@@ -2379,3 +2380,47 @@ vetëm nuk mund të kthehet pa u vënë re.
 Kjo është hera e dytë që i njëjti pretendim gjendet i kopjuar diku tjetër. Punimi
 dhe ndërfaqja i lexojnë të njëjtët skedarë dhe të dy e kishin ngjeshur prejardhjen
 në një rresht që dukej i rregullt.
+
+### VD-68: Lista grupohet sipas vendit, jo sipas erës
+
+**Konteksti.** Detektorët raportojnë një erë për strategji, jo një për vend. Një
+metodë tepër e gjatë dhe tepër e folezuar kthehet katër herë — `LongMethod`,
+`BrainMethod`, `DeepNesting`, `LongParameterList` — dhe lista i vinte si katër
+rreshta të barabartë me çdo rresht tjetër.
+
+**Matja.** Mbi `commons-math/analysis`, e ekzekutuar përmes API-së: **106 gjetje
+bien mbi 74 vende**, dhe tetëmbëdhjetë vende mbajnë më shumë se një erë. Katër
+metoda mbajnë nga katër secila. Lista e mbivendoste punën me 43%.
+
+**Çka humbte.** Jo vetëm gjatësia. Një metodë që thyen katër strategji njëherësh
+është më e keqja e projektit, dhe pikërisht ai fakt tretej: shfaqej si katër
+rreshta të zakonshëm, dhe zhvilluesi duhej t'i bashkonte vetë me mend.
+
+**Vendimi.** Një rresht për vend, me erërat e tij si etiketa nën emrin. Numri i
+erërave hyn te renditja, pas ashpërsisë dhe **para** tepricës: dy vende po aq të
+rënda nuk janë të barabarta nëse njëri thyen katër strategji e tjetri një.
+
+Filtrimi bëhet **para** grupimit. Një filtër lloji duhet ta lërë rreshtin duke
+treguar atë që u kërkua e jo tërë vendin, dhe kështu numërimi mbetet i ndershëm:
+titulli thotë sa vende dhe sa erëra, që të mos duket se gjetjet u pakësuan.
+
+**Detaji fitoi një zgjedhës.** Kur vendi mban disa erëra, mbi panelin dalin
+emrat e tyre dhe lexuesi kalon mes tyre; hapet gjithmonë te më e rënda, dhe
+rivendoset kur zgjidhet një vend tjetër. `Detail` mbeti i paprekur — merr ende
+një erë të vetme.
+
+**Grupimi nuk fsheh asgjë.** Të njëjtat erëra shfaqen, të mbledhura te vendi që i
+mban. Një test e pohon shprehimisht se asnjë erë nuk humbet gjatë grupimit.
+
+**Çelësi i vendit nuk përmban llojin e erës**, ndryshe nga çelësi te `model.ts`.
+Aty lloji duhet të hyjë, sepse te `class A { void m() {} }` klasa dhe metoda nisin
+në të njëjtin rresht. Këtu ato i ndan emri i metodës, `null` për një erë klase.
+Të dyja rastet kanë test.
+
+Logjika u shkrua veç, te `sites.ts`, dhe u testua veç — 12 teste, sipas VD-54:
+frontend-i testohet te logjika e vet, jo te DOM-i. **37 teste frontend nga 25.**
+
+**U verifikua në shfletues** me projektin e vërtetë: 74 rreshta, titulli «74
+vende, 106 nga 106 erëra», rreshti i parë me të katër etiketat, zgjedhësi i
+detajit që ndërron erën, dhe shigjeta poshtë që kalon te vendi tjetër duke e
+rikthyer erën te më e rënda. Edhe në gjerësi mobile, ku etiketat mbështillen.
