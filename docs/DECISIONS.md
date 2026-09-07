@@ -2262,5 +2262,28 @@ e rikthen ai varet nga ku e vendos pemën çdo fold. Testi tani pohon vetinë q�
 shifra ekziston për të raportuar — që aty ku modeli sinjalizon, një matje e vetme
 e kthen verdiktin — e jo një numër që s'nxirret dot me dorë pa simuluar katër pemë.
 
-Rezultati përfundimtar: **420 teste, mbulimi 93%**; `training.py` në 100% dhe
-`explain.py` në 99%. Mbetet `walk.py` në zero, i shënuar si i pambuluar.
+**Së fundi `evaluation/walk.py`, ecja që të dy eksperimentet e ndajnë.**
+Docstring-u i tij e emërton vetë rrezikun: dy skripte e përshkojnë korpusin, njëri
+vlerëson detektorët dhe tjetri ndërton tabelën e veçorive, dhe një dallim në
+cilat mostra arrijnë te një entitet do ta ndryshonte emëruesin e njërit rezultat
+e jo të tjetrit. Moduli ekziston që kjo të mos ndodhë, dhe asgjë nuk kontrollonte
+se e bën punën e vet.
+
+Tri veti e mbajnë atë garanci dhe tani janë të fiksuara. Depot vizitohen sipas
+rendit alfabetik, ndaj një ekzekutim i shkurtuar me `limit` mbulon të njëjtat
+projekte çdo herë dhe dy prova mbeten të krahasueshme. Një depo e anashkaluar e
+konsumon numrin e vet, ndaj një ekzekutim i rifilluar e raporton progresin
+kundrejt tërë punës e jo kundrejt asaj që ka mbetur. Dhe çdo mostër që nuk arrin
+te një entitet numërohet nën një arsye — kurrë e hedhur, sepse ata numra janë
+dallimi mes një emëruesi dhe një hamendjeje. Testi i fundit e pohon atë si një
+shumë të vetme: të përputhurat plus të panumëruarat barazojnë mostrat e dhëna.
+
+Të tria u provuan me mutacion: rendi jo-alfabetik, rinumërimi pas anashkalimit,
+dhe heqja e heshtur e mostrave pa skedar rrëzuan secili testin përkatës.
+
+Rezultati përfundimtar: **428 teste, mbulimi 95%, dhe asnjë modul nën 90%.**
+
+**Kostoja e pranuar.** Suita zgjat rreth dy minuta kundrejt tridhjetë sekondave
+më parë, gati e tëra nga rëndësia me permutacion, e cila ripërshtat një model për
+çdo fold. Kjo pranohet: testet që u shtuan mbrojnë ndarjen e grupuar dhe matjen
+jashtë fold-it, të cilat janë dy pretendimet mbi të cilat qëndron Qasja B.
