@@ -75,6 +75,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-63 | README-ja dhe Shtojca 8.5 mbahen një tabelë e vetme | 2026-09-07 | aktiv |
 | VD-64 | Kodi që prodhon numrat e punimit testohet si kodi që i përdor | 2026-09-07 | aktiv |
 | VD-65 | Etiketat shqip të ndërfaqes kontrollohen kundrejt të dhënave | 2026-09-07 | aktiv |
+| VD-66 | Shtresimi i ENGINEERING.md §2 verifikohet nga importet | 2026-09-07 | aktiv |
 
 ---
 
@@ -2317,3 +2318,41 @@ korpusit, çka është e kundërta e asaj që duhet.
 
 **U provua** duke e hequr sërish përkthimin e `parses`: testi e raportoi me emër.
 23 teste frontend nga 19; `tsc` dhe ndërtimi kalojnë.
+
+### VD-66: Shtresimi i ENGINEERING.md §2 verifikohet nga importet
+
+**Konteksti.** §2 e quan zinxhirin e varësive «invariante që qëndrojnë sot dhe
+duhet të vazhdojnë të qëndrojnë». Asgjë nuk i mbante. Një
+`from javasmell.ml import ...` brenda motorit të refaktorimit do të kalonte lint-in,
+tipat, çdo test dhe CI-në, dhe i vetmi regjistrim se ishte i ndaluar do të mbetej
+një fjali në një dokument.
+
+**Një përpjekje e gabuar, e raportuar sepse mësimi është i vlefshëm.** Kontrolli i
+parë i renditi paketat duke e lexuar diagramin me shigjeta si radhë varësish dhe
+raportoi katër shkelje. **Të katërta ishin false.** `parsing` që importon `model`
+nuk është shkelje: `model` është të dhëna të thjeshta, baza mbi të cilën
+përkufizohet gjithçka tjetër, dhe diagrami tregon rrjedhën e të dhënave e jo
+radhën e importeve. Një test që shpik modelin e vet të arkitekturës mat shpikjen.
+
+**Vendimi.** Kodohen vetëm rregullat që §2 i thotë me fjalë, jo ato që një
+diagram mund të nënkuptojë:
+
+- `model` nuk importon asgjë brenda paketës — «plain data. No parsing logic, no
+  metric logic, no I/O».
+- `ml` dhe `refactor` nuk importojnë njëri-tjetrin — motra me qëllim: klasifikuesi
+  dhe rishkruesi lexojnë të dy daljen e detektorëve, dhe një varësi në cilëndo anë
+  do ta bënte njërin detaj të tjetrit e jo qasje që punimi i krahason.
+- `parsing`, `model`, `metrics` dhe `detectors` nuk arrijnë përpara te `ml`,
+  `refactor`, `api` ose `evaluation`. Një metrikë që do të importonte harkun e
+  vlerësimit do ta bënte matjen të varur nga ajo që e vlerëson.
+- Asgjë brenda paketës nuk importon `api`, veç pikënisjes.
+
+**Importet lexohen me `ast`, jo duke importuar paketat**, që një cikël ose një
+varësi e rëndë opsionale të mos e kthejë një kontroll arkitekture në gabim
+importi.
+
+**U provua** duke shkaktuar secilën shkelje veç e veç: `refactor` që importon
+`ml`, `model` që importon `parsing`, dhe `detectors` që arrin te `evaluation`.
+Secila rrëzoi testin e vet dhe vetëm atë.
+
+432 teste.
