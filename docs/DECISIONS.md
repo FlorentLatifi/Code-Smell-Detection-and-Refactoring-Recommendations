@@ -64,7 +64,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-52 | Prejardhja nuk redaktohet, por rifitohet | 2026-09-02 | aktiv |
 | VD-53 | Ruajtja e sjelljes nuk verifikohet, dhe arsyeja është korpusi | 2026-09-02 | aktiv |
 | VD-54 | Frontend-i testohet te logjika e vet, jo te DOM-i | 2026-09-02 | aktiv |
-| VD-55 | Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë | 2026-09-02 | aktiv |
+| VD-55 | Konteksti i projektit e forcon verdiktin, dhe përmbys një | 2026-09-02 | aktiv |
 | VD-56 | Shifrat e Kapitullit 5 nxirren, nuk shtypen | 2026-09-02 | aktiv |
 | VD-57 | Theksimi renderohet, dhe një kontroll e siguron | 2026-09-02 | aktiv |
 | VD-58 | Tabela e riprodhimit kontrollohet kundrejt skripteve | 2026-09-03 | aktiv |
@@ -1763,7 +1763,7 @@ Ai këshillim ishte aty para këtij ndryshimi; u verifikua te lockfile-i i komit
 
 ---
 
-### VD-55: Konteksti i projektit e forcon verdiktin, dhe nuk përmbys asnjë
+### VD-55: Konteksti i projektit e forcon verdiktin, dhe përmbys një
 
 **Konteksti.** VD-53 e regjistroi si të pabërë të vetmin forcim të mundshëm pa
 rimarrje korpusi: kompilimi i skedarit të rishkruar me burimet e vetë projektit
