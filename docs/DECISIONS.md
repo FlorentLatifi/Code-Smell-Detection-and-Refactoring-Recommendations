@@ -2219,4 +2219,30 @@ te katër të tjerët.
 pragu i ulur nga 30 në 25 rrëzoi dy, përfshirë atë kufitar; ngushtimi i kapjes së
 gabimeve te prejardhja rrëzoi dy. Të tria u kthyen dhe suita kaloi sërish.
 
-Rezultati: 407 teste nga 396, mbulimi 91%, dhe të dy modulet në 100%.
+Rezultati i parë: 407 teste nga 396, mbulimi 91%, dhe të dy modulet në 100%.
+
+**Pastaj `ml/training.py`, ku qëndron pretendimi qendror i Qasjes B.** Ndarja e
+grupuar sipas depos (VD-12) është dallimi mes «modeli përgjithëson te një projekt
+i ri» dhe «modeli e njeh këtë projekt», dhe vetëm e para vlen të pretendohet.
+Testi ekzistues e **nxirrte** atë tërthorazi — përfundonte se ndarja qëndron
+sepse baza e shumicës parashikon në një mënyrë — dhe do të kishte vazhduar të
+kalonte po t'i ndërrohej splitter-i me një të nivelit të rreshtit. Tani thirrja e
+vërtetë kapet dhe të dyja gjysmat lexohen prej saj: që depot iu kaluan splitter-it,
+dhe që asnjë fold nuk vuri të njëjtën depo në të dy anët.
+
+**Një test i imi nuk provoi atë që premtonte, dhe kjo doli nga mutacioni.** Testi
+i rëndësisë së veçorive pohonte se matja bëhet jashtë fold-it; kur e ndryshova
+kodin ta maste brenda fold-it, testi kaloi njësoj — sepse veçoria që vendos
+etiketën del e para sido që të matet. U nda në dy: njëri mat renditjen, tjetri e
+kap thirrjen dhe krahason madhësinë e rreshtave me atë të fold-it të mbajtur
+mënjanë. Vetëm i dyti e kap mutacionin, dhe emri i të parit nuk premton më diçka
+që s'e verifikon.
+
+**Kostoja e ekzekutimit u mat dhe u ul.** Rëndësia me permutacion ripërshtat
+modelin për çdo fold dhe rivlerëson dhjetë herë për veçori; me pyllin e dërguar
+prej 300 pemësh, një test i vetëm zinte tre të katërtat e kohës së suitës. Testet
+përdorin një pyll prej dhjetë pemësh, sepse ajo që matet është mekanika rreth
+modelit, jo numri i pemëve.
+
+Rezultati përfundimtar: **416 teste, mbulimi 92%**, dhe `training.py` në 100%.
+Mbeten `walk.py` në zero dhe `explain.py` në 60%, të shënuara si të pambuluara.
