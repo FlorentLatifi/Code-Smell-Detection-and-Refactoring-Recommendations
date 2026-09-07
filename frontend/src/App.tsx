@@ -91,33 +91,47 @@ export function App() {
     () => (screen.state === "ready" ? indexModel(screen.analysis.model) : null),
     [screen],
   );
-  const shown = useMemo(() => {
+  /**
+   * A e plotëson kjo erë çdo kusht të filtrave.
+   *
+   * Kushtet janë per-erë sepse ashtu i mat detektori: një metodë mund të jetë
+   * `critical` për një strategji dhe `minor` për një tjetër.
+   */
+  const matches = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const matches = (smell: Smell) =>
-      needle === "" ||
-      `${smell.class_name} ${smell.method ?? ""} ${smell.file_path} ${smell.smell_type}`
-        .toLowerCase()
-        .includes(needle);
-
-    // Sorted into a copy: `smells` belongs to the analysis, and sorting it in
-    // place would reorder what the summary was counted from.
-    const ordered = smells
-      .filter((s) => severity === "all" || s.severity === severity)
-      .filter((s) => kind === "all" || s.smell_type === kind)
+    return (smell: Smell) =>
+      (severity === "all" || smell.severity === severity) &&
+      (kind === "all" || smell.smell_type === kind) &&
       // Inert without a model to agree with. The control is hidden in that
       // case, so a filter left checked from an earlier run would empty the
       // list with nothing on screen to switch it back off.
-      .filter((s) => !agreed || model === null || agreementOn(model, s) !== null)
-      .filter(matches);
+      (!agreed || model === null || agreementOn(model, smell) !== null) &&
+      (needle === "" ||
+        `${smell.class_name} ${smell.method ?? ""} ${smell.file_path} ${smell.smell_type}`
+          .toLowerCase()
+          .includes(needle));
+  }, [severity, kind, query, agreed, model]);
 
-    // Filtruar së pari, grupuar pastaj: një filtër lloji duhet ta lërë rreshtin
-    // duke treguar atë që u kërkua, jo tërë vendin. Kështu edhe numërimi mbetet
-    // i ndershëm — «N nga M» flet për atë që u filtrua.
-    const sites = groupBySite(ordered);
+  const filtering = severity !== "all" || kind !== "all" || query.trim() !== "" || agreed;
+
+  /** Të gjitha vendet, pa filtër: emëruesi kundrejt të cilit lexohet lista. */
+  const allSites = useMemo(() => groupBySite(smells), [smells]);
+
+  /**
+   * Filtri zgjedh **vende**, jo erëra, dhe vendi i zgjedhur shfaqet i tërë.
+   *
+   * Drafti i parë filtronte erërat dhe gruponte të mbijetuarat, çka e zbrazte
+   * pikërisht atë që grupimi shtoi: duke kërkuar `LongMethod` humbisje faktin se
+   * tri nga ato metoda janë edhe `BrainMethod` edhe `DeepNesting` — konteksti që
+   * të thotë cilën ta hapësh të parën. Tani vendi mbahet i plotë dhe erërat që
+   * përputhen shënohen, ndaj shihet edhe pse rreshti doli edhe çfarë tjetër mban.
+   */
+  const shown = useMemo(() => {
+    const sites = allSites.filter((site) => site.smells.some(matches));
     if (order === "file") return byFile(sites);
     if (order === "score") return byScore(sites);
     return bySeverity(sites);
-  }, [smells, severity, kind, query, order, agreed, model]);
+  }, [allSites, matches, order]);
 
   /**
    * Up and down move through the findings.
@@ -235,8 +249,9 @@ export function App() {
                   onAgreed={setAgreed}
                 />
                 <p className="count">
-                  {shown.length} {shown.length === 1 ? "vend" : "vende"}, {countSmells(shown)} nga{" "}
-                  {screen.analysis.smells.length} erëra
+                  {shown.length} nga {allSites.length} {allSites.length === 1 ? "vend" : "vende"}
+                  {", "}
+                  {countSmells(shown)} erëra
                 </p>
                 <ul>
                   {shown.map((site) => (
@@ -269,7 +284,10 @@ export function App() {
                           </span>
                           <span className="kinds">
                             {site.smells.map((s) => (
-                              <span key={s.smell_type} className="kind">
+                              <span
+                                key={s.smell_type}
+                                className={filtering && matches(s) ? "kind hit" : "kind"}
+                              >
                                 {s.smell_type}
                               </span>
                             ))}

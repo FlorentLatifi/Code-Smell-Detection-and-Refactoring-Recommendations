@@ -2420,7 +2420,23 @@ Të dyja rastet kanë test.
 Logjika u shkrua veç, te `sites.ts`, dhe u testua veç — 12 teste, sipas VD-54:
 frontend-i testohet te logjika e vet, jo te DOM-i. **37 teste frontend nga 25.**
 
-**U verifikua në shfletues** me projektin e vërtetë: 74 rreshta, titulli «74
-vende, 106 nga 106 erëra», rreshti i parë me të katër etiketat, zgjedhësi i
-detajit që ndërron erën, dhe shigjeta poshtë që kalon te vendi tjetër duke e
-rikthyer erën te më e rënda. Edhe në gjerësi mobile, ku etiketat mbështillen.
+**U verifikua në shfletues** me projektin e vërtetë: 74 rreshta, rreshti i parë
+me të katër etiketat, zgjedhësi i detajit që ndërron erën, dhe shigjeta poshtë që
+kalon te vendi tjetër duke e rikthyer erën te më e rënda. Edhe në gjerësi mobile,
+ku etiketat mbështillen.
+
+**Filtri zgjedh vende, jo erëra — ndreqje e po asaj dite.** Drafti i parë filtronte
+erërat dhe gruponte të mbijetuarat. Kjo e zbrazte pikërisht atë që grupimi shtoi:
+duke kërkuar `DeepNesting` humbisje faktin se ato metoda janë edhe `LongMethod`
+edhe `BrainMethod` — konteksti që të thotë cilën ta hapësh të parën. Tani filtri
+zgjedh vendin, vendi shfaqet i tërë, dhe erërat që përputhen shënohen me ngjyrën e
+theksit. Mbi `DeepNesting`: 24 nga 74 vende, secili me etiketën e vet të shënuar
+dhe të tjerat të dukshme.
+
+**Një pasojë e pranuar, jo e fshehur.** Me filtrin `minor`, një rresht mund të
+dalë i shënuar `critical`: vendi ka një erë `minor` — dhe ajo është e shënuar —
+ndërsa distinktivi tregon më të rëndën që mban vendi. Kjo është e papritur nëse
+lexohet si «më trego gjërat e vogla», dhe e saktë nëse lexohet si prioritizim:
+distinktivi është veti e vendit, dhe fshehja e tij do ta zbeh problemin. U mbajt
+uniform me llojin, sepse dy semantika filtrimi në të njëjtën shirit kontrollesh
+janë më të vështira për t'u shpjeguar sesa kjo e papritur e vetme.
