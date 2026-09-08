@@ -168,14 +168,34 @@ def scored_rows(path: Path) -> dict[str, dict[str, str]]:
 
 
 def load_progress(path: Path, resume: bool) -> tuple[set[str], int, int]:
+    """What an interrupted run got through, if the checkpoint is still readable.
+
+    A run over the corpus takes hours and will be interrupted: the machine is a
+    laptop that sleeps, and it gets closed. A checkpoint that cannot be read is
+    worse than none, because it turns "carry on" into "start over" at the moment
+    the most work is at stake, so a corrupt one is reported and refused rather
+    than crashing the resume.
+    """
     if not resume or not path.exists():
         return set(), 0, 0
-    stored = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        stored = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as failure:
+        print(f"checkpoint unreadable ({failure}); starting over", file=sys.stderr)
+        return set(), 0, 0
     return set(stored["repositories"]), int(stored["offset"]), int(stored["pmd_errors"])
 
 
 def save_progress(path: Path, done: set[str], offset: int, errors: int) -> None:
-    path.write_text(
+    """Write the checkpoint so no interruption can leave it half-written.
+
+    ``write_text`` truncates first and writes after, so a shutdown between the
+    two leaves an empty file where hours of progress used to be recorded. Writing
+    a temporary file and replacing is atomic on the same volume, so the
+    checkpoint is either the old one or the new one and never neither.
+    """
+    scratch = path.with_suffix(".tmp")
+    scratch.write_text(
         json.dumps(
             {"repositories": sorted(done), "offset": offset, "pmd_errors": errors},
             indent=2,
@@ -184,9 +204,10 @@ def save_progress(path: Path, done: set[str], offset: int, errors: int) -> None:
         + "\n",
         encoding="utf-8",
     )
+    scratch.replace(path)
 
 
-def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str]]:
+def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str], bool]:
     corpus = Corpus(args.corpus)
     wanted = scored_rows(args.scored)
     samples = [s for s in load_samples(args.mlcq) if s.sample_id in wanted]
@@ -202,6 +223,7 @@ def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str]]:
     partial = args.out / PARTIAL_NAME
     progress = args.out / PROGRESS_NAME
     done, offset, pmd_errors = load_progress(progress, args.resume)
+    resumed = bool(done)
     if done:
         print(f"Resuming: {len(done)} repositories already written", flush=True)
         with partial.open("r+b") as trim:
@@ -261,7 +283,7 @@ def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str]]:
             print(f"[{number}/{len(repositories)}] {len(failures)} failed", flush=True)
 
     handle.close()
-    return len(repositories), pmd_errors, failures, recovered
+    return len(repositories), pmd_errors, failures, recovered, resumed
 
 
 def summarise(rows: list[dict[str, str]], samples: dict[str, Sample]) -> dict[str, object]:
@@ -317,7 +339,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     started = time.monotonic()
-    repositories, pmd_errors, failures, recovered = run(args)
+    repositories, pmd_errors, failures, recovered, resumed = run(args)
     elapsed = time.monotonic() - started
 
     sites = args.out / SAMPLES_NAME
@@ -336,6 +358,9 @@ def main(argv: list[str] | None = None) -> int:
         "files_pmd_could_not_read": pmd_errors,
         "reports_recovered": recovered,
         "seconds": round(elapsed, 1),
+        # Vetem kjo seance. Ekzekutimi eshte i rifillueshem, ndaj pas nje
+        # nderprerjeje kohezgjatja e regjistruar mbulon ate qe mbeti, jo mates.
+        "resumed": resumed,
         "aggregation": str(Aggregation.MEAN),
         "by_smell": summarise(rows, samples),
         "environment": environment(),
