@@ -159,6 +159,8 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
 | 16 | `review_rewrites.py --sample` | mostra e rishkrimeve dhe fleta e vlerësimit | sekonda |
 | 17 | `review_rewrites.py --score` | cilësia e rishkrimeve sipas rishikuesit | sekonda |
+| 18 | `fetch_pmd.py` | mjeti i jashtëm i krahasimit, jashtë git-it | minuta, një herë |
+| 19 | `compare_with_pmd.py` | krahasimi me PMD-në mbi të njëjtat mostra | ~3 orë |
 
 Hapi 3 është kalimi i shtrenjtë që duhet paguar një herë: ai mat çdo entitet, dhe
 hapat 4 deri 6 lexojnë rreshtat e tij. Meqë tabela komitohet, një anëtar komisioni me

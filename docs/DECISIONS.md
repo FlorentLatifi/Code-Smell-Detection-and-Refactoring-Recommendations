@@ -85,6 +85,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-73 | Përfundimet lexohen nga rezultatet, si Kapitulli 5 | 2026-09-08 | aktiv |
 | VD-74 | Rubrika hyn në punim para se të mbushet fleta | 2026-09-08 | aktiv |
 | VD-75 | Faktet përgatiten, gjykimi jo | 2026-09-08 | aktiv |
+| VD-76 | Krahasimi me PMD-në, me pragjet e tij | 2026-09-08 | aktiv |
 
 ---
 
@@ -2748,3 +2749,52 @@ bashkësi të zbrazët kur skedari nuk parsohej, ndaj zbritja raportonte **çdo*
 të skedarit si të shtuar nga rishkrimi. Mosdija dhe mungesa u ndanë: kur njëra anë
 nuk parsohet, funksioni nuk pretendon asgjë. E kapi testi i rastit kufitar, jo
 leximi.
+
+
+### VD-76: Krahasimi me PMD-në, me pragjet e tij
+
+**Konteksti.** Kapitulli 5 e krahasonte Qasjen A me Qasjen B dhe të dyja me MLCQ-në.
+Kjo thotë cila prej të dyjave është më e mirë brenda punimit; nuk thotë nëse ndonjëra
+ia vlen përballë një mjeti që zhvilluesi e instalon sot. Mungesa ishte e plotë: as
+teksti, as referencat, as skriptet nuk e përmendnin ndonjë mjet të jashtëm.
+
+**Pse PMD e jo diçka tjetër.** Falas, Apache-2.0, pa regjistrim, dhe — vendimtare —
+rregullat e tij `GodClass` dhe `DataClass` zbatojnë strategjitë e Lanza-s dhe
+Marinescu-t, po ato burime që citojnë detektorët tanë. Krahasimi bëhet pra mes dy
+zbatimeve të një strategjie të botuar, jo mes këtij punimi dhe një mjeti të palidhur.
+DesigniteJava do të mbulonte më shumë erëra, por licenca e versionit falas nuk u
+verifikua dot, dhe premtimi i pakontrolluar nuk hyn në metodologji.
+
+**Pragjet e PMD-së nuk preken.** `pmd_ruleset.xml` i referon rregullat pa asnjë
+`<properties>`. Përshtatja e tyre ndaj MLCQ-së do të maste një mjet që askush nuk e
+ekzekuton, dhe do të ishte i njëjti gabim me akordimin e pragjeve tona për ta kaluar
+një test.
+
+**Krahasueshmëria vjen nga ndarja e kodit, jo nga besimi.** Të dyja kolonat dalin nga
+`rules_evaluation_samples.csv`, nëpër të njëjtin `scoring.score`, me të njëjtin
+agregim, brenda të njëjtit ekzekutim. Asnjë numër nuk citohet nga një ekzekutim i
+mëparshëm, ndaj nuk ka si të rrëshqasin nga njëri-tjetri.
+
+**Përputhja bëhet me emra, jo me rreshta.** Raporti i PMD-së i mban vetë emrin e
+thjeshtë të klasës dhe emrin e metodës për çdo shkelje, dhe pikërisht ashtu e
+identifikon MLCQ-ja entitetin. Përputhja me numër rreshti do të kërkonte të merrej me
+mend nëse një mjet e numëron anotimin ose Javadoc-un pjesë të deklarimit.
+
+**Dy kufizime, të deklaruara para se të shihej ndonjë shifër.** PMD analizon një
+njësi kompilimi në një kohë dhe pa classpath të kompiluar, sepse korpusi nuk mban
+skedarë ndërtimi (VD-53); ATFD-ja e `GodClass`-it i llogaritet pra nga sa duket brenda
+një skedari, ndërsa detektorët tanë e marrin projektin e plotë (VD-16). Handikapi e
+favorizon këtë punim dhe hiqet vetëm duke ndërtuar 513 depo në commit-et e tyre
+historike. Së dyti, PMD nuk ka fare rregull për Feature Envy-n; `LawOfDemeter`
+raportohet nën emrin e vet dhe kurrë si detektor i saj.
+
+**Një defekt i heshtur u gjet dhe u testua.** Renderuesi XML i PMD-së nxjerr një tag
+mbylljeje të paçiftuar kur një skedar dështon, dhe JDK-ja e shkakton. Versioni i parë
+i kodit e kapte përjashtimin e parsimit dhe kthente «asnjë shkelje», çka e kthente
+depon më të madhe të korpusit në një mjet që nuk gjeti asgjë. Tani ka rrugë
+rikuperimi, ajo deklaron se u përdor, dhe të dy lexuesit testohen se japin të njëjtat
+çelësa mbi një raport që të dy e lexojnë dot.
+
+**Teksti degëzohet mbi rezultatin.** Cila anë del përpara shkruhet nga të dhënat me
+katër degë — ne, ata, barazim, pa përgjigje — sepse kjo tabelë ishte gjëja e parë që
+mund ta bënte punimin të pohonte një fitore që numrat nuk e mbajnë.

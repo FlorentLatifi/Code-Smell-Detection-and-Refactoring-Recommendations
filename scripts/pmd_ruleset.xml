@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The rules PMD is compared on, referenced with NO property overrides.
+
+  That is the whole point of the comparison and the one thing that must not be
+  edited: the question is how PMD performs as a developer would actually install
+  it, not how it performs once its thresholds have been fitted to MLCQ. Adding a
+  <properties> block here would answer a different question, and would be the
+  same defect as tuning our own thresholds to make a test pass (ENGINEERING.md
+  section 3.2).
+
+  Coverage is deliberately partial. GodClass and DataClass implement the Lanza &
+  Marinescu detection strategies this project's own detectors cite, so those two
+  are a direct comparison of two implementations of one published strategy.
+  NcssCount is PMD 7's only length rule; it replaced ExcessiveMethodLength and
+  reports on both methods and classes. PMD has no Feature Envy rule at all.
+  LawOfDemeter is its nearest neighbour and measures message chains rather than
+  foreign data access, so it is included to have that measured rather than
+  assumed, and is reported under its own name and never as a Feature Envy
+  detector.
+-->
+<ruleset name="javasmell-comparison"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    PMD rules scored against MLCQ beside this project's own detectors, at PMD's
+    shipped defaults.
+  </description>
+
+  <rule ref="category/java/design.xml/GodClass"/>
+  <rule ref="category/java/design.xml/DataClass"/>
+  <rule ref="category/java/design.xml/NcssCount"/>
+  <rule ref="category/java/design.xml/LawOfDemeter"/>
+</ruleset>

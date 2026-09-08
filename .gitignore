@@ -20,6 +20,9 @@ data/models/
 # review_rewrites.py --sample; the judgements it produced are committed, the
 # megabytes of diff they were read from are not.
 data/review/
+# PMD, shkarkuar nga fetch_pmd.py per krahasimin me nje mjet te jashtem.
+# 127 MB binar i palidhur me kodin tone; recepta komitohet, artefakti jo.
+data/tools/
 *.joblib
 *.pkl
 .env

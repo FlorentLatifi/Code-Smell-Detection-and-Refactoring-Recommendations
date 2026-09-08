@@ -580,6 +580,37 @@ CHAPTER_4 = [
             "detektuara, ato të transformuara dhe ato të refuzuara sipas arsyes, plus "
             "verdikti i verifikimit për secilin rishkrim. Një refuzim nuk hyn si "
             "dështim, sepse parakushti i paprovuar është pikërisht sjellja e kërkuar.",
+            "Të gjitha shifrat e mësipërme e krahasojnë Qasjen A me Qasjen B dhe të "
+            "dyja me MLCQ-në. Ato thonë cila prej të dyjave është më e mirë brenda këtij "
+            "punimi; nuk thonë nëse ndonjëra ia vlen përballë një mjeti që zhvilluesi e "
+            "instalon sot. Prandaj i njëjti vlerësim i zbatohet edhe një detektori të "
+            "jashtëm: PMD-së (PMD Team, 2026), version 7.27.0, i fiksuar dhe me "
+            "shumën e tij kontrolluese të regjistruar.",
+            "PMD u zgjodh sepse rregullat e tij GodClass dhe DataClass zbatojnë "
+            "strategjitë e detektimit të Lanza-s dhe Marinescu-t (Lanza & Marinescu, "
+            "2006) — të njëjtat burime që citojnë detektorët e këtij punimi. Krahasimi "
+            "është pra mes dy zbatimeve të një strategjie të botuar, jo mes këtij "
+            "punimi dhe një mjeti të palidhur me të.",
+            "PMD ekzekutohet me pragjet e veta të parazgjedhura, pa asnjë veti të "
+            "mbishkruar. Përshtatja e tyre ndaj MLCQ-së do të maste një mjet që askush "
+            "nuk e përdor, dhe do të ishte i njëjti gabim me akordimin e pragjeve tona "
+            "për ta kaluar një test.",
+            "Krahasimi bëhet mbi të njëjtat mostra, me të njëjtin kod pikëzimi dhe të "
+            "njëjtin agregim, dhe të dyja kolonat rillogariten nga i njëjti skedar në "
+            "të njëjtin ekzekutim, që të mos rrëshqasin nga njëra-tjetra. Përputhja mes "
+            "një shkeljeje të PMD-së dhe një entiteti të MLCQ-së bëhet me emrin e "
+            "klasës dhe të metodës që raporti i PMD-së i mban vetë, e jo me numra "
+            "rreshtash: numri i rreshtit do të kërkonte të merrej me mend nëse një mjet "
+            "e numëron anotimin ose Javadoc-un pjesë të deklarimit.",
+            "Dy kufizime deklarohen para se të shihet ndonjë shifër. PMD analizon një "
+            "njësi kompilimi në një kohë dhe nuk merr classpath të kompiluar, sepse "
+            "korpusi nuk mban skedarë ndërtimi; ATFD-ja e GodClass-it, e përkufizuar "
+            "kundrejt tipave të tjerë të projektit, i llogaritet pra nga sa duket brenda "
+            "një skedari, ndërsa detektorët e këtij punimi e marrin projektin e plotë. "
+            "Handikapi është real dhe e favorizon këtë punim. Së dyti, PMD nuk ka fare "
+            "rregull për Feature Envy-n; rregulli i tij më i afërt, LawOfDemeter, mat "
+            "zinxhirë mesazhesh e jo qasje në të dhëna të huaja, ndaj raportohet nën "
+            "emrin e vet dhe kurrë si detektor i Feature Envy-së.",
         ],
     ),
     (
@@ -1027,6 +1058,17 @@ def chapter_5() -> list:
                 *_calibration_paragraphs(),
             ],
         ),
+        (
+            "5.6",
+            "Krahasimi me një mjet ekzistues",
+            [
+                "Nënkapitujt e mësipërm i vënë dy qasjet e këtij punimi përballë "
+                "njëra-tjetrës. Ky i vë përballë një mjeti që zhvilluesi e instalon "
+                "sot, sepse pyetja nuk është vetëm cila prej të dyjave është më e "
+                "mirë, por a ia vlen ndonjëra.",
+                *_pmd_comparison_paragraphs(),
+            ],
+        ),
         *_severity_section(),
         *_confidence_section(),
     ]
@@ -1039,6 +1081,154 @@ RESOLUTION_SQ = {
     "persists": "era mbeti",
     "unknown": "entiteti nuk u identifikua dot",
 }
+
+
+SMELL_VARIANT_SQ = {
+    "blob/strategy": "Blob, strategjia",
+    "blob/with_size": "Blob, me madhësinë",
+    "data class/strategy": "Data Class",
+    "long method/strategy": "Long Method",
+    "feature envy/law_of_demeter": "Feature Envy (LawOfDemeter)",
+}
+
+
+def _mcc(value: float | None) -> str:
+    """Një MCC i papërcaktuar shtypet si i tillë, kurrë si zero.
+
+    I papërcaktuar do të thotë se njëra margjinë e matricës është bosh — zakonisht
+    se detektori nuk ndezi kurrë. Zeroja do të thoshte se ndezi dhe nuk mësoi
+    asgjë, dhe këto janë dy rezultate të ndryshme.
+    """
+    return "i papërcaktuar" if value is None else f"{value:.3f}"
+
+
+def _who_leads(entry: dict) -> str | None:
+    """Cila anë del përpara te ky rresht, ose None kur pyetja s'ka përgjigje."""
+    ours = entry.get("ours")
+    if ours is None:
+        return None
+    mine, theirs = ours["mcc"], entry["pmd"]["mcc"]
+    if mine is None and theirs is None:
+        return None
+    if mine is None:
+        return "pmd"
+    if theirs is None:
+        return "ours"
+    if abs(mine - theirs) < 0.005:
+        return "tie"
+    return "ours" if mine > theirs else "pmd"
+
+
+def _pmd_balance(data: dict) -> str:
+    """Kush del përpara dhe sa herë, numëruar e jo pohuar.
+
+    Shkruar si degëzim sepse të tria daljet — ne përpara, PMD përpara, të ndara —
+    janë pohime të ndryshme, dhe fjalia e shkruar për njërën lexohet si mohim i
+    tjetrës. Kjo tabelë ishte gjëja e parë që mund ta bënte punimin të pohonte një
+    fitore që të dhënat nuk e mbajnë.
+    """
+    leads = [_who_leads(entry) for entry in data["by_smell"].values()]
+    ours = leads.count("ours")
+    theirs = leads.count("pmd")
+    if ours and not theirs:
+        return (
+            f"Te {ours} nga {ours + theirs} krahasimet me përgjigje, detektorët e këtij "
+            "punimi dalin përpara, dhe te asnjëri PMD nuk del."
+        )
+    if theirs and not ours:
+        return (
+            f"Te {ours + theirs} krahasimet me përgjigje, PMD del përpara te {theirs} "
+            "dhe detektorët e këtij punimi te asnjëri. Ky është rezultat negativ dhe "
+            "raportohet si i tillë."
+        )
+    if not ours and not theirs:
+        return (
+            "Asnjë krahasim nuk jep përgjigje: te secili rresht të paktën njëra anë "
+            "nuk ndez mjaftueshëm sa koeficienti të përcaktohet."
+        )
+    return (
+        f"Rezultati ndahet: nga {ours + theirs} krahasimet me përgjigje, detektorët e "
+        f"këtij punimi dalin përpara te {ours} dhe PMD te {theirs}. Asnjëra anë nuk e "
+        "mbulon tjetrën."
+    )
+
+
+def _pmd_comparison_paragraphs() -> list:
+    """Krahasimi me PMD-në, ose një shënim se ekzekutimi nuk ka mbaruar."""
+    data = _load_if_present("pmd_comparison.json")
+    if data is None:
+        return [
+            "[PLOTËSO: krahasimi me mjetin e jashtëm gjenerohet nga hapi 19 i "
+            "Shtojcës 8.5; tabela shfaqet sapo ai ekzekutim të përfundojë.]"
+        ]
+
+    rows = []
+    for name, entry in data["by_smell"].items():
+        pmd = entry["pmd"]
+        ours = entry.get("ours")
+        rows.append(
+            [
+                SMELL_VARIANT_SQ.get(name, name),
+                str(entry["scored"]),
+                _mcc(pmd["mcc"]),
+                "—" if ours is None else _mcc(ours["mcc"]),
+            ]
+        )
+
+    unreadable = data["files_pmd_could_not_read"]
+    failed = len(data["repositories_failed"])
+
+    paragraphs: list = [
+        f"PMD {data['pmd_version']} u ekzekutua mbi të njëjtat {data['repositories']} "
+        "depo, me pragjet e veta të parazgjedhura, dhe u pikëzua me të njëjtin kod "
+        "dhe të njëjtin agregim si Qasja A. Të dyja kolonat rillogariten nga i njëjti "
+        "skedar në të njëjtin ekzekutim.",
+        ("table", "Detektorët e këtij punimi kundrejt PMD-së, mbi të njëjtat mostra",
+         ["Era", "Mostra", "MCC i PMD-së", "MCC ynë"], rows),  # fmt: skip
+        _pmd_balance(data),
+        "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të. "
+        "LawOfDemeter është më i afërti dhe mat zinxhirë mesazhesh e jo qasje në të "
+        "dhëna të huaja; shifra e tij raportohet për ta pasur të matur e jo të "
+        "supozuar, dhe nuk është matje e Feature Envy-së. Mbulimi i pjesshëm i një "
+        "mjeti të përhapur është vetë gjetje: tri nga katër erërat e MLCQ-së kanë një "
+        "rregull të gatshme, e katërta jo.",
+        "Krahasimi e favorizon këtë punim në një drejtim të deklaruar që në "
+        "Nënkapitullin 4.6: PMD analizon një skedar në një kohë dhe pa classpath të "
+        "kompiluar, ndaj ATFD-në e llogarit nga sa duket brenda një skedari, ndërsa "
+        "detektorët e këtij punimi e marrin projektin e plotë. Heqja e këtij handikapi "
+        "do të kërkonte ndërtimin e 513 depove në commit-et e tyre historike, çka "
+        "korpusi nuk e lejon (Nënkapitulli 6.3).",
+    ]
+
+    if unreadable or failed:
+        files = (
+            "një skedar i vetëm nuk u lexua dot nga PMD"
+            if unreadable == 1
+            else f"{unreadable} skedarë nuk u lexuan dot nga PMD"
+        )
+        repos = (
+            "një depo e vetme nuk u përpunua fare"
+            if failed == 1
+            else f"{failed} depo nuk u përpunuan fare"
+        )
+        paragraphs.append(
+            f"Nga ekzekutimi, {files} dhe {repos}. Këto numërohen këtu dhe nuk lexohen "
+            "si «PMD nuk gjeti asgjë»: dështimi dhe mosgjetja janë pohime të kundërta."
+        )
+    recovered = len(data.get("reports_recovered", []))
+    if recovered:
+        which = (
+            "Për një depo raporti i PMD-së doli"
+            if recovered == 1
+            else f"Për {recovered} depo raportet e PMD-së dolën"
+        )
+        paragraphs.append(
+            f"{which} XML i pavlefshëm — një defekt i njohur i renderuesit të tij kur "
+            "një skedar dështon — dhe u lexua me një rrugë rikuperimi që prodhon të "
+            "njëjtat çelësa. Pa të, ato do të hynin në tabelë sikur PMD të mos kishte "
+            "gjetur asgjë."
+        )
+    return paragraphs
 
 
 def _crossing_share(intervals: dict) -> str:
@@ -2045,6 +2235,8 @@ REPRODUCTION = [
     ("16", "review_rewrites.py --sample", "mostra e rishkrimeve dhe fleta e vlerësimit",
      "sekonda"),
     ("17", "review_rewrites.py --score", "cilësia e rishkrimeve sipas rishikuesit", "sekonda"),
+    ("18", "fetch_pmd.py", "mjeti i jashtëm i krahasimit, jashtë git-it", "minuta, një herë"),
+    ("19", "compare_with_pmd.py", "krahasimi me PMD-në mbi të njëjtat mostra", "~3 orë"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"

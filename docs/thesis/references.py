@@ -92,6 +92,10 @@ METHODOLOGY = [
         "Protein Structure, 405(2), pp. 442-451."
     ),
     (
+        "PMD Team, 2026. PMD: An Extensible Cross-Language Static Code Analyzer, "
+        "versioni 7.27.0. https://pmd.github.io/ (data e qasjes: 8 shtator 2026)."
+    ),
+    (
         "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, "
         "O., et al. 2011. “Scikit-learn: Machine Learning in Python.” Journal of "
         "Machine Learning Research, 12, pp. 2825-2830."
