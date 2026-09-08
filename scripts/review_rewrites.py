@@ -154,9 +154,7 @@ def regenerate(labelled: list[tuple[str, Site]]) -> tuple[dict[str, str], list[s
             label = f"{site.class_name}.{site.method} ({site.smell}, line {line})"
             diffs[review_id] = diff_text(source, rewritten, label)
 
-        missed.extend(
-            review_id for review_id, _ in by_ordinal.values() if review_id not in diffs
-        )
+        missed.extend(review_id for review_id, _ in by_ordinal.values() if review_id not in diffs)
     return diffs, missed
 
 
@@ -241,7 +239,7 @@ def do_sample(args: argparse.Namespace) -> int:
                     "method": site.method,
                     "file": within_corpus(site.file, args.corpus),
                     "ordinal": site.ordinal,
-                    **{name: "" for name in DIMENSIONS},
+                    **dict.fromkeys(DIMENSIONS, ""),
                     "note": "",
                 }
             )
@@ -280,7 +278,7 @@ def do_score(args: argparse.Namespace) -> int:
 
     sites = applied_sites(args.sites)
     labelled = label_sample(stratified_sample(sites, args.per_refactoring, args.seed))
-    by_review_id = {review_id: site for review_id, site in labelled}
+    by_review_id = dict(labelled)
 
     judgements = read_judgements(sheet_path)
     if not judgements:

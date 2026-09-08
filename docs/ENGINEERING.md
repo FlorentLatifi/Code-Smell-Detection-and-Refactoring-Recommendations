@@ -128,6 +128,13 @@ can destroy work, so it gets the strictest rules:
 - Never delete, skip or weaken a test to get green. A pre-existing failure and a
   newly introduced one are different things and get recorded as such.
 - Run `python -m pytest backend -q` before declaring anything done.
+- Lint is **two** gates, not one, and running only the first is how CI went red
+  without anyone noticing. From `backend/`: `ruff check .` and
+  `ruff format --check .`, which cover the package and its tests. From the
+  repository root: `ruff check scripts --config backend/pyproject.toml` and
+  `ruff format --check scripts --config backend/pyproject.toml`, which cover the
+  experiment scripts. The first pair does not reach `scripts/`, and the config
+  has to be named explicitly because it lives under `backend/`.
 
 ## 6. Web layer: real threat model
 

@@ -37,8 +37,8 @@ sys.path.insert(0, str(BACKEND))
 from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
-from javasmell.evaluation.sites import sites_in  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
+from javasmell.evaluation.sites import sites_in  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 from javasmell.refactor.base import Refusal, Tally  # noqa: E402
 from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
