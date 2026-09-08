@@ -75,6 +75,10 @@ METHODOLOGY = [
         "Breiman, L. 2001. “Random Forests.” Machine Learning, 45(1), pp. 5-32."
     ),
     (
+        "Brown, L. D., Cai, T. T. & DasGupta, A. 2001. “Interval Estimation for a "
+        "Binomial Proportion.” Statistical Science, 16(2), pp. 101-133."
+    ),
+    (
         "Cohen, J. 1960. “A Coefficient of Agreement for Nominal Scales.” Educational "
         "and Psychological Measurement, 20(1), pp. 37-46."
     ),
@@ -91,6 +95,11 @@ METHODOLOGY = [
         "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, "
         "O., et al. 2011. “Scikit-learn: Machine Learning in Python.” Journal of "
         "Machine Learning Research, 12, pp. 2825-2830."
+    ),
+    (
+        "Wilson, E. B. 1927. “Probable Inference, the Law of Succession, and "
+        "Statistical Inference.” Journal of the American Statistical Association, "
+        "22(158), pp. 209-212."
     ),
 ]
 
@@ -215,6 +224,7 @@ PAGES_VERIFIED = (
 PAGES_UNVERIFIED = (
     "Azeem et al. 2019",
     "Breiman 2001",
+    "Brown et al. 2001",
     "Cohen 1960",
     "Friedman 2001",
     "Lehman 1980",
@@ -227,4 +237,5 @@ PAGES_UNVERIFIED = (
     "Sharma & Spinellis 2018",
     "Silva et al. 2016",
     "Tsantalis & Chatzigeorgiou 2009",
+    "Wilson 1927",
 )

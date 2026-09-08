@@ -508,6 +508,46 @@ CHAPTER_4 = [
             "paverifikueshëm. Prandaj kontrollohet së pari nëse skedari i rishkruar "
             "parsohet, pastaj nëse shton lloj të ri gabimi kompilimi, dhe së fundi — "
             "ku është e mundur — nëse kompilon.",
+            "Të tria nivelet i përgjigjen pyetjes së kompilatorit. Fowler (2018) e "
+            "përkufizon refaktorimin si ndryshim që ruan sjelljen e vëzhgueshme **dhe** "
+            "përmirëson strukturën e brendshme; kompilimi flet vetëm për gjysmën e "
+            "parë. Një metodë mund të nxirret në mënyrë krejt të saktë dhe prapëseprapë "
+            "të mos jetë diçka që dikush do ta mbante: e ndarë në një kufi arbitrar, e "
+            "emërtuar për asgjë, me shtatë parametra. Prandaj gjysma e dytë matet "
+            "veçmas, dhe në të vetmen mënyrë që mundet pa një motor të dytë: një njeri "
+            "lexon një mostër diff-esh dhe i gjykon sipas një rubrike të fiksuar.",
+            "Rubrika ka tri përmasa, secila me tri vlera. **Sjellja**: e ruajtur, e "
+            "paqartë, e ndryshuar — «e paqartë» është përgjigje reale, sepse një "
+            "rishikues që s'e dallon dot nuk do ta pranonte. **Përfitimi**: përmirëson, "
+            "asnjanës, përkeqëson — «asnjanës» është pikërisht rasti që çdo kontroll "
+            "automatik e numëron si sukses. **Pranueshmëria**: ashtu si është, pas një "
+            "ndreqjeje, e refuzuar — mesi ndahet veç sepse emërtimi është pjesa që një "
+            "motor deterministik nuk e bën dhe që njeriu e ndreq për një minutë.",
+            "Mostra është e mbjellë me farë dhe e shtresuar sipas transformimit, jo "
+            "proporcionale: ExtractMethod përbën 93% të vendeve të rishkruara, ndaj një "
+            "mostër proporcionale do të mbante dy ose tre raste nga secili "
+            "transformim tjetër dhe nuk do të thoshte asgjë për to. Secili "
+            "transformim merret në të njëjtën thellësi dhe raportohet veç; shifra e "
+            "bashkuar ripeshohet me madhësitë reale të shtresave, sepse vetë mostra "
+            "është qëllimisht jopërfaqësuese e popullatës nga e cila u nxor.",
+            "Fleta që plotësohet nuk mban asnjë verdikt të kompilatorit. Bashkimi me "
+            "verdiktet bëhet vetëm në pikëzim, sepse një rishikues që sheh se rishkrimi "
+            "kompiloi e ka marrë gjysmën e përgjigjes para se ta jepte, dhe tabela e "
+            "kryqëzuar mes dy verdikteve është ndër gjërat më të dobishme që kjo matje "
+            "prodhon: ajo thotë nëse kontrolli automatik është zëvendësues i pranimit "
+            "apo thjesht i korreluar me të.",
+            "Intervalet janë Wilson (1927) e jo përafrimi normal. Me njëzet vëzhgime "
+            "dhe një përpjesë pranë skajit, përafrimi normal jep kufij jashtë "
+            "intervalit [0, 1] dhe mbulim dukshëm nën 95% — rasti për të cilin Brown "
+            "et al. (2001) e këshillojnë kundër tij, dhe pikërisht rasti këtu.",
+            "Vlerësuesi është autori i punimit, dhe kjo është kufizim e jo veçori. Një "
+            "rishikues i vetëm, njëkohësisht autor i motorit që po gjykon, është forma "
+            "më e dobët që kjo matje mund të marrë; është forma e disponueshme. Punimi "
+            "e raporton si gjykim të një rishikuesi, me rubrikën e fiksuar para se të "
+            "shihej qoftë edhe një diff dhe me fletën e komituar, që lexuesi të mund "
+            "të mos pajtohet me një rresht të emërtuar e jo me një numër. Pajtimi mes "
+            "rishikuesve, që Nënkapitulli 5 e mat për etiketat e MLCQ-së, këtu nuk "
+            "mund të matet fare.",
         ],
     ),
     (
@@ -674,6 +714,13 @@ def chapter_6() -> list:
                 "ekzekutohen. Ekzekutimi i tyre do të kërkonte rimarrjen e plotë të të "
                 "gjitha arkivave dhe ndërtimin e secilës depo në commit-in e vet historik, "
                 "ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara.",
+                "Cilësia e rishkrimeve u vlerësua nga një rishikues i vetëm, i cili "
+                "është autori i motorit. Rubrika u fiksua para se të shihej qoftë edhe "
+                "një diff dhe fleta është e komituar rresht për rresht, por asnjëra prej "
+                "të dyjave nuk e zëvendëson pavarësinë. Pajtimi mes rishikuesve, që për "
+                "etiketat e MLCQ-së matet dhe raportohet, për këtë matje nuk mund të "
+                "matet fare, ndaj ajo është e vetmja shifër e Kapitullit 5 pa tavan të "
+                "njohur mbi të.",
                 "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
                 "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
                 "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
@@ -1436,8 +1483,164 @@ def _refactoring_section() -> list:
         "gabimi kundrejt skedarit origjinal.",
         *_resolution_paragraphs(data),
         *_project_context_paragraphs(),
+        *_rewrite_quality_paragraphs(),
         *_refusal_severity_paragraphs(),
     ]
+
+
+def _rewrites(count: int) -> str:
+    """«një rishkrim» ose «N rishkrime».
+
+    Numri hyn në fjali të ndryshme dhe shqipja e dallon njëjësin nga shumësi te
+    emri dhe te folja. Një fjali e ndërtuar që del «1 rishkrime u refuzuan» do të
+    rishkruhej me dorë, dhe atëherë numri s'do të lexohej më nga të dhënat.
+    """
+    return "një rishkrim" if count == 1 else f"{count} rishkrime"
+
+
+def _opens(text: str) -> str:
+    """E njëjta frazë kur nis fjalinë: shkronja e parë e madhe, pjesa tjetër e paprekur."""
+    return text[:1].upper() + text[1:]
+
+
+def _quality_shortfall(idle: int, reviewed: int) -> str:
+    """Sa nga rishkrimet e lexuara nuk sjellin përfitim, dhe si quhet kjo.
+
+    Degëzohet sepse zero dhe jo-zero janë pohime të kundërta: e para thotë se
+    çdo rishkrim i lexuar përmirësoi strukturën, e dyta se një pjesë e tyre vetëm
+    lëvizi bajta. Fjalia e shkruar për njërën lexohet si mohim i tjetrës.
+    """
+    if not idle:
+        return (
+            "Asnjë rishkrim i lexuar nuk u gjykua i kotë: secili e përmirësoi "
+            "strukturën, jo thjesht e zhvendosi kodin."
+        )
+    verb = "u gjykua" if idle == 1 else "u gjykuan"
+    return (
+        f"{_opens(_rewrites(idle))} nga {reviewed} {verb} pa përfitim strukturor: "
+        "kodi lëviz, por vendi ku ndahet nuk i përgjigjet asnjë përgjegjësie. Çdo "
+        "kontroll automatik i sistemit i numëron këto si sukses, dhe pikërisht kjo "
+        "është arsyeja pse kjo matje ekziston."
+    )
+
+
+def _verdict_separates(table: dict[str, dict[str, int]]) -> str:
+    """A e ndan verdikti i kompilatorit të pranuarën nga e refuzuara?
+
+    Kjo është pyetja për të cilën fleta u mbajt e verbër. Përgjigjja lexohet nga
+    tabela e kryqëzuar e jo nga pritshmëria: nëse refuzimet shpërndahen njësoj
+    mes verdikteve, verdikti nuk parashikon asgjë për pranimin.
+    """
+    rejected = sum(
+        row["reject"] for verdict, row in table.items() if verdict in {"compiles", "no_new_errors"}
+    )
+    if not rejected:
+        return (
+            "Asnjë rishkrim që kaloi kontrollin e kompilatorit nuk u refuzua nga "
+            "rishikuesi. Mbi këtë mostër, pra, verdikti automatik nuk u gjend të "
+            "pranonte gjë që njeriu do ta hidhte poshtë."
+        )
+    verb = "u refuzua" if rejected == 1 else "u refuzuan"
+    return (
+        f"{_opens(_rewrites(rejected))} që kaloi kontrollin e kompilatorit {verb} nga "
+        "rishikuesi. Verdikti automatik, pra, nuk është zëvendësues i "
+        "pranimit: ai përjashton një klasë gabimesh dhe nuk thotë asgjë për një "
+        "klasë tjetër, dhe pretendimi i Qasjes C duhet lexuar në atë gjerësi."
+    )
+
+
+def _rewrite_quality_paragraphs() -> list:
+    """Cilësia e rishkrimeve sipas rishikuesit, ose një shënim se fleta pret.
+
+    Vetëplotësohet: derisa fleta të mbushet me dorë, skedari nuk ekziston dhe
+    seksioni e thotë këtë hapur në vend që të mos ekzistojë fare. `check_format`
+    e numëron atë shënim mes vendeve që i mbeten autorit, që puna e papërfunduar
+    të jetë e dukshme te lista e tij e vet.
+    """
+    data = _load_if_present("rewrite_quality.json")
+    if data is None:
+        return [
+            "[PLOTËSO: fleta e vlerësimit të cilësisë është nxjerrë me hapin 16 të "
+            "Shtojcës 8.5 dhe pret gjykimin e rishikuesit; kjo tabelë gjenerohet "
+            "automatikisht sapo ajo të mbushet dhe të pikëzohet me hapin 17.]"
+        ]
+
+    per = data["by_refactoring"]
+    rows = [
+        [
+            name,
+            str(entry["reviewed"]),
+            str(entry["acceptance"]["as_is"]),
+            str(entry["acceptance"]["after_edit"]),
+            str(entry["acceptance"]["reject"]),
+            f"{entry['acceptable']:.0%}",
+            f"[{entry['acceptable_ci'][0]:.2f}, {entry['acceptable_ci'][1]:.2f}]",
+        ]
+        for name, entry in per.items()
+    ]
+
+    changed = sum(entry["behaviour"]["changed"] for entry in per.values())
+    unclear = sum(entry["behaviour"]["unclear"] for entry in per.values())
+    behaviour = (
+        "Asnjë rishkrim i lexuar nuk u gjykua se e ndryshon sjelljen."
+        if not changed
+        else f"{_opens(_rewrites(changed))} u gjykua se e ndryshon sjelljen, çka është "
+        "dështim i parakushteve dhe raportohet si i tillë."
+        if changed == 1
+        else f"{_opens(_rewrites(changed))} u gjykuan se e ndryshojnë sjelljen, çka është "
+        "dështim i parakushteve dhe raportohet si i tillë."
+    )
+    if unclear:
+        # «Të tjera» pas «asnjë» nuk qëndron: kur numri i ndryshimeve është zero,
+        # nuk ka asgjë ndaj së cilës këto të jenë «të tjera».
+        if changed:
+            which = "një tjetër" if unclear == 1 else f"{unclear} të tjera"
+        else:
+            which = "një prej tyre" if unclear == 1 else f"{unclear} prej tyre"
+        behaviour += (
+            f" Për {which} rishikuesi nuk e dalloi dot nga leximi; kjo "
+            "numërohet veç, sepse një rishikues që nuk e dallon dot nuk do ta "
+            "pranonte as atë."
+        )
+
+    paragraphs: list = [
+        "Kompilimi thotë vetëm gjysmën. Për të matur gjysmën tjetër — a është "
+        "rishkrimi diçka që një zhvillues do ta mbante — u lexua një mostër e "
+        f"mbjellë prej {data['drawn']} rishkrimesh, {data['per_refactoring']} për "
+        "çdo transformim, dhe secili u gjykua sipas rubrikës së Nënkapitullit 4.5 "
+        "pa e parë verdiktin e kompilatorit.",
+        ("table", "Pranueshmëria e rishkrimeve sipas rishikuesit",
+         ["Transformimi", "Të lexuara", "Ashtu si është", "Pas ndreqjeje",
+          "Të refuzuara", "Të pranueshme", "IB 95%"], rows),  # fmt: skip
+        behaviour,
+        _quality_shortfall(
+            sum(e["benefit"]["neutral"] + e["benefit"]["worsens"] for e in per.values()),
+            data["reviewed"],
+        ),
+    ]
+
+    pooled = data.get("acceptable_reweighted")
+    if pooled is not None:
+        paragraphs.append(
+            f"E ripeshuar me madhësitë reale të shtresave, norma e pranueshmërisë mbi "
+            f"tërë vendet e rishkruara është {pooled:.1%}. Ripeshimi nuk është "
+            "zbukurim: mostra merr njëzet raste nga secili transformim, ndërsa "
+            "ExtractMethod përbën 93% të vendeve reale, ndaj norma e lexuar "
+            "drejtpërdrejt nga mostra do të përshkruante një sistem që nuk ekziston.",
+        )
+
+    table = data.get("acceptance_by_verdict")
+    if table:
+        paragraphs.append(_verdict_separates(table))
+
+    paragraphs.append(
+        "Rishikuesi është autori. Kjo matje, ndryshe nga çdo tjetër në këtë kapitull, "
+        "nuk është e pavarur nga ai që e ndërtoi sistemin, dhe numri i saj duhet "
+        "lexuar me atë kufizim të pranishëm e jo si i njëjti lloj dëshmie me të "
+        "tjerët. Fleta është e komituar rresht për rresht, që mospajtimi të jetë i "
+        "mundur mbi një rast konkret."
+    )
+    return paragraphs
 
 
 def _overturned(regressions: int, total: int) -> str:

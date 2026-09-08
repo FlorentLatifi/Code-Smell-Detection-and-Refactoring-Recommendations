@@ -83,6 +83,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-71 | Prezantimi gjenerohet nga të njëjtat burime si punimi | 2026-09-07 | aktiv |
 | VD-72 | Cilësia e rishkrimeve matet me rubrikë, jo me kompilim | 2026-09-07 | aktiv |
 | VD-73 | Përfundimet lexohen nga rezultatet, si Kapitulli 5 | 2026-09-08 | aktiv |
+| VD-74 | Rubrika hyn në punim para se të mbushet fleta | 2026-09-08 | aktiv |
 
 ---
 
@@ -2682,3 +2683,36 @@ pohim për një hap, jo pohim se rezultati i tij nuk ndryshon kurrë.
 **Çmimi.** `build_thesis.py` dhe `check_citations.py` e thërrasin tani si funksion.
 Kapitujt 2, 3 dhe 4 mbeten lista: ata nuk mbajnë asnjë pohim që lexohet nga
 `data/results/`, dhe shndërrimi i tyre do të ishte simetri pa arsye.
+
+
+### VD-74: Rubrika hyn në punim para se të mbushet fleta
+
+**Konteksti.** VD-72 e ndërtoi matjen e cilësisë së rishkrimeve: mostër e mbjellë,
+rubrikë me tri përmasa, fletë e verbër. Ajo që mbeti jashtë punimit ishte vetë
+rubrika. Pa të, mostra do të mbushej dhe pastaj do të shkruhej se si u gjykua, dhe
+kriteri i shkruar pasi janë parë rastet nuk është kriter.
+
+**Vendimi.** Nënkapitulli 4.5 e përshkruan rubrikën, shtresimin, verbërinë e
+fletës dhe intervalin Wilson **para** se të plotësohet qoftë edhe një rresht.
+Kapitulli 5 e ka seksionin e vet, i cili vetëplotësohet: derisa
+`rewrite_quality.json` të mos ekzistojë, ai shtyp një shënim `[PLOTËSO]` në vend
+që të mos ekzistojë fare. Kufizimi i rishikuesit të vetëm hyn te 6.3.
+
+**Numri i intervalit nuk është zbukurim.** Me njëzet vëzhgime për shtresë, përafrimi
+normal jep kufij jashtë [0, 1] dhe mbulim nën atë që deklaron. Wilson (1927) është
+zgjedhja që Brown et al. (2001) e këshillojnë pikërisht për këtë rast; të dyja
+referencat hyjnë te `METHODOLOGY` dhe te `PAGES_UNVERIFIED`, sepse numrat e faqeve
+nuk janë kontrolluar nga burim i dytë.
+
+**Proza degëzohet, nuk mbushet.** Çdo pohim që mund të përmbyset — a ndryshoi ndonjë
+rishkrim sjelljen, a mbeti ndonjë pa përfitim, a refuzoi rishikuesi diçka që
+kompilatori e kishte pranuar — është degë e veçantë mbi të dhënat, si `_overturned`
+te VD-73. Shqipja e detyron edhe një ndarje të dytë: njëjës kundrejt shumësi te emri
+dhe te folja. Një fjali që del «1 rishkrime u refuzuan» do të rishkruhej me dorë,
+dhe atëherë numri pushon së lexuari nga të dhënat — pikërisht ajo që VD-73 sapo e
+ndreqi.
+
+**`check_format` numëron tani të dyja format e shënimit.** «[PLOTËSO: ...]» ishte
+shpikur për një seksion që priste një ekzekutim të gjatë dhe nuk numërohej fare, ndaj
+një seksion që pret gjykimin e autorit rrinte i padukshëm te lista e tij e vet. Vendet
+e mbetura shkuan nga një në dy, dhe e dyta është punë e vërtetë e papërfunduar.

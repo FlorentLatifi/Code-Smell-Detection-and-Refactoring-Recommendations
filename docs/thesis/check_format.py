@@ -377,8 +377,14 @@ def remaining_todos(doc: Document) -> list[str]:
 
     Të shënuara me qëllim; raportohen sepse në një dokument prej dhjetëra faqesh
     ato gjenden vetëm nga kush di t'i kërkojë.
+
+    Shënimi ka dy forma: «[PLOTËSO]» të vetëm, i ndjekur nga udhëzimi, dhe
+    «[PLOTËSO: ...]» me arsyen brenda kllapave. E dyta u shpik për një seksion që
+    priste një ekzekutim të gjatë dhe nuk numërohej fare, ndaj një seksion që
+    priste **gjykimin e autorit** rrinte i padukshëm te lista e tij e vet. Të dyja
+    janë vende ku dokumenti nuk ka mbaruar, ndaj të dyja numërohen.
     """
-    marker = "[PLOTËSO]"
+    marker = "[PLOTËSO"
     return [p.text.strip()[:70] for p in doc.paragraphs if marker in p.text]
 
 
