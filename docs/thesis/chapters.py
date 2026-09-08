@@ -562,162 +562,200 @@ CHAPTER_4 = [
 # ======================================================================
 # Kapitulli 6
 # ======================================================================
-CHAPTER_6 = [
-    (
-        "6.1",
-        "Interpretimi i rezultateve",
-        [
-            "Gjetja më e qëndrueshme e këtij punimi është se strategjitë e publikuara "
-            "të detektimit kanë precizion të lartë dhe recall të ulët. Kur ato ndezin, "
-            "kanë kryesisht të drejtë; por i humbin shumicën e rasteve që rishikuesit "
-            "i shënojnë. Për një mjet praktik kjo nuk është domosdoshmërisht e keqe: "
-            "një sinjal i rrallë por i besueshëm konsumohet më lehtë se një listë e "
-            "gjatë me alarme false.",
-            "Ndarja sipas ashpërsisë e ndryshon leximin. Detektorët degradojnë me "
-            "hijeshi: i kapin rastet e rënda shumë më mirë se ato të lehtat. Një F1 i "
-            "vetëm e fsheh krejt këtë, dhe pikërisht për këtë arsye recall-i "
-            "raportohet i ndarë sipas etiketës që caktuan rishikuesit.",
-            "Modelet e mësimit të makinës e tejkalojnë qartë qasjen me rregulla në çdo "
-            "erë. Por krahasimi qelizë për qelizë tregon se ato nuk e zëvendësojnë "
-            "atë plotësisht: te Feature Envy rregulli kap raste që modeli i humb, dhe "
-            "kjo është e vetmja erë ku bashkimi i dy qasjeve do të kishte kuptim "
-            "praktik.",
-            "Përparësia qëndron edhe kur matet me interval besimi, por jo pa kusht. Kur "
-            "rregullit i jepet pragu i tij më i mirë nga fshirja — krahasimi më bujar që "
-            "mund t'i bëhet — dallimi te Long Method e përfshin zeron. Pra pretendimi "
-            "vlen përgjithësisht, dhe jo pikërisht te era ku rregulli tashmë punonte më "
-            "mirë. Ky është kufizim i krahasimit, jo i njërës qasje.",
-        ],
-    ),
-    (
-        "6.2",
-        "Çfarë matin vërtet strategjitë",
-        [
-            "Dy gjetje të pavarura tregojnë në të njëjtin drejtim. E para: kur "
-            "modeleve u lihet të zgjedhin vetë veçoritë, te Blob nuk zgjidhen TCC dhe "
-            "WMC — pikërisht kushtet e kohezionit dhe të kompleksitetit mbi të cilat "
-            "është ndërtuar God Class — por metrikat e madhësisë.",
-            "E dyta: shtimi i një detektori që mbështetet vetëm te madhësia e "
-            "përmirëson ndjeshëm përputhjen me gjykimin e rishikuesve për të njëjtën "
-            "erë.",
-            "Të dyja sugjerojnë se ajo që rishikuesit e MLCQ-së e quajnë «blob» "
-            "shpjegohet më mirë me madhësi sesa me kushtin e kohezionit që strategjia "
-            "e publikuar e vendos në qendër. Kjo nuk e zhvlerëson strategjinë, por "
-            "tregon se ajo mat diçka pak më ndryshe nga ajo që emërton.",
-            "E njëjta vërejtje del edhe nga ana e refaktorimit. Encapsulate Field, i "
-            "cili rekomandohet gjerësisht për Data Class, e përkeqëson matjen sipas "
-            "vetë përkufizimit të strategjisë: ai shndërron një fushë publike në dy "
-            "akses-metoda publike, dhe të dyja kushtet e strategjisë e numërojnë këtë "
-            "si përkeqësim. Fowler-i e trajton atë transformim si hap përgatitor, jo "
-            "si ilaç; një mjet që aplikon vetëm hapin e parë ecën në drejtim të "
-            "gabuar.",
-        ],
-    ),
-    (
-        "6.3",
-        "Kufizimet",
-        [
-            "Mbulimi i korpusit nuk është i plotë: disa depo të MLCQ-së janë fshirë "
-            "ose zhvendosur, dhe mostrat e tyre nuk hyjnë në vlerësim. Numri raportohet "
-            "si kufizim i studimit.",
-            "Mospajtimi mes rishikuesve është i konsiderueshëm. Për këtë arsye çdo "
-            "strategji agregimi raportohet veç, dhe mostrat që një strategji nuk i "
-            "etiketon dot hidhen në vend që të lexohen si negative.",
-            "Verifikimi i refaktorimeve është më i dobët se sa do të dëshirohej. "
-            "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
-            "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Verifikimi "
-            "me suitat e testeve të vetë projekteve mbetet punë e ardhshme.",
-            "Arsyeja pse ai verifikim nuk u bë është vetë ndërtimi i korpusit, jo "
-            "mungesa e kohës. Shkarkuesi ruan me qëllim vetëm skedarët me prapashtesë "
-            "«.java», sepse kjo është gjithçka që i duhet analizës dhe e mban korpusin "
-            "të vogël. Pasoja është se korpusi nuk mban asnjë përkufizim ndërtimi dhe "
-            "asnjë varësi: skedarët e testeve janë aty, por pa «pom.xml» ose "
-            "«build.gradle» dhe pa bibliotekat e treta ata as kompilohen dhe as "
-            "ekzekutohen. Ekzekutimi i tyre do të kërkonte rimarrjen e plotë të të "
-            "gjitha arkivave dhe ndërtimin e secilës depo në commit-in e vet historik, "
-            "ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara.",
-            "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
-            "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
-            "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
-            "Ashpërsia që sistemi e derivon nuk e riprodhon gjykimin e rishikuesve. Ajo "
-            "u ndërtua në shkallën e MLCQ-së pikërisht që të krahasohej me ta pa hap "
-            "përkthimi, dhe kur krahasimi u bë, pajtimi doli pranë rastësisë për tri nga "
-            "katër erërat, me mbivlerësim sistematik. Pretendimi hiqet: ajo mbetet "
-            "renditje e brendshme e mjetit dhe jo riprodhim i gjykimit njerëzor.",
-            "Vetë e vërteta bazë ka një tavan të ulët. Rishikuesit e MLCQ-së pajtohen "
-            "mes tyre me MCC nën 0.24 për çdo erë, çka do të thotë se një pjesë e "
-            "pareduktueshme e gabimit të çdo detektori i takon paqartësisë së "
-            "përkufizimit dhe jo detektorit. Kjo nuk i zbut shifrat e këtij punimi, por "
-            "e ndryshon shkallën në të cilën duhen lexuar — të tijat dhe të literaturës.",
-        ],
-    ),
-    (
-        "6.4",
-        "Puna e ardhshme",
-        [
-            (
-                "bullet",
-                "Verifikim me suitat e testeve të projekteve të korpusit, që "
-                "pretendimi të ngrihet nga «kompilon» në «ruan sjelljen».",
-            ),
-            (
-                "bullet",
-                "Një zgjidhës i kufizuar simbolesh brenda një projekti, i cili do t'i "
-                "hapte rrugën Encapsulate Field-it dhe Move Method-it.",
-            ),
-            (
-                "bullet",
-                "Zgjerim i të vërtetës bazë përtej katër smells që mbulon MLCQ.",
-            ),
-            (
-                "bullet",
-                "Kalibrim i pragjeve mbi një bashkësi të ndarë dhe vlerësim mbi një "
-                "tjetër të paprekur. Fshirja tregoi se dy pragje e ndryshojnë ndjeshëm "
-                "rezultatin, por adoptimi i tyre pa këtë ndarje do të ishte thjesht "
-                "përshtatje ndaj të dhënave të testimit.",
-            ),
-            (
-                "bullet",
-                "Ashpërsi e mësuar nga të dhënat në vend që të derivohet nga teprica. "
-                "Kjo e kthen një derivim të shpjegueshëm në një model të dytë, ndaj "
-                "kërkon ndarjen e vet të korpusit.",
-            ),
-        ],
-    ),
-    (
-        "6.5",
-        "Përfundim",
-        [
-            "Punimi ndërtoi një sistem që i zbulon code smells në dy mënyra të "
-            "pavarura dhe i krahason mbi të njëjtën të vërtetë bazë me të njëjtin kod "
-            "pikëzimi, si dhe një motor refaktorimi që rishkruan kod vetëm kur i "
-            "provon parakushtet e veta.",
-            "Përgjigjet e shkurtra ndaj tri pyetjeve kërkimore janë: strategjitë e "
-            "publikuara janë të sakta por të kursyera; një klasifikues mbi të njëjtat "
-            "metrika është dukshëm më i mirë dhe i rizbulon pjesërisht metrikat e "
-            "strategjive; dhe një pjesë e vogël por reale e rasteve të detektuara mund "
-            "të transformohet automatikisht, ku shumica e refuzimeve vjen nga forma e "
-            "kodit dhe nga rrjedha e kontrollit.",
-            "Pyetja e tretë kërkon dy gjëra, dhe ato u arritën në shkallë të "
-            "ndryshme. Kompilueshmëria u verifikua për çdo rishkrim të aplikuar: "
-            "shumica nuk shton asnjë lloj të ri gabimi, një pakicë e vogël e shton "
-            "dhe numërohet si e tillë, dhe kur skedari kompilohet brenda projektit "
-            "të vet e jo i izoluar, pjesa që kompilon plotësisht rritet ndjeshëm pa "
-            "asnjë verdikt të përmbysur. Ruajtja e sjelljes, përkundrazi, **nuk u "
-            "mat**: ajo do të kërkonte ekzekutimin e suitave të testeve të vetë "
-            "depove, të cilat korpusi nuk i mban. Prandaj përgjigjja ndaj asaj "
-            "pyetjeje është e plotë për gjysmën e parë dhe e hapur për të dytën, dhe "
-            "kjo deklarohet këtu me po aq qartësi sa te Nënkapitulli 6.3.",
-            "Dy rezultate negative i shoqërojnë ato dhe nuk duhen lexuar veç: ashpërsia "
-            "e derivuar nuk e riprodhon gjykimin e rishikuesve, dhe vetë rishikuesit "
-            "pajtohen mes tyre aq pak sa çdo shifër e kësaj fushe duhet lexuar mbi një "
-            "tavan dukshëm më të ulët se sa e sugjeron zakonisht literatura.",
-            "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
-            "riprodhueshëm nga korpusi te rezultati, ku çdo numër rigjenerohet me një "
-            "komandë dhe çdo vendim është i regjistruar me arsyen e vet.",
-        ],
-    ),
-]
+def _context_conclusion() -> str:
+    """A si u sollën verdiktet brenda kontekstit, lexuar nga skedari e jo i shtypur.
+
+    Kjo klauzolë e pohonte në prozë përfundimin e mirë — «pa asnjë verdikt të
+    përmbysur» — ndërsa Kapitulli 5 e lexonte të njëjtin numër nga skedari. Kur
+    mostra u dyfishua dhe numri kaloi nga zero në një, Kapitulli 5 u përshtat
+    vetvetiu dhe përfundimi mbeti i vjetruar (VD-55). Prandaj tani e ndan të
+    njëjtin burim me të.
+    """
+    data = _load_if_present("verify_with_project.json")
+    if data is None:
+        return "pjesa që kompilon plotësisht rritet ndjeshëm"
+
+    regressions = data["compiled_in_project"].get("new_errors", 0)
+    total = data["rewrites"]
+    if not regressions:
+        return "pjesa që kompilon plotësisht rritet ndjeshëm pa asnjë verdikt të përmbysur"
+    if regressions == 1:
+        return (
+            "pjesa që kompilon plotësisht rritet ndjeshëm, ndërsa një rishkrim i "
+            f"vetëm nga {total} e përmbys verdiktin në drejtimin e kundërt dhe e "
+            "kufizon pretendimin"
+        )
+    return (
+        "pjesa që kompilon plotësisht rritet ndjeshëm, ndërsa "
+        f"{regressions} rishkrime nga {total} e përmbysin verdiktin në drejtimin e "
+        "kundërt dhe e kufizojnë pretendimin"
+    )
+
+
+def chapter_6() -> list:
+    """Diskutimi dhe përfundimet, me pohimet empirike të lexuara nga rezultatet.
+
+    Ishte listë statike, dhe pikërisht ashtu rrëshqiti: përfundimi pohonte se asnjë
+    verdikt nuk u përmbys, ndërsa Kapitulli 5 e lexonte numrin nga skedari dhe e
+    kishte tërhequr atë pohim kur mostra u dyfishua (VD-55). Kapitulli i fundit që
+    lexon komisioni është vendi i fundit ku një pohim i vjetruar duhet të mbijetojë.
+    """
+    return [
+        (
+            "6.1",
+            "Interpretimi i rezultateve",
+            [
+                "Gjetja më e qëndrueshme e këtij punimi është se strategjitë e publikuara "
+                "të detektimit kanë precizion të lartë dhe recall të ulët. Kur ato ndezin, "
+                "kanë kryesisht të drejtë; por i humbin shumicën e rasteve që rishikuesit "
+                "i shënojnë. Për një mjet praktik kjo nuk është domosdoshmërisht e keqe: "
+                "një sinjal i rrallë por i besueshëm konsumohet më lehtë se një listë e "
+                "gjatë me alarme false.",
+                "Ndarja sipas ashpërsisë e ndryshon leximin. Detektorët degradojnë me "
+                "hijeshi: i kapin rastet e rënda shumë më mirë se ato të lehtat. Një F1 i "
+                "vetëm e fsheh krejt këtë, dhe pikërisht për këtë arsye recall-i "
+                "raportohet i ndarë sipas etiketës që caktuan rishikuesit.",
+                "Modelet e mësimit të makinës e tejkalojnë qartë qasjen me rregulla në çdo "
+                "erë. Por krahasimi qelizë për qelizë tregon se ato nuk e zëvendësojnë "
+                "atë plotësisht: te Feature Envy rregulli kap raste që modeli i humb, dhe "
+                "kjo është e vetmja erë ku bashkimi i dy qasjeve do të kishte kuptim "
+                "praktik.",
+                "Përparësia qëndron edhe kur matet me interval besimi, por jo pa kusht. Kur "
+                "rregullit i jepet pragu i tij më i mirë nga fshirja — krahasimi më bujar që "
+                "mund t'i bëhet — dallimi te Long Method e përfshin zeron. Pra pretendimi "
+                "vlen përgjithësisht, dhe jo pikërisht te era ku rregulli tashmë punonte më "
+                "mirë. Ky është kufizim i krahasimit, jo i njërës qasje.",
+            ],
+        ),
+        (
+            "6.2",
+            "Çfarë matin vërtet strategjitë",
+            [
+                "Dy gjetje të pavarura tregojnë në të njëjtin drejtim. E para: kur "
+                "modeleve u lihet të zgjedhin vetë veçoritë, te Blob nuk zgjidhen TCC dhe "
+                "WMC — pikërisht kushtet e kohezionit dhe të kompleksitetit mbi të cilat "
+                "është ndërtuar God Class — por metrikat e madhësisë.",
+                "E dyta: shtimi i një detektori që mbështetet vetëm te madhësia e "
+                "përmirëson ndjeshëm përputhjen me gjykimin e rishikuesve për të njëjtën "
+                "erë.",
+                "Të dyja sugjerojnë se ajo që rishikuesit e MLCQ-së e quajnë «blob» "
+                "shpjegohet më mirë me madhësi sesa me kushtin e kohezionit që strategjia "
+                "e publikuar e vendos në qendër. Kjo nuk e zhvlerëson strategjinë, por "
+                "tregon se ajo mat diçka pak më ndryshe nga ajo që emërton.",
+                "E njëjta vërejtje del edhe nga ana e refaktorimit. Encapsulate Field, i "
+                "cili rekomandohet gjerësisht për Data Class, e përkeqëson matjen sipas "
+                "vetë përkufizimit të strategjisë: ai shndërron një fushë publike në dy "
+                "akses-metoda publike, dhe të dyja kushtet e strategjisë e numërojnë këtë "
+                "si përkeqësim. Fowler-i e trajton atë transformim si hap përgatitor, jo "
+                "si ilaç; një mjet që aplikon vetëm hapin e parë ecën në drejtim të "
+                "gabuar.",
+            ],
+        ),
+        (
+            "6.3",
+            "Kufizimet",
+            [
+                "Mbulimi i korpusit nuk është i plotë: disa depo të MLCQ-së janë fshirë "
+                "ose zhvendosur, dhe mostrat e tyre nuk hyjnë në vlerësim. Numri raportohet "
+                "si kufizim i studimit.",
+                "Mospajtimi mes rishikuesve është i konsiderueshëm. Për këtë arsye çdo "
+                "strategji agregimi raportohet veç, dhe mostrat që një strategji nuk i "
+                "etiketon dot hidhen në vend që të lexohen si negative.",
+                "Verifikimi i refaktorimeve është më i dobët se sa do të dëshirohej. "
+                "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
+                "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Verifikimi "
+                "me suitat e testeve të vetë projekteve mbetet punë e ardhshme.",
+                "Arsyeja pse ai verifikim nuk u bë është vetë ndërtimi i korpusit, jo "
+                "mungesa e kohës. Shkarkuesi ruan me qëllim vetëm skedarët me prapashtesë "
+                "«.java», sepse kjo është gjithçka që i duhet analizës dhe e mban korpusin "
+                "të vogël. Pasoja është se korpusi nuk mban asnjë përkufizim ndërtimi dhe "
+                "asnjë varësi: skedarët e testeve janë aty, por pa «pom.xml» ose "
+                "«build.gradle» dhe pa bibliotekat e treta ata as kompilohen dhe as "
+                "ekzekutohen. Ekzekutimi i tyre do të kërkonte rimarrjen e plotë të të "
+                "gjitha arkivave dhe ndërtimin e secilës depo në commit-in e vet historik, "
+                "ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara.",
+                "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
+                "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
+                "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
+                "Ashpërsia që sistemi e derivon nuk e riprodhon gjykimin e rishikuesve. Ajo "
+                "u ndërtua në shkallën e MLCQ-së pikërisht që të krahasohej me ta pa hap "
+                "përkthimi, dhe kur krahasimi u bë, pajtimi doli pranë rastësisë për tri nga "
+                "katër erërat, me mbivlerësim sistematik. Pretendimi hiqet: ajo mbetet "
+                "renditje e brendshme e mjetit dhe jo riprodhim i gjykimit njerëzor.",
+                "Vetë e vërteta bazë ka një tavan të ulët. Rishikuesit e MLCQ-së pajtohen "
+                "mes tyre me MCC nën 0.24 për çdo erë, çka do të thotë se një pjesë e "
+                "pareduktueshme e gabimit të çdo detektori i takon paqartësisë së "
+                "përkufizimit dhe jo detektorit. Kjo nuk i zbut shifrat e këtij punimi, por "
+                "e ndryshon shkallën në të cilën duhen lexuar — të tijat dhe të literaturës.",
+            ],
+        ),
+        (
+            "6.4",
+            "Puna e ardhshme",
+            [
+                (
+                    "bullet",
+                    "Verifikim me suitat e testeve të projekteve të korpusit, që "
+                    "pretendimi të ngrihet nga «kompilon» në «ruan sjelljen».",
+                ),
+                (
+                    "bullet",
+                    "Një zgjidhës i kufizuar simbolesh brenda një projekti, i cili do t'i "
+                    "hapte rrugën Encapsulate Field-it dhe Move Method-it.",
+                ),
+                (
+                    "bullet",
+                    "Zgjerim i të vërtetës bazë përtej katër smells që mbulon MLCQ.",
+                ),
+                (
+                    "bullet",
+                    "Kalibrim i pragjeve mbi një bashkësi të ndarë dhe vlerësim mbi një "
+                    "tjetër të paprekur. Fshirja tregoi se dy pragje e ndryshojnë ndjeshëm "
+                    "rezultatin, por adoptimi i tyre pa këtë ndarje do të ishte thjesht "
+                    "përshtatje ndaj të dhënave të testimit.",
+                ),
+                (
+                    "bullet",
+                    "Ashpërsi e mësuar nga të dhënat në vend që të derivohet nga teprica. "
+                    "Kjo e kthen një derivim të shpjegueshëm në një model të dytë, ndaj "
+                    "kërkon ndarjen e vet të korpusit.",
+                ),
+            ],
+        ),
+        (
+            "6.5",
+            "Përfundim",
+            [
+                "Punimi ndërtoi një sistem që i zbulon code smells në dy mënyra të "
+                "pavarura dhe i krahason mbi të njëjtën të vërtetë bazë me të njëjtin kod "
+                "pikëzimi, si dhe një motor refaktorimi që rishkruan kod vetëm kur i "
+                "provon parakushtet e veta.",
+                "Përgjigjet e shkurtra ndaj tri pyetjeve kërkimore janë: strategjitë e "
+                "publikuara janë të sakta por të kursyera; një klasifikues mbi të njëjtat "
+                "metrika është dukshëm më i mirë dhe i rizbulon pjesërisht metrikat e "
+                "strategjive; dhe një pjesë e vogël por reale e rasteve të detektuara mund "
+                "të transformohet automatikisht, ku shumica e refuzimeve vjen nga forma e "
+                "kodit dhe nga rrjedha e kontrollit.",
+                "Pyetja e tretë kërkon dy gjëra, dhe ato u arritën në shkallë të "
+                "ndryshme. Kompilueshmëria u verifikua për çdo rishkrim të aplikuar: "
+                "shumica nuk shton asnjë lloj të ri gabimi, një pakicë e vogël e shton "
+                "dhe numërohet si e tillë, dhe kur skedari kompilohet brenda projektit "
+                f"të vet e jo i izoluar, {_context_conclusion()}. Ruajtja e sjelljes, "
+                "përkundrazi, **nuk u "
+                "mat**: ajo do të kërkonte ekzekutimin e suitave të testeve të vetë "
+                "depove, të cilat korpusi nuk i mban. Prandaj përgjigjja ndaj asaj "
+                "pyetjeje është e plotë për gjysmën e parë dhe e hapur për të dytën, dhe "
+                "kjo deklarohet këtu me po aq qartësi sa te Nënkapitulli 6.3.",
+                "Dy rezultate negative i shoqërojnë ato dhe nuk duhen lexuar veç: ashpërsia "
+                "e derivuar nuk e riprodhon gjykimin e rishikuesve, dhe vetë rishikuesit "
+                "pajtohen mes tyre aq pak sa çdo shifër e kësaj fushe duhet lexuar mbi një "
+                "tavan dukshëm më të ulët se sa e sugjeron zakonisht literatura.",
+                "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
+                "riprodhueshëm nga korpusi te rezultati, ku çdo numër rigjenerohet me një "
+                "komandë dhe çdo vendim është i regjistruar me arsyen e vet.",
+            ],
+        ),
+    ]
 
 
 # ======================================================================
@@ -1994,6 +2032,12 @@ def chapter_8() -> list:
                 "qëndrueshme, ndërsa ndarja mes «i kontrolluar» dhe «i pakontrolluar» "
                 "nuk është. Edhe kohëzgjatja e tij ndryshoi katërfish mes dy "
                 "ekzekutimeve, prej të njëjtës arsye.",
+                "Riprodhimi i mësipërm i përket matjes ashtu si ishte atëherë: mostra e "
+                "saj prej 30 skedarësh, ku asnjë verdikt nuk ishte përmbysur. Tri ditë "
+                "më vonë ajo mostër u dyfishua, dhe pikërisht dyfishimi nxori përmbysjen "
+                "e vetme që raporton Kapitulli 5. Skedari i komituar sot është ai i dytë. "
+                "Pra fjalia e mësipërme thotë se hapi riprodhohet, jo se rezultati i tij "
+                "nuk ndryshoi kurrë — dallim që do të humbte po të mos shkruhej këtu.",
                 "Hapat 1 dhe 7 mbeten të pariekzekutuar: i pari kërkon rishkarkimin e "
                 "korpusit të plotë, i dyti disa orë ekzekutimi mbi të. Për ta riprodhimi "
                 "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",

@@ -82,6 +82,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-70 | Ekrani përgjigjet «nga t'ia nis» dhe «sa punë është» | 2026-09-07 | aktiv |
 | VD-71 | Prezantimi gjenerohet nga të njëjtat burime si punimi | 2026-09-07 | aktiv |
 | VD-72 | Cilësia e rishkrimeve matet me rubrikë, jo me kompilim | 2026-09-07 | aktiv |
+| VD-73 | Përfundimet lexohen nga rezultatet, si Kapitulli 5 | 2026-09-08 | aktiv |
 
 ---
 
@@ -2647,3 +2648,37 @@ mund të matet fare, dhe kjo hyn te kufizimet.
 katërmbëdhjetë mijë herë është pyetje tjetër me dizajn tjetër, dhe përzierja e të
 dyjave do të jepte një normë që nuk i përgjigjet asnjërës. Shpërndarja e
 refuzimeve raportohet veç (VD-28).
+
+
+### VD-73: Përfundimet lexohen nga rezultatet, si Kapitulli 5
+
+**Konteksti.** Kapitulli 5 i lexon numrat nga `data/results/` pikërisht që një
+numër i rigjeneruar dhe një numër i shtypur të mos ndahen heshtazi. Kapitujt 2, 3,
+4 dhe 6 ishin lista statike vargjesh, sepse janë prozë. Kapitulli 6 nuk është
+vetëm prozë: përfundimi i tij përmbledh atë që mati Kapitulli 5, dhe një përmbledhje
+e një numri është po ai numër.
+
+**Çfarë doli.** Fjalia e Nënkapitullit 6.5 pohonte se pjesa që kompilon plotësisht
+rritet «pa asnjë verdikt të përmbysur». Ai pohim ishte i vërtetë kur u shkrua, mbi
+mostrën prej 30 skedarësh. Kur mostra u dyfishua (VD-55), `_overturned` te
+Kapitulli 5 u përshtat vetvetiu sepse e lexon numrin, ndërsa përfundimi mbeti si
+ishte. Rezultati: dokumenti raportonte një përmbysje te Kapitulli 5 dhe mohonte
+ekzistencën e saj te Kapitulli 6, dhe kapitulli i fundit që lexon komisioni ishte
+ai që e mohonte.
+
+**Vendimi.** `CHAPTER_6` u bë `chapter_6()`, dhe klauzola përkatëse u nda te
+`_context_conclusion()`, e cila degëzohet mbi `verify_with_project.json` njësoj si
+`_overturned`. Tri degë, jo dy: zero përmbysje, një, ose disa — sepse shqipja e
+dallon njëjësin nga shumësi dhe një fjali e ndërtuar që del me gramatikë të
+gabuar do të rishkruhej me dorë, çka e kthen problemin aty ku ishte.
+
+**Shtojca 8.5 nuk u ndryshua, u plotësua.** Rrëfimi i riprodhimit thotë se hapi
+12 u riprodhua «pa asnjë përmbysje». Kjo është e vërtetë për atë që u riprodhua
+më 3 shtator; skedari që qëndron sot te `data/results/` është matja e 6 shtatorit,
+e cila ka një. Fshirja e fjalisë do të fshinte një fakt të ndodhur, ndaj asaj iu
+shtua se cilës matje i përket dhe se cila e zëvendësoi. Riprodhueshmëria është
+pohim për një hap, jo pohim se rezultati i tij nuk ndryshon kurrë.
+
+**Çmimi.** `build_thesis.py` dhe `check_citations.py` e thërrasin tani si funksion.
+Kapitujt 2, 3 dhe 4 mbeten lista: ata nuk mbajnë asnjë pohim që lexohet nga
+`data/results/`, dhe shndërrimi i tyre do të ishte simetri pa arsye.

@@ -36,7 +36,7 @@ from chapters import (
     CHAPTER_2,
     CHAPTER_3,
     CHAPTER_4,
-    CHAPTER_6,
+    chapter_6,
     abstract,
     chapter_5,
     chapter_8,
@@ -112,7 +112,7 @@ def thesis_text() -> str:
         CHAPTER_3,
         CHAPTER_4,
         chapter_5(),
-        CHAPTER_6,
+        chapter_6(),
         chapter_8(),
     ]
     return "\n".join(_strings(sources))

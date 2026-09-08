@@ -48,7 +48,7 @@ from chapters import (  # noqa: E402
     CHAPTER_2,
     CHAPTER_3,
     CHAPTER_4,
-    CHAPTER_6,
+    chapter_6,
     abstract,
     chapter_5,
     chapter_8,
@@ -480,7 +480,7 @@ def build() -> str:
         3: CHAPTER_3,
         4: CHAPTER_4,
         5: chapter_5(),
-        6: CHAPTER_6,
+        6: chapter_6(),
         8: chapter_8(),
     }
     figures, tables = caption_lists([chapters[n] for n in sorted(chapters)])
