@@ -21,8 +21,11 @@ from javasmell.evaluation.quality import (
     Judgement,
     Site,
     applied_sites,
+    counted_changes,
     diff_text,
+    introduced_members,
     label_sample,
+    negated_guards,
     population,
     read_judgements,
     stratified_sample,
@@ -431,3 +434,67 @@ def test_the_walk_finds_the_sites_in_the_same_order_twice():
 def test_a_file_that_does_not_parse_yields_no_sites():
     """Refuse rather than guess: an unparseable file has no established sites."""
     assert sites_in(b"\xff\xfe not java at all", "broken.java") == []
+
+
+def test_the_diff_header_is_not_counted_as_a_change():
+    """`+++` and `---` open every unified diff and are not lines of code.
+
+    Three added lines and one removed one. A naive count of leading + and -
+    would report four and two, because the two header lines start with them.
+    """
+    diff = "\n".join(
+        [
+            "--- a (before)",
+            "+++ a (after)",
+            "@@ -1,2 +1,4 @@",
+            " keep",
+            "-gone",
+            "+one",
+            "+two",
+            "+three",
+        ]
+    )
+
+    assert counted_changes(diff) == (3, 1)
+
+
+def test_the_signature_the_rewrite_introduces_is_reported():
+    """Extract Method adds a method, and its name is the first thing a reviewer looks for."""
+    before = b"class C {\n    void m() {\n        int a = 1;\n        print(a);\n    }\n}\n"
+    after = (
+        b"class C {\n    void m() {\n        int a = 1;\n        show(a);\n    }\n"
+        b"    private void show(int a) {\n        print(a);\n    }\n}\n"
+    )
+
+    assert introduced_members(before, after) == ("void C.show(int)",)
+
+
+def test_a_rewrite_that_names_nothing_new_reports_nothing():
+    """Guard clauses move code around without introducing a member."""
+    before = b"class C {\n    void m(boolean f) {\n        if (f) {\n            g();\n        }\n    }\n}\n"
+    after = (
+        b"class C {\n    void m(boolean f) {\n        if (!(f)) {\n            return;\n        }\n"
+        b"        g();\n    }\n}\n"
+    )
+
+    assert introduced_members(before, after) == ()
+
+
+def test_an_unparseable_side_reports_no_members():
+    """The parse tree is the authority here as everywhere else; no tree, no claim."""
+    assert introduced_members(b"\xff\xfe", b"class C {\n    void m() {}\n}\n") == ()
+
+
+def test_a_negation_wrapping_a_negation_is_counted():
+    """`if (!(a != b))` is correct and hard to read, so the count says how often it happened."""
+    assert negated_guards("+        if (!(a != b)) {") == 1
+
+
+def test_a_plain_negated_guard_is_not_counted():
+    """`if (!(flag))` is the ordinary shape and must not inflate the number."""
+    assert negated_guards("+        if (!(flag)) {") == 0
+
+
+def test_a_removed_line_is_not_counted():
+    """The original's own conditions are not something the rewrite introduced."""
+    assert negated_guards("-        if (!(a != b)) {") == 0

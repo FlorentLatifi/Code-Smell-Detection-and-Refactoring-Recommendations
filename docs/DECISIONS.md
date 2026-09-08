@@ -84,6 +84,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-72 | Cilësia e rishkrimeve matet me rubrikë, jo me kompilim | 2026-09-07 | aktiv |
 | VD-73 | Përfundimet lexohen nga rezultatet, si Kapitulli 5 | 2026-09-08 | aktiv |
 | VD-74 | Rubrika hyn në punim para se të mbushet fleta | 2026-09-08 | aktiv |
+| VD-75 | Faktet përgatiten, gjykimi jo | 2026-09-08 | aktiv |
 
 ---
 
@@ -2716,3 +2717,34 @@ ndreqi.
 shpikur për një seksion që priste një ekzekutim të gjatë dhe nuk numërohej fare, ndaj
 një seksion që pret gjykimin e autorit rrinte i padukshëm te lista e tij e vet. Vendet
 e mbetura shkuan nga një në dy, dhe e dyta është punë e vërtetë e papërfunduar.
+
+
+### VD-75: Faktet përgatiten, gjykimi jo
+
+**Konteksti.** Gjashtëdhjetë diff-e janë lexim i gjatë, dhe pyetja lindi vetvetiu:
+a mund ta mbushë fletën dikush tjetër veç autorit. Përgjigjja ndan matjen në dysh.
+
+**Vendimi.** Rreshtat e rubrikës — sjellja, përfitimi, pranueshmëria — i shkruan
+autori dhe askush tjetër. Nënkapitulli 4.5 dhe 6.3 e deklarojnë se vlerësuesi është
+një rishikues i vetëm; nëse ato rreshta i prodhon një mjet, ai pohim bëhet i
+pavërtetë përballë komisionit, dhe matja humbet të vetmen gjë që e dallon nga
+kontrollet automatike që tashmë ekzistojnë. «A do ta mbante një zhvillues këtë kod»
+nuk është pyetje që kompilatori, metrika apo një model e zëvendëson; po ta ishte,
+gjithë matja do të ishte e panevojshme.
+
+**Ajo që u përgatit.** Mbi çdo diff te bundle-i qëndrojnë tani tri fakte të
+numëruara: sa rreshta u shtuan e sa u hoqën, cilat nënshkrime i shton rishkrimi, dhe
+sa nga kushtet e shtuara janë mohim i një mohimi. Asnjëri nuk është gjykim dhe
+asnjëri nuk është informacion i ri — të gjitha duken te diff-i menjëherë poshtë. Ajo
+që kursejnë është koha: emri që zgjodhi motori gjendet në krye e nuk kërkohet brenda
+një hunk-u pesëdhjetë rreshtash.
+
+**Verbëria nuk u prek.** VD-72 e kërkon fletën pa verdiktin e javac-ut, pa zgjidhjen
+e erës dhe pa lëvizjen e metrikës. Asnjëra nga këto nuk hyri te faktet, pikërisht
+sepse janë verdikte. Numërimi i rreshtave nuk është.
+
+**Një defekt doli nga ky ndryshim.** Nxjerrja e nënshkrimeve fillimisht kthente
+bashkësi të zbrazët kur skedari nuk parsohej, ndaj zbritja raportonte **çdo** metodë
+të skedarit si të shtuar nga rishkrimi. Mosdija dhe mungesa u ndanë: kur njëra anë
+nuk parsohet, funksioni nuk pretendon asgjë. E kapi testi i rastit kufitar, jo
+leximi.

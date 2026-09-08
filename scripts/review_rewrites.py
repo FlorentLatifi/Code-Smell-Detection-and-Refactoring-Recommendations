@@ -43,8 +43,11 @@ from javasmell.evaluation.quality import (  # noqa: E402
     SHEET_COLUMNS,
     Site,
     applied_sites,
+    counted_changes,
     diff_text,
+    introduced_members,
     label_sample,
+    negated_guards,
     population,
     read_judgements,
     stratified_sample,
@@ -99,7 +102,27 @@ def within_corpus(file: str, corpus: Path) -> str:
         return file
 
 
-def regenerate(labelled: list[tuple[str, Site]]) -> tuple[dict[str, str], list[str]]:
+def _facts(diff: str, before: bytes, after: bytes, path: str) -> list[str]:
+    """Çfarë ka te diff-i, e numëruar, që rishikuesi të mos e numërojë vetë.
+
+    Asnjë prej këtyre nuk është gjykim dhe asnjë nuk është informacion i ri: të
+    gjitha duken te diff-i që vjen menjëherë poshtë tyre. Qëllimi është koha —
+    gjashtëdhjetë diff-e lexohen ndryshe kur emri i zgjedhur dhe madhësia e
+    ndryshimit janë në krye e nuk kërkohen brenda hunk-ut.
+    """
+    added, removed = counted_changes(diff)
+    lines = [f"+{added} / -{removed} rreshta"]
+    for signature in introduced_members(before, after, path):
+        lines.append(f"shton `{signature}`")
+    negations = negated_guards(diff)
+    if negations:
+        lines.append(f"kushte të shtuara që janë mohim i një mohimi: {negations}")
+    return lines
+
+
+def regenerate(
+    labelled: list[tuple[str, Site]],
+) -> tuple[dict[str, str], dict[str, list[str]], list[str]]:
     """The diff for each sampled site, by replaying the walk that recorded it.
 
     A file is parsed once and its sites are walked in the recorded order, so the
@@ -113,6 +136,7 @@ def regenerate(labelled: list[tuple[str, Site]]) -> tuple[dict[str, str], list[s
         wanted.setdefault(site.file, {})[site.ordinal] = (review_id, site)
 
     diffs: dict[str, str] = {}
+    facts: dict[str, list[str]] = {}
     missed: list[str] = []
     for path, by_ordinal in wanted.items():
         try:
@@ -152,14 +176,20 @@ def regenerate(labelled: list[tuple[str, Site]]) -> tuple[dict[str, str], list[s
             except (EditConflict, ValueError):
                 continue
             label = f"{site.class_name}.{site.method} ({site.smell}, line {line})"
-            diffs[review_id] = diff_text(source, rewritten, label)
+            diff = diff_text(source, rewritten, label)
+            diffs[review_id] = diff
+            facts[review_id] = _facts(diff, source, rewritten, str(path))
 
         missed.extend(review_id for review_id, _ in by_ordinal.values() if review_id not in diffs)
-    return diffs, missed
+    return diffs, facts, missed
 
 
 def write_bundle(
-    path: Path, labelled: list[tuple[str, Site]], diffs: dict[str, str], corpus: Path
+    path: Path,
+    labelled: list[tuple[str, Site]],
+    diffs: dict[str, str],
+    facts: dict[str, list[str]],
+    corpus: Path,
 ) -> None:
     """One file holding every diff to read, in the order of the sheet."""
     lines = [
@@ -186,6 +216,7 @@ def write_bundle(
                 f"- era: `{site.smell}`",
                 f"- vendi: `{site.class_name}.{site.method}`",
                 f"- skedari: `{within_corpus(site.file, corpus)}`",
+                *(f"- {fact}" for fact in facts.get(review_id, [])),
                 "",
                 "```diff",
                 diff.rstrip("\n"),
@@ -222,7 +253,7 @@ def do_sample(args: argparse.Namespace) -> int:
         )
         return 1
 
-    diffs, missed = regenerate(labelled)
+    diffs, facts, missed = regenerate(labelled)
     args.out.mkdir(parents=True, exist_ok=True)
     with sheet_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=SHEET_COLUMNS)
@@ -243,7 +274,7 @@ def do_sample(args: argparse.Namespace) -> int:
                     "note": "",
                 }
             )
-    write_bundle(args.bundle, labelled, diffs, args.corpus)
+    write_bundle(args.bundle, labelled, diffs, facts, args.corpus)
 
     print(f"drawn        {len(labelled):>4}")
     print(f"regenerated  {len(diffs):>4}")

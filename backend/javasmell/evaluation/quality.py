@@ -47,6 +47,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+from javasmell.analysis import analyze_source
+
 #: Sites drawn per transformation. Twenty is what one reviewer can read
 #: attentively in a sitting, and reading sixty diffs carelessly measures
 #: attention rather than the engine. Fixed here rather than defaulted in the
@@ -211,6 +213,74 @@ def stratified_sample(
         take = min(per_refactoring, len(stratum))
         drawn.extend(sorted(rng.sample(stratum, take), key=lambda s: (s.file, s.ordinal)))
     return drawn
+
+
+def counted_changes(diff: str) -> tuple[int, int]:
+    """Rreshta të shtuar dhe të hequr, thjesht të numëruar.
+
+    Numërim, jo gjykim: rreshtat janë aty te diff-i dhe rishikuesi do t'i numëronte
+    vetë. Ndarja mes një rishkrimi që heq dhjetë rreshta dhe njërit që heq njëqind
+    është gjëja e parë që i thotë sa i madh është ndryshimi para se ta lexojë.
+    """
+    added = sum(1 for line in diff.splitlines() if line.startswith("+") and line[:3] != "+++")
+    removed = sum(1 for line in diff.splitlines() if line.startswith("-") and line[:3] != "---")
+    return added, removed
+
+
+def introduced_members(before: bytes, after: bytes, path: str = "<memory>") -> tuple[str, ...]:
+    """Nënshkrimet që ekzistojnë pas rishkrimit dhe nuk ekzistonin para tij.
+
+    Emërtimi është pjesa që një transformim deterministik nuk e bën, ndaj është
+    gjëja e parë që një rishikues kërkon dhe më e lehta për t'u humbur brenda një
+    hunk-u pesëdhjetë rreshtash. Nxjerrja e saj nuk shton informacion: gjithçka
+    këtu duket te diff-i sipër.
+
+    Verbëria që kërkon VD-72 është për **verdiktet** — javac, zgjidhja e erës,
+    lëvizja e metrikës — dhe asnjëri prej tyre nuk shfaqet këtu.
+    """
+
+    def members(source: bytes) -> set[str] | None:
+        """``None`` kur skedari nuk parsohet, e jo bashkësi e zbrazët.
+
+        Bashkësia e zbrazët do të thoshte «asnjë metodë», dhe zbritja e saj nga
+        ana tjetër do të raportonte çdo metodë të skedarit si të shtuar nga
+        rishkrimi. Mosdija dhe mungesa nuk janë e njëjta gjë.
+        """
+        try:
+            project = analyze_source(source.decode("utf-8"), path)
+        except (UnicodeDecodeError, ValueError):
+            return None
+        found = set()
+        for unit in project.units:
+            for cls in unit.classes:
+                for method in cls.methods:
+                    types = ", ".join(p.type_name for p in method.parameters)
+                    prefix = "" if method.return_type is None else f"{method.return_type} "
+                    found.add(f"{prefix}{cls.name}.{method.name}({types})")
+        return found
+
+    old, new = members(before), members(after)
+    if old is None or new is None:
+        return ()
+    return tuple(sorted(new - old))
+
+
+def negated_guards(diff: str) -> int:
+    """Sa kushte të shtuara janë mohim i një mohimi, p.sh. «if (!(a != b))».
+
+    Guard clause-i ndërtohet duke e mbështjellë kushtin me `!(...)`, kurrë duke e
+    përmbysur operatorin, sepse `a > b` te `a <= b` është i gabuar për NaN. Kjo e
+    bën transformimin të saktë dhe herë-herë të vështirë për t'u lexuar. Numri
+    thotë sa herë ndodhi; nëse kjo prish diçka, e thotë rishikuesi.
+    """
+    count = 0
+    for line in diff.splitlines():
+        if not line.startswith("+") or "!(" not in line:
+            continue
+        inner = line.partition("!(")[2]
+        if "!" in inner or "!=" in inner:
+            count += 1
+    return count
 
 
 def label_sample(sampled: Sequence[Site]) -> list[tuple[str, Site]]:
