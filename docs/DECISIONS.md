@@ -89,6 +89,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-77 | Fitorja vendoset nga intervali, jo nga dy pika | 2026-09-09 | aktiv |
 | VD-78 | Klauzola që bllokon raportohet, jo vetëm norma | 2026-09-09 | aktiv |
 | VD-79 | Puna e ardhshme nuk premton atë që u bë | 2026-09-09 | aktiv |
+| VD-80 | Feature Envy mbetet pa referencë të jashtme, dhe arsyeja shkruhet | 2026-09-09 | aktiv |
 
 ---
 
@@ -2927,3 +2928,38 @@ pesta të njëjtën vlerë, ndërsa te Blob-i u ndanë 3 me 2.
 Dy erëra nuk provojnë një rregull dhe teksti e thotë këtë. Por drejtimi është ai
 që llogaria e priste, çka e kthen atë nga përshkrim i mëpasshëm në shpjegim që bën
 parashikim, dhe kjo është dallimi që i jep vlerë Nënkapitullit 5.7.
+
+
+### VD-80: Feature Envy mbetet pa referencë të jashtme, dhe arsyeja shkruhet
+
+**Konteksti.** VD-76 e krahasoi këtë punim me PMD-në mbi tri nga katër erërat.
+Feature Envy mbeti jashtë sepse PMD nuk ka rregull për të, dhe kjo u shkrua si
+mungesë e PMD-së. Përpara se ajo mungesë të pranohej si e pashmangshme, u kërkua
+një mjet i dytë.
+
+**Çfarë u kontrollua, dhe si.**
+
+`DesigniteJava` është Apache-2.0, ndërtohet me Maven dhe Maven-i është i
+instaluar, ndaj ndërtimi ishte i mundur. Nuk u ndërtua: katalogu i tij i
+dokumentuar mban shtatëmbëdhjetë design smells dhe dhjetë implementation smells,
+dhe Feature Envy nuk është ndër to. Ndërtimi do të kishte dhënë një mjet të dytë
+për Long Method-in, të cilin e kemi tashmë, dhe asgjë për erën që mungon.
+
+`JDeodorant` e zbulon vërtet, dhe e zbulon pikërisht si identifikim mundësish për
+Move Method (Tsantalis & Chatzigeorgiou, 2009). Bërthama e tij është MIT, por
+është shtojcë e Eclipse-it, dhe varianti në rresht komande **nuk mban licencë
+fare**. Pa licencë do të thotë të gjitha të drejtat të rezervuara, ndaj përjashtohet
+nga kufizimi i §7 i `ENGINEERING.md`: çdo varësi duhet të jetë e lirë, e mirëmbajtur
+dhe me licencë lejuese. Përjashtimi është për arsye licence, jo për mungesë
+aftësie, dhe teksti e thotë ashtu.
+
+**Vendimi.** Mungesa e referencës së jashtme për Feature Envy hyn te Nënkapitulli
+5.6 si gjetje e verifikuar. Erës që literatura e trajton më shpesh si objektiv
+refaktorimi i mungon mbështetja te mjetet që një zhvillues i instalon lehtë; dy
+katalogë u numëruan për ta thënë këtë, dhe i treti u përjashtua me arsye të
+deklaruar.
+
+**Çmimi i mospranimit të një krahasimi të detyruar.** `LawOfDemeter` do të kishte
+plotësuar rreshtin. Ai mat zinxhirë mesazhesh dhe jo qasje në të dhëna të huaja;
+hartimi i tij te Feature Envy do të prodhonte një numër që duket krahasim dhe nuk
+është. Shifra e tij raportohet nën emrin e vet dhe kurrë si matje e Feature Envy-së.

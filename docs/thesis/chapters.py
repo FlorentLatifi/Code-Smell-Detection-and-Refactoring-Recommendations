@@ -1253,6 +1253,20 @@ def _pmd_comparison_paragraphs() -> list:
         "supozuar, dhe nuk është matje e Feature Envy-së. Mbulimi i pjesshëm i një "
         "mjeti të përhapur është vetë gjetje: tri nga katër erërat e MLCQ-së kanë një "
         "rregull të gatshme, e katërta jo.",
+        "Mungesa nuk është veti vetëm e PMD-së, dhe u kërkua një mjet i dytë para se "
+        "të pranohej. Katalogu i rregullave të PMD-së për Java u numërua nga vetë "
+        "shpërndarja e tij dhe nuk përmban asnjë rregull për Feature Envy. "
+        "DesigniteJava, mjeti tjetër i lirë me përhapje krahasuese, dokumenton "
+        "shtatëmbëdhjetë design smells dhe dhjetë implementation smells, dhe Feature "
+        "Envy nuk është ndër to. Mjeti që e zbulon vërtet është JDeodorant, i cili "
+        "ndërtohet mbi pikërisht identifikimin e mundësive për Move Method (Tsantalis "
+        "& Chatzigeorgiou, 2009), por ai është shtojcë e mjedisit të zhvillimit dhe "
+        "varianti i tij në rresht komande nuk mban licencë, çka e përjashton nga "
+        "kufizimi i varësive që ky punim ndjek.",
+        "Prandaj erës që literatura e trajton më shpesh si objektiv refaktorimi i "
+        "mungon mbështetja në mjetet që një zhvillues i instalon lehtë. Kjo raportohet "
+        "si gjendje e verifikuar e jo si supozim: dy katalogë u numëruan, dhe i treti "
+        "u përjashtua për arsye licence e jo për mungesë aftësie.",
         "Krahasimi e favorizon këtë punim në një drejtim të deklaruar që në "
         "Nënkapitullin 4.6: PMD analizon një skedar në një kohë dhe pa classpath të "
         "kompiluar, ndaj ATFD-në e llogarit nga sa duket brenda një skedari, ndërsa "
