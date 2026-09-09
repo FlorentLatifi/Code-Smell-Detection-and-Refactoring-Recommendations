@@ -88,6 +88,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-76 | Krahasimi me PMD-në, me pragjet e tij | 2026-09-08 | aktiv |
 | VD-77 | Fitorja vendoset nga intervali, jo nga dy pika | 2026-09-09 | aktiv |
 | VD-78 | Klauzola që bllokon raportohet, jo vetëm norma | 2026-09-09 | aktiv |
+| VD-79 | Puna e ardhshme nuk premton atë që u bë | 2026-09-09 | aktiv |
 
 ---
 
@@ -2897,3 +2898,32 @@ shtua si 5.6 pa u rinumëruar ato pas saj. Kontrolluesi që do ta kapte,
 lidhur kurrë** te lista e kontrolleve, ndaj invarianti që mbronte kishte qëndruar
 i pambrojtur gjithë kohën. U lidh, e kapi menjëherë defektin, dhe seksionet u
 rinumëruan.
+
+
+### VD-79: Puna e ardhshme nuk premton atë që u bë
+
+**Konteksti.** Nënkapitulli 6.4 e listonte si punë të ardhshme «kalibrim i
+pragjeve mbi një bashkësi të ndarë dhe vlerësim mbi një tjetër të paprekur».
+`calibrate_thresholds.py` e bën pikërisht atë me pesë folde të ndara sipas depos,
+dhe Nënkapitulli 5.5 i raporton shifrat jashtë-fold-it. Dokumenti thoshte në
+Kapitullin 5 se puna u bë dhe në Kapitullin 6 se mbetet për t'u bërë.
+
+**Si mbeti.** Kushti u shkrua te VD-34, skripti u shkrua më vonë për ta plotësuar
+atë kusht, dhe lista e punës së ardhshme nuk u prek. E njëjta gjini defekti si
+VD-73: prozë statike që përshkruan një gjendje të lëvizur.
+
+**Vendimi.** Pika u zëvendësua me atë që mbetet vërtet e hapur — adoptimi i
+vlerave të kalibruara si të parazgjedhura — dhe arsyeja pse nuk adoptohen lexohet
+nga të dhënat: foldet nuk zgjedhin të njëjtën vlerë te 3 nga 4 erërat. Numri
+llogaritet nga `threshold_calibration.json` e nuk shtypet.
+
+**Një gjetje doli nga përballja e dy matjeve.** Llogaria e klauzolave (VD-78) thotë
+sa larg pragjeve janë mospërputhjet: te Blob-i mesatarja e medianave është 0.42, te
+Feature Envy 0.78. Prej saj rrjedh një parashikim: kalibrimi duhet të ndihmojë pak
+te i pari dhe shumë te i dyti. Kalibrimi, i matur muaj më parë dhe pa e parë atë
+analizë, jep **+0.021** dhe **+0.140** MCC. Foldet e Feature Envy-së zgjodhën të
+pesta të njëjtën vlerë, ndërsa te Blob-i u ndanë 3 me 2.
+
+Dy erëra nuk provojnë një rregull dhe teksti e thotë këtë. Por drejtimi është ai
+që llogaria e priste, çka e kthen atë nga përshkrim i mëpasshëm në shpjegim që bën
+parashikim, dhe kjo është dallimi që i jep vlerë Nënkapitullit 5.7.

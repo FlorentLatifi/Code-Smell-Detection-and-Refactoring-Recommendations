@@ -816,10 +816,11 @@ def chapter_6() -> list:
                 ),
                 (
                     "bullet",
-                    "Kalibrim i pragjeve mbi një bashkësi të ndarë dhe vlerësim mbi një "
-                    "tjetër të paprekur. Fshirja tregoi se dy pragje e ndryshojnë ndjeshëm "
-                    "rezultatin, por adoptimi i tyre pa këtë ndarje do të ishte thjesht "
-                    "përshtatje ndaj të dhënave të testimit.",
+                    "Adoptimi i pragjeve të kalibruara si të parazgjedhura. Kalibrimi "
+                    "jashtë-fold-it është bërë dhe raportohet te Nënkapitulli 5.5; ajo që "
+                    "mbetet është vendimi nëse një vlerë e zgjedhur mbi këtë korpus "
+                    f"përgjithësohet, dhe {_folds_disagree()}, çka është arsye për të "
+                    "mos e marrë ende.",
                 ),
                 (
                     "bullet",
@@ -1643,6 +1644,72 @@ def _near_or_far(entry: dict) -> str:
         f"{min(distances):.2f} te {max(distances):.2f} e pragut."
     )
 
+def _folds_disagree() -> str:
+    """Sa erëra kanë të paktën një prag ku foldet nuk zgjodhën të njëjtën vlerë.
+
+    Numëruar e jo e shtypur: është pohimi që mban gjithë arsyen pse pragjet e
+    kalibruara nuk adoptohen, dhe një numër i shtypur me dorë do të rrëshqiste
+    heshtazi po të ndryshonte kalibrimi (VD-73).
+    """
+    data = _load_if_present("threshold_calibration.json")
+    if data is None:
+        return "foldet nuk pajtohen për të njëjtën vlerë te disa prej erërave"
+
+    total = len(data["per_smell"])
+    split = sum(
+        1
+        for entry in data["per_smell"].values()
+        if any(len(votes) > 1 for votes in entry["chosen"].values())
+    )
+    if not split:
+        return "foldet zgjedhin të njëjtën vlerë te secila erë"
+    if split == total:
+        return f"foldet nuk pajtohen për të njëjtën vlerë te asnjëra nga {total} erërat"
+    return f"foldet nuk pajtohen për të njëjtën vlerë te {split} nga {total} erërat"
+
+
+def _blocking_predicts_calibration() -> list:
+    """A e parashikon llogaria e klauzolave se ku do të ndihmojë kalibrimi?
+
+    Dy matje të pavarura: njëra thotë sa larg janë mospërputhjet nga pragjet,
+    tjetra sa fiton kalibrimi jashtë-fold-it. Nëse e para shpjegon të dytën, ajo
+    është shpjegim që bën parashikim, e jo përshkrim i mëpasshëm. Ndërtohet nga të
+    dy skedarët që të mos pohohet pajtim aty ku nuk ka.
+    """
+    blocking = _load_if_present("blocking_conditions.json")
+    calibration = _load_if_present("threshold_calibration.json")
+    if blocking is None or calibration is None:
+        return []
+
+    lines = []
+    for smell, entry in blocking["by_smell"].items():
+        tuned = calibration["per_smell"].get(smell)
+        if tuned is None:
+            continue
+        gain = float(tuned["calibrated"]["mcc"]) - float(tuned["published"]["mcc"])
+        distances = [float(v) for v in dict(entry["median_shortfall"]).values()]
+        if not distances:
+            continue
+        lines.append((smell, sum(distances) / len(distances), gain))
+    if len(lines) < 2:
+        return []
+
+    lines.sort(key=lambda item: item[1])
+    near = lines[-1]
+    far = lines[0]
+    return [
+        "Kjo llogari bën një parashikim që një matje tjetër e provon në mënyrë të "
+        f"pavarur. Te {SMELL_SQ.get(far[0], far[0])}-i mospërputhjet janë larg pragjeve "
+        f"(mediana mesatare {far[1]:.2f}), ndaj kalibrimi nuk duhet të ndihmojë shumë; "
+        f"te {SMELL_SQ.get(near[0], near[0])} janë afër ({near[1]:.2f}), ndaj duhet. "
+        f"Kalibrimi jashtë-fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
+        f"analizë, jep {far[2]:+.3f} MCC për të parin dhe {near[2]:+.3f} për të dytin. "
+        "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
+        "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
+        "përshkrim të mëpasshëm.",
+    ]
+
+
 def _blocking_section() -> list:
     """Pse nuk ndezin strategjitë, klauzolë për klauzolë.
 
@@ -1691,6 +1758,7 @@ def _blocking_section() -> list:
     for smell, entry in data["by_smell"].items():
         paragraphs.append(f"**{SMELL_SQ.get(smell, smell)}.** " + _near_or_far(entry))
 
+    paragraphs.extend(_blocking_predicts_calibration())
     paragraphs.append(
         "Kjo analizë kufizohet te dy strategjitë që janë konjunksione të pastra. Long "
         "Method-i ka një klauzolë të vetme, ndaj pyetja ka një përgjigje të vetme dhe "
