@@ -40,6 +40,7 @@ import sys
 import tempfile
 import time
 from collections import defaultdict
+from dataclasses import dataclass, field
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
@@ -167,7 +168,29 @@ def scored_rows(path: Path) -> dict[str, dict[str, str]]:
         return {row["sample_id"]: row for row in csv.DictReader(handle)}
 
 
-def load_progress(path: Path, resume: bool) -> tuple[set[str], int, int]:
+@dataclass
+class Progress:
+    """Everything a resumed run must not have to rediscover.
+
+    The first version of this carried the repositories, the offset and the error
+    count, and left the failure list out. That list is not a convenience: a
+    repository PMD cannot read is excluded from both sides of the comparison, so
+    it is part of the denominator the thesis has to state. Because it lived only
+    in memory, a resumed run started with an empty list and the summary reported
+    the failures of the last session as if they were all of them. Five
+    repositories went missing that way, and only an audit of the sample counts
+    found them. The same defect as VD-55: the information existed throughout the
+    run and was discarded at the moment it became the answer to a question.
+    """
+
+    repositories: set[str] = field(default_factory=set)
+    offset: int = 0
+    pmd_errors: int = 0
+    failures: list[str] = field(default_factory=list)
+    recovered: list[str] = field(default_factory=list)
+
+
+def load_progress(path: Path, resume: bool) -> Progress:
     """What an interrupted run got through, if the checkpoint is still readable.
 
     A run over the corpus takes hours and will be interrupted: the machine is a
@@ -177,16 +200,22 @@ def load_progress(path: Path, resume: bool) -> tuple[set[str], int, int]:
     than crashing the resume.
     """
     if not resume or not path.exists():
-        return set(), 0, 0
+        return Progress()
     try:
         stored = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as failure:
         print(f"checkpoint unreadable ({failure}); starting over", file=sys.stderr)
-        return set(), 0, 0
-    return set(stored["repositories"]), int(stored["offset"]), int(stored["pmd_errors"])
+        return Progress()
+    return Progress(
+        repositories=set(stored["repositories"]),
+        offset=int(stored["offset"]),
+        pmd_errors=int(stored["pmd_errors"]),
+        failures=list(stored.get("failures", [])),
+        recovered=list(stored.get("recovered", [])),
+    )
 
 
-def save_progress(path: Path, done: set[str], offset: int, errors: int) -> None:
+def save_progress(path: Path, progress: Progress) -> None:
     """Write the checkpoint so no interruption can leave it half-written.
 
     ``write_text`` truncates first and writes after, so a shutdown between the
@@ -197,7 +226,13 @@ def save_progress(path: Path, done: set[str], offset: int, errors: int) -> None:
     scratch = path.with_suffix(".tmp")
     scratch.write_text(
         json.dumps(
-            {"repositories": sorted(done), "offset": offset, "pmd_errors": errors},
+            {
+                "repositories": sorted(progress.repositories),
+                "offset": progress.offset,
+                "pmd_errors": progress.pmd_errors,
+                "failures": progress.failures,
+                "recovered": progress.recovered,
+            },
             indent=2,
             sort_keys=True,
         )
@@ -207,7 +242,7 @@ def save_progress(path: Path, done: set[str], offset: int, errors: int) -> None:
     scratch.replace(path)
 
 
-def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str], bool]:
+def run(args: argparse.Namespace) -> tuple[int, Progress, bool]:
     corpus = Corpus(args.corpus)
     wanted = scored_rows(args.scored)
     samples = [s for s in load_samples(args.mlcq) if s.sample_id in wanted]
@@ -222,20 +257,19 @@ def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str], bool]
     args.out.mkdir(parents=True, exist_ok=True)
     partial = args.out / PARTIAL_NAME
     progress = args.out / PROGRESS_NAME
-    done, offset, pmd_errors = load_progress(progress, args.resume)
+    state = load_progress(progress, args.resume)
+    done = state.repositories
     resumed = bool(done)
     if done:
         print(f"Resuming: {len(done)} repositories already written", flush=True)
         with partial.open("r+b") as trim:
-            trim.truncate(offset)
+            trim.truncate(state.offset)
 
     handle = partial.open("a" if done else "w", encoding="utf-8", newline="")
     writer = csv.DictWriter(handle, fieldnames=SAMPLE_COLUMNS)
     if not done:
         writer.writeheader()
 
-    failures: list[str] = []
-    recovered: list[str] = []
     for number, repository in enumerate(repositories, 1):
         if repository in done:
             continue
@@ -243,21 +277,23 @@ def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str], bool]
         directory = corpus.repo_dir(group[0])
         if not directory.is_dir():
             done.add(repository)
-            failures.append(f"{repository}: not fetched")
+            state.failures.append(f"{repository}: not fetched")
+            save_progress(progress, state)
             continue
 
         with tempfile.TemporaryDirectory() as scratch:
             report = Path(scratch) / "pmd.xml"
             ok, detail = run_pmd(args.pmd, args.ruleset, directory, report)
             if not ok:
-                failures.append(f"{repository}: {detail}")
+                state.failures.append(f"{repository}: {detail}")
                 done.add(repository)
-                save_progress(progress, done, handle.tell(), pmd_errors)
+                state.offset = handle.tell()
+                save_progress(progress, state)
                 continue
             violations = parse_report(report, directory)
-        pmd_errors += violations.errors
+        state.pmd_errors += violations.errors
         if violations.recovered:
-            recovered.append(repository)
+            state.recovered.append(repository)
 
         for sample in group:
             row = wanted[sample.sample_id]
@@ -278,12 +314,13 @@ def run(args: argparse.Namespace) -> tuple[int, int, list[str], list[str], bool]
                 )
         handle.flush()
         done.add(repository)
-        save_progress(progress, done, handle.tell(), pmd_errors)
+        state.offset = handle.tell()
+        save_progress(progress, state)
         if number % 10 == 0:
-            print(f"[{number}/{len(repositories)}] {len(failures)} failed", flush=True)
+            print(f"[{number}/{len(repositories)}] {len(state.failures)} failed", flush=True)
 
     handle.close()
-    return len(repositories), pmd_errors, failures, recovered, resumed
+    return len(repositories), state, resumed
 
 
 def summarise(rows: list[dict[str, str]], samples: dict[str, Sample]) -> dict[str, object]:
@@ -339,7 +376,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     started = time.monotonic()
-    repositories, pmd_errors, failures, recovered, resumed = run(args)
+    repositories, state, resumed = run(args)
     elapsed = time.monotonic() - started
 
     sites = args.out / SAMPLES_NAME
@@ -354,9 +391,9 @@ def main(argv: list[str] | None = None) -> int:
     summary = {
         "pmd_version": "7.27.0",
         "repositories": repositories,
-        "repositories_failed": failures,
-        "files_pmd_could_not_read": pmd_errors,
-        "reports_recovered": recovered,
+        "repositories_failed": sorted(state.failures),
+        "files_pmd_could_not_read": state.pmd_errors,
+        "reports_recovered": sorted(state.recovered),
         "seconds": round(elapsed, 1),
         # Vetem kjo seance. Ekzekutimi eshte i rifillueshem, ndaj pas nje
         # nderprerjeje kohezgjatja e regjistruar mbulon ate qe mbeti, jo mates.
