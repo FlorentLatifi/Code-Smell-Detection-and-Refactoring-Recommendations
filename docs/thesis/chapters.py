@@ -1103,54 +1103,82 @@ def _mcc(value: float | None) -> str:
 
 
 def _who_leads(entry: dict) -> str | None:
-    """Cila anë del përpara te ky rresht, ose None kur pyetja s'ka përgjigje."""
-    ours = entry.get("ours")
-    if ours is None:
-        return None
-    mine, theirs = ours["mcc"], entry["pmd"]["mcc"]
-    if mine is None and theirs is None:
-        return None
-    if mine is None:
-        return "pmd"
-    if theirs is None:
-        return "ours"
-    if abs(mine - theirs) < 0.005:
-        return "tie"
-    return "ours" if mine > theirs else "pmd"
+    """Cila anë del përpara, vendosur nga intervali i çiftuar e jo nga dy pikat.
 
+    Dy MCC-ra ndryshojnë pothuaj gjithmonë te shifra e tretë, ndaj pyetja nuk
+    është cili numër është më i madh por a e mban riterheqja atë ndryshim. Këtu
+    qëndronte një prag prej 0.005 që nuk vinte nga asgjë, dhe ai e shpallte
+    fitore një ndryshim prej 0.009 që intervali e nxjerr si zhurmë. Numri i
+    vetëm nuk mjafton për ta thënë; intervali e thotë.
+    """
+    if entry.get("ours") is None:
+        return None
+    difference = entry.get("difference")
+    if difference is None:
+        return None
+    if not difference["excludes_zero"]:
+        return "tie"
+    return "ours" if difference["median"] > 0 else "pmd"
 
 def _pmd_balance(data: dict) -> str:
-    """Kush del përpara dhe sa herë, numëruar e jo pohuar.
+    """Kush del përpara dhe sa herë, matur me interval e jo pohuar nga dy pika.
 
-    Shkruar si degëzim sepse të tria daljet — ne përpara, PMD përpara, të ndara —
+    Shkruar si degëzim sepse daljet — ne përpara, PMD përpara, të padallueshme —
     janë pohime të ndryshme, dhe fjalia e shkruar për njërën lexohet si mohim i
     tjetrës. Kjo tabelë ishte gjëja e parë që mund ta bënte punimin të pohonte një
-    fitore që të dhënat nuk e mbajnë.
+    fitore që të dhënat nuk e mbajnë, dhe në një lexim të parë pothuajse e bëri:
+    PMD dukej përpara te Blob-i me strategjinë, derisa intervali i çiftuar
+    tregoi se ai ndryshim e përmban zeron.
     """
     leads = [_who_leads(entry) for entry in data["by_smell"].values()]
     ours = leads.count("ours")
     theirs = leads.count("pmd")
-    if ours and not theirs:
-        return (
-            f"Te {ours} nga {ours + theirs} krahasimet me përgjigje, detektorët e këtij "
-            "punimi dalin përpara, dhe te asnjëri PMD nuk del."
-        )
-    if theirs and not ours:
-        return (
-            f"Te {ours + theirs} krahasimet me përgjigje, PMD del përpara te {theirs} "
-            "dhe detektorët e këtij punimi te asnjëri. Ky është rezultat negativ dhe "
-            "raportohet si i tillë."
-        )
-    if not ours and not theirs:
+    tied = leads.count("tie")
+    answered = ours + theirs + tied
+    if not answered:
         return (
             "Asnjë krahasim nuk jep përgjigje: te secili rresht të paktën njëra anë "
             "nuk ndez mjaftueshëm sa koeficienti të përcaktohet."
         )
-    return (
-        f"Rezultati ndahet: nga {ours + theirs} krahasimet me përgjigje, detektorët e "
-        f"këtij punimi dalin përpara te {ours} dhe PMD te {theirs}. Asnjëra anë nuk e "
-        "mbulon tjetrën."
+
+    ties = (
+        ""
+        if not tied
+        else (
+            f" Te {'një' if tied == 1 else tied} prej tyre intervali e përmban zeron, "
+            "pra dy anët nuk dallohen mbi këtë dëshmi."
+        )
     )
+    if theirs and not ours:
+        return (
+            f"Nga {answered} krahasimet me përgjigje, PMD del përpara te {theirs} dhe "
+            "detektorët e këtij punimi te asnjëri. Ky është rezultat negativ dhe "
+            "raportohet si i tillë." + ties
+        )
+    if ours and not theirs:
+        return (
+            f"Nga {answered} krahasimet me përgjigje, detektorët e këtij punimi dalin "
+            f"përpara te {ours} dhe PMD te asnjëri." + ties
+        )
+    if not ours and not theirs:
+        return (
+            f"Asnjë nga {answered} krahasimet nuk jep ndryshim që e mban riterheqja: "
+            "mbi këtë korpus dy anët nuk dallohen."
+        )
+    return (
+        f"Rezultati ndahet: nga {answered} krahasimet me përgjigje, detektorët e këtij "
+        f"punimi dalin përpara te {ours} dhe PMD te {theirs}." + ties
+    )
+
+def _band(difference: dict) -> str:
+    """Intervali i çiftuar, i shkruar që shenja të lexohet pa u kërkuar.
+
+    Shenja është e gjithë kuptimi: një interval që e përmban zeron thotë se dy
+    anët nuk dallohen, dhe pa shenjat e plusit lexuesi duhet ta zbulojë vetë cila
+    anë është përpara. Vlera e mesme nuk shtypet, sepse pyetja nuk është sa por a.
+    """
+    low, high = difference["low"], difference["high"]
+    return f"{low:+.3f} deri {high:+.3f}"
 
 
 def _pmd_comparison_paragraphs() -> list:
@@ -1166,12 +1194,14 @@ def _pmd_comparison_paragraphs() -> list:
     for name, entry in data["by_smell"].items():
         pmd = entry["pmd"]
         ours = entry.get("ours")
+        difference = entry.get("difference")
         rows.append(
             [
                 SMELL_VARIANT_SQ.get(name, name),
                 str(entry["scored"]),
                 _mcc(pmd["mcc"]),
                 "—" if ours is None else _mcc(ours["mcc"]),
+                "—" if difference is None else _band(difference),
             ]
         )
 
@@ -1184,7 +1214,7 @@ def _pmd_comparison_paragraphs() -> list:
         "dhe të njëjtin agregim si Qasja A. Të dyja kolonat rillogariten nga i njëjti "
         "skedar në të njëjtin ekzekutim.",
         ("table", "Detektorët e këtij punimi kundrejt PMD-së, mbi të njëjtat mostra",
-         ["Era", "Mostra", "MCC i PMD-së", "MCC ynë"], rows),  # fmt: skip
+         ["Era", "Mostra", "MCC i PMD-së", "MCC ynë", "Ndryshimi, IB 95%"], rows),  # fmt: skip
         _pmd_balance(data),
         "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të. "
         "LawOfDemeter është më i afërti dhe mat zinxhirë mesazhesh e jo qasje në të "
@@ -1211,9 +1241,14 @@ def _pmd_comparison_paragraphs() -> list:
             if failed == 1
             else f"{failed} depo nuk u përpunuan fare"
         )
+        total = int(str(_load("rules_evaluation.json")["scored"]))
         paragraphs.append(
             f"Nga ekzekutimi, {files} dhe {repos}. Këto numërohen këtu dhe nuk lexohen "
-            "si «PMD nuk gjeti asgjë»: dështimi dhe mosgjetja janë pohime të kundërta."
+            "si «PMD nuk gjeti asgjë»: dështimi dhe mosgjetja janë pohime të kundërta. "
+            "Mostrat e atyre depove dalin nga tabela e mësipërme, dhe dalin nga të dyja "
+            "kolonat njësoj, ndaj dy anët mbeten të krahasueshme. Emëruesi që mbetet "
+            f"është ai i tabelës; Qasja A vlerësoi {total} mostra, dhe krahasimi mbulon "
+            "ato që u përpunuan."
         )
     recovered = len(data.get("reports_recovered", []))
     if recovered:

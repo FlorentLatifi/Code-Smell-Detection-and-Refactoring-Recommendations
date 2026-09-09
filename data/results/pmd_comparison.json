@@ -1,0 +1,170 @@
+{
+  "aggregation": "mean",
+  "by_smell": {
+    "blob/strategy": {
+      "difference": {
+        "excludes_zero": false,
+        "high": 0.013888791487999666,
+        "low": -0.0864698719638039,
+        "median": -0.034979506366546245,
+        "resamples_used": 2000,
+        "share_positive": 0.0845
+      },
+      "ours": {
+        "f1": 0.1758241758241758,
+        "fn": 293,
+        "fp": 7,
+        "mcc": 0.2312931697108847,
+        "precision": 0.8205128205128205,
+        "recall": 0.09846153846153846,
+        "tn": 959,
+        "tp": 32
+      },
+      "pmd": {
+        "f1": 0.24352331606217617,
+        "fn": 278,
+        "fp": 14,
+        "mcc": 0.26617398479410076,
+        "precision": 0.7704918032786885,
+        "recall": 0.14461538461538462,
+        "tn": 952,
+        "tp": 47
+      },
+      "scored": 1291
+    },
+    "blob/with_size": {
+      "difference": {
+        "excludes_zero": true,
+        "high": 0.1295632938214101,
+        "low": 0.02101104572032779,
+        "median": 0.07685258097510703,
+        "resamples_used": 2000,
+        "share_positive": 0.997
+      },
+      "ours": {
+        "f1": 0.37528604118993136,
+        "fn": 243,
+        "fp": 30,
+        "mcc": 0.3411545171858414,
+        "precision": 0.7321428571428571,
+        "recall": 0.2523076923076923,
+        "tn": 936,
+        "tp": 82
+      },
+      "pmd": {
+        "f1": 0.24352331606217617,
+        "fn": 278,
+        "fp": 14,
+        "mcc": 0.26617398479410076,
+        "precision": 0.7704918032786885,
+        "recall": 0.14461538461538462,
+        "tn": 952,
+        "tp": 47
+      },
+      "scored": 1291
+    },
+    "data class/strategy": {
+      "difference": {
+        "excludes_zero": false,
+        "high": 0.10386517496808856,
+        "low": -0.07746383155896407,
+        "median": 0.00920900241391931,
+        "resamples_used": 2000,
+        "share_positive": 0.5785
+      },
+      "ours": {
+        "f1": 0.2634146341463415,
+        "fn": 142,
+        "fp": 9,
+        "mcc": 0.28068752411785963,
+        "precision": 0.75,
+        "recall": 0.15976331360946747,
+        "tn": 559,
+        "tp": 27
+      },
+      "pmd": {
+        "f1": 0.24752475247524752,
+        "fn": 144,
+        "fp": 8,
+        "mcc": 0.2720662735933859,
+        "precision": 0.7575757575757576,
+        "recall": 0.14792899408284024,
+        "tn": 560,
+        "tp": 25
+      },
+      "scored": 737
+    },
+    "feature envy/law_of_demeter": {
+      "pmd": {
+        "f1": 0.17073170731707316,
+        "fn": 55,
+        "fp": 13,
+        "mcc": 0.1597512861071405,
+        "precision": 0.35,
+        "recall": 0.11290322580645161,
+        "tn": 658,
+        "tp": 7
+      },
+      "scored": 733
+    },
+    "long method/strategy": {
+      "difference": {
+        "excludes_zero": true,
+        "high": 0.44190575163804485,
+        "low": 0.26449199364281534,
+        "median": 0.3487996479615366,
+        "resamples_used": 2000,
+        "share_positive": 1.0
+      },
+      "ours": {
+        "f1": 0.5824561403508772,
+        "fn": 108,
+        "fp": 11,
+        "mcc": 0.5812285395018488,
+        "precision": 0.8829787234042553,
+        "recall": 0.43455497382198954,
+        "tn": 1122,
+        "tp": 83
+      },
+      "pmd": {
+        "f1": 0.13526570048309178,
+        "fn": 177,
+        "fp": 2,
+        "mcc": 0.23002521985607927,
+        "precision": 0.875,
+        "recall": 0.07329842931937172,
+        "tn": 1131,
+        "tp": 14
+      },
+      "scored": 1324
+    }
+  },
+  "environment": {
+    "commit": "e34b32a8c8e4f1ab46e8d07f90304e8123b424bf",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "files_pmd_could_not_read": 538,
+  "pmd_version": "7.27.0",
+  "reports_recovered": [],
+  "repositories": 512,
+  "repositories_failed": [
+    "git@github.com:SAP/SapMachine.git: exit 1: [ERROR] at data\\corpus\\SAP__SapMachine__6e62561730c4\\src\\jdk.compiler\\share\\classes\\com\\sun\\tools\\javac\\parser\\JavadocTokenizer.java:221:52: Cannot parameterize com/sun/tools/javac/parser/JavaTokenize",
+    "git@github.com:apache/hadoop.git: exit 1: [ERROR] at data\\corpus\\apache__hadoop__128dd91e1008\\hadoop-hdfs-project\\hadoop-hdfs\\src\\test\\java\\org\\apache\\hadoop\\hdfs\\server\\datanode\\fsdataset\\impl\\TestProvidedImpl.java:237:12: Cannot parameteriz",
+    "git@github.com:apache/jclouds.git: exit 1: [ERROR] at data\\corpus\\apache__jclouds__c2670079fabe\\providers\\dynect\\src\\main\\java\\org\\jclouds\\dynect\\v3\\domain\\SOARecord.java:33:38: Cannot parameterize java/lang/Record with [*org.jclouds.dynect.v3",
+    "git@github.com:apache/lucene-solr.git: exit 1: [ERROR] Unknown error occurred while executing a PmdRunnable: java.lang.StackOverflowError\nException in thread \"main\" java.lang.StackOverflowError\n\tat net.sourceforge.pmd.lang.java.ast.AbstractJavaNod",
+    "git@github.com:apache/pulsar.git: exit 1: [ERROR] at data\\corpus\\apache__pulsar__044daf8d6132\\pulsar-functions\\api-java\\src\\main\\java\\org\\apache\\pulsar\\functions\\api\\Context.java:41:5: Cannot parameterize java/lang/Record with [?], expecting ",
+    "git@github.com:eclipse/ceylon.git: exit 1: [ERROR] at data\\corpus\\eclipse__ceylon__d3994d6cd120\\compiler-java\\langtools\\test\\tools\\javac\\diags\\examples\\WrongNumberTypeArgs.java:29:5: Cannot parameterize java/util/List with [java.lang.Integer, ",
+    "git@github.com:eclipse/eclipse.jdt.core.git: exit 1: [ERROR] at data\\corpus\\eclipse__eclipse.jdt.core__24d47c292ed4\\org.eclipse.jdt.compiler.apt.tests\\resources\\targets\\negative\\pa\\Negative4.java:28:2: Cannot parameterize ast:class(targets.negative.pa.I",
+    "git@github.com:eclipse/gef.git: exit 1: [ERROR] Unknown error occurred while executing a PmdRunnable: java.lang.StackOverflowError\nException in thread \"main\" java.lang.AssertionError: Closed listener but not all files have been processed\n\ta",
+    "git@github.com:eclipse/org.aspectj.git: exit 1: [ERROR] Unknown error occurred while executing a PmdRunnable: java.lang.StackOverflowError\nException in thread \"main\" java.lang.StackOverflowError\n\tat java.base/java.util.HashMap.hash(HashMap.java:338",
+    "git@github.com:google/error-prone-javac.git: exit 1: [ERROR] at data\\corpus\\google__error-prone-javac__a53d069bbdb2\\src\\jdk.compiler\\share\\classes\\com\\sun\\tools\\javac\\parser\\JavadocTokenizer.java:221:52: Cannot parameterize com/sun/tools/javac/parser/Ja",
+    "git@github.com:google/guava.git: exit 1: [ERROR] at data\\corpus\\google__guava__be92294be598\\android\\guava\\src\\com\\google\\common\\base\\Equivalence.java:249:16: Cannot parameterize com/google/common/base/PairwiseEquivalence with [S], expecting ",
+    "git@github.com:google/j2cl.git: exit 1: [ERROR] at data\\corpus\\google__j2cl__f233ebf547cc\\transpiler\\java\\com\\google\\j2cl\\ast\\CatchClause.java:25:50: Cannot parameterize java/lang/Cloneable with [com.google.j2cl.ast.CatchClause], expecting ",
+    "git@github.com:linkedin/rest.li.git: timeout",
+    "git@github.com:spring-projects/spring-data-redis.git: exit 1: [ERROR] at data\\corpus\\spring-projects__spring-data-redis__2eb7067e8c7e\\src\\main\\java\\org\\springframework\\data\\redis\\connection\\stream\\StreamOffset.java:89:41: Cannot parameterize java/lang/Record wit"
+  ],
+  "rescored_without_rerunning_pmd": true,
+  "resumed": true,
+  "seconds": 468.8
+}

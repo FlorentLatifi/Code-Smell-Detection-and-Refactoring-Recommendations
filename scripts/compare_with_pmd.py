@@ -46,6 +46,8 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
+import numpy as np  # noqa: E402
+
 from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.external import (  # noqa: E402
     entity_key,
@@ -53,6 +55,7 @@ from javasmell.evaluation.external import (  # noqa: E402
     parse_report,
     rules_at,
 )
+from javasmell.evaluation.intervals import resample  # noqa: E402
 from javasmell.evaluation.mlcq import Aggregation, Sample, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import Confusion, Prediction, score  # noqa: E402
@@ -110,6 +113,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pmd", type=Path, default=DEFAULT_PMD)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--limit", type=int, default=0, help="Only this many repositories")
+    parser.add_argument(
+        "--score-only",
+        action="store_true",
+        help="Rebuild the summary from the rows already written, without running PMD",
+    )
     parser.add_argument("--no-resume", dest="resume", action="store_false")
     return parser
 
@@ -323,6 +331,46 @@ def run(args: argparse.Namespace) -> tuple[int, Progress, bool]:
     return len(repositories), state, resumed
 
 
+#: Fiksuar, si cdo eksperiment tjeter ketu.
+BOOTSTRAP_SEED = 20260909
+
+
+def _paired_interval(
+    selected: list[dict[str, str]], samples: dict[str, Sample]
+) -> dict[str, object] | None:
+    """A ndryshojne vertet dy anet, apo eshte zhurme e mostres?
+
+    Dy MCC-ra te shtypura njeri pas tjetrit ftojne lexuesin te lexoje fitore aty
+    ku ka vetem lekundje. Ky interval eshte i cifituar: te dyja anet pikezohen
+    mbi te njejtin terheqje, sepse te krahasuara mbi te njejtat mostra ato duhen
+    riterhequr mbi te njejtat mostra. Njesia e riterheqjes eshte depoja e jo
+    rreshti, si kudo tjeter ne kete projekt (VD-12).
+    """
+    usable = [r for r in selected if r["actual"] != ""]
+    if not usable:
+        return None
+    truth = np.array([r["actual"] == "1" for r in usable], dtype=np.bool_)
+    predictions = {
+        "ours": np.array([r["fired_ours"] == "1" for r in usable], dtype=np.bool_),
+        "pmd": np.array([r["fired_pmd"] == "1" for r in usable], dtype=np.bool_),
+    }
+    groups = [samples[r["sample_id"]].repository for r in usable]
+    intervals = resample(
+        truth,
+        predictions,
+        groups,
+        against=("pmd",),
+        reference="ours",
+        seed=BOOTSTRAP_SEED,
+    )
+    difference = intervals.get("difference_ours_minus_pmd")
+    if difference is None:
+        return None
+    result: dict[str, object] = dict(difference.to_dict())
+    result["excludes_zero"] = difference.excludes_zero
+    return result
+
+
 def summarise(rows: list[dict[str, str]], samples: dict[str, Sample]) -> dict[str, object]:
     """Both sides scored through the same function, from the same rows."""
     result: dict[str, object] = {}
@@ -347,6 +395,9 @@ def summarise(rows: list[dict[str, str]], samples: dict[str, Sample]) -> dict[st
                     for r in selected
                 ]
                 entry["ours"] = _confusion(score(ours, smell, variant))
+                interval = _paired_interval(selected, samples)
+                if interval is not None:
+                    entry["difference"] = interval
             result[f"{smell}/{variant}"] = entry
     return result
 
@@ -365,21 +416,83 @@ def _confusion(matrix: Confusion) -> dict[str, object]:
     }
 
 
+def _report(summary: dict[str, object]) -> None:
+    """Tabela ne terminal, me intervalin e ciftuar kur ai ekziston."""
+    print()
+    print(f"{'smell / variant':<28}{'MCC PMD':>10}{'MCC ynë':>10}{'ndryshimi, IB 95%':>22}{'n':>7}")
+    print("-" * 68)
+    by_smell = summary["by_smell"]
+    assert isinstance(by_smell, dict)
+    for name, entry in by_smell.items():
+        pmd_mcc = entry["pmd"]["mcc"]
+        ours = entry.get("ours")
+        ours_mcc = None if ours is None else ours["mcc"]
+        difference = entry.get("difference")
+        if difference is None:
+            band = "--"
+        else:
+            mark = "*" if difference["excludes_zero"] else " "
+            band = f"[{difference['low']:+.3f}, {difference['high']:+.3f}]{mark}"
+        print(
+            f"{name:<28}"
+            f"{('--' if pmd_mcc is None else f'{pmd_mcc:.3f}'):>10}"
+            f"{('--' if ours_mcc is None else f'{ours_mcc:.3f}'):>10}"
+            f"{band:>22}"
+            f"{entry['scored']:>7}"
+        )
+    print()
+    print("* = intervali nuk e permban zeron, pra ndryshimi qendron mbi riterheqje.")
+    print()
+
+
+def _rescore(
+    args: argparse.Namespace, sites: Path, result_path: Path, previous: dict[str, object]
+) -> int:
+    """Rillogarit permbledhjen nga rreshtat qe ekzistojne, pa e prekur PMD-ne."""
+    with sites.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    wanted = {r["sample_id"] for r in rows}
+    samples = {s.sample_id: s for s in load_samples(args.mlcq) if s.sample_id in wanted}
+
+    summary = dict(previous)
+    summary["by_smell"] = summarise(rows, samples)
+    summary["environment"] = environment()
+    # Ekzekutimi i PMD-se nuk u perserit; kohezgjatja dhe deshtimet i perkasin atij
+    # te meparshem dhe mbahen si jane, me kete flamur qe ta thote.
+    summary["rescored_without_rerunning_pmd"] = True
+    result_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _report(summary)
+    print(f"Rescored {result_path} from {sites}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     for path in (args.mlcq, args.scored, args.ruleset):
         if not path.exists():
             print(f"not found: {path}", file=sys.stderr)
             return 1
-    if not launcher(args.pmd).exists():
+    if not args.score_only and not launcher(args.pmd).exists():
         print(f"PMD not found at {args.pmd}; run scripts/fetch_pmd.py", file=sys.stderr)
         return 1
+
+    sites = args.out / SAMPLES_NAME
+    result_path = args.out / RESULT_NAME
+    if args.score_only:
+        # Nje defekt pikezimi nuk duhet te kushtoje nje ekzekutim tjeter te PMD-se:
+        # rreshtat per-mostre e mbajne gjithcka qe do te pikezimi. Fushat qe i
+        # perkasin vete ekzekutimit barten nga permbledhja e meparshme e nuk
+        # rishpiken, sepse nje ekzekutim qe nuk ndodhi nuk raportohet si i ri.
+        if not sites.exists() or not result_path.exists():
+            print(f"--score-only needs {sites} and {result_path}", file=sys.stderr)
+            return 1
+        previous = json.loads(result_path.read_text(encoding="utf-8"))
+        return _rescore(args, sites, result_path, previous)
 
     started = time.monotonic()
     repositories, state, resumed = run(args)
     elapsed = time.monotonic() - started
 
-    sites = args.out / SAMPLES_NAME
     (args.out / PARTIAL_NAME).replace(sites)
     (args.out / PROGRESS_NAME).unlink(missing_ok=True)
 
@@ -402,25 +515,9 @@ def main(argv: list[str] | None = None) -> int:
         "by_smell": summarise(rows, samples),
         "environment": environment(),
     }
-    result_path = args.out / RESULT_NAME
     result_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    print()
-    print(f"{'smell / variant':<28}{'MCC PMD':>10}{'MCC ynë':>10}{'n':>8}")
-    print("-" * 56)
-    by_smell = summary["by_smell"]
-    assert isinstance(by_smell, dict)
-    for name, entry in by_smell.items():
-        pmd_mcc = entry["pmd"]["mcc"]
-        ours = entry.get("ours")
-        ours_mcc = None if ours is None else ours["mcc"]
-        print(
-            f"{name:<28}"
-            f"{('--' if pmd_mcc is None else f'{pmd_mcc:.3f}'):>10}"
-            f"{('--' if ours_mcc is None else f'{ours_mcc:.3f}'):>10}"
-            f"{entry['scored']:>8}"
-        )
-    print()
+    _report(summary)
     print(f"Wrote {result_path} and {sites}")
     return 0
 

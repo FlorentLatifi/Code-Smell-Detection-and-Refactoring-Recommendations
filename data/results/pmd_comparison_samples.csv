@@ -1,0 +1,5377 @@
+sample_id,smell,variant,fired_pmd,fired_ours,actual
+6613457,long method,strategy,0,0,1
+6612013,blob,strategy,0,0,0
+6612013,blob,with_size,0,0,0
+6613429,feature envy,law_of_demeter,0,,0
+6624087,long method,strategy,0,0,0
+6624209,blob,strategy,0,0,1
+6624209,blob,with_size,0,0,1
+6624215,long method,strategy,0,1,1
+6629910,data class,strategy,0,0,0
+6627471,long method,strategy,0,0,0
+6629031,feature envy,law_of_demeter,0,,0
+6630204,feature envy,law_of_demeter,0,,0
+6632662,long method,strategy,0,0,0
+6634791,blob,strategy,0,0,1
+6634791,blob,with_size,0,0,1
+6633155,long method,strategy,0,0,0
+6632851,long method,strategy,0,0,0
+6634928,blob,strategy,0,0,0
+6634928,blob,with_size,0,0,0
+6633402,feature envy,law_of_demeter,0,,1
+6635481,data class,strategy,0,0,0
+7031904,feature envy,law_of_demeter,0,,0
+7030976,feature envy,law_of_demeter,0,,0
+7032580,feature envy,law_of_demeter,0,,0
+7027539,data class,strategy,0,0,1
+7043386,blob,strategy,0,0,0
+7043386,blob,with_size,0,0,0
+7043418,long method,strategy,0,0,0
+7039207,blob,strategy,0,0,0
+7039207,blob,with_size,0,0,0
+7035620,data class,strategy,0,0,0
+7042338,blob,strategy,0,0,0
+7042338,blob,with_size,0,0,0
+7032722,data class,strategy,0,0,0
+7022531,blob,strategy,0,0,0
+7022531,blob,with_size,0,0,0
+7022945,feature envy,law_of_demeter,0,,0
+7023392,feature envy,law_of_demeter,0,,0
+7023035,feature envy,law_of_demeter,0,,0
+7110843,data class,strategy,0,0,0
+7111061,long method,strategy,0,0,0
+7110627,feature envy,law_of_demeter,0,,0
+7137862,blob,strategy,0,0,0
+7137862,blob,with_size,0,0,0
+7134617,blob,strategy,0,0,0
+7134617,blob,with_size,0,0,0
+7135236,data class,strategy,0,0,0
+7119679,long method,strategy,0,0,0
+7120110,long method,strategy,0,0,0
+8316315,data class,strategy,0,0,0
+7120318,blob,strategy,1,0,1
+7120318,blob,with_size,1,1,1
+7121075,long method,strategy,0,0,0
+7148614,blob,strategy,0,0,0
+7148614,blob,with_size,0,0,0
+7149120,blob,strategy,0,0,0
+7149120,blob,with_size,0,0,0
+7161125,data class,strategy,0,0,0
+7160140,blob,strategy,0,0,0
+7160140,blob,with_size,0,0,0
+7156185,feature envy,law_of_demeter,0,,0
+7157571,blob,strategy,0,0,0
+7157571,blob,with_size,0,0,0
+7144792,long method,strategy,0,0,0
+7148928,blob,strategy,1,0,1
+7148928,blob,with_size,1,1,1
+7160761,blob,strategy,0,0,1
+7160761,blob,with_size,0,0,1
+7147207,data class,strategy,1,1,1
+7148054,blob,strategy,0,0,1
+7148054,blob,with_size,0,0,1
+7152802,blob,strategy,0,0,0
+7152802,blob,with_size,0,0,0
+7140272,blob,strategy,0,0,0
+7140272,blob,with_size,0,0,0
+7139571,blob,strategy,0,0,0
+7139571,blob,with_size,0,0,0
+7141052,long method,strategy,0,0,0
+7143647,blob,strategy,0,0,0
+7143647,blob,with_size,0,0,0
+7144407,data class,strategy,0,0,0
+7144021,data class,strategy,0,0,0
+7155736,long method,strategy,0,0,0
+7156819,feature envy,law_of_demeter,0,,0
+7155743,data class,strategy,0,0,1
+7158488,feature envy,law_of_demeter,0,,0
+7153322,blob,strategy,0,0,0
+7153322,blob,with_size,0,0,0
+7161553,data class,strategy,0,0,0
+7161584,feature envy,law_of_demeter,1,,1
+7357164,long method,strategy,0,0,0
+7356682,feature envy,law_of_demeter,0,,0
+7327189,blob,strategy,0,0,1
+7327189,blob,with_size,0,1,1
+7359431,long method,strategy,0,0,0
+7356708,data class,strategy,0,0,1
+7357470,long method,strategy,0,0,0
+7374308,long method,strategy,0,0,0
+7357208,feature envy,law_of_demeter,0,,0
+7356604,feature envy,law_of_demeter,0,,0
+7374084,long method,strategy,0,0,0
+7356984,long method,strategy,0,0,1
+7373719,feature envy,law_of_demeter,0,,0
+7341500,feature envy,law_of_demeter,0,,0
+7322270,data class,strategy,0,0,0
+7344807,feature envy,law_of_demeter,0,,0
+7353142,long method,strategy,0,0,0
+7372800,blob,strategy,0,0,1
+7372800,blob,with_size,0,0,1
+7308975,blob,strategy,0,0,0
+7308975,blob,with_size,0,0,0
+7324520,blob,strategy,0,0,0
+7324520,blob,with_size,0,0,0
+7349490,data class,strategy,0,0,0
+7323707,feature envy,law_of_demeter,0,,0
+7358328,long method,strategy,0,0,0
+7313745,long method,strategy,0,0,0
+7322217,data class,strategy,1,0,1
+7362051,blob,strategy,0,0,0
+7362051,blob,with_size,0,0,0
+7306229,long method,strategy,0,0,0
+7363484,blob,strategy,0,0,0
+7363484,blob,with_size,0,0,0
+7302347,blob,strategy,0,0,0
+7302347,blob,with_size,0,0,0
+7349010,long method,strategy,0,0,0
+7337150,long method,strategy,0,0,0
+7301073,feature envy,law_of_demeter,0,,0
+7355243,long method,strategy,0,0,1
+7356691,blob,strategy,0,0,1
+7356691,blob,with_size,0,0,1
+7323687,data class,strategy,0,0,1
+7332291,blob,strategy,0,0,0
+7332291,blob,with_size,0,0,0
+7320330,long method,strategy,0,0,0
+7325587,blob,strategy,0,0,0
+7325587,blob,with_size,0,0,0
+7332512,long method,strategy,0,0,0
+7350370,data class,strategy,0,0,1
+7337830,blob,strategy,0,0,0
+7337830,blob,with_size,0,0,0
+7343807,long method,strategy,0,0,0
+7345031,long method,strategy,0,0,1
+7330770,data class,strategy,1,1,1
+7341179,data class,strategy,0,0,1
+7355862,feature envy,law_of_demeter,0,,0
+7337628,feature envy,law_of_demeter,0,,0
+7336602,blob,strategy,0,0,1
+7336602,blob,with_size,0,0,1
+7301167,blob,strategy,0,0,1
+7301167,blob,with_size,0,0,1
+7357395,data class,strategy,0,0,0
+7324624,data class,strategy,1,1,1
+7341316,blob,strategy,0,0,1
+7341316,blob,with_size,0,0,1
+7341794,blob,strategy,0,0,0
+7341794,blob,with_size,0,0,0
+7368005,blob,strategy,0,0,0
+7368005,blob,with_size,0,0,0
+7320020,feature envy,law_of_demeter,0,,0
+7303656,blob,strategy,0,0,1
+7303656,blob,with_size,0,0,1
+7165732,blob,strategy,0,0,0
+7165732,blob,with_size,0,0,0
+7164951,feature envy,law_of_demeter,0,,0
+7168351,blob,strategy,0,0,0
+7168351,blob,with_size,0,0,0
+7172860,long method,strategy,0,0,0
+7172582,blob,strategy,0,0,0
+7172582,blob,with_size,0,0,0
+7168092,long method,strategy,0,0,0
+7168076,data class,strategy,1,1,1
+7258651,blob,strategy,0,0,0
+7258651,blob,with_size,0,0,0
+7260017,blob,strategy,0,0,0
+7260017,blob,with_size,0,0,0
+7268641,long method,strategy,0,0,0
+7268617,blob,strategy,0,0,1
+7268617,blob,with_size,0,0,1
+7276572,blob,strategy,0,0,1
+7276572,blob,with_size,0,0,1
+7279538,feature envy,law_of_demeter,0,,0
+7278060,long method,strategy,0,0,0
+7277560,blob,strategy,0,0,0
+7277560,blob,with_size,0,0,0
+7277838,long method,strategy,0,0,0
+7279793,blob,strategy,0,0,0
+7279793,blob,with_size,0,0,0
+7279934,feature envy,law_of_demeter,0,,0
+7280600,blob,strategy,0,0,0
+7280600,blob,with_size,0,0,0
+7280795,data class,strategy,0,1,0
+7280607,blob,strategy,0,0,0
+7280607,blob,with_size,0,0,0
+7673002,data class,strategy,0,0,0
+7680525,data class,strategy,0,0,0
+7681058,blob,strategy,0,0,0
+7681058,blob,with_size,0,0,0
+7671750,long method,strategy,0,0,0
+7671918,long method,strategy,0,0,0
+7674551,long method,strategy,0,0,0
+7699101,long method,strategy,0,0,0
+7698738,long method,strategy,0,0,0
+7694897,blob,strategy,0,0,0
+7694897,blob,with_size,0,0,0
+7693328,long method,strategy,0,0,0
+7697841,long method,strategy,0,1,1
+7700031,long method,strategy,0,0,0
+3698602,feature envy,law_of_demeter,0,,0
+3698665,feature envy,law_of_demeter,0,,0
+3698323,blob,strategy,0,0,0
+3698323,blob,with_size,0,0,0
+3698860,long method,strategy,0,0,0
+3699227,feature envy,law_of_demeter,0,,0
+3709545,long method,strategy,0,0,0
+3723043,data class,strategy,1,1,1
+3715636,data class,strategy,1,1,1
+3717506,blob,strategy,0,0,0
+3717506,blob,with_size,0,0,0
+3717549,long method,strategy,0,0,0
+3722097,feature envy,law_of_demeter,0,,0
+3721456,blob,strategy,0,0,0
+3721456,blob,with_size,0,0,0
+3722557,long method,strategy,0,0,0
+3719020,long method,strategy,0,0,0
+3717906,feature envy,law_of_demeter,0,,1
+3710201,blob,strategy,0,0,0
+3710201,blob,with_size,0,0,0
+3699849,blob,strategy,0,0,0
+3699849,blob,with_size,0,0,0
+3700134,long method,strategy,0,0,0
+3700666,data class,strategy,0,0,1
+3701417,long method,strategy,0,0,0
+3705164,data class,strategy,0,0,0
+3701394,feature envy,law_of_demeter,0,,0
+3702984,blob,strategy,1,0,1
+3702984,blob,with_size,1,1,1
+3703084,long method,strategy,0,0,0
+3699521,long method,strategy,0,0,0
+3701614,feature envy,law_of_demeter,0,,0
+8151239,long method,strategy,0,0,0
+8148121,feature envy,law_of_demeter,0,,1
+8146289,blob,strategy,0,0,0
+8146289,blob,with_size,0,0,0
+8149386,data class,strategy,0,0,0
+8146987,blob,strategy,0,0,0
+8146987,blob,with_size,0,0,0
+3753086,feature envy,law_of_demeter,0,,0
+3753095,feature envy,law_of_demeter,0,,0
+3757097,blob,strategy,0,0,1
+3757097,blob,with_size,0,0,1
+3730280,long method,strategy,0,0,0
+3749791,long method,strategy,0,0,0
+3743029,long method,strategy,0,0,0
+3756805,blob,strategy,0,0,0
+3756805,blob,with_size,0,0,0
+3732429,blob,strategy,1,1,1
+3732429,blob,with_size,1,1,1
+3727277,long method,strategy,0,0,0
+3727271,data class,strategy,0,0,1
+3739360,long method,strategy,0,0,1
+3754188,blob,strategy,0,0,0
+3754188,blob,with_size,0,0,0
+3711605,blob,strategy,0,0,1
+3711605,blob,with_size,0,0,1
+3762543,blob,strategy,0,0,0
+3762543,blob,with_size,0,0,0
+3772718,blob,strategy,0,0,0
+3772718,blob,with_size,0,0,0
+3797964,blob,strategy,0,0,1
+3797964,blob,with_size,0,0,1
+3761009,blob,strategy,0,0,0
+3761009,blob,with_size,0,0,0
+3796407,feature envy,law_of_demeter,0,,0
+3787706,data class,strategy,0,0,0
+3801914,long method,strategy,0,0,0
+3795599,blob,strategy,0,0,0
+3795599,blob,with_size,0,0,0
+3797814,blob,strategy,0,0,1
+3797814,blob,with_size,0,0,1
+3804285,long method,strategy,0,0,0
+3779095,data class,strategy,0,0,0
+3803712,long method,strategy,0,0,0
+3784303,long method,strategy,0,0,0
+3759000,data class,strategy,0,0,0
+3791832,blob,strategy,0,0,1
+3791832,blob,with_size,0,1,1
+3763789,long method,strategy,0,0,0
+3799104,feature envy,law_of_demeter,0,,0
+3804138,blob,strategy,0,0,0
+3804138,blob,with_size,0,0,0
+3724040,long method,strategy,0,0,0
+3725605,data class,strategy,0,0,1
+3725026,feature envy,law_of_demeter,0,,0
+3735879,long method,strategy,0,0,0
+3738168,long method,strategy,0,1,0
+3742330,long method,strategy,0,0,0
+3741534,feature envy,law_of_demeter,0,,0
+3762849,feature envy,law_of_demeter,0,,0
+3763661,blob,strategy,0,0,1
+3763661,blob,with_size,0,0,1
+3764238,blob,strategy,0,0,1
+3764238,blob,with_size,0,1,1
+3763847,blob,strategy,0,0,1
+3763847,blob,with_size,0,0,1
+3764491,data class,strategy,0,0,1
+3791275,long method,strategy,0,0,0
+3790421,long method,strategy,0,0,0
+3790799,data class,strategy,0,0,1
+3794102,feature envy,law_of_demeter,0,,0
+3782985,feature envy,law_of_demeter,0,,0
+3786480,blob,strategy,1,1,1
+3786480,blob,with_size,1,1,1
+3788627,blob,strategy,0,0,1
+3788627,blob,with_size,0,1,1
+3780834,feature envy,law_of_demeter,0,,0
+3789205,blob,strategy,0,0,0
+3789205,blob,with_size,0,0,0
+3800392,long method,strategy,0,0,0
+3772084,blob,strategy,0,0,0
+3772084,blob,with_size,0,0,0
+3775458,long method,strategy,0,0,0
+3770892,long method,strategy,0,0,0
+3785267,data class,strategy,0,0,0
+3785309,long method,strategy,0,0,0
+3929567,data class,strategy,0,0,0
+3857363,long method,strategy,0,0,0
+3868110,feature envy,law_of_demeter,0,,0
+3873752,blob,strategy,0,0,0
+3873752,blob,with_size,0,0,0
+3877056,long method,strategy,0,0,0
+3875268,feature envy,law_of_demeter,0,,0
+3879070,feature envy,law_of_demeter,0,,0
+3897581,blob,strategy,0,0,0
+3897581,blob,with_size,0,0,0
+3919445,data class,strategy,0,0,0
+3920271,feature envy,law_of_demeter,0,,0
+3922769,blob,strategy,0,0,0
+3922769,blob,with_size,0,0,0
+3921684,long method,strategy,0,0,0
+3922790,blob,strategy,0,0,0
+3922790,blob,with_size,0,0,0
+3925764,blob,strategy,0,0,0
+3925764,blob,with_size,0,0,0
+3924383,feature envy,law_of_demeter,0,,0
+3924454,long method,strategy,0,0,0
+3926825,long method,strategy,0,0,0
+3817323,data class,strategy,0,0,1
+3822072,data class,strategy,0,0,0
+3873715,blob,strategy,0,0,0
+3873715,blob,with_size,0,0,0
+3851625,long method,strategy,0,0,0
+3901039,blob,strategy,0,0,0
+3901039,blob,with_size,0,0,0
+3827991,blob,strategy,0,0,0
+3827991,blob,with_size,0,0,0
+3913986,long method,strategy,0,0,0
+3839517,blob,strategy,0,0,0
+3839517,blob,with_size,0,0,0
+3931329,feature envy,law_of_demeter,0,,0
+3820002,data class,strategy,0,0,1
+3827535,blob,strategy,1,0,1
+3827535,blob,with_size,1,1,1
+3856241,blob,strategy,1,0,0
+3856241,blob,with_size,1,0,0
+3923939,blob,strategy,0,1,0
+3923939,blob,with_size,0,1,0
+3924473,feature envy,law_of_demeter,0,,0
+3897308,feature envy,law_of_demeter,0,,0
+3905445,long method,strategy,0,0,0
+3819835,data class,strategy,0,0,0
+3878622,blob,strategy,0,0,0
+3878622,blob,with_size,0,0,0
+3868102,long method,strategy,0,0,0
+3796929,data class,strategy,0,0,1
+3809437,feature envy,law_of_demeter,0,,0
+3807471,long method,strategy,0,0,1
+3811653,long method,strategy,0,0,0
+3825676,long method,strategy,0,0,0
+3817294,long method,strategy,0,0,0
+3808598,feature envy,law_of_demeter,0,,0
+3828619,long method,strategy,0,0,0
+3824920,long method,strategy,0,0,0
+3812099,feature envy,law_of_demeter,0,,0
+3829184,long method,strategy,0,0,0
+3818939,long method,strategy,0,0,0
+3823798,long method,strategy,0,0,0
+3813750,blob,strategy,0,0,0
+3813750,blob,with_size,0,0,0
+3814167,feature envy,law_of_demeter,0,,0
+3812473,blob,strategy,0,0,1
+3812473,blob,with_size,0,0,1
+3814315,blob,strategy,0,0,1
+3814315,blob,with_size,0,0,1
+8167612,data class,strategy,0,1,0
+8169457,feature envy,law_of_demeter,0,,0
+8169113,blob,strategy,0,0,1
+8169113,blob,with_size,0,0,1
+8181080,feature envy,law_of_demeter,0,,0
+8172392,blob,strategy,0,0,0
+8172392,blob,with_size,0,0,0
+8180004,long method,strategy,0,0,0
+8168864,data class,strategy,0,0,0
+8169750,data class,strategy,0,0,1
+8182379,long method,strategy,0,0,0
+8165591,blob,strategy,1,1,1
+8165591,blob,with_size,1,1,1
+8187132,blob,strategy,0,0,1
+8187132,blob,with_size,0,0,1
+8186875,blob,strategy,0,0,1
+8186875,blob,with_size,0,0,1
+8183289,data class,strategy,0,0,0
+8163123,feature envy,law_of_demeter,0,,0
+8184933,feature envy,law_of_demeter,1,,0
+8186858,long method,strategy,0,0,0
+8187474,blob,strategy,0,0,0
+8187474,blob,with_size,0,0,0
+8177486,long method,strategy,0,0,0
+8164457,blob,strategy,0,0,0
+8164457,blob,with_size,0,0,0
+8799964,blob,strategy,0,0,0
+8799964,blob,with_size,0,0,0
+8837684,long method,strategy,0,0,0
+8795959,blob,strategy,0,0,0
+8795959,blob,with_size,0,0,0
+8836840,data class,strategy,0,0,0
+8857568,feature envy,law_of_demeter,0,,0
+8808076,blob,strategy,0,0,0
+8808076,blob,with_size,0,0,0
+8792214,data class,strategy,0,0,0
+8791597,feature envy,law_of_demeter,0,,1
+8812297,feature envy,law_of_demeter,0,,0
+8827191,data class,strategy,0,0,0
+8845708,long method,strategy,0,0,0
+8753783,data class,strategy,0,0,0
+8861277,long method,strategy,0,0,1
+8841762,long method,strategy,0,0,0
+8801664,long method,strategy,0,0,0
+8834964,feature envy,law_of_demeter,0,,0
+8804785,blob,strategy,0,0,1
+8804785,blob,with_size,0,0,1
+8850497,feature envy,law_of_demeter,0,,0
+8828539,feature envy,law_of_demeter,0,,0
+8844288,feature envy,law_of_demeter,0,,0
+3849158,long method,strategy,0,0,0
+3856911,long method,strategy,0,0,1
+3862792,blob,strategy,0,0,0
+3862792,blob,with_size,0,0,0
+3871308,long method,strategy,0,0,0
+3870545,long method,strategy,0,0,0
+3875995,long method,strategy,0,0,0
+3876033,long method,strategy,0,0,0
+3879965,blob,strategy,0,0,0
+3879965,blob,with_size,0,0,0
+3879673,long method,strategy,0,0,0
+3858066,data class,strategy,1,1,1
+3874200,data class,strategy,0,0,1
+3846700,blob,strategy,0,0,0
+3846700,blob,with_size,0,0,0
+3873345,long method,strategy,0,0,0
+3860739,blob,strategy,0,0,1
+3860739,blob,with_size,0,0,1
+3858217,long method,strategy,0,0,0
+3863486,blob,strategy,0,0,0
+3863486,blob,with_size,0,0,0
+3864226,long method,strategy,0,0,0
+3862557,blob,strategy,0,0,0
+3862557,blob,with_size,0,0,0
+3881454,blob,strategy,0,0,0
+3881454,blob,with_size,0,0,0
+3843851,feature envy,law_of_demeter,0,,0
+3872015,long method,strategy,0,0,0
+3851209,long method,strategy,0,0,0
+3877118,long method,strategy,0,1,1
+3882178,feature envy,law_of_demeter,0,,0
+3848916,long method,strategy,0,0,0
+3856873,data class,strategy,0,0,0
+3856345,long method,strategy,0,0,1
+3859697,feature envy,law_of_demeter,0,,0
+3857472,blob,strategy,0,0,1
+3857472,blob,with_size,0,0,1
+3850165,blob,strategy,0,0,1
+3850165,blob,with_size,0,0,1
+3869760,blob,strategy,0,0,0
+3869760,blob,with_size,0,0,0
+3868603,long method,strategy,0,0,0
+3868578,data class,strategy,0,0,0
+3869246,long method,strategy,0,0,0
+3904736,long method,strategy,0,0,0
+3909025,long method,strategy,0,0,0
+3904181,blob,strategy,0,0,0
+3904181,blob,with_size,0,0,0
+3898760,data class,strategy,0,0,0
+3888598,blob,strategy,0,0,0
+3888598,blob,with_size,0,1,0
+3891048,blob,strategy,0,0,0
+3891048,blob,with_size,0,0,0
+3888459,data class,strategy,0,0,0
+3893413,long method,strategy,0,0,1
+3945199,long method,strategy,0,0,0
+3952980,long method,strategy,0,0,0
+3954827,blob,strategy,0,0,1
+3954827,blob,with_size,0,0,1
+3962016,blob,strategy,0,0,0
+3962016,blob,with_size,0,0,0
+3943759,data class,strategy,0,0,0
+3964331,feature envy,law_of_demeter,0,,0
+3953485,blob,strategy,0,0,1
+3953485,blob,with_size,0,0,1
+3963415,feature envy,law_of_demeter,0,,0
+3963239,blob,strategy,0,0,0
+3963239,blob,with_size,0,0,0
+3946225,data class,strategy,0,0,0
+3951549,long method,strategy,1,1,1
+3918098,feature envy,law_of_demeter,0,,0
+3917715,data class,strategy,0,0,1
+3918287,data class,strategy,0,0,1
+3908492,blob,strategy,0,0,1
+3908492,blob,with_size,0,0,1
+3908026,data class,strategy,0,0,0
+3919083,feature envy,law_of_demeter,0,,0
+3918920,feature envy,law_of_demeter,0,,0
+3918943,feature envy,law_of_demeter,1,,1
+3920625,data class,strategy,1,1,1
+3922485,long method,strategy,0,0,1
+3922349,long method,strategy,0,1,1
+3938271,data class,strategy,0,0,1
+3943609,data class,strategy,0,0,0
+3945737,blob,strategy,0,0,0
+3945737,blob,with_size,0,0,0
+3947756,long method,strategy,0,0,0
+3939400,blob,strategy,0,0,0
+3939400,blob,with_size,0,0,0
+3940746,blob,strategy,0,0,0
+3940746,blob,with_size,0,0,0
+3942114,blob,strategy,0,0,0
+3942114,blob,with_size,0,0,0
+3937045,blob,strategy,0,0,0
+3937045,blob,with_size,0,0,0
+3945316,long method,strategy,0,0,0
+3936103,data class,strategy,0,0,0
+3942097,feature envy,law_of_demeter,0,,1
+3940072,long method,strategy,0,0,1
+3933339,feature envy,law_of_demeter,0,,0
+3940608,blob,strategy,0,0,0
+3940608,blob,with_size,0,0,0
+3937197,blob,strategy,0,0,0
+3937197,blob,with_size,0,0,0
+4038375,long method,strategy,0,0,0
+4042826,blob,strategy,0,0,0
+4042826,blob,with_size,0,0,0
+4043468,long method,strategy,0,0,0
+4043104,feature envy,law_of_demeter,0,,0
+4045122,feature envy,law_of_demeter,0,,0
+4045338,long method,strategy,0,0,0
+4059863,data class,strategy,0,0,0
+4057674,long method,strategy,0,0,0
+4073701,long method,strategy,0,0,0
+4074246,blob,strategy,0,0,0
+4074246,blob,with_size,0,0,0
+4075287,blob,strategy,0,0,0
+4075287,blob,with_size,0,0,0
+4074807,long method,strategy,0,0,0
+4096226,data class,strategy,0,0,0
+4095182,feature envy,law_of_demeter,0,,0
+4096115,data class,strategy,0,0,0
+4097968,long method,strategy,0,0,0
+4101310,data class,strategy,0,0,0
+4104993,feature envy,law_of_demeter,0,,0
+4105521,blob,strategy,0,0,0
+4105521,blob,with_size,0,0,0
+4092105,feature envy,law_of_demeter,0,,1
+4043845,data class,strategy,0,0,0
+4083880,long method,strategy,0,0,0
+4095326,data class,strategy,0,0,0
+4068177,long method,strategy,0,0,0
+4039655,blob,strategy,0,0,0
+4039655,blob,with_size,0,0,0
+4044091,long method,strategy,0,0,0
+4093032,data class,strategy,0,0,0
+4098093,long method,strategy,0,0,0
+4089742,feature envy,law_of_demeter,0,,0
+4064087,data class,strategy,0,0,0
+4045091,data class,strategy,0,0,0
+4087381,blob,strategy,0,0,0
+4087381,blob,with_size,0,0,0
+4108183,blob,strategy,0,0,0
+4108183,blob,with_size,0,1,0
+4045146,blob,strategy,0,0,0
+4045146,blob,with_size,0,0,0
+4095482,long method,strategy,0,1,1
+4081252,feature envy,law_of_demeter,0,,1
+3949836,blob,strategy,0,0,0
+3949836,blob,with_size,0,0,0
+3952888,data class,strategy,0,1,0
+3961246,long method,strategy,0,0,0
+3950225,data class,strategy,0,0,0
+3977475,data class,strategy,0,0,0
+3985224,blob,strategy,0,0,0
+3985224,blob,with_size,0,0,0
+3985516,feature envy,law_of_demeter,0,,0
+3987166,feature envy,law_of_demeter,0,,0
+3986050,feature envy,law_of_demeter,0,,0
+3986717,long method,strategy,0,1,1
+3986210,long method,strategy,0,0,0
+3985971,data class,strategy,0,0,0
+3985009,blob,strategy,0,0,0
+3985009,blob,with_size,0,0,0
+3977344,blob,strategy,0,0,1
+3977344,blob,with_size,0,0,1
+3983972,feature envy,law_of_demeter,0,,0
+3975932,blob,strategy,0,0,0
+3975932,blob,with_size,0,0,0
+3981428,long method,strategy,0,0,0
+3988323,long method,strategy,0,0,0
+3981336,blob,strategy,0,0,0
+3981336,blob,with_size,0,0,0
+3972555,data class,strategy,0,0,0
+3974401,blob,strategy,0,0,0
+3974401,blob,with_size,0,0,0
+3970015,blob,strategy,0,0,1
+3970015,blob,with_size,0,0,1
+3969522,blob,strategy,0,0,0
+3969522,blob,with_size,0,0,0
+3974746,feature envy,law_of_demeter,0,,0
+3974797,blob,strategy,0,0,1
+3974797,blob,with_size,0,0,1
+3972251,blob,strategy,0,0,0
+3972251,blob,with_size,0,0,0
+3975605,long method,strategy,0,0,0
+3978398,blob,strategy,0,0,0
+3978398,blob,with_size,0,0,0
+4002437,long method,strategy,0,0,0
+4004665,long method,strategy,0,0,0
+3993481,long method,strategy,0,0,0
+3993530,data class,strategy,0,0,0
+4003009,blob,strategy,0,0,0
+4003009,blob,with_size,0,0,0
+4005583,long method,strategy,0,0,0
+3998684,long method,strategy,0,0,0
+4010920,blob,strategy,0,0,0
+4010920,blob,with_size,0,0,0
+4008191,blob,strategy,0,0,0
+4008191,blob,with_size,0,0,0
+3988942,long method,strategy,0,0,0
+3992626,feature envy,law_of_demeter,0,,1
+3993831,long method,strategy,0,1,0
+4004762,blob,strategy,0,0,1
+4004762,blob,with_size,0,0,1
+4039372,data class,strategy,0,0,0
+4038193,feature envy,law_of_demeter,0,,0
+4040842,blob,strategy,0,0,1
+4040842,blob,with_size,0,0,1
+4044534,blob,strategy,0,0,0
+4044534,blob,with_size,0,0,0
+4058195,data class,strategy,0,0,0
+4059172,feature envy,law_of_demeter,0,,0
+4031529,long method,strategy,0,0,0
+4031820,data class,strategy,0,0,0
+4034186,data class,strategy,0,0,0
+4046009,blob,strategy,0,0,1
+4046009,blob,with_size,0,0,1
+4066245,blob,strategy,0,0,0
+4066245,blob,with_size,0,0,0
+4051509,blob,strategy,0,0,0
+4051509,blob,with_size,0,0,0
+4032784,blob,strategy,0,0,0
+4032784,blob,with_size,0,0,0
+4027396,data class,strategy,0,0,0
+4028511,blob,strategy,0,0,0
+4028511,blob,with_size,0,0,0
+4069688,blob,strategy,0,0,0
+4069688,blob,with_size,0,0,0
+4032154,feature envy,law_of_demeter,0,,0
+4063507,blob,strategy,0,0,0
+4063507,blob,with_size,0,0,0
+4028364,long method,strategy,0,1,1
+4059491,feature envy,law_of_demeter,0,,0
+4051372,long method,strategy,0,0,0
+4034686,blob,strategy,1,0,1
+4034686,blob,with_size,1,1,1
+4031193,blob,strategy,0,0,0
+4031193,blob,with_size,0,0,0
+4042780,data class,strategy,0,0,0
+4055848,long method,strategy,0,0,0
+4041399,feature envy,law_of_demeter,0,,0
+4055860,data class,strategy,0,0,0
+4042328,long method,strategy,0,0,0
+4050604,blob,strategy,0,0,0
+4050604,blob,with_size,0,0,0
+4062999,feature envy,law_of_demeter,0,,0
+4042280,long method,strategy,0,0,0
+4045943,data class,strategy,0,0,0
+4051558,data class,strategy,0,0,0
+4035683,data class,strategy,0,0,1
+4029077,blob,strategy,0,0,0
+4029077,blob,with_size,0,0,0
+4106292,blob,strategy,0,0,0
+4106292,blob,with_size,0,0,0
+4106345,long method,strategy,0,0,0
+4106430,long method,strategy,0,0,0
+4106696,feature envy,law_of_demeter,0,,0
+4059685,blob,strategy,0,0,0
+4059685,blob,with_size,0,0,0
+4057866,long method,strategy,0,0,0
+4070938,blob,strategy,1,1,1
+4070938,blob,with_size,1,1,1
+4073835,long method,strategy,0,0,0
+4072654,long method,strategy,0,0,0
+4072597,feature envy,law_of_demeter,0,,0
+4075888,long method,strategy,0,0,0
+4078869,data class,strategy,0,0,0
+4088995,data class,strategy,0,0,0
+4062660,data class,strategy,0,0,0
+4069589,long method,strategy,0,0,0
+4068444,blob,strategy,1,1,1
+4068444,blob,with_size,1,1,1
+4090808,blob,strategy,0,0,0
+4090808,blob,with_size,0,0,0
+4088843,long method,strategy,0,0,0
+4110958,blob,strategy,0,0,0
+4110958,blob,with_size,0,0,0
+4112198,feature envy,law_of_demeter,0,,0
+4123555,blob,strategy,0,0,0
+4123555,blob,with_size,0,0,0
+4122935,feature envy,law_of_demeter,0,,0
+4124650,long method,strategy,0,0,0
+4122553,data class,strategy,0,0,0
+4124615,blob,strategy,0,0,1
+4124615,blob,with_size,0,0,1
+4110816,long method,strategy,0,0,0
+4110001,long method,strategy,0,1,1
+4113343,blob,strategy,0,0,0
+4113343,blob,with_size,0,0,0
+4115525,blob,strategy,0,0,0
+4115525,blob,with_size,0,0,0
+4113404,long method,strategy,0,0,0
+4109372,blob,strategy,0,0,0
+4109372,blob,with_size,0,0,0
+4116762,long method,strategy,0,0,0
+4101390,feature envy,law_of_demeter,0,,0
+4159107,blob,strategy,0,0,0
+4159107,blob,with_size,0,0,0
+4151853,feature envy,law_of_demeter,0,,0
+4159069,feature envy,law_of_demeter,0,,0
+4157934,long method,strategy,0,0,0
+4159543,blob,strategy,0,0,0
+4159543,blob,with_size,0,1,0
+4126029,blob,strategy,0,0,0
+4126029,blob,with_size,0,0,0
+4130065,data class,strategy,0,0,1
+4136680,blob,strategy,0,0,0
+4136680,blob,with_size,0,0,0
+4137834,long method,strategy,0,0,0
+4138124,feature envy,law_of_demeter,0,,0
+4139979,data class,strategy,0,0,0
+4140191,long method,strategy,0,0,0
+4141778,blob,strategy,0,0,0
+4141778,blob,with_size,0,0,0
+4130189,feature envy,law_of_demeter,0,,0
+4140914,feature envy,law_of_demeter,0,,0
+4139640,feature envy,law_of_demeter,0,,0
+4142085,data class,strategy,0,0,0
+4144475,long method,strategy,0,0,0
+4132083,long method,strategy,0,0,0
+4131952,blob,strategy,1,0,1
+4131952,blob,with_size,1,1,1
+4132362,feature envy,law_of_demeter,0,,0
+4129438,data class,strategy,0,0,0
+4135708,data class,strategy,0,0,0
+4144417,feature envy,law_of_demeter,0,,0
+4135214,feature envy,law_of_demeter,0,,0
+4140046,long method,strategy,0,0,0
+4128743,long method,strategy,0,0,0
+8400746,blob,strategy,0,0,1
+8400746,blob,with_size,0,1,1
+8417770,long method,strategy,0,0,0
+8419610,feature envy,law_of_demeter,0,,0
+8418552,long method,strategy,0,0,0
+8423597,data class,strategy,1,1,0
+8423791,feature envy,law_of_demeter,0,,0
+8422970,feature envy,law_of_demeter,0,,0
+8424426,blob,strategy,0,0,0
+8424426,blob,with_size,0,0,0
+8423865,feature envy,law_of_demeter,0,,0
+8424288,feature envy,law_of_demeter,0,,0
+8423835,feature envy,law_of_demeter,0,,0
+8416563,blob,strategy,0,0,0
+8416563,blob,with_size,0,0,0
+8429775,long method,strategy,0,0,0
+8431225,feature envy,law_of_demeter,0,,0
+8430479,feature envy,law_of_demeter,0,,0
+8428144,blob,strategy,0,0,1
+8428144,blob,with_size,0,0,1
+8430991,feature envy,law_of_demeter,0,,0
+8389037,long method,strategy,0,0,1
+8432596,long method,strategy,0,0,0
+8432784,long method,strategy,0,0,0
+8432331,data class,strategy,0,0,0
+8436618,feature envy,law_of_demeter,0,,0
+8435790,long method,strategy,0,0,0
+8455319,blob,strategy,0,0,0
+8455319,blob,with_size,0,0,0
+8455135,feature envy,law_of_demeter,0,,0
+8421755,feature envy,law_of_demeter,0,,0
+8397966,blob,strategy,0,0,0
+8397966,blob,with_size,0,0,0
+8437805,feature envy,law_of_demeter,0,,0
+8411640,data class,strategy,0,0,0
+8417826,blob,strategy,1,0,0
+8417826,blob,with_size,1,1,0
+8401179,data class,strategy,0,0,0
+8408651,blob,strategy,0,0,0
+8408651,blob,with_size,0,0,0
+8382642,long method,strategy,0,0,1
+8439567,blob,strategy,0,0,0
+8439567,blob,with_size,0,0,0
+8420313,long method,strategy,0,0,0
+8452328,long method,strategy,0,0,0
+8404033,long method,strategy,0,0,0
+8427386,blob,strategy,0,0,1
+8427386,blob,with_size,0,0,1
+8442950,blob,strategy,0,0,1
+8442950,blob,with_size,0,1,1
+8457240,blob,strategy,0,0,0
+8457240,blob,with_size,0,0,0
+8413074,long method,strategy,0,0,0
+8403578,data class,strategy,1,1,1
+8436827,blob,strategy,0,0,1
+8436827,blob,with_size,0,0,1
+8406115,blob,strategy,0,0,0
+8406115,blob,with_size,0,0,0
+8443434,feature envy,law_of_demeter,0,,0
+8435719,data class,strategy,0,0,0
+8432933,feature envy,law_of_demeter,0,,0
+8387546,blob,strategy,0,0,0
+8387546,blob,with_size,0,0,0
+8410032,data class,strategy,0,0,0
+8433766,blob,strategy,0,0,1
+8433766,blob,with_size,0,0,1
+8387845,blob,strategy,0,0,1
+8387845,blob,with_size,0,0,1
+8435822,blob,strategy,0,0,0
+8435822,blob,with_size,0,0,0
+8441008,blob,strategy,0,0,1
+8441008,blob,with_size,0,1,1
+8418051,blob,strategy,0,0,0
+8418051,blob,with_size,0,0,0
+8460181,blob,strategy,0,0,1
+8460181,blob,with_size,0,0,1
+8395860,blob,strategy,0,0,1
+8395860,blob,with_size,0,0,1
+8461674,feature envy,law_of_demeter,0,,0
+8437389,feature envy,law_of_demeter,0,,0
+8409842,long method,strategy,0,0,0
+8457702,feature envy,law_of_demeter,0,,0
+8430551,long method,strategy,0,0,0
+8443651,feature envy,law_of_demeter,0,,0
+8443917,blob,strategy,0,0,0
+8443917,blob,with_size,0,0,0
+8412377,data class,strategy,0,0,0
+8425397,blob,strategy,0,0,0
+8425397,blob,with_size,0,0,0
+8402603,long method,strategy,0,0,0
+4197096,blob,strategy,0,0,0
+4197096,blob,with_size,0,0,0
+4195808,long method,strategy,0,0,0
+4195038,long method,strategy,0,0,0
+4218788,blob,strategy,0,0,0
+4218788,blob,with_size,0,0,0
+4219128,long method,strategy,0,0,0
+4218342,blob,strategy,0,0,0
+4218342,blob,with_size,0,0,0
+4218038,feature envy,law_of_demeter,0,,0
+4217466,data class,strategy,0,0,0
+4185249,feature envy,law_of_demeter,0,,0
+4221494,blob,strategy,0,0,0
+4221494,blob,with_size,0,0,0
+4218453,long method,strategy,0,0,0
+4218981,blob,strategy,0,0,0
+4218981,blob,with_size,0,0,0
+4206321,data class,strategy,0,0,0
+4222354,long method,strategy,0,0,0
+4184807,feature envy,law_of_demeter,0,,0
+4192613,data class,strategy,0,0,0
+4197031,long method,strategy,0,0,0
+4210395,data class,strategy,0,0,0
+4206958,long method,strategy,0,0,0
+4205773,blob,strategy,0,0,1
+4205773,blob,with_size,0,0,1
+4222807,long method,strategy,0,0,0
+4210356,long method,strategy,0,0,0
+4197753,feature envy,law_of_demeter,0,,0
+4221930,data class,strategy,0,0,0
+4220805,data class,strategy,0,0,0
+4207492,blob,strategy,0,0,0
+4207492,blob,with_size,0,0,0
+4175432,blob,strategy,0,0,0
+4175432,blob,with_size,0,0,0
+4176983,blob,strategy,0,0,0
+4176983,blob,with_size,0,0,0
+4194832,blob,strategy,0,0,0
+4194832,blob,with_size,0,0,0
+4198515,blob,strategy,0,0,0
+4198515,blob,with_size,0,0,0
+4197431,long method,strategy,0,0,0
+4171343,long method,strategy,0,0,0
+4177719,data class,strategy,0,0,0
+4175236,feature envy,law_of_demeter,0,,1
+4188059,long method,strategy,0,0,0
+4185136,data class,strategy,0,0,0
+4189945,data class,strategy,0,0,1
+4179381,data class,strategy,0,0,0
+4193150,blob,strategy,0,0,0
+4193150,blob,with_size,0,0,0
+4188990,long method,strategy,0,0,0
+4191189,blob,strategy,0,0,0
+4191189,blob,with_size,0,0,0
+4199164,blob,strategy,0,0,1
+4199164,blob,with_size,0,0,1
+4172580,data class,strategy,0,0,0
+4169376,data class,strategy,0,0,0
+4172212,long method,strategy,0,0,0
+4187027,blob,strategy,0,0,0
+4187027,blob,with_size,0,0,0
+4200619,blob,strategy,0,0,0
+4200619,blob,with_size,0,0,0
+4151146,blob,strategy,0,0,1
+4151146,blob,with_size,0,0,1
+4162084,long method,strategy,0,0,0
+4154409,blob,strategy,0,0,0
+4154409,blob,with_size,0,0,0
+4162330,long method,strategy,0,0,0
+4168378,blob,strategy,0,0,0
+4168378,blob,with_size,0,0,0
+4169071,blob,strategy,0,0,1
+4169071,blob,with_size,0,0,1
+4169148,feature envy,law_of_demeter,0,,0
+4168008,blob,strategy,0,0,0
+4168008,blob,with_size,0,0,0
+8497687,blob,strategy,0,0,0
+8497687,blob,with_size,0,0,0
+8497990,feature envy,law_of_demeter,0,,0
+8496550,long method,strategy,0,0,0
+8502684,data class,strategy,0,1,1
+8501404,long method,strategy,0,0,0
+8515776,blob,strategy,1,1,1
+8515776,blob,with_size,1,1,1
+8515408,long method,strategy,0,0,1
+8514290,feature envy,law_of_demeter,0,,0
+8514954,blob,strategy,0,0,1
+8514954,blob,with_size,0,0,1
+8517396,data class,strategy,0,0,0
+8522716,data class,strategy,0,0,0
+8521588,feature envy,law_of_demeter,0,,0
+8528735,blob,strategy,1,1,1
+8528735,blob,with_size,1,1,1
+8538037,blob,strategy,1,1,1
+8538037,blob,with_size,1,1,1
+8536673,long method,strategy,0,0,0
+8537951,long method,strategy,0,0,0
+8547408,feature envy,law_of_demeter,0,,0
+8541418,blob,strategy,0,0,0
+8541418,blob,with_size,0,0,0
+8526493,feature envy,law_of_demeter,0,,0
+8501970,blob,strategy,0,0,1
+8501970,blob,with_size,0,0,1
+8532133,feature envy,law_of_demeter,1,,1
+8533873,blob,strategy,0,0,0
+8533873,blob,with_size,0,0,0
+8533645,data class,strategy,0,0,1
+8507718,data class,strategy,0,0,1
+8501968,blob,strategy,0,0,0
+8501968,blob,with_size,0,0,0
+8494605,blob,strategy,0,0,0
+8494605,blob,with_size,0,0,0
+8537138,data class,strategy,1,0,1
+8491397,blob,strategy,0,0,1
+8491397,blob,with_size,0,0,1
+8548537,long method,strategy,0,0,0
+8539645,data class,strategy,0,0,1
+8510687,long method,strategy,1,0,0
+8497585,blob,strategy,0,0,0
+8497585,blob,with_size,0,0,0
+8510347,blob,strategy,0,0,0
+8510347,blob,with_size,0,0,0
+8548892,long method,strategy,0,0,1
+8516029,blob,strategy,0,0,1
+8516029,blob,with_size,0,1,1
+8526485,data class,strategy,0,0,1
+8526436,long method,strategy,0,0,1
+8537914,long method,strategy,0,0,0
+8539540,blob,strategy,0,0,0
+8539540,blob,with_size,0,0,0
+8533230,data class,strategy,0,0,0
+8526483,data class,strategy,0,0,0
+8533750,data class,strategy,0,0,0
+8543153,feature envy,law_of_demeter,0,,0
+8495850,long method,strategy,0,1,1
+8494231,long method,strategy,0,0,1
+8547261,data class,strategy,0,0,0
+8511088,blob,strategy,0,0,0
+8511088,blob,with_size,0,0,0
+8224488,blob,strategy,0,0,0
+8224488,blob,with_size,0,0,0
+8229683,data class,strategy,0,0,0
+8242801,long method,strategy,0,0,0
+8224809,blob,strategy,0,0,0
+8224809,blob,with_size,0,0,0
+8235560,blob,strategy,0,0,0
+8235560,blob,with_size,0,0,0
+8224255,blob,strategy,0,0,0
+8224255,blob,with_size,0,0,0
+8240066,blob,strategy,0,0,0
+8240066,blob,with_size,0,0,0
+8230505,long method,strategy,0,0,0
+8246323,feature envy,law_of_demeter,0,,0
+8240678,feature envy,law_of_demeter,0,,0
+8232375,data class,strategy,0,0,0
+8244590,long method,strategy,0,0,0
+8241207,blob,strategy,0,0,0
+8241207,blob,with_size,0,0,0
+8243636,long method,strategy,0,0,0
+8230227,long method,strategy,0,0,0
+8231238,long method,strategy,0,0,0
+8231971,blob,strategy,0,0,0
+8231971,blob,with_size,0,0,0
+8232830,blob,strategy,0,0,0
+8232830,blob,with_size,0,0,0
+8236650,data class,strategy,0,0,0
+8233737,data class,strategy,0,0,0
+8230789,long method,strategy,0,0,0
+4212572,long method,strategy,0,0,1
+4214385,long method,strategy,0,0,0
+4214220,data class,strategy,0,0,1
+4217515,feature envy,law_of_demeter,0,,0
+4217323,feature envy,law_of_demeter,0,,0
+4217192,long method,strategy,0,0,0
+4217571,feature envy,law_of_demeter,0,,0
+4234040,blob,strategy,0,0,1
+4234040,blob,with_size,0,0,1
+4232859,long method,strategy,0,0,0
+4232843,blob,strategy,0,0,0
+4232843,blob,with_size,0,1,0
+4232055,data class,strategy,0,0,0
+4229996,data class,strategy,0,0,1
+4228466,data class,strategy,0,0,0
+4230466,data class,strategy,0,0,1
+4232438,feature envy,law_of_demeter,0,,0
+4236060,feature envy,law_of_demeter,0,,0
+4237161,long method,strategy,0,0,0
+4238437,data class,strategy,0,0,0
+4240679,data class,strategy,0,0,0
+4240751,data class,strategy,0,0,0
+4239788,blob,strategy,0,0,0
+4239788,blob,with_size,0,0,0
+4244182,blob,strategy,0,0,0
+4244182,blob,with_size,0,0,0
+4241628,blob,strategy,0,0,1
+4241628,blob,with_size,0,0,1
+4243718,data class,strategy,0,0,0
+4242529,feature envy,law_of_demeter,0,,0
+4243459,data class,strategy,0,0,0
+4242573,feature envy,law_of_demeter,0,,0
+4248456,data class,strategy,0,0,0
+4248275,blob,strategy,0,0,0
+4248275,blob,with_size,0,0,0
+4247131,long method,strategy,0,0,0
+4246529,long method,strategy,0,0,0
+4246666,data class,strategy,0,0,0
+4246628,blob,strategy,0,0,1
+4246628,blob,with_size,0,0,1
+8192759,data class,strategy,0,0,1
+8190652,blob,strategy,0,0,0
+8190652,blob,with_size,0,0,0
+8192330,data class,strategy,0,0,0
+4251331,blob,strategy,0,0,0
+4251331,blob,with_size,0,0,0
+4249169,data class,strategy,0,0,0
+4249533,long method,strategy,0,0,1
+4275268,long method,strategy,0,0,0
+4276865,long method,strategy,0,0,0
+4264057,long method,strategy,1,1,1
+4271174,data class,strategy,0,0,0
+4273448,blob,strategy,0,0,0
+4273448,blob,with_size,0,0,0
+4276035,long method,strategy,0,0,0
+4258053,data class,strategy,0,0,0
+4257056,data class,strategy,0,0,0
+4258444,feature envy,law_of_demeter,0,,0
+4256584,long method,strategy,0,0,1
+4257893,feature envy,law_of_demeter,0,,0
+4260514,feature envy,law_of_demeter,0,,0
+4259369,feature envy,law_of_demeter,1,,0
+4260510,data class,strategy,0,0,0
+4266432,long method,strategy,0,0,0
+4265826,feature envy,law_of_demeter,0,,0
+4272190,data class,strategy,0,0,0
+4272508,blob,strategy,0,0,0
+4272508,blob,with_size,0,0,0
+4273565,long method,strategy,0,0,0
+4277815,data class,strategy,0,0,0
+4282818,data class,strategy,0,0,0
+4282272,feature envy,law_of_demeter,0,,0
+4283493,blob,strategy,0,0,0
+4283493,blob,with_size,0,0,0
+4281055,blob,strategy,0,0,0
+4281055,blob,with_size,0,0,0
+4283097,blob,strategy,0,0,0
+4283097,blob,with_size,0,0,0
+4285911,data class,strategy,0,0,1
+4287634,long method,strategy,0,0,0
+4285731,blob,strategy,0,0,0
+4285731,blob,with_size,0,0,0
+4282143,long method,strategy,0,0,0
+4278771,blob,strategy,0,0,0
+4278771,blob,with_size,0,0,0
+4288257,long method,strategy,0,0,0
+4289354,blob,strategy,0,0,1
+4289354,blob,with_size,0,0,1
+4369677,blob,strategy,0,0,0
+4369677,blob,with_size,0,0,0
+4370541,blob,strategy,1,1,1
+4370541,blob,with_size,1,1,1
+4371699,long method,strategy,0,0,0
+4371297,long method,strategy,0,0,0
+4371368,long method,strategy,0,0,0
+4371443,long method,strategy,0,0,0
+4372641,long method,strategy,0,0,0
+4404823,blob,strategy,0,0,0
+4404823,blob,with_size,0,0,0
+4404036,long method,strategy,0,0,0
+4413486,long method,strategy,0,0,0
+4392544,long method,strategy,0,0,0
+4380229,feature envy,law_of_demeter,0,,0
+4383044,long method,strategy,0,0,0
+4395308,long method,strategy,0,0,0
+4364314,long method,strategy,0,0,0
+4400511,blob,strategy,0,0,0
+4400511,blob,with_size,0,0,0
+4402431,feature envy,law_of_demeter,0,,1
+4394144,blob,strategy,0,0,1
+4394144,blob,with_size,0,0,1
+4413679,long method,strategy,0,0,0
+4364662,long method,strategy,0,0,0
+4368201,data class,strategy,0,0,0
+4367124,blob,strategy,0,0,0
+4367124,blob,with_size,0,0,0
+4373673,blob,strategy,0,0,0
+4373673,blob,with_size,0,0,0
+4413114,blob,strategy,0,0,1
+4413114,blob,with_size,0,0,1
+4371663,blob,strategy,0,0,0
+4371663,blob,with_size,0,0,0
+4400338,blob,strategy,0,0,0
+4400338,blob,with_size,0,0,0
+4410714,blob,strategy,0,0,1
+4410714,blob,with_size,0,0,1
+4415593,long method,strategy,0,0,0
+4368175,data class,strategy,0,0,0
+4290693,data class,strategy,1,0,1
+4292651,blob,strategy,0,0,0
+4292651,blob,with_size,0,0,0
+4295235,blob,strategy,0,0,0
+4295235,blob,with_size,0,0,0
+4292390,blob,strategy,0,0,0
+4292390,blob,with_size,0,0,0
+4291944,long method,strategy,0,0,0
+4325541,blob,strategy,0,0,0
+4325541,blob,with_size,0,1,0
+4329197,blob,strategy,0,0,0
+4329197,blob,with_size,0,0,0
+4348567,blob,strategy,0,0,0
+4348567,blob,with_size,0,0,0
+4345368,feature envy,law_of_demeter,0,,0
+4329859,blob,strategy,1,1,1
+4329859,blob,with_size,1,1,1
+4357819,data class,strategy,0,0,0
+4350115,feature envy,law_of_demeter,0,,0
+4327219,long method,strategy,0,0,0
+4322779,long method,strategy,0,0,0
+4318095,long method,strategy,0,0,0
+4345393,data class,strategy,0,0,0
+4331802,data class,strategy,0,0,0
+4357598,feature envy,law_of_demeter,0,,0
+4316776,long method,strategy,0,0,0
+4359600,blob,strategy,0,0,0
+4359600,blob,with_size,0,0,0
+4352708,feature envy,law_of_demeter,0,,1
+4319422,long method,strategy,0,0,0
+4318037,feature envy,law_of_demeter,0,,0
+4355601,blob,strategy,0,0,0
+4355601,blob,with_size,0,0,0
+4322752,blob,strategy,0,0,0
+4322752,blob,with_size,0,0,0
+4317110,data class,strategy,0,0,0
+4354720,long method,strategy,0,0,0
+4324794,feature envy,law_of_demeter,0,,0
+4336972,feature envy,law_of_demeter,0,,0
+4320364,feature envy,law_of_demeter,0,,0
+4322497,feature envy,law_of_demeter,0,,0
+4320152,blob,strategy,0,0,0
+4320152,blob,with_size,0,0,0
+4360681,long method,strategy,0,0,0
+4318753,long method,strategy,0,0,0
+4359175,blob,strategy,0,0,0
+4359175,blob,with_size,0,0,0
+4328225,blob,strategy,0,0,0
+4328225,blob,with_size,0,0,0
+4356398,long method,strategy,1,1,1
+4296219,blob,strategy,1,0,1
+4296219,blob,with_size,1,1,1
+4298894,long method,strategy,0,0,0
+4297095,long method,strategy,0,0,0
+4298660,feature envy,law_of_demeter,0,,0
+4301023,blob,strategy,0,0,0
+4301023,blob,with_size,0,0,0
+4300952,feature envy,law_of_demeter,0,,0
+4302593,long method,strategy,0,0,0
+4301198,feature envy,law_of_demeter,0,,0
+4301341,feature envy,law_of_demeter,0,,0
+4301429,feature envy,law_of_demeter,0,,0
+4301650,long method,strategy,0,0,0
+4301165,long method,strategy,0,0,0
+4301991,long method,strategy,0,0,0
+4301941,long method,strategy,0,0,0
+4306236,blob,strategy,1,1,1
+4306236,blob,with_size,1,1,1
+4302252,long method,strategy,0,0,0
+4304469,data class,strategy,0,0,0
+4302392,long method,strategy,0,0,0
+4302405,data class,strategy,0,0,0
+4303100,long method,strategy,0,0,0
+4301441,feature envy,law_of_demeter,0,,0
+4310755,feature envy,law_of_demeter,0,,1
+4309297,feature envy,law_of_demeter,0,,0
+4315157,feature envy,law_of_demeter,0,,0
+4315829,long method,strategy,0,0,1
+4311186,long method,strategy,0,1,1
+4308723,feature envy,law_of_demeter,0,,1
+4312069,feature envy,law_of_demeter,0,,0
+4308354,blob,strategy,0,0,0
+4308354,blob,with_size,0,0,0
+4310155,data class,strategy,0,0,0
+4314618,blob,strategy,0,0,0
+4314618,blob,with_size,0,0,0
+4346994,data class,strategy,0,0,1
+4332339,long method,strategy,0,0,0
+4338632,feature envy,law_of_demeter,0,,0
+4329605,blob,strategy,0,0,0
+4329605,blob,with_size,0,0,0
+4336814,long method,strategy,0,0,1
+4330910,feature envy,law_of_demeter,0,,0
+4341864,data class,strategy,0,0,0
+4404282,long method,strategy,0,0,0
+4401367,blob,strategy,1,1,1
+4401367,blob,with_size,1,1,1
+4401103,data class,strategy,0,0,1
+4384349,feature envy,law_of_demeter,0,,0
+4388389,long method,strategy,0,0,0
+4386725,long method,strategy,0,0,0
+4383462,long method,strategy,0,0,0
+4405841,long method,strategy,0,0,0
+4455621,blob,strategy,0,0,0
+4455621,blob,with_size,0,0,0
+4456562,blob,strategy,0,0,0
+4456562,blob,with_size,0,0,0
+4457799,long method,strategy,0,0,0
+4456439,feature envy,law_of_demeter,0,,0
+4459231,data class,strategy,0,0,0
+4460754,feature envy,law_of_demeter,0,,0
+4462987,long method,strategy,0,0,0
+4468635,data class,strategy,0,1,1
+4467152,feature envy,law_of_demeter,0,,0
+4471447,data class,strategy,0,0,0
+4489487,blob,strategy,0,0,0
+4489487,blob,with_size,0,0,0
+4490426,feature envy,law_of_demeter,0,,1
+4490936,long method,strategy,0,0,0
+4456338,blob,strategy,0,0,0
+4456338,blob,with_size,0,0,0
+4456492,data class,strategy,0,0,1
+4462446,long method,strategy,0,0,0
+4466087,data class,strategy,0,0,1
+4487410,long method,strategy,0,0,0
+4452266,feature envy,law_of_demeter,0,,0
+4479936,feature envy,law_of_demeter,0,,0
+4476433,long method,strategy,0,0,0
+4443762,blob,strategy,0,0,0
+4443762,blob,with_size,0,0,0
+4453471,long method,strategy,0,0,0
+4493302,blob,strategy,0,0,1
+4493302,blob,with_size,0,1,1
+4445309,long method,strategy,0,0,0
+4481500,blob,strategy,0,0,0
+4481500,blob,with_size,0,0,0
+4447157,long method,strategy,0,0,0
+4455712,long method,strategy,0,0,0
+4451710,blob,strategy,0,0,1
+4451710,blob,with_size,0,0,1
+4496340,data class,strategy,0,0,1
+4470846,feature envy,law_of_demeter,0,,1
+4465426,long method,strategy,0,0,0
+4453800,blob,strategy,0,0,0
+4453800,blob,with_size,0,0,0
+4455297,data class,strategy,0,0,1
+4496060,long method,strategy,0,0,0
+4458068,blob,strategy,0,0,1
+4458068,blob,with_size,0,0,1
+4471459,blob,strategy,0,0,0
+4471459,blob,with_size,0,0,0
+4445017,long method,strategy,0,0,0
+4448520,feature envy,law_of_demeter,0,,0
+4452794,data class,strategy,0,0,1
+4486097,data class,strategy,0,0,0
+4487581,feature envy,law_of_demeter,0,,0
+4465870,blob,strategy,0,0,0
+4465870,blob,with_size,0,0,0
+4486761,blob,strategy,0,0,0
+4486761,blob,with_size,0,0,0
+4471454,long method,strategy,0,0,0
+4457261,long method,strategy,0,0,0
+4468174,long method,strategy,0,0,0
+4471173,blob,strategy,0,0,0
+4471173,blob,with_size,0,0,0
+4449293,long method,strategy,0,0,1
+4480085,feature envy,law_of_demeter,0,,0
+4450051,long method,strategy,0,0,0
+4484891,long method,strategy,0,0,1
+4478155,data class,strategy,0,0,0
+4471010,feature envy,law_of_demeter,0,,0
+4467093,long method,strategy,0,0,0
+4478069,blob,strategy,0,0,0
+4478069,blob,with_size,0,0,0
+4425585,data class,strategy,0,0,0
+4429487,blob,strategy,0,0,0
+4429487,blob,with_size,0,0,0
+4431504,data class,strategy,0,0,0
+4431359,feature envy,law_of_demeter,0,,0
+4431712,blob,strategy,0,0,1
+4431712,blob,with_size,0,0,1
+4432039,blob,strategy,0,0,0
+4432039,blob,with_size,0,0,0
+4430308,long method,strategy,0,0,0
+4428269,data class,strategy,0,0,0
+4426916,long method,strategy,0,0,0
+4432223,long method,strategy,0,0,0
+4431383,blob,strategy,0,0,1
+4431383,blob,with_size,0,0,1
+4426200,long method,strategy,0,0,1
+4432196,data class,strategy,1,1,1
+4421462,blob,strategy,0,0,0
+4421462,blob,with_size,0,0,0
+4432151,long method,strategy,0,0,0
+4417149,long method,strategy,0,0,0
+4415977,data class,strategy,0,0,0
+4417713,long method,strategy,0,0,0
+4433943,long method,strategy,0,0,0
+4433801,feature envy,law_of_demeter,0,,0
+4435454,long method,strategy,0,0,0
+4433896,data class,strategy,0,0,0
+4434430,long method,strategy,0,0,0
+4436948,long method,strategy,0,0,0
+4435794,data class,strategy,0,0,0
+4434538,long method,strategy,0,0,0
+4437678,long method,strategy,0,0,0
+4435545,blob,strategy,0,0,1
+4435545,blob,with_size,0,0,1
+4435287,feature envy,law_of_demeter,0,,0
+4506790,blob,strategy,0,0,0
+4506790,blob,with_size,0,0,0
+4536448,blob,strategy,0,0,1
+4536448,blob,with_size,0,0,1
+4536178,long method,strategy,0,0,0
+4514229,long method,strategy,0,1,1
+4532155,feature envy,law_of_demeter,0,,1
+4509296,blob,strategy,0,0,0
+4509296,blob,with_size,0,0,0
+4512195,blob,strategy,0,0,1
+4512195,blob,with_size,0,1,1
+4527035,feature envy,law_of_demeter,0,,0
+4514232,feature envy,law_of_demeter,0,,1
+4516585,blob,strategy,0,0,0
+4516585,blob,with_size,0,0,0
+4517572,blob,strategy,0,0,0
+4517572,blob,with_size,0,0,0
+4517142,data class,strategy,0,0,0
+4525067,blob,strategy,0,0,0
+4525067,blob,with_size,0,0,0
+4522222,long method,strategy,0,0,0
+4534763,feature envy,law_of_demeter,0,,0
+4512609,feature envy,law_of_demeter,0,,0
+4516760,blob,strategy,0,0,0
+4516760,blob,with_size,0,0,0
+4502504,long method,strategy,0,0,0
+4515721,blob,strategy,0,0,0
+4515721,blob,with_size,0,0,0
+4508554,blob,strategy,0,0,0
+4508554,blob,with_size,0,0,0
+4523536,long method,strategy,0,0,1
+4439983,long method,strategy,0,0,0
+4440109,long method,strategy,0,0,0
+4440978,data class,strategy,0,0,0
+4542224,blob,strategy,0,0,1
+4542224,blob,with_size,0,0,1
+4546373,blob,strategy,0,0,0
+4546373,blob,with_size,0,0,0
+4558000,blob,strategy,1,1,1
+4558000,blob,with_size,1,1,1
+4556934,data class,strategy,1,1,1
+4556966,blob,strategy,0,0,0
+4556966,blob,with_size,0,0,0
+4530537,blob,strategy,0,0,0
+4530537,blob,with_size,0,0,0
+4530177,data class,strategy,0,0,0
+4541855,long method,strategy,0,0,0
+4534287,feature envy,law_of_demeter,0,,0
+4549169,long method,strategy,1,1,1
+4545257,data class,strategy,0,0,0
+4527162,long method,strategy,0,0,0
+4550371,long method,strategy,0,0,0
+4546223,long method,strategy,0,0,0
+4535026,long method,strategy,0,1,0
+4553401,long method,strategy,0,0,0
+4533482,blob,strategy,0,0,0
+4533482,blob,with_size,0,0,0
+4534678,blob,strategy,0,0,0
+4534678,blob,with_size,0,0,0
+4541660,long method,strategy,0,0,0
+4541684,data class,strategy,0,0,0
+4553122,feature envy,law_of_demeter,0,,0
+4536889,blob,strategy,0,0,0
+4536889,blob,with_size,0,0,0
+4611132,data class,strategy,0,1,1
+4633651,blob,strategy,0,0,0
+4633651,blob,with_size,0,0,0
+4643718,data class,strategy,0,0,0
+4647337,data class,strategy,0,0,0
+4662159,blob,strategy,0,0,0
+4662159,blob,with_size,0,0,0
+4661962,long method,strategy,0,0,0
+4668044,data class,strategy,0,0,0
+4668085,blob,strategy,0,0,0
+4668085,blob,with_size,0,0,0
+4667521,feature envy,law_of_demeter,0,,0
+4666539,data class,strategy,0,0,0
+4678251,blob,strategy,0,0,1
+4678251,blob,with_size,0,0,1
+4665134,feature envy,law_of_demeter,0,,0
+4625995,blob,strategy,0,0,0
+4625995,blob,with_size,0,0,0
+4671530,long method,strategy,0,0,0
+4665122,blob,strategy,0,0,1
+4665122,blob,with_size,0,0,1
+4657705,blob,strategy,0,0,0
+4657705,blob,with_size,0,0,0
+4651628,long method,strategy,0,0,0
+4624680,blob,strategy,0,0,1
+4624680,blob,with_size,0,0,1
+4645770,blob,strategy,0,0,0
+4645770,blob,with_size,0,0,0
+4616465,blob,strategy,0,0,0
+4616465,blob,with_size,0,0,0
+4666091,long method,strategy,0,0,0
+4610445,blob,strategy,0,0,1
+4610445,blob,with_size,0,0,1
+4666174,blob,strategy,0,0,0
+4666174,blob,with_size,0,0,0
+4669068,data class,strategy,0,0,0
+4639163,data class,strategy,0,0,0
+4656234,long method,strategy,0,0,0
+4651467,data class,strategy,0,0,0
+4658287,data class,strategy,0,0,0
+4612586,data class,strategy,0,0,0
+4616422,data class,strategy,0,0,0
+4611617,blob,strategy,1,1,0
+4611617,blob,with_size,1,1,0
+4654593,feature envy,law_of_demeter,0,,0
+4609125,feature envy,law_of_demeter,0,,0
+4645346,blob,strategy,0,0,0
+4645346,blob,with_size,0,0,0
+4612119,feature envy,law_of_demeter,0,,0
+4498741,blob,strategy,0,0,0
+4498741,blob,with_size,0,0,0
+4498016,long method,strategy,0,0,0
+4496686,feature envy,law_of_demeter,0,,0
+4498078,blob,strategy,0,0,0
+4498078,blob,with_size,0,0,0
+4500236,blob,strategy,0,0,0
+4500236,blob,with_size,0,0,0
+4499277,data class,strategy,0,0,1
+4501314,long method,strategy,0,0,0
+4500508,long method,strategy,0,0,0
+4500366,long method,strategy,0,1,1
+4502113,blob,strategy,0,0,0
+4502113,blob,with_size,0,0,0
+4503985,blob,strategy,0,0,1
+4503985,blob,with_size,0,0,1
+4505549,blob,strategy,0,0,1
+4505549,blob,with_size,0,0,1
+4503220,blob,strategy,0,0,0
+4503220,blob,with_size,0,0,0
+4502604,data class,strategy,0,0,0
+4504481,long method,strategy,0,0,0
+4580123,data class,strategy,0,0,0
+4578967,feature envy,law_of_demeter,0,,0
+4561905,feature envy,law_of_demeter,0,,0
+4586915,data class,strategy,0,0,0
+4567462,blob,strategy,0,0,0
+4567462,blob,with_size,0,0,0
+4572409,long method,strategy,0,0,0
+4568919,long method,strategy,0,1,1
+4571455,long method,strategy,0,0,1
+4586123,feature envy,law_of_demeter,0,,0
+4583764,long method,strategy,0,0,0
+4574673,long method,strategy,0,0,0
+4566202,long method,strategy,0,1,1
+4564618,feature envy,law_of_demeter,0,,0
+4572175,data class,strategy,0,0,0
+4578782,long method,strategy,0,0,0
+4582889,long method,strategy,0,1,1
+4576061,long method,strategy,0,0,1
+4580142,blob,strategy,0,0,0
+4580142,blob,with_size,0,0,0
+4577168,data class,strategy,0,0,0
+4555364,long method,strategy,0,0,0
+4556325,blob,strategy,0,0,0
+4556325,blob,with_size,0,0,0
+4556665,data class,strategy,0,0,0
+4556348,blob,strategy,0,0,0
+4556348,blob,with_size,0,0,0
+4553880,long method,strategy,0,0,0
+4558704,data class,strategy,0,0,1
+4556869,blob,strategy,0,0,0
+4556869,blob,with_size,0,0,0
+7829822,feature envy,law_of_demeter,0,,0
+7824709,blob,strategy,0,0,1
+7824709,blob,with_size,0,0,1
+7834476,feature envy,law_of_demeter,0,,0
+7856180,blob,strategy,0,0,0
+7856180,blob,with_size,0,0,0
+7855032,long method,strategy,0,0,0
+7834065,blob,strategy,0,0,0
+7834065,blob,with_size,0,0,0
+7807495,data class,strategy,0,0,0
+7856535,long method,strategy,0,0,0
+7863608,blob,strategy,0,0,1
+7863608,blob,with_size,0,0,1
+7801178,blob,strategy,0,0,1
+7801178,blob,with_size,0,0,1
+7867125,data class,strategy,0,0,0
+7810086,long method,strategy,0,0,0
+7818143,data class,strategy,0,0,0
+7835135,long method,strategy,0,1,1
+7857792,long method,strategy,0,0,1
+7842685,long method,strategy,0,0,0
+7867450,data class,strategy,0,0,0
+7829336,data class,strategy,0,1,1
+7808358,feature envy,law_of_demeter,0,,0
+7850192,long method,strategy,1,1,1
+7842162,feature envy,law_of_demeter,0,,0
+7870683,long method,strategy,0,1,1
+7805103,blob,strategy,0,1,1
+7805103,blob,with_size,0,1,1
+7810336,long method,strategy,0,0,0
+7811951,feature envy,law_of_demeter,0,,0
+7832597,feature envy,law_of_demeter,0,,0
+7828511,data class,strategy,0,0,0
+7799218,data class,strategy,0,1,1
+7810274,long method,strategy,0,0,1
+7863512,long method,strategy,0,0,0
+7851015,data class,strategy,0,0,0
+7797001,feature envy,law_of_demeter,0,,0
+7853333,blob,strategy,0,0,0
+7853333,blob,with_size,0,0,0
+7812575,data class,strategy,0,0,1
+7803956,long method,strategy,0,0,0
+7864012,long method,strategy,0,0,0
+7798138,data class,strategy,0,0,1
+7798188,data class,strategy,0,0,1
+7824232,long method,strategy,0,0,0
+4585448,data class,strategy,0,0,0
+4594162,blob,strategy,0,0,0
+4594162,blob,with_size,0,0,0
+4594104,long method,strategy,0,0,0
+4594723,blob,strategy,0,0,0
+4594723,blob,with_size,0,0,0
+4601555,blob,strategy,0,0,0
+4601555,blob,with_size,0,0,0
+4600851,long method,strategy,0,0,0
+4602475,feature envy,law_of_demeter,0,,0
+4602827,long method,strategy,0,0,1
+4595799,long method,strategy,0,0,0
+4602360,long method,strategy,0,0,0
+4600418,data class,strategy,0,0,0
+4599156,blob,strategy,0,0,0
+4599156,blob,with_size,0,0,0
+4591956,long method,strategy,0,0,0
+4593407,blob,strategy,0,0,0
+4593407,blob,with_size,0,0,0
+4593309,feature envy,law_of_demeter,0,,0
+4648063,blob,strategy,0,0,0
+4648063,blob,with_size,0,0,0
+4661344,long method,strategy,0,0,0
+4617521,long method,strategy,0,0,0
+4618565,feature envy,law_of_demeter,0,,0
+4625303,feature envy,law_of_demeter,0,,0
+4652198,blob,strategy,0,0,0
+4652198,blob,with_size,0,0,0
+4608696,data class,strategy,0,0,0
+4634991,feature envy,law_of_demeter,1,,0
+4620157,blob,strategy,1,0,1
+4620157,blob,with_size,1,1,1
+4662037,blob,strategy,0,0,0
+4662037,blob,with_size,0,0,0
+4628752,data class,strategy,0,0,1
+4651047,feature envy,law_of_demeter,0,,1
+4613952,feature envy,law_of_demeter,0,,0
+8737414,feature envy,law_of_demeter,0,,0
+8754569,data class,strategy,0,0,0
+8756041,feature envy,law_of_demeter,0,,0
+8760562,data class,strategy,0,0,1
+8760558,data class,strategy,0,0,0
+8776987,blob,strategy,0,0,0
+8776987,blob,with_size,0,0,0
+8749806,blob,strategy,0,0,1
+8749806,blob,with_size,0,0,1
+8748649,long method,strategy,0,0,0
+8736644,blob,strategy,0,0,1
+8736644,blob,with_size,0,1,1
+8765693,long method,strategy,0,0,0
+8751166,blob,strategy,0,0,0
+8751166,blob,with_size,0,0,0
+8768107,blob,strategy,0,0,1
+8768107,blob,with_size,0,1,1
+8783754,feature envy,law_of_demeter,0,,0
+8784533,data class,strategy,0,0,0
+8783458,data class,strategy,0,0,0
+8766133,feature envy,law_of_demeter,0,,0
+8777301,feature envy,law_of_demeter,0,,0
+8746908,blob,strategy,0,0,0
+8746908,blob,with_size,0,0,0
+8761840,data class,strategy,0,0,0
+8780201,blob,strategy,0,0,0
+8780201,blob,with_size,0,0,0
+8779111,data class,strategy,0,0,1
+8763437,long method,strategy,0,0,0
+8785814,long method,strategy,0,0,0
+8779700,long method,strategy,0,0,0
+8754073,feature envy,law_of_demeter,0,,0
+8741587,data class,strategy,0,0,0
+8736543,blob,strategy,0,0,1
+8736543,blob,with_size,0,0,1
+8733390,blob,strategy,0,0,0
+8733390,blob,with_size,0,0,0
+8747487,long method,strategy,0,0,0
+8778291,feature envy,law_of_demeter,0,,0
+8739715,long method,strategy,0,0,0
+8775243,long method,strategy,0,0,0
+8785914,long method,strategy,0,0,0
+4627580,data class,strategy,0,0,0
+4634262,long method,strategy,0,0,0
+4628823,data class,strategy,0,0,1
+4634029,long method,strategy,0,0,0
+4627996,long method,strategy,0,0,0
+4640509,blob,strategy,0,0,1
+4640509,blob,with_size,0,1,1
+4671256,blob,strategy,0,0,0
+4671256,blob,with_size,0,0,0
+4686917,blob,strategy,0,0,0
+4686917,blob,with_size,0,0,0
+4687004,long method,strategy,0,0,0
+4679336,feature envy,law_of_demeter,0,,1
+4686609,blob,strategy,0,0,0
+4686609,blob,with_size,0,0,0
+4671511,data class,strategy,0,0,0
+4672583,feature envy,law_of_demeter,0,,0
+4690918,blob,strategy,0,0,1
+4690918,blob,with_size,0,1,1
+4688226,long method,strategy,0,0,0
+4691632,blob,strategy,0,0,0
+4691632,blob,with_size,0,0,0
+4689128,feature envy,law_of_demeter,1,,0
+4687786,blob,strategy,0,0,1
+4687786,blob,with_size,0,0,1
+4690765,blob,strategy,0,0,1
+4690765,blob,with_size,0,0,1
+4691358,feature envy,law_of_demeter,0,,0
+8564277,blob,strategy,0,0,0
+8564277,blob,with_size,0,0,0
+8564291,blob,strategy,0,0,1
+8564291,blob,with_size,0,1,1
+8574368,blob,strategy,0,0,0
+8574368,blob,with_size,0,0,0
+8574983,long method,strategy,0,0,0
+8574365,long method,strategy,0,0,0
+8575719,long method,strategy,0,0,0
+8574748,long method,strategy,0,0,0
+8576209,long method,strategy,0,0,0
+8574527,long method,strategy,0,0,0
+8581347,data class,strategy,0,0,0
+8579440,long method,strategy,0,0,0
+8579381,feature envy,law_of_demeter,0,,0
+8584799,data class,strategy,0,0,1
+8602083,data class,strategy,0,0,0
+8602161,long method,strategy,0,0,0
+8601987,blob,strategy,0,0,0
+8601987,blob,with_size,0,0,0
+8601907,long method,strategy,0,0,0
+8592348,long method,strategy,0,0,0
+8571818,feature envy,law_of_demeter,0,,0
+8570234,blob,strategy,0,0,0
+8570234,blob,with_size,0,0,0
+8593029,feature envy,law_of_demeter,0,,0
+8601288,feature envy,law_of_demeter,0,,0
+8560556,feature envy,law_of_demeter,0,,1
+8588757,data class,strategy,0,0,0
+8566692,long method,strategy,0,0,0
+8601637,data class,strategy,0,0,1
+8560901,data class,strategy,0,0,0
+8567234,feature envy,law_of_demeter,0,,0
+8599703,long method,strategy,0,0,0
+8598065,blob,strategy,0,0,0
+8598065,blob,with_size,0,0,0
+8601732,blob,strategy,0,0,0
+8601732,blob,with_size,0,0,0
+8561476,blob,strategy,0,0,0
+8561476,blob,with_size,0,0,0
+8574638,long method,strategy,0,0,0
+8580507,feature envy,law_of_demeter,0,,0
+8573637,long method,strategy,0,0,0
+8579511,feature envy,law_of_demeter,0,,0
+8566813,long method,strategy,0,0,0
+8600681,blob,strategy,0,0,1
+8600681,blob,with_size,0,0,1
+8575939,data class,strategy,0,0,1
+8595846,long method,strategy,0,0,0
+8564748,blob,strategy,0,0,0
+8564748,blob,with_size,0,0,0
+8572333,long method,strategy,0,0,0
+8568928,data class,strategy,0,0,0
+8575709,blob,strategy,0,0,0
+8575709,blob,with_size,0,0,0
+8559249,long method,strategy,0,0,0
+8602498,long method,strategy,0,0,0
+8582752,blob,strategy,0,0,0
+8582752,blob,with_size,0,0,0
+8585684,data class,strategy,0,0,0
+8565824,feature envy,law_of_demeter,0,,0
+4694033,blob,strategy,0,0,0
+4694033,blob,with_size,0,0,0
+4693914,long method,strategy,0,0,0
+4697495,blob,strategy,0,0,0
+4697495,blob,with_size,0,0,0
+4694769,feature envy,law_of_demeter,0,,0
+8863381,data class,strategy,0,0,0
+8876926,blob,strategy,0,0,0
+8876926,blob,with_size,0,0,0
+8894917,feature envy,law_of_demeter,0,,0
+8894479,feature envy,law_of_demeter,0,,0
+8894429,long method,strategy,0,0,0
+8894493,long method,strategy,0,0,0
+8903115,long method,strategy,0,0,0
+8902996,long method,strategy,0,0,0
+8903716,long method,strategy,0,0,0
+8904378,long method,strategy,0,0,0
+8904609,long method,strategy,0,0,0
+8904560,long method,strategy,0,0,0
+8904487,feature envy,law_of_demeter,0,,0
+8904717,long method,strategy,0,0,0
+8904678,long method,strategy,0,0,0
+8905843,long method,strategy,0,0,0
+8907524,long method,strategy,0,0,0
+8912937,blob,strategy,0,0,0
+8912937,blob,with_size,0,0,0
+8917316,blob,strategy,0,0,0
+8917316,blob,with_size,0,0,0
+8917167,feature envy,law_of_demeter,0,,0
+8923216,blob,strategy,0,0,0
+8923216,blob,with_size,0,0,0
+8922371,long method,strategy,0,1,1
+8937461,blob,strategy,0,0,1
+8937461,blob,with_size,0,0,1
+8937384,long method,strategy,0,0,0
+8952196,blob,strategy,0,0,0
+8952196,blob,with_size,0,0,0
+8962839,blob,strategy,0,0,0
+8962839,blob,with_size,0,0,0
+8962694,long method,strategy,0,0,0
+8963199,feature envy,law_of_demeter,0,,0
+8966683,data class,strategy,0,0,0
+8869079,blob,strategy,0,0,0
+8869079,blob,with_size,0,0,0
+8965373,data class,strategy,0,0,0
+8956366,long method,strategy,0,0,0
+8911786,blob,strategy,0,0,1
+8911786,blob,with_size,0,0,1
+8956394,data class,strategy,0,0,0
+8919646,data class,strategy,0,0,0
+8935070,long method,strategy,0,0,0
+8904606,blob,strategy,0,0,0
+8904606,blob,with_size,0,0,0
+8890241,feature envy,law_of_demeter,0,,0
+8917471,blob,strategy,0,0,0
+8917471,blob,with_size,0,0,0
+8963823,long method,strategy,0,0,0
+8932995,feature envy,law_of_demeter,1,,1
+8910909,blob,strategy,0,0,1
+8910909,blob,with_size,0,0,1
+8914575,feature envy,law_of_demeter,0,,0
+8866735,feature envy,law_of_demeter,0,,0
+8963673,blob,strategy,0,0,0
+8963673,blob,with_size,0,0,0
+8934300,feature envy,law_of_demeter,0,,1
+8945301,blob,strategy,0,0,0
+8945301,blob,with_size,0,0,0
+8948928,feature envy,law_of_demeter,0,,0
+8958780,blob,strategy,0,0,0
+8958780,blob,with_size,0,0,0
+8953503,long method,strategy,0,0,0
+8917324,long method,strategy,0,1,1
+8961619,long method,strategy,0,0,0
+8962194,data class,strategy,0,0,1
+8911068,blob,strategy,0,0,0
+8911068,blob,with_size,0,0,0
+8887186,blob,strategy,0,0,0
+8887186,blob,with_size,0,0,0
+8967998,long method,strategy,0,0,0
+8959710,long method,strategy,0,0,0
+8909910,long method,strategy,0,0,0
+8913163,blob,strategy,0,0,0
+8913163,blob,with_size,0,0,0
+8895014,long method,strategy,0,0,0
+8949635,feature envy,law_of_demeter,0,,0
+8937277,long method,strategy,0,0,0
+8954733,feature envy,law_of_demeter,0,,0
+8898055,long method,strategy,0,0,0
+8920121,long method,strategy,0,1,1
+8968857,blob,strategy,0,0,0
+8968857,blob,with_size,0,0,0
+8954112,blob,strategy,0,0,0
+8954112,blob,with_size,0,0,0
+8965576,long method,strategy,0,0,0
+8967424,feature envy,law_of_demeter,0,,0
+8968865,data class,strategy,0,0,1
+8877416,blob,strategy,1,1,1
+8877416,blob,with_size,1,1,1
+8908782,long method,strategy,0,0,0
+8925039,long method,strategy,0,1,1
+8934890,long method,strategy,0,0,0
+8912820,data class,strategy,1,1,1
+8902780,blob,strategy,0,0,0
+8902780,blob,with_size,0,0,0
+8934270,blob,strategy,0,0,0
+8934270,blob,with_size,0,0,0
+8895511,long method,strategy,0,0,1
+8944650,data class,strategy,0,0,0
+8928769,feature envy,law_of_demeter,0,,0
+8952223,blob,strategy,0,0,1
+8952223,blob,with_size,0,0,1
+8863382,long method,strategy,0,0,0
+8935536,long method,strategy,0,0,0
+8953833,feature envy,law_of_demeter,0,,0
+8907445,data class,strategy,0,0,0
+8951087,long method,strategy,0,0,0
+4700005,feature envy,law_of_demeter,0,,0
+4703457,blob,strategy,0,0,0
+4703457,blob,with_size,0,0,0
+4708154,blob,strategy,0,0,0
+4708154,blob,with_size,0,0,0
+4707700,blob,strategy,0,0,0
+4707700,blob,with_size,0,0,0
+4705856,long method,strategy,0,0,0
+4703627,blob,strategy,0,0,0
+4703627,blob,with_size,0,0,0
+8604577,blob,strategy,0,0,0
+8604577,blob,with_size,0,0,0
+8604234,data class,strategy,0,0,0
+8604349,long method,strategy,0,0,0
+8632348,data class,strategy,0,0,0
+8645617,data class,strategy,0,0,0
+8644476,long method,strategy,0,0,0
+8672725,data class,strategy,0,0,0
+8672429,blob,strategy,0,0,0
+8672429,blob,with_size,0,0,0
+8673459,long method,strategy,0,0,0
+8624129,data class,strategy,0,0,0
+8614637,long method,strategy,0,0,0
+8633022,blob,strategy,0,0,1
+8633022,blob,with_size,0,0,1
+8678273,long method,strategy,0,0,0
+8658418,blob,strategy,0,0,0
+8658418,blob,with_size,0,0,0
+8615362,long method,strategy,0,0,0
+8682807,data class,strategy,0,0,1
+8621159,data class,strategy,0,0,0
+8653867,blob,strategy,0,0,0
+8653867,blob,with_size,0,0,0
+8661940,data class,strategy,0,0,0
+8608593,data class,strategy,0,0,0
+8611383,blob,strategy,0,0,0
+8611383,blob,with_size,0,0,0
+8604623,data class,strategy,0,0,0
+8677594,data class,strategy,0,0,0
+8608959,blob,strategy,0,0,0
+8608959,blob,with_size,0,0,0
+8603648,blob,strategy,1,1,0
+8603648,blob,with_size,1,1,0
+8618083,blob,strategy,0,0,0
+8618083,blob,with_size,0,0,0
+8675011,long method,strategy,0,0,0
+8669663,data class,strategy,0,0,0
+8609582,data class,strategy,0,0,0
+8620569,blob,strategy,0,0,0
+8620569,blob,with_size,0,0,0
+8629693,data class,strategy,0,0,0
+8615469,feature envy,law_of_demeter,0,,0
+8660303,long method,strategy,0,0,0
+8617061,feature envy,law_of_demeter,0,,0
+8620968,blob,strategy,0,0,1
+8620968,blob,with_size,0,1,1
+8649493,blob,strategy,0,0,0
+8649493,blob,with_size,0,0,0
+8629477,data class,strategy,0,0,0
+8622582,long method,strategy,0,0,1
+8666215,feature envy,law_of_demeter,0,,1
+8618517,feature envy,law_of_demeter,0,,1
+8645264,blob,strategy,0,0,1
+8645264,blob,with_size,0,0,1
+8674484,blob,strategy,0,0,0
+8674484,blob,with_size,0,0,0
+8631904,feature envy,law_of_demeter,0,,0
+8657644,long method,strategy,0,0,0
+8625002,long method,strategy,0,0,0
+8653310,long method,strategy,0,1,1
+8674686,long method,strategy,0,0,1
+8661979,long method,strategy,0,0,0
+8655527,long method,strategy,0,0,0
+4709869,data class,strategy,0,0,0
+4713471,blob,strategy,0,0,1
+4713471,blob,with_size,0,0,1
+4716488,blob,strategy,0,0,0
+4716488,blob,with_size,0,0,0
+4716573,long method,strategy,0,0,0
+4714964,blob,strategy,0,0,1
+4714964,blob,with_size,0,0,1
+4714464,blob,strategy,0,0,0
+4714464,blob,with_size,0,0,0
+4720056,long method,strategy,0,0,0
+4721410,long method,strategy,0,0,1
+7748712,long method,strategy,0,0,0
+7747391,long method,strategy,0,0,0
+7747898,long method,strategy,0,0,0
+7748459,blob,strategy,0,0,0
+7748459,blob,with_size,0,0,0
+7756213,data class,strategy,0,0,0
+7755095,feature envy,law_of_demeter,0,,0
+7747098,blob,strategy,0,0,1
+7747098,blob,with_size,0,1,1
+7747392,feature envy,law_of_demeter,0,,0
+7743333,long method,strategy,0,0,0
+7754810,blob,strategy,0,0,1
+7754810,blob,with_size,0,1,1
+7736145,blob,strategy,0,0,0
+7736145,blob,with_size,0,1,0
+7732540,long method,strategy,0,0,0
+7755926,blob,strategy,0,0,0
+7755926,blob,with_size,0,0,0
+7738164,blob,strategy,0,0,0
+7738164,blob,with_size,0,0,0
+7749788,long method,strategy,0,1,0
+7751163,data class,strategy,0,0,0
+7745170,long method,strategy,0,0,0
+7742878,data class,strategy,0,0,0
+7730792,feature envy,law_of_demeter,0,,1
+7754600,feature envy,law_of_demeter,0,,0
+7757616,blob,strategy,0,0,0
+7757616,blob,with_size,0,0,0
+7757709,data class,strategy,0,0,1
+7759750,long method,strategy,0,0,0
+7760290,long method,strategy,0,0,0
+7777986,blob,strategy,0,0,0
+7777986,blob,with_size,0,0,0
+7763705,data class,strategy,0,0,0
+7767021,long method,strategy,0,0,0
+7777067,long method,strategy,0,0,1
+7779168,data class,strategy,0,0,0
+7763232,long method,strategy,0,0,0
+7761185,long method,strategy,0,0,0
+7762191,blob,strategy,0,0,1
+7762191,blob,with_size,0,0,1
+7775896,long method,strategy,0,0,0
+7770031,long method,strategy,0,0,0
+7759298,long method,strategy,0,0,0
+7763261,data class,strategy,0,0,0
+7772686,data class,strategy,0,0,0
+7758018,blob,strategy,0,0,0
+7758018,blob,with_size,0,0,0
+7769131,long method,strategy,0,1,1
+7762033,feature envy,law_of_demeter,0,,1
+7777749,data class,strategy,0,0,0
+7764177,blob,strategy,0,0,0
+7764177,blob,with_size,0,0,0
+7757865,long method,strategy,0,0,0
+7733996,long method,strategy,0,0,0
+7746730,long method,strategy,0,0,0
+7746473,long method,strategy,0,0,0
+7743791,long method,strategy,0,0,0
+7739565,long method,strategy,0,0,0
+4727936,blob,strategy,0,0,1
+4727936,blob,with_size,0,0,1
+4726345,blob,strategy,0,0,0
+4726345,blob,with_size,0,0,0
+4762838,blob,strategy,0,0,0
+4762838,blob,with_size,0,0,0
+4747471,blob,strategy,0,0,0
+4747471,blob,with_size,0,0,0
+4764437,blob,strategy,0,0,0
+4764437,blob,with_size,0,0,0
+4752038,blob,strategy,0,0,1
+4752038,blob,with_size,0,0,1
+4756088,long method,strategy,0,0,0
+4753103,long method,strategy,0,0,0
+4757087,data class,strategy,0,0,0
+4755469,feature envy,law_of_demeter,0,,0
+4758737,long method,strategy,0,0,0
+4747481,blob,strategy,0,0,0
+4747481,blob,with_size,0,0,0
+4750918,blob,strategy,0,0,0
+4750918,blob,with_size,0,0,0
+4736526,blob,strategy,0,0,0
+4736526,blob,with_size,0,0,0
+4730489,blob,strategy,0,0,0
+4730489,blob,with_size,0,0,0
+4734680,blob,strategy,0,0,0
+4734680,blob,with_size,0,0,0
+4731830,blob,strategy,0,0,0
+4731830,blob,with_size,0,0,0
+4728322,blob,strategy,0,0,0
+4728322,blob,with_size,0,0,0
+4737348,long method,strategy,0,0,0
+4737430,blob,strategy,0,0,1
+4737430,blob,with_size,0,0,1
+4737119,long method,strategy,0,0,0
+4735672,long method,strategy,0,0,0
+4739090,long method,strategy,0,0,0
+4737230,long method,strategy,0,0,0
+4734250,feature envy,law_of_demeter,0,,0
+4734605,long method,strategy,0,0,1
+4743999,long method,strategy,0,0,0
+4745033,feature envy,law_of_demeter,0,,0
+4745312,data class,strategy,0,0,1
+4745800,long method,strategy,0,0,0
+4747524,blob,strategy,0,0,0
+4747524,blob,with_size,0,0,0
+4900050,long method,strategy,0,0,0
+4882061,blob,strategy,0,0,0
+4882061,blob,with_size,0,0,0
+4911266,long method,strategy,0,0,0
+4897642,long method,strategy,0,0,0
+4875906,feature envy,law_of_demeter,0,,0
+4858143,blob,strategy,0,0,0
+4858143,blob,with_size,0,0,0
+4865733,blob,strategy,0,0,0
+4865733,blob,with_size,0,0,0
+4874140,feature envy,law_of_demeter,0,,1
+4864530,data class,strategy,0,0,0
+4865706,blob,strategy,0,0,0
+4865706,blob,with_size,0,0,0
+4757534,data class,strategy,0,0,0
+4768247,blob,strategy,0,0,0
+4768247,blob,with_size,0,0,0
+4767234,feature envy,law_of_demeter,0,,0
+4783602,data class,strategy,0,0,0
+4773397,long method,strategy,0,0,0
+4783162,long method,strategy,0,0,0
+4774610,data class,strategy,0,0,0
+4780381,blob,strategy,0,0,0
+4780381,blob,with_size,0,0,0
+4780738,blob,strategy,1,1,0
+4780738,blob,with_size,1,1,0
+4772031,long method,strategy,0,0,0
+4771698,blob,strategy,0,0,0
+4771698,blob,with_size,0,0,0
+4784081,long method,strategy,0,0,1
+4782948,long method,strategy,0,0,1
+4786049,long method,strategy,0,0,0
+4788662,feature envy,law_of_demeter,0,,1
+4778425,long method,strategy,0,0,0
+4797136,data class,strategy,0,0,0
+4794391,blob,strategy,0,0,0
+4794391,blob,with_size,0,0,0
+4794099,blob,strategy,0,0,0
+4794099,blob,with_size,0,0,0
+4794476,blob,strategy,0,0,0
+4794476,blob,with_size,0,0,0
+4794965,long method,strategy,1,1,1
+4790338,feature envy,law_of_demeter,0,,0
+4792710,blob,strategy,0,0,0
+4792710,blob,with_size,0,0,0
+4808674,blob,strategy,0,0,0
+4808674,blob,with_size,0,0,0
+4800822,blob,strategy,0,0,0
+4800822,blob,with_size,0,0,0
+4801607,blob,strategy,0,0,1
+4801607,blob,with_size,0,0,1
+4809381,long method,strategy,0,1,1
+4798652,feature envy,law_of_demeter,0,,0
+4806304,feature envy,law_of_demeter,0,,0
+4804222,blob,strategy,0,0,1
+4804222,blob,with_size,0,0,1
+4801902,blob,strategy,0,0,0
+4801902,blob,with_size,0,0,0
+4817934,data class,strategy,0,0,0
+4814956,blob,strategy,0,0,1
+4814956,blob,with_size,0,0,1
+4821096,long method,strategy,0,0,0
+4823396,blob,strategy,0,0,0
+4823396,blob,with_size,0,0,0
+4817472,feature envy,law_of_demeter,0,,0
+4815345,blob,strategy,1,0,1
+4815345,blob,with_size,1,1,1
+4816749,long method,strategy,0,0,0
+4816540,blob,strategy,0,0,0
+4816540,blob,with_size,0,0,0
+4827311,blob,strategy,0,0,0
+4827311,blob,with_size,0,0,0
+4841390,blob,strategy,0,0,0
+4841390,blob,with_size,0,0,0
+4837876,long method,strategy,0,0,0
+4839287,blob,strategy,0,0,0
+4839287,blob,with_size,0,0,0
+4830091,feature envy,law_of_demeter,0,,0
+4829954,blob,strategy,0,0,0
+4829954,blob,with_size,0,0,0
+4834610,blob,strategy,0,0,0
+4834610,blob,with_size,0,0,0
+4838704,data class,strategy,0,0,0
+4843205,long method,strategy,0,0,0
+4832018,long method,strategy,0,0,0
+4827886,blob,strategy,0,0,0
+4827886,blob,with_size,0,0,0
+4828331,data class,strategy,0,0,0
+4826023,feature envy,law_of_demeter,0,,0
+4842851,blob,strategy,0,0,0
+4842851,blob,with_size,0,0,0
+4827314,data class,strategy,0,0,0
+4910241,long method,strategy,0,0,0
+4852058,long method,strategy,0,0,0
+4909332,long method,strategy,0,0,0
+4871882,blob,strategy,0,0,0
+4871882,blob,with_size,0,0,0
+4896610,long method,strategy,0,0,0
+4901851,feature envy,law_of_demeter,0,,0
+4857404,blob,strategy,0,0,0
+4857404,blob,with_size,0,0,0
+4909319,long method,strategy,0,1,0
+4864235,blob,strategy,0,0,0
+4864235,blob,with_size,0,0,0
+4866077,long method,strategy,0,0,0
+4901849,long method,strategy,0,0,0
+4913801,blob,strategy,0,0,1
+4913801,blob,with_size,0,0,1
+4875170,blob,strategy,0,0,1
+4875170,blob,with_size,0,0,1
+4853285,data class,strategy,0,0,0
+4848736,blob,strategy,1,0,0
+4848736,blob,with_size,1,1,0
+4846258,blob,strategy,0,0,0
+4846258,blob,with_size,0,0,0
+4847579,blob,strategy,0,0,0
+4847579,blob,with_size,0,0,0
+4869703,data class,strategy,0,0,0
+4887547,long method,strategy,0,0,0
+4856596,long method,strategy,0,0,0
+4847006,feature envy,law_of_demeter,0,,0
+4906479,feature envy,law_of_demeter,0,,0
+4865255,feature envy,law_of_demeter,0,,0
+4886061,feature envy,law_of_demeter,0,,0
+4901677,feature envy,law_of_demeter,0,,0
+4906096,long method,strategy,0,0,0
+4850810,long method,strategy,0,0,0
+4844449,blob,strategy,0,0,0
+4844449,blob,with_size,0,0,0
+4849361,feature envy,law_of_demeter,0,,0
+4849963,blob,strategy,0,0,0
+4849963,blob,with_size,0,0,0
+8295955,blob,strategy,0,0,0
+8295955,blob,with_size,0,0,0
+8273753,blob,strategy,0,0,0
+8273753,blob,with_size,0,0,0
+8284419,blob,strategy,0,0,0
+8284419,blob,with_size,0,0,0
+8286887,long method,strategy,0,0,0
+8283403,data class,strategy,0,0,0
+8281103,long method,strategy,0,0,0
+8276759,feature envy,law_of_demeter,0,,0
+8274779,data class,strategy,0,0,0
+8278616,blob,strategy,0,0,1
+8278616,blob,with_size,0,0,1
+8295032,blob,strategy,0,0,0
+8295032,blob,with_size,0,0,0
+8284183,blob,strategy,0,0,0
+8284183,blob,with_size,0,0,0
+8285514,blob,strategy,1,0,1
+8285514,blob,with_size,1,1,1
+8295936,blob,strategy,0,0,0
+8295936,blob,with_size,0,0,0
+8293792,long method,strategy,0,0,1
+8295253,long method,strategy,0,0,0
+8292656,long method,strategy,0,0,0
+8279744,blob,strategy,0,0,1
+8279744,blob,with_size,0,0,1
+8281849,long method,strategy,0,0,0
+8286898,data class,strategy,0,0,0
+8290693,blob,strategy,0,0,1
+8290693,blob,with_size,0,0,1
+8295012,blob,strategy,0,0,0
+8295012,blob,with_size,0,0,0
+8278588,data class,strategy,0,0,0
+8292673,blob,strategy,0,0,0
+8292673,blob,with_size,0,0,0
+8282686,blob,strategy,0,0,0
+8282686,blob,with_size,0,0,0
+5041287,feature envy,law_of_demeter,0,,0
+5033471,blob,strategy,1,1,1
+5033471,blob,with_size,1,1,1
+5041383,data class,strategy,0,0,0
+5055368,blob,strategy,0,0,1
+5055368,blob,with_size,0,0,1
+5049924,blob,strategy,0,0,1
+5049924,blob,with_size,0,1,1
+5062548,blob,strategy,0,0,0
+5062548,blob,with_size,0,0,0
+5075026,feature envy,law_of_demeter,0,,0
+5075417,data class,strategy,0,0,0
+5045944,long method,strategy,0,0,0
+5042781,blob,strategy,0,0,0
+5042781,blob,with_size,0,0,0
+5037205,blob,strategy,0,0,0
+5037205,blob,with_size,0,0,0
+5040675,long method,strategy,0,0,0
+5052657,data class,strategy,0,0,0
+5073287,data class,strategy,0,0,0
+5040765,data class,strategy,0,0,1
+5048033,long method,strategy,0,0,0
+5068417,data class,strategy,0,0,0
+4924493,long method,strategy,0,0,0
+4918125,long method,strategy,0,0,0
+4919453,long method,strategy,0,0,0
+4927730,long method,strategy,0,0,0
+4928696,blob,strategy,0,0,0
+4928696,blob,with_size,0,0,0
+4925720,blob,strategy,0,0,0
+4925720,blob,with_size,0,0,0
+4928800,data class,strategy,0,0,0
+4916648,data class,strategy,0,0,0
+4917464,long method,strategy,0,0,0
+4919602,long method,strategy,0,1,1
+4923223,data class,strategy,0,0,0
+4930104,long method,strategy,0,0,0
+4933194,feature envy,law_of_demeter,0,,0
+4933953,long method,strategy,0,1,1
+4932611,long method,strategy,0,0,0
+4933806,data class,strategy,0,0,0
+4932887,long method,strategy,0,0,1
+4972127,data class,strategy,0,0,0
+4960036,long method,strategy,0,0,0
+4965107,blob,strategy,0,0,0
+4965107,blob,with_size,0,0,0
+4977189,data class,strategy,0,0,0
+4967591,blob,strategy,0,0,0
+4967591,blob,with_size,0,0,0
+4956199,blob,strategy,0,0,0
+4956199,blob,with_size,0,0,0
+4950142,long method,strategy,0,0,0
+4982268,data class,strategy,0,0,0
+4944991,long method,strategy,0,0,0
+4969461,feature envy,law_of_demeter,0,,0
+4977435,data class,strategy,0,0,0
+4975742,long method,strategy,0,0,0
+4980296,long method,strategy,0,0,0
+4975591,blob,strategy,0,0,1
+4975591,blob,with_size,0,0,1
+4960946,long method,strategy,0,0,0
+4969128,blob,strategy,0,0,0
+4969128,blob,with_size,0,0,0
+4960276,data class,strategy,0,0,0
+4995171,long method,strategy,0,1,1
+5020389,long method,strategy,0,0,0
+5016382,data class,strategy,0,0,0
+5019534,data class,strategy,0,0,0
+5015205,blob,strategy,0,0,0
+5015205,blob,with_size,0,0,0
+5002069,data class,strategy,0,0,0
+5005330,feature envy,law_of_demeter,0,,0
+5004349,data class,strategy,0,0,0
+5004854,feature envy,law_of_demeter,0,,0
+5164165,blob,strategy,0,0,0
+5164165,blob,with_size,0,0,0
+5173084,feature envy,law_of_demeter,0,,0
+5162987,data class,strategy,0,0,0
+5182713,blob,strategy,1,0,1
+5182713,blob,with_size,1,0,1
+5161069,data class,strategy,0,0,0
+5182985,feature envy,law_of_demeter,0,,0
+5172876,blob,strategy,0,0,0
+5172876,blob,with_size,0,0,0
+5177811,feature envy,law_of_demeter,0,,0
+5161273,long method,strategy,0,0,0
+5180625,blob,strategy,0,0,1
+5180625,blob,with_size,0,0,1
+5014423,feature envy,law_of_demeter,0,,0
+5023689,long method,strategy,0,1,1
+5018622,data class,strategy,0,0,0
+5025413,feature envy,law_of_demeter,0,,0
+5025102,blob,strategy,0,0,0
+5025102,blob,with_size,0,0,0
+5026271,blob,strategy,0,0,0
+5026271,blob,with_size,0,0,0
+5027180,blob,strategy,1,1,0
+5027180,blob,with_size,1,1,0
+5025893,long method,strategy,0,0,0
+5028269,data class,strategy,0,0,0
+5028034,blob,strategy,0,0,0
+5028034,blob,with_size,0,0,0
+5030132,data class,strategy,0,0,0
+5057041,feature envy,law_of_demeter,0,,0
+5052296,blob,strategy,0,0,0
+5052296,blob,with_size,0,0,0
+5070999,long method,strategy,0,0,0
+5058759,blob,strategy,0,0,0
+5058759,blob,with_size,0,0,0
+5066014,long method,strategy,0,0,0
+5072938,data class,strategy,0,0,0
+5091177,data class,strategy,0,0,0
+5088331,blob,strategy,0,0,0
+5088331,blob,with_size,0,0,0
+5091269,feature envy,law_of_demeter,0,,0
+5093717,feature envy,law_of_demeter,0,,0
+5088158,data class,strategy,0,0,0
+5114470,blob,strategy,0,0,0
+5114470,blob,with_size,0,0,0
+5124033,long method,strategy,0,0,0
+5115838,data class,strategy,0,0,1
+5111196,feature envy,law_of_demeter,0,,0
+5123754,long method,strategy,0,0,0
+5117164,long method,strategy,0,0,1
+5110869,feature envy,law_of_demeter,0,,0
+5111193,blob,strategy,0,0,0
+5111193,blob,with_size,0,0,0
+5115119,blob,strategy,0,0,0
+5115119,blob,with_size,0,0,0
+5106994,long method,strategy,0,0,0
+5107955,long method,strategy,0,0,0
+5102890,feature envy,law_of_demeter,0,,0
+5097474,data class,strategy,0,0,1
+5102180,feature envy,law_of_demeter,0,,0
+5107511,blob,strategy,0,0,0
+5107511,blob,with_size,0,0,0
+5097365,blob,strategy,0,0,0
+5097365,blob,with_size,0,0,0
+5098876,data class,strategy,0,0,0
+5111458,blob,strategy,1,0,1
+5111458,blob,with_size,1,1,1
+5112767,blob,strategy,0,0,0
+5112767,blob,with_size,0,0,0
+5128334,data class,strategy,0,0,1
+5129580,blob,strategy,0,0,0
+5129580,blob,with_size,0,0,0
+5127922,long method,strategy,0,0,0
+5130121,long method,strategy,0,0,0
+5141485,feature envy,law_of_demeter,0,,0
+5141876,blob,strategy,1,0,1
+5141876,blob,with_size,1,0,1
+5138043,long method,strategy,0,1,0
+5141751,feature envy,law_of_demeter,0,,0
+5133545,data class,strategy,0,0,0
+5136002,long method,strategy,0,0,0
+5146683,data class,strategy,0,0,1
+5145744,long method,strategy,0,0,0
+5142688,blob,strategy,0,0,0
+5142688,blob,with_size,0,0,0
+5148417,blob,strategy,0,0,1
+5148417,blob,with_size,0,0,1
+5150385,feature envy,law_of_demeter,0,,0
+5148408,blob,strategy,0,0,0
+5148408,blob,with_size,0,0,0
+5158152,blob,strategy,0,0,0
+5158152,blob,with_size,0,0,0
+5171785,data class,strategy,0,0,0
+5168016,blob,strategy,0,0,0
+5168016,blob,with_size,0,1,0
+5153171,blob,strategy,0,0,0
+5153171,blob,with_size,0,0,0
+5164745,long method,strategy,0,0,0
+5180986,long method,strategy,0,0,0
+5176784,feature envy,law_of_demeter,0,,0
+5175864,blob,strategy,0,0,0
+5175864,blob,with_size,0,0,0
+5186444,data class,strategy,0,0,1
+5184123,long method,strategy,0,0,0
+5182772,data class,strategy,0,0,0
+5186909,long method,strategy,0,0,0
+5200336,long method,strategy,0,0,0
+5190920,blob,strategy,0,0,0
+5190920,blob,with_size,0,0,0
+5193317,data class,strategy,0,0,0
+5192134,data class,strategy,0,0,0
+5190876,blob,strategy,0,0,0
+5190876,blob,with_size,0,0,0
+5200864,blob,strategy,0,0,1
+5200864,blob,with_size,0,0,1
+5193259,blob,strategy,0,0,0
+5193259,blob,with_size,0,0,0
+5183069,blob,strategy,0,0,1
+5183069,blob,with_size,0,0,1
+5203194,data class,strategy,0,0,0
+5205041,data class,strategy,0,0,0
+5206791,long method,strategy,0,0,0
+5202532,feature envy,law_of_demeter,0,,0
+5207888,long method,strategy,0,0,0
+5210111,long method,strategy,0,0,0
+5343744,blob,strategy,0,0,0
+5343744,blob,with_size,0,0,0
+5331456,feature envy,law_of_demeter,0,,0
+5333703,blob,strategy,0,0,1
+5333703,blob,with_size,0,0,1
+5326926,feature envy,law_of_demeter,0,,1
+5337101,blob,strategy,0,0,0
+5337101,blob,with_size,0,0,0
+5363451,data class,strategy,0,0,0
+5356733,data class,strategy,0,0,0
+5328591,long method,strategy,0,0,0
+5333354,long method,strategy,0,0,0
+5338390,blob,strategy,0,0,0
+5338390,blob,with_size,0,0,0
+5375248,feature envy,law_of_demeter,0,,0
+5340257,feature envy,law_of_demeter,0,,1
+5330785,blob,strategy,0,0,1
+5330785,blob,with_size,0,0,1
+5355489,long method,strategy,0,1,1
+5354426,data class,strategy,0,0,1
+5327459,data class,strategy,0,0,0
+5339993,blob,strategy,0,0,1
+5339993,blob,with_size,0,0,1
+5338990,feature envy,law_of_demeter,0,,1
+5384416,long method,strategy,0,0,0
+5339121,long method,strategy,0,0,0
+5333655,blob,strategy,0,0,0
+5333655,blob,with_size,0,0,0
+5371806,blob,strategy,0,0,0
+5371806,blob,with_size,0,0,0
+5328561,feature envy,law_of_demeter,0,,0
+5327402,data class,strategy,0,0,1
+5343588,feature envy,law_of_demeter,0,,1
+5354961,long method,strategy,0,0,0
+5328888,long method,strategy,0,0,1
+5380933,blob,strategy,0,0,1
+5380933,blob,with_size,0,0,1
+5214839,data class,strategy,0,0,0
+5212058,long method,strategy,0,0,0
+5217747,blob,strategy,0,0,0
+5217747,blob,with_size,0,0,0
+5218642,data class,strategy,0,0,0
+5220844,feature envy,law_of_demeter,0,,0
+5222671,blob,strategy,0,0,1
+5222671,blob,with_size,0,0,1
+5220265,blob,strategy,0,0,0
+5220265,blob,with_size,0,0,0
+5223561,data class,strategy,0,0,0
+8660235,data class,strategy,0,0,0
+8662937,long method,strategy,0,0,1
+8660273,long method,strategy,0,1,1
+8636574,feature envy,law_of_demeter,0,,0
+8636644,long method,strategy,0,1,1
+8650167,long method,strategy,0,0,0
+8658785,data class,strategy,0,0,0
+8659626,feature envy,law_of_demeter,0,,0
+8661442,data class,strategy,0,0,0
+8691119,data class,strategy,0,0,0
+8690430,long method,strategy,0,0,0
+8694129,blob,strategy,0,0,1
+8694129,blob,with_size,0,0,1
+8695390,blob,strategy,0,0,0
+8695390,blob,with_size,0,1,0
+8690136,blob,strategy,0,0,1
+8690136,blob,with_size,0,0,1
+8697369,long method,strategy,0,0,0
+8698235,blob,strategy,0,0,0
+8698235,blob,with_size,0,0,0
+8696357,long method,strategy,0,0,0
+8684961,long method,strategy,0,0,0
+8685299,long method,strategy,0,1,1
+5226222,long method,strategy,0,0,1
+5237277,feature envy,law_of_demeter,0,,0
+5245618,blob,strategy,0,0,0
+5245618,blob,with_size,0,0,0
+5243521,feature envy,law_of_demeter,0,,1
+5241294,feature envy,law_of_demeter,0,,0
+5246779,blob,strategy,0,0,0
+5246779,blob,with_size,0,0,0
+5241906,data class,strategy,0,0,0
+5232497,long method,strategy,0,0,1
+5242909,feature envy,law_of_demeter,0,,0
+5241829,long method,strategy,0,0,0
+5235274,feature envy,law_of_demeter,0,,0
+5235970,feature envy,law_of_demeter,0,,0
+5233290,feature envy,law_of_demeter,0,,0
+5231896,blob,strategy,0,0,0
+5231896,blob,with_size,0,0,0
+5255988,blob,strategy,1,1,1
+5255988,blob,with_size,1,1,1
+5252079,blob,strategy,0,0,0
+5252079,blob,with_size,0,0,0
+5246871,blob,strategy,0,0,0
+5246871,blob,with_size,0,0,0
+5250124,long method,strategy,0,0,1
+5257764,blob,strategy,0,0,0
+5257764,blob,with_size,0,0,0
+5256995,blob,strategy,0,0,0
+5256995,blob,with_size,0,0,0
+5248838,data class,strategy,0,0,0
+5247450,data class,strategy,0,0,1
+5393638,feature envy,law_of_demeter,0,,0
+5412639,long method,strategy,0,0,0
+5392679,data class,strategy,0,0,0
+5345695,data class,strategy,0,0,0
+5414837,feature envy,law_of_demeter,0,,0
+5412570,blob,strategy,0,0,0
+5412570,blob,with_size,0,0,0
+5396847,feature envy,law_of_demeter,0,,0
+5359797,data class,strategy,0,0,1
+5406665,blob,strategy,0,0,0
+5406665,blob,with_size,0,0,0
+5389735,feature envy,law_of_demeter,0,,0
+5361443,feature envy,law_of_demeter,1,,0
+5409414,feature envy,law_of_demeter,0,,0
+5414612,blob,strategy,0,0,1
+5414612,blob,with_size,0,0,1
+5353485,long method,strategy,0,0,0
+5354848,blob,strategy,0,0,1
+5354848,blob,with_size,0,0,1
+5368964,blob,strategy,0,0,1
+5368964,blob,with_size,0,0,1
+5392183,blob,strategy,0,0,1
+5392183,blob,with_size,0,0,1
+5417605,long method,strategy,0,0,0
+5358686,long method,strategy,0,0,0
+5275875,long method,strategy,0,0,0
+5308925,blob,strategy,0,0,0
+5308925,blob,with_size,0,0,0
+5305545,long method,strategy,0,0,0
+5305226,data class,strategy,0,0,0
+5311043,long method,strategy,0,0,0
+5310114,long method,strategy,1,1,1
+5283018,feature envy,law_of_demeter,1,,0
+5278260,long method,strategy,0,1,1
+5302732,feature envy,law_of_demeter,0,,0
+5303636,long method,strategy,0,0,0
+5273938,blob,strategy,0,0,0
+5273938,blob,with_size,0,0,0
+5262454,long method,strategy,0,0,0
+5264883,blob,strategy,0,0,1
+5264883,blob,with_size,0,0,1
+5266377,blob,strategy,0,0,0
+5266377,blob,with_size,0,0,0
+5264519,blob,strategy,1,0,0
+5264519,blob,with_size,1,0,0
+5271942,blob,strategy,0,0,0
+5271942,blob,with_size,0,0,0
+5269525,blob,strategy,0,0,0
+5269525,blob,with_size,0,0,0
+5270720,blob,strategy,0,0,0
+5270720,blob,with_size,0,0,0
+5278361,data class,strategy,0,0,1
+5279258,data class,strategy,0,0,0
+5280072,long method,strategy,0,0,0
+5281568,blob,strategy,0,0,1
+5281568,blob,with_size,0,0,1
+5297372,long method,strategy,0,0,0
+5299892,data class,strategy,1,0,0
+5294252,long method,strategy,0,0,0
+5297721,long method,strategy,0,0,0
+5321469,long method,strategy,0,0,0
+5319099,data class,strategy,0,0,0
+5323752,blob,strategy,0,0,0
+5323752,blob,with_size,0,0,0
+5319003,long method,strategy,0,0,0
+5322883,blob,strategy,0,0,1
+5322883,blob,with_size,0,0,1
+5314620,feature envy,law_of_demeter,0,,0
+5317907,blob,strategy,0,0,0
+5317907,blob,with_size,0,0,0
+5314955,long method,strategy,0,0,0
+5414004,long method,strategy,0,0,0
+5421253,blob,strategy,0,0,0
+5421253,blob,with_size,0,0,0
+5388415,blob,strategy,0,0,1
+5388415,blob,with_size,0,0,1
+5394068,blob,strategy,0,0,1
+5394068,blob,with_size,0,0,1
+5416350,long method,strategy,0,1,1
+5418030,long method,strategy,0,0,0
+5425598,blob,strategy,0,0,0
+5425598,blob,with_size,0,0,0
+5437592,long method,strategy,0,0,0
+5423009,feature envy,law_of_demeter,0,,1
+5437215,feature envy,law_of_demeter,0,,0
+5420605,long method,strategy,0,0,0
+5428702,feature envy,law_of_demeter,0,,0
+5414165,blob,strategy,0,0,0
+5414165,blob,with_size,0,0,0
+5394056,long method,strategy,0,1,0
+5419311,long method,strategy,0,0,0
+5421299,blob,strategy,0,0,0
+5421299,blob,with_size,0,0,0
+5403342,blob,strategy,0,0,0
+5403342,blob,with_size,0,1,0
+5370715,blob,strategy,0,0,1
+5370715,blob,with_size,0,0,1
+5423428,long method,strategy,0,0,0
+5402098,long method,strategy,0,1,0
+5374635,long method,strategy,0,0,0
+5399317,data class,strategy,0,0,0
+5374719,data class,strategy,0,0,0
+5389537,long method,strategy,0,0,0
+5403624,long method,strategy,0,0,1
+5384197,long method,strategy,0,0,1
+5366640,long method,strategy,0,1,1
+5395652,long method,strategy,0,0,0
+5440125,feature envy,law_of_demeter,0,,0
+5427653,blob,strategy,0,0,0
+5427653,blob,with_size,0,0,0
+5439112,data class,strategy,0,0,0
+5426714,feature envy,law_of_demeter,0,,0
+5423795,blob,strategy,0,0,0
+5423795,blob,with_size,0,0,0
+5427627,data class,strategy,0,0,0
+5437491,data class,strategy,0,0,0
+5434262,data class,strategy,0,0,0
+5422127,long method,strategy,0,1,1
+5424715,feature envy,law_of_demeter,0,,0
+5598817,data class,strategy,0,0,0
+5585822,long method,strategy,0,0,0
+5562874,data class,strategy,0,0,0
+5543924,data class,strategy,0,0,0
+5585616,data class,strategy,0,0,0
+5549285,blob,strategy,0,0,0
+5549285,blob,with_size,0,0,0
+5603925,data class,strategy,0,1,0
+5602164,long method,strategy,0,1,1
+5591314,long method,strategy,0,0,0
+5608439,long method,strategy,0,0,0
+5537428,blob,strategy,0,0,0
+5537428,blob,with_size,0,0,0
+5593588,blob,strategy,0,0,0
+5593588,blob,with_size,0,0,0
+5562678,data class,strategy,0,0,0
+5593437,long method,strategy,0,1,1
+5573449,long method,strategy,1,1,1
+5604954,long method,strategy,0,0,0
+5589935,data class,strategy,0,0,0
+5589404,data class,strategy,0,0,1
+5580284,blob,strategy,0,0,1
+5580284,blob,with_size,0,0,1
+5558410,blob,strategy,0,0,0
+5558410,blob,with_size,0,0,0
+5585565,feature envy,law_of_demeter,0,,0
+5586136,blob,strategy,0,0,0
+5586136,blob,with_size,0,0,0
+5593201,blob,strategy,0,0,0
+5593201,blob,with_size,0,0,0
+5554251,blob,strategy,1,1,0
+5554251,blob,with_size,1,1,0
+5450135,long method,strategy,0,0,0
+5456180,long method,strategy,0,0,0
+5450516,blob,strategy,0,0,0
+5450516,blob,with_size,0,0,0
+5444150,long method,strategy,0,0,0
+5447313,blob,strategy,0,0,1
+5447313,blob,with_size,0,0,1
+5441269,blob,strategy,0,0,0
+5441269,blob,with_size,0,0,0
+5441225,data class,strategy,0,0,0
+5457134,blob,strategy,0,0,0
+5457134,blob,with_size,0,0,0
+5479893,blob,strategy,0,0,0
+5479893,blob,with_size,0,0,0
+5473710,blob,strategy,0,0,1
+5473710,blob,with_size,0,0,1
+5473580,feature envy,law_of_demeter,0,,0
+5470089,long method,strategy,0,1,1
+5487652,long method,strategy,0,0,0
+5470714,long method,strategy,0,0,0
+5491608,data class,strategy,1,0,0
+5490526,long method,strategy,0,0,0
+5470060,blob,strategy,1,0,1
+5470060,blob,with_size,1,1,1
+5475426,data class,strategy,0,0,0
+5480114,feature envy,law_of_demeter,0,,0
+5495116,data class,strategy,0,0,1
+5488746,feature envy,law_of_demeter,0,,0
+5497076,long method,strategy,0,1,1
+5476379,feature envy,law_of_demeter,0,,0
+5474154,blob,strategy,0,0,0
+5474154,blob,with_size,0,0,0
+5476959,feature envy,law_of_demeter,0,,0
+5478880,long method,strategy,0,0,0
+5492178,long method,strategy,0,0,1
+5467722,blob,strategy,0,0,0
+5467722,blob,with_size,0,0,0
+5469798,feature envy,law_of_demeter,0,,1
+5464749,feature envy,law_of_demeter,0,,0
+5464286,data class,strategy,0,0,0
+5485720,feature envy,law_of_demeter,0,,0
+5497852,long method,strategy,0,0,0
+5497900,feature envy,law_of_demeter,0,,0
+5514575,data class,strategy,1,0,0
+5517044,blob,strategy,1,1,1
+5517044,blob,with_size,1,1,1
+5510584,feature envy,law_of_demeter,0,,0
+5520288,blob,strategy,0,0,0
+5520288,blob,with_size,0,0,0
+5520984,feature envy,law_of_demeter,0,,0
+5525645,feature envy,law_of_demeter,0,,0
+5524586,data class,strategy,0,0,0
+5501417,blob,strategy,0,0,0
+5501417,blob,with_size,0,0,0
+5515133,blob,strategy,0,0,0
+5515133,blob,with_size,0,0,0
+5516822,feature envy,law_of_demeter,0,,0
+5515917,data class,strategy,0,0,0
+5507211,blob,strategy,0,0,0
+5507211,blob,with_size,0,0,0
+5516476,blob,strategy,1,1,0
+5516476,blob,with_size,1,1,0
+5498814,blob,strategy,0,0,1
+5498814,blob,with_size,0,0,1
+5499685,blob,strategy,0,0,0
+5499685,blob,with_size,0,0,0
+5498738,long method,strategy,0,0,0
+5499603,long method,strategy,0,1,1
+5515839,data class,strategy,1,0,1
+5515872,long method,strategy,0,0,0
+5503308,long method,strategy,0,0,1
+5515226,data class,strategy,0,0,1
+5508642,long method,strategy,0,0,0
+5519299,blob,strategy,0,0,1
+5519299,blob,with_size,0,0,1
+5506218,long method,strategy,0,0,0
+5609190,data class,strategy,1,1,1
+5609932,blob,strategy,0,0,0
+5609932,blob,with_size,0,0,0
+5622695,long method,strategy,0,0,0
+5640540,blob,strategy,0,0,0
+5640540,blob,with_size,0,0,0
+5601781,long method,strategy,0,0,0
+5627187,blob,strategy,0,0,1
+5627187,blob,with_size,0,0,1
+5598779,blob,strategy,0,0,0
+5598779,blob,with_size,0,0,0
+5638052,long method,strategy,0,0,0
+5630626,data class,strategy,0,0,0
+5625637,long method,strategy,0,0,0
+5625012,long method,strategy,0,0,1
+5621210,long method,strategy,0,0,0
+5605416,long method,strategy,0,0,0
+5605835,data class,strategy,1,1,1
+5596503,data class,strategy,0,0,1
+5626154,long method,strategy,0,0,0
+5596509,long method,strategy,0,0,0
+5596973,long method,strategy,0,0,0
+5634327,long method,strategy,0,0,0
+5630298,blob,strategy,0,0,0
+5630298,blob,with_size,0,0,0
+5533033,blob,strategy,0,0,0
+5533033,blob,with_size,0,0,0
+5534322,feature envy,law_of_demeter,0,,0
+5536525,blob,strategy,0,0,0
+5536525,blob,with_size,0,0,0
+5535647,feature envy,law_of_demeter,0,,0
+5527964,data class,strategy,0,0,0
+5529562,blob,strategy,0,0,0
+5529562,blob,with_size,0,0,0
+5547100,blob,strategy,0,0,0
+5547100,blob,with_size,0,0,0
+5559770,long method,strategy,0,0,0
+5542756,feature envy,law_of_demeter,0,,0
+5563186,data class,strategy,0,0,0
+5548181,long method,strategy,0,0,0
+5551982,long method,strategy,0,0,0
+5545552,blob,strategy,0,0,0
+5545552,blob,with_size,0,0,0
+5539522,data class,strategy,0,0,0
+5555115,long method,strategy,0,0,0
+5565017,blob,strategy,0,0,0
+5565017,blob,with_size,0,0,0
+5586619,long method,strategy,0,0,0
+5581462,blob,strategy,0,0,1
+5581462,blob,with_size,0,0,1
+5580164,long method,strategy,0,0,0
+5576325,data class,strategy,0,0,0
+5580203,feature envy,law_of_demeter,0,,0
+5575053,data class,strategy,1,1,1
+5573352,blob,strategy,0,0,0
+5573352,blob,with_size,0,0,0
+5575320,data class,strategy,0,0,0
+5578507,feature envy,law_of_demeter,0,,0
+7916535,feature envy,law_of_demeter,0,,1
+5615923,long method,strategy,0,1,1
+5616304,long method,strategy,0,0,0
+5618836,feature envy,law_of_demeter,0,,0
+5654277,blob,strategy,0,0,0
+5654277,blob,with_size,0,0,0
+5660710,blob,strategy,0,0,0
+5660710,blob,with_size,0,0,0
+5645958,blob,strategy,0,0,0
+5645958,blob,with_size,0,0,0
+5665524,long method,strategy,0,0,0
+5659423,data class,strategy,0,0,0
+5657118,feature envy,law_of_demeter,0,,0
+5657210,data class,strategy,0,0,0
+5655899,long method,strategy,0,0,0
+5647618,long method,strategy,0,0,0
+5663777,data class,strategy,0,0,0
+5661062,long method,strategy,0,0,1
+5657934,blob,strategy,0,0,0
+5657934,blob,with_size,0,0,0
+5658486,long method,strategy,0,0,0
+5660411,long method,strategy,0,0,0
+5654509,feature envy,law_of_demeter,0,,0
+5655437,blob,strategy,0,0,0
+5655437,blob,with_size,0,0,0
+5657989,long method,strategy,0,0,0
+5657457,long method,strategy,0,0,0
+5642265,long method,strategy,0,0,0
+5651881,long method,strategy,0,0,0
+5685504,blob,strategy,1,0,0
+5685504,blob,with_size,1,0,0
+5678475,long method,strategy,0,0,0
+5684516,long method,strategy,0,0,0
+5670638,data class,strategy,0,0,0
+5671828,long method,strategy,0,1,0
+5682673,blob,strategy,0,0,0
+5682673,blob,with_size,0,0,0
+5670492,blob,strategy,0,0,0
+5670492,blob,with_size,0,0,0
+5676371,data class,strategy,0,0,0
+5710974,data class,strategy,0,0,0
+5747163,long method,strategy,0,0,0
+5702079,blob,strategy,0,0,1
+5702079,blob,with_size,0,1,1
+5740146,blob,strategy,1,0,1
+5740146,blob,with_size,1,1,1
+5739211,blob,strategy,0,0,0
+5739211,blob,with_size,0,0,0
+5737990,data class,strategy,0,0,1
+5705708,long method,strategy,0,0,0
+5712776,long method,strategy,1,1,1
+5752718,data class,strategy,0,0,0
+5704168,blob,strategy,0,0,0
+5704168,blob,with_size,0,0,0
+5723559,feature envy,law_of_demeter,0,,0
+5737047,long method,strategy,0,0,0
+5738914,long method,strategy,0,0,0
+5738634,data class,strategy,0,0,1
+5712111,blob,strategy,0,0,0
+5712111,blob,with_size,0,0,0
+5715127,blob,strategy,0,0,1
+5715127,blob,with_size,0,0,1
+5722403,blob,strategy,0,0,0
+5722403,blob,with_size,0,0,0
+5728323,blob,strategy,0,0,0
+5728323,blob,with_size,0,0,0
+5752094,blob,strategy,0,0,0
+5752094,blob,with_size,0,0,0
+5702663,long method,strategy,0,0,0
+5702958,blob,strategy,0,0,0
+5702958,blob,with_size,0,0,0
+5668344,data class,strategy,0,0,1
+5668440,blob,strategy,0,0,0
+5668440,blob,with_size,0,0,0
+5667095,blob,strategy,0,0,0
+5667095,blob,with_size,0,0,0
+5670026,blob,strategy,0,0,1
+5670026,blob,with_size,0,0,1
+5666367,blob,strategy,0,0,0
+5666367,blob,with_size,0,0,0
+5690831,blob,strategy,0,0,0
+5690831,blob,with_size,0,0,0
+5693176,long method,strategy,0,0,0
+5700044,long method,strategy,0,0,1
+5693079,long method,strategy,0,0,0
+5698693,long method,strategy,0,0,0
+5689800,data class,strategy,0,0,0
+5690795,feature envy,law_of_demeter,0,,0
+5688699,blob,strategy,0,0,0
+5688699,blob,with_size,0,0,0
+5690366,feature envy,law_of_demeter,0,,0
+5687952,blob,strategy,0,0,1
+5687952,blob,with_size,0,0,1
+5699641,data class,strategy,0,0,0
+5692616,data class,strategy,0,0,0
+5698044,feature envy,law_of_demeter,0,,0
+5681626,blob,strategy,0,0,1
+5681626,blob,with_size,0,0,1
+5771277,feature envy,law_of_demeter,0,,0
+5768412,blob,strategy,0,0,0
+5768412,blob,with_size,0,0,0
+5764315,blob,strategy,0,0,0
+5764315,blob,with_size,0,0,0
+5767556,blob,strategy,0,0,1
+5767556,blob,with_size,0,0,1
+5768802,long method,strategy,0,0,0
+5768014,long method,strategy,0,0,0
+5775855,feature envy,law_of_demeter,0,,0
+5774985,long method,strategy,0,0,0
+5762348,long method,strategy,0,0,0
+5769222,blob,strategy,0,0,1
+5769222,blob,with_size,0,0,1
+5763217,long method,strategy,0,0,0
+5767507,long method,strategy,0,0,0
+5769657,long method,strategy,1,0,0
+5766093,data class,strategy,1,0,0
+5773565,blob,strategy,0,0,0
+5773565,blob,with_size,0,0,0
+5775703,blob,strategy,0,0,1
+5775703,blob,with_size,0,0,1
+5761917,feature envy,law_of_demeter,0,,0
+5735198,blob,strategy,1,0,1
+5735198,blob,with_size,1,0,1
+5718244,blob,strategy,0,0,0
+5718244,blob,with_size,0,0,0
+5717998,long method,strategy,0,0,1
+5718043,long method,strategy,0,0,0
+5735246,blob,strategy,0,0,0
+5735246,blob,with_size,0,0,0
+5750397,blob,strategy,0,0,0
+5750397,blob,with_size,0,0,0
+5723163,long method,strategy,0,0,0
+5742756,blob,strategy,0,0,0
+5742756,blob,with_size,0,0,0
+5748379,long method,strategy,0,0,0
+5732518,data class,strategy,0,0,0
+5732162,feature envy,law_of_demeter,0,,0
+5759451,long method,strategy,0,0,0
+5749626,long method,strategy,0,0,0
+5760043,long method,strategy,0,0,0
+5743113,feature envy,law_of_demeter,1,,1
+5719331,feature envy,law_of_demeter,0,,0
+5732513,blob,strategy,0,0,0
+5732513,blob,with_size,0,0,0
+5731614,feature envy,law_of_demeter,0,,0
+5752009,long method,strategy,0,0,0
+5799314,blob,strategy,0,0,0
+5799314,blob,with_size,0,0,0
+5799022,blob,strategy,0,0,0
+5799022,blob,with_size,0,0,0
+5798354,long method,strategy,0,0,0
+5798489,feature envy,law_of_demeter,0,,0
+5800930,long method,strategy,0,0,0
+5799553,long method,strategy,0,0,0
+5798457,data class,strategy,0,0,0
+5802620,blob,strategy,0,0,0
+5802620,blob,with_size,0,0,0
+5798002,blob,strategy,0,0,1
+5798002,blob,with_size,0,0,1
+5801572,blob,strategy,0,0,0
+5801572,blob,with_size,0,0,0
+5801932,long method,strategy,0,0,0
+5805223,data class,strategy,0,0,0
+5794903,blob,strategy,0,0,0
+5794903,blob,with_size,0,0,0
+5786929,blob,strategy,1,0,1
+5786929,blob,with_size,1,1,1
+5788583,long method,strategy,0,0,0
+5784280,long method,strategy,0,0,0
+5782140,long method,strategy,0,0,0
+5782292,long method,strategy,0,0,0
+5780746,long method,strategy,0,0,0
+5785684,long method,strategy,0,0,0
+5788107,feature envy,law_of_demeter,0,,0
+5789396,data class,strategy,0,0,0
+5790359,data class,strategy,0,0,0
+5786274,blob,strategy,0,0,1
+5786274,blob,with_size,0,0,1
+5793952,feature envy,law_of_demeter,0,,0
+5793029,data class,strategy,0,0,0
+5790828,long method,strategy,0,0,0
+5812130,blob,strategy,0,0,0
+5812130,blob,with_size,0,0,0
+5809960,feature envy,law_of_demeter,0,,0
+5816939,long method,strategy,0,0,0
+5810647,blob,strategy,0,0,0
+5810647,blob,with_size,0,0,0
+5815298,data class,strategy,0,0,0
+5818517,blob,strategy,0,0,0
+5818517,blob,with_size,0,0,0
+5816832,blob,strategy,0,0,0
+5816832,blob,with_size,0,0,0
+5818834,feature envy,law_of_demeter,0,,0
+5818363,data class,strategy,0,0,0
+5808750,blob,strategy,0,0,0
+5808750,blob,with_size,0,0,0
+5839091,blob,strategy,0,0,0
+5839091,blob,with_size,0,0,0
+5839770,blob,strategy,0,0,0
+5839770,blob,with_size,0,0,0
+5841731,long method,strategy,0,0,0
+5840527,feature envy,law_of_demeter,0,,1
+5839532,feature envy,law_of_demeter,0,,0
+5855407,blob,strategy,0,0,0
+5855407,blob,with_size,0,0,0
+5839980,feature envy,law_of_demeter,0,,0
+5855589,long method,strategy,0,0,1
+5855387,long method,strategy,0,0,0
+5844151,blob,strategy,0,0,0
+5844151,blob,with_size,0,0,0
+5836088,long method,strategy,0,0,0
+5832184,long method,strategy,0,0,0
+5843392,long method,strategy,0,0,0
+5832025,data class,strategy,0,0,1
+5843574,feature envy,law_of_demeter,0,,0
+5836057,data class,strategy,0,0,0
+5845283,feature envy,law_of_demeter,0,,0
+5845274,long method,strategy,0,0,1
+5854207,long method,strategy,0,0,0
+5842829,feature envy,law_of_demeter,0,,0
+5837941,blob,strategy,0,0,0
+5837941,blob,with_size,0,0,0
+5845628,data class,strategy,0,1,0
+5939437,long method,strategy,0,0,0
+5939683,long method,strategy,0,0,0
+5971146,data class,strategy,0,0,0
+5971617,data class,strategy,0,0,0
+5948040,blob,strategy,0,0,1
+5948040,blob,with_size,0,0,1
+5958136,long method,strategy,0,0,0
+5968191,data class,strategy,0,0,0
+5946774,data class,strategy,1,0,1
+5937629,data class,strategy,0,0,0
+5944359,blob,strategy,0,0,0
+5944359,blob,with_size,0,0,0
+5972837,data class,strategy,0,0,0
+5961466,data class,strategy,0,0,0
+5959185,long method,strategy,0,0,0
+5930471,feature envy,law_of_demeter,0,,0
+5954493,blob,strategy,0,0,1
+5954493,blob,with_size,0,0,1
+5958765,feature envy,law_of_demeter,1,,0
+5948019,data class,strategy,0,0,0
+5947006,blob,strategy,0,0,1
+5947006,blob,with_size,0,0,1
+5952032,long method,strategy,0,0,0
+5957064,feature envy,law_of_demeter,0,,0
+5972104,long method,strategy,0,0,1
+5965453,long method,strategy,0,0,0
+5975025,blob,strategy,0,0,0
+5975025,blob,with_size,0,0,0
+5819659,data class,strategy,0,0,0
+5857311,long method,strategy,0,0,0
+5857044,blob,strategy,0,0,0
+5857044,blob,with_size,0,0,0
+5866628,blob,strategy,0,0,0
+5866628,blob,with_size,0,0,0
+5871455,data class,strategy,0,0,0
+5870863,blob,strategy,0,0,0
+5870863,blob,with_size,0,0,0
+5863832,feature envy,law_of_demeter,0,,0
+5857422,data class,strategy,0,1,0
+5876865,long method,strategy,0,0,0
+5871795,blob,strategy,0,0,0
+5871795,blob,with_size,0,0,0
+5857991,blob,strategy,0,0,1
+5857991,blob,with_size,0,1,1
+5865465,data class,strategy,0,0,0
+5871338,long method,strategy,0,0,0
+5862710,data class,strategy,0,0,0
+5870587,long method,strategy,0,0,0
+5863439,blob,strategy,0,0,1
+5863439,blob,with_size,0,0,1
+5828765,long method,strategy,0,0,0
+5828468,blob,strategy,0,1,1
+5828468,blob,with_size,0,1,1
+5828122,blob,strategy,0,0,0
+5828122,blob,with_size,0,0,0
+5875400,blob,strategy,0,0,0
+5875400,blob,with_size,0,0,0
+5875574,feature envy,law_of_demeter,0,,0
+5884892,blob,strategy,0,0,1
+5884892,blob,with_size,0,0,1
+5894436,blob,strategy,0,0,0
+5894436,blob,with_size,0,0,0
+5895731,long method,strategy,0,0,0
+5882175,blob,strategy,0,0,1
+5882175,blob,with_size,0,1,1
+5882133,long method,strategy,0,0,0
+5883695,long method,strategy,0,0,0
+5884181,blob,strategy,0,0,0
+5884181,blob,with_size,0,0,0
+5893533,feature envy,law_of_demeter,0,,0
+5873847,long method,strategy,0,0,0
+5888140,data class,strategy,0,0,0
+5858827,long method,strategy,0,0,0
+5865735,long method,strategy,0,0,0
+5865964,data class,strategy,0,0,0
+5893758,blob,strategy,0,0,0
+5893758,blob,with_size,0,0,0
+5894091,long method,strategy,0,0,1
+5892646,blob,strategy,0,0,0
+5892646,blob,with_size,0,0,0
+7786250,feature envy,law_of_demeter,0,,0
+7784926,long method,strategy,0,0,0
+7786204,blob,strategy,0,0,0
+7786204,blob,with_size,0,0,0
+7783504,feature envy,law_of_demeter,0,,0
+7792449,feature envy,law_of_demeter,0,,0
+7785366,long method,strategy,0,0,0
+7785135,data class,strategy,0,0,0
+7784103,data class,strategy,0,0,0
+7786735,blob,strategy,0,0,0
+7786735,blob,with_size,0,0,0
+7790376,blob,strategy,0,0,0
+7790376,blob,with_size,0,0,0
+7790763,blob,strategy,0,0,0
+7790763,blob,with_size,0,0,0
+7792407,blob,strategy,0,0,0
+7792407,blob,with_size,0,0,0
+7792077,feature envy,law_of_demeter,0,,0
+7784313,blob,strategy,0,0,0
+7784313,blob,with_size,0,0,0
+7792356,long method,strategy,0,0,0
+7787736,feature envy,law_of_demeter,0,,0
+7795065,long method,strategy,0,0,0
+7787254,feature envy,law_of_demeter,0,,0
+7792893,blob,strategy,0,0,0
+7792893,blob,with_size,0,0,0
+7782013,feature envy,law_of_demeter,0,,0
+7787478,blob,strategy,0,0,0
+7787478,blob,with_size,0,0,0
+7787982,feature envy,law_of_demeter,0,,0
+7782626,long method,strategy,0,0,0
+7795012,data class,strategy,0,0,0
+7792934,blob,strategy,0,0,0
+7792934,blob,with_size,0,0,0
+5905362,blob,strategy,0,0,0
+5905362,blob,with_size,0,0,0
+5904263,long method,strategy,0,0,0
+5905498,blob,strategy,0,0,0
+5905498,blob,with_size,0,0,0
+5904455,long method,strategy,0,0,0
+5904841,long method,strategy,0,0,0
+5907678,long method,strategy,0,0,0
+5907719,long method,strategy,0,0,0
+5901667,data class,strategy,0,1,1
+5907756,long method,strategy,0,0,1
+5903677,long method,strategy,0,0,0
+5912760,blob,strategy,0,0,0
+5912760,blob,with_size,0,0,0
+5902872,blob,strategy,0,0,0
+5902872,blob,with_size,0,0,0
+5898336,blob,strategy,0,0,0
+5898336,blob,with_size,0,0,0
+5912103,feature envy,law_of_demeter,0,,0
+5919914,long method,strategy,0,0,0
+5916449,blob,strategy,0,0,0
+5916449,blob,with_size,0,0,0
+5923532,data class,strategy,0,0,0
+5922177,long method,strategy,0,0,0
+5935402,blob,strategy,0,0,1
+5935402,blob,with_size,0,0,1
+5923886,long method,strategy,0,0,1
+5925637,blob,strategy,1,1,1
+5925637,blob,with_size,1,1,1
+5938889,blob,strategy,0,0,1
+5938889,blob,with_size,0,0,1
+5939954,feature envy,law_of_demeter,0,,1
+5939530,long method,strategy,0,0,1
+5934742,long method,strategy,0,0,0
+5942839,long method,strategy,0,0,0
+5937980,blob,strategy,0,0,0
+5937980,blob,with_size,0,0,0
+5950858,long method,strategy,0,0,0
+5950764,long method,strategy,0,1,1
+5953028,feature envy,law_of_demeter,0,,0
+5988833,feature envy,law_of_demeter,0,,0
+5986705,long method,strategy,0,0,0
+5991696,long method,strategy,0,0,0
+5985338,blob,strategy,0,0,0
+5985338,blob,with_size,0,0,0
+5991563,data class,strategy,0,0,1
+5990255,blob,strategy,0,0,1
+5990255,blob,with_size,0,1,1
+5989938,feature envy,law_of_demeter,0,,0
+5989223,long method,strategy,0,0,0
+5991953,data class,strategy,0,0,1
+5979331,long method,strategy,0,0,0
+5978414,feature envy,law_of_demeter,0,,0
+5982219,blob,strategy,0,0,0
+5982219,blob,with_size,0,0,0
+5982466,long method,strategy,0,1,1
+5983355,blob,strategy,0,0,0
+5983355,blob,with_size,0,0,0
+5983157,blob,strategy,0,0,0
+5983157,blob,with_size,0,0,0
+5983608,blob,strategy,0,0,1
+5983608,blob,with_size,0,0,1
+5994992,blob,strategy,0,0,0
+5994992,blob,with_size,0,0,0
+5996376,blob,strategy,0,0,0
+5996376,blob,with_size,0,0,0
+5997662,data class,strategy,0,0,0
+6009570,long method,strategy,0,0,0
+6009432,data class,strategy,1,0,1
+6009473,feature envy,law_of_demeter,0,,0
+6010673,long method,strategy,0,0,0
+6012953,blob,strategy,0,0,0
+6012953,blob,with_size,0,0,0
+6016779,long method,strategy,0,0,0
+6010190,data class,strategy,0,0,0
+6014861,long method,strategy,0,0,0
+6016685,long method,strategy,0,0,0
+6011512,blob,strategy,0,0,0
+6011512,blob,with_size,0,0,0
+6013107,blob,strategy,0,0,0
+6013107,blob,with_size,0,0,0
+6009975,blob,strategy,0,0,0
+6009975,blob,with_size,0,0,0
+6020057,long method,strategy,0,0,0
+6021504,feature envy,law_of_demeter,0,,0
+6017760,blob,strategy,0,0,0
+6017760,blob,with_size,0,0,0
+6019048,blob,strategy,0,0,1
+6019048,blob,with_size,0,0,1
+6017172,long method,strategy,0,0,0
+6016987,blob,strategy,0,0,0
+6016987,blob,with_size,0,0,0
+8298339,feature envy,law_of_demeter,0,,0
+8298934,long method,strategy,0,0,1
+8299074,blob,strategy,0,0,0
+8299074,blob,with_size,0,0,0
+8304366,data class,strategy,0,0,0
+8304375,long method,strategy,0,0,0
+8300534,feature envy,law_of_demeter,0,,1
+8300767,blob,strategy,0,0,0
+8300767,blob,with_size,0,0,0
+8299961,blob,strategy,0,0,1
+8299961,blob,with_size,0,0,1
+9114822,blob,strategy,1,1,1
+9114822,blob,with_size,1,1,1
+9114817,long method,strategy,0,0,0
+9117540,blob,strategy,0,0,0
+9117540,blob,with_size,0,0,0
+9117535,blob,strategy,0,0,0
+9117535,blob,with_size,0,0,0
+9135351,blob,strategy,0,0,0
+9135351,blob,with_size,0,0,0
+9140757,blob,strategy,0,0,1
+9140757,blob,with_size,0,0,1
+9144201,data class,strategy,0,0,1
+9143369,long method,strategy,0,0,0
+9160221,long method,strategy,0,0,0
+9159804,long method,strategy,0,0,0
+9188325,data class,strategy,0,0,0
+9127199,feature envy,law_of_demeter,0,,0
+9128649,feature envy,law_of_demeter,0,,0
+9136671,blob,strategy,0,0,0
+9136671,blob,with_size,0,0,0
+9172549,long method,strategy,0,0,0
+9110608,long method,strategy,0,0,0
+9171656,blob,strategy,0,0,0
+9171656,blob,with_size,0,0,0
+9139344,blob,strategy,0,0,0
+9139344,blob,with_size,0,0,0
+9199423,blob,strategy,1,0,1
+9199423,blob,with_size,1,1,1
+9142325,feature envy,law_of_demeter,1,,0
+9173375,feature envy,law_of_demeter,0,,0
+9189634,blob,strategy,0,0,0
+9189634,blob,with_size,0,0,0
+9147019,long method,strategy,0,0,0
+9170572,feature envy,law_of_demeter,0,,0
+9192024,long method,strategy,0,0,0
+9150816,feature envy,law_of_demeter,0,,1
+9187819,feature envy,law_of_demeter,0,,0
+9138075,blob,strategy,0,0,0
+9138075,blob,with_size,0,0,0
+9189420,data class,strategy,0,0,0
+9198380,blob,strategy,0,0,0
+9198380,blob,with_size,0,0,0
+9206273,feature envy,law_of_demeter,0,,0
+9127614,feature envy,law_of_demeter,0,,0
+9191083,data class,strategy,0,0,0
+9119349,long method,strategy,0,0,0
+9115400,feature envy,law_of_demeter,0,,0
+9197046,feature envy,law_of_demeter,0,,0
+9158644,blob,strategy,0,0,0
+9158644,blob,with_size,0,0,0
+9108325,long method,strategy,0,0,0
+9121712,long method,strategy,0,0,0
+9158643,long method,strategy,0,0,1
+9205838,blob,strategy,0,0,0
+9205838,blob,with_size,0,0,0
+9122985,long method,strategy,0,0,0
+9131375,long method,strategy,0,0,0
+9116510,blob,strategy,0,0,0
+9116510,blob,with_size,0,0,0
+9111878,data class,strategy,0,0,1
+9173266,feature envy,law_of_demeter,0,,0
+9126156,feature envy,law_of_demeter,0,,0
+9205375,long method,strategy,0,0,0
+9176003,data class,strategy,0,1,0
+9156673,feature envy,law_of_demeter,0,,0
+9120944,blob,strategy,0,0,0
+9120944,blob,with_size,0,0,0
+9205245,long method,strategy,0,0,0
+9186714,data class,strategy,0,0,1
+9158392,blob,strategy,0,0,0
+9158392,blob,with_size,0,0,0
+9125948,blob,strategy,0,0,0
+9125948,blob,with_size,0,0,0
+9162014,blob,strategy,0,0,0
+9162014,blob,with_size,0,0,0
+9111672,long method,strategy,0,0,1
+9205662,long method,strategy,0,0,0
+9129936,long method,strategy,0,0,0
+9171873,data class,strategy,0,0,1
+9203767,blob,strategy,0,0,0
+9203767,blob,with_size,0,0,0
+9141639,blob,strategy,0,0,0
+9141639,blob,with_size,0,0,0
+9194605,feature envy,law_of_demeter,0,,0
+9121203,long method,strategy,0,0,1
+9192832,long method,strategy,0,0,1
+9158528,long method,strategy,0,0,0
+9161787,blob,strategy,0,0,0
+9161787,blob,with_size,0,0,0
+9189120,long method,strategy,0,0,0
+9201619,blob,strategy,0,0,0
+9201619,blob,with_size,0,1,0
+9118161,feature envy,law_of_demeter,0,,0
+9136234,blob,strategy,0,0,1
+9136234,blob,with_size,0,0,1
+9201031,long method,strategy,0,0,0
+9177949,blob,strategy,0,0,0
+9177949,blob,with_size,0,0,0
+9140119,long method,strategy,0,0,0
+9115884,feature envy,law_of_demeter,0,,0
+9201577,blob,strategy,0,0,0
+9201577,blob,with_size,0,0,0
+9200631,data class,strategy,0,0,0
+6025409,data class,strategy,0,0,0
+6026125,blob,strategy,0,0,0
+6026125,blob,with_size,0,0,0
+6025184,blob,strategy,0,0,0
+6025184,blob,with_size,0,0,0
+6026312,blob,strategy,0,0,0
+6026312,blob,with_size,0,0,0
+6026896,data class,strategy,0,0,1
+6024615,long method,strategy,0,0,0
+6029853,feature envy,law_of_demeter,0,,0
+6030681,long method,strategy,0,0,0
+6030541,long method,strategy,0,0,0
+6034374,feature envy,law_of_demeter,0,,0
+6035651,data class,strategy,0,0,0
+6032883,blob,strategy,0,0,0
+6032883,blob,with_size,0,0,0
+6177738,long method,strategy,0,0,0
+6179479,blob,strategy,0,0,0
+6179479,blob,with_size,0,0,0
+6179494,long method,strategy,0,0,0
+6179505,long method,strategy,0,0,0
+6181780,blob,strategy,0,0,0
+6181780,blob,with_size,0,0,0
+6183429,long method,strategy,0,0,0
+6183095,blob,strategy,0,0,0
+6183095,blob,with_size,0,0,0
+6182357,long method,strategy,0,0,1
+6190083,feature envy,law_of_demeter,0,,0
+6192975,blob,strategy,0,0,1
+6192975,blob,with_size,0,0,1
+6197424,blob,strategy,0,0,1
+6197424,blob,with_size,0,0,1
+6198340,long method,strategy,0,0,0
+6207228,blob,strategy,0,0,1
+6207228,blob,with_size,0,0,1
+6212569,long method,strategy,0,0,0
+6212333,long method,strategy,0,0,0
+6212329,long method,strategy,0,0,0
+6213525,blob,strategy,0,0,0
+6213525,blob,with_size,0,0,0
+6159926,blob,strategy,0,0,0
+6159926,blob,with_size,0,0,0
+6164700,long method,strategy,0,0,0
+6165484,long method,strategy,0,0,0
+6204790,blob,strategy,0,0,1
+6204790,blob,with_size,0,1,1
+6186813,feature envy,law_of_demeter,0,,0
+6174952,long method,strategy,0,0,0
+6164729,blob,strategy,0,0,1
+6164729,blob,with_size,0,0,1
+6174632,data class,strategy,0,0,0
+6174968,blob,strategy,0,0,0
+6174968,blob,with_size,0,0,0
+6204915,blob,strategy,0,0,0
+6204915,blob,with_size,0,0,0
+6214208,blob,strategy,0,0,1
+6214208,blob,with_size,0,0,1
+6176170,blob,strategy,0,0,0
+6176170,blob,with_size,0,0,0
+6210636,blob,strategy,0,0,0
+6210636,blob,with_size,0,0,0
+6174003,long method,strategy,0,0,0
+6190494,feature envy,law_of_demeter,0,,1
+6173419,data class,strategy,0,0,0
+6167933,feature envy,law_of_demeter,0,,0
+6192126,feature envy,law_of_demeter,0,,0
+6194793,long method,strategy,0,0,0
+6171226,blob,strategy,0,0,0
+6171226,blob,with_size,0,0,0
+6189879,data class,strategy,0,0,0
+6211782,blob,strategy,0,0,0
+6211782,blob,with_size,0,0,0
+6195890,long method,strategy,0,0,0
+6207209,feature envy,law_of_demeter,0,,0
+6173466,long method,strategy,0,0,0
+6195686,blob,strategy,0,0,0
+6195686,blob,with_size,0,0,0
+6166594,blob,strategy,0,0,1
+6166594,blob,with_size,0,0,1
+6201491,long method,strategy,0,0,0
+6161020,long method,strategy,0,0,0
+6165395,blob,strategy,0,0,1
+6165395,blob,with_size,0,0,1
+6213445,blob,strategy,0,0,1
+6213445,blob,with_size,0,0,1
+6036658,long method,strategy,0,0,1
+6037459,data class,strategy,0,0,0
+6051731,blob,strategy,1,1,1
+6051731,blob,with_size,1,1,1
+6051478,long method,strategy,0,0,0
+6044730,long method,strategy,0,0,0
+6048776,feature envy,law_of_demeter,0,,0
+6048029,blob,strategy,0,0,0
+6048029,blob,with_size,0,1,0
+6052388,long method,strategy,0,0,1
+6073506,blob,strategy,0,0,0
+6073506,blob,with_size,0,0,0
+6079026,blob,strategy,0,0,1
+6079026,blob,with_size,0,0,1
+6075386,data class,strategy,0,0,0
+6078132,feature envy,law_of_demeter,0,,0
+6057624,feature envy,law_of_demeter,0,,0
+6066503,blob,strategy,0,0,0
+6066503,blob,with_size,0,0,0
+6133230,long method,strategy,0,0,0
+6133656,data class,strategy,0,0,1
+6135529,blob,strategy,0,0,0
+6135529,blob,with_size,0,0,0
+6151978,data class,strategy,0,0,0
+6143847,blob,strategy,0,0,0
+6143847,blob,with_size,0,0,0
+6134590,long method,strategy,0,0,0
+6147315,long method,strategy,0,0,0
+6128593,blob,strategy,0,0,0
+6128593,blob,with_size,0,0,0
+6134879,long method,strategy,0,0,0
+6152636,data class,strategy,0,0,0
+6122163,long method,strategy,0,0,0
+6138864,blob,strategy,0,0,0
+6138864,blob,with_size,0,0,0
+6147959,feature envy,law_of_demeter,0,,0
+6147418,long method,strategy,0,0,0
+6150503,long method,strategy,0,0,0
+6134213,feature envy,law_of_demeter,0,,0
+6151582,data class,strategy,0,0,0
+6145911,long method,strategy,0,0,0
+6141685,blob,strategy,0,0,1
+6141685,blob,with_size,0,0,1
+6122371,feature envy,law_of_demeter,1,,0
+6147463,blob,strategy,0,0,0
+6147463,blob,with_size,0,0,0
+6143644,long method,strategy,0,0,0
+6152090,long method,strategy,0,1,1
+6140308,blob,strategy,0,0,0
+6140308,blob,with_size,0,0,0
+6153007,long method,strategy,0,0,0
+6151008,long method,strategy,0,0,0
+6145494,long method,strategy,0,0,0
+6153811,data class,strategy,0,0,0
+6153322,blob,strategy,0,0,0
+6153322,blob,with_size,0,0,0
+6135806,blob,strategy,0,0,0
+6135806,blob,with_size,0,0,0
+6093270,blob,strategy,0,0,1
+6093270,blob,with_size,0,0,1
+6091805,blob,strategy,0,0,0
+6091805,blob,with_size,0,0,0
+6094004,long method,strategy,0,0,0
+6088450,data class,strategy,0,0,0
+6115582,blob,strategy,0,0,0
+6115582,blob,with_size,0,0,0
+6120570,data class,strategy,0,0,0
+6114104,blob,strategy,0,0,0
+6114104,blob,with_size,0,0,0
+6117580,blob,strategy,0,0,0
+6117580,blob,with_size,0,0,0
+6117995,feature envy,law_of_demeter,0,,0
+6119974,data class,strategy,0,0,0
+6119512,long method,strategy,0,0,0
+6128483,long method,strategy,0,0,0
+6125015,feature envy,law_of_demeter,0,,0
+6123342,data class,strategy,0,0,0
+6108350,long method,strategy,0,0,0
+6119399,long method,strategy,0,0,0
+6108863,feature envy,law_of_demeter,0,,0
+6106646,feature envy,law_of_demeter,0,,0
+6120286,long method,strategy,0,0,0
+6117399,data class,strategy,0,0,0
+6129787,long method,strategy,0,0,0
+8314886,long method,strategy,0,0,0
+8312832,blob,strategy,0,0,0
+8312832,blob,with_size,0,0,0
+8314569,blob,strategy,0,0,0
+8314569,blob,with_size,0,0,0
+8309635,long method,strategy,0,0,0
+8311552,blob,strategy,0,0,0
+8311552,blob,with_size,0,0,0
+8727852,data class,strategy,0,0,0
+8714735,feature envy,law_of_demeter,0,,0
+8722845,long method,strategy,0,0,0
+8716970,feature envy,law_of_demeter,0,,0
+8715463,blob,strategy,0,0,1
+8715463,blob,with_size,0,0,1
+8712093,long method,strategy,0,1,1
+8719559,long method,strategy,0,0,0
+8703167,feature envy,law_of_demeter,0,,0
+8705246,long method,strategy,0,0,0
+8722412,feature envy,law_of_demeter,1,,0
+8727139,feature envy,law_of_demeter,0,,0
+8722299,data class,strategy,0,0,0
+8717357,blob,strategy,0,0,0
+8717357,blob,with_size,0,0,0
+8703973,feature envy,law_of_demeter,0,,0
+8727011,data class,strategy,0,0,0
+8719445,long method,strategy,0,1,1
+8708216,long method,strategy,0,0,0
+8725125,long method,strategy,0,0,0
+8703330,long method,strategy,0,1,1
+8711809,long method,strategy,0,0,0
+8717601,feature envy,law_of_demeter,0,,0
+8702985,data class,strategy,0,0,0
+8705503,feature envy,law_of_demeter,0,,0
+8702258,long method,strategy,0,0,0
+8724018,feature envy,law_of_demeter,0,,0
+8707779,data class,strategy,0,0,0
+8708013,long method,strategy,0,0,0
+8719536,data class,strategy,0,0,0
+8719880,long method,strategy,0,0,0
+8723959,long method,strategy,0,0,0
+8703582,blob,strategy,0,0,0
+8703582,blob,with_size,0,0,0
+8706829,long method,strategy,0,0,0
+6382923,long method,strategy,0,0,0
+6424683,blob,strategy,0,0,0
+6424683,blob,with_size,0,0,0
+6427864,feature envy,law_of_demeter,0,,0
+6427329,long method,strategy,0,0,0
+6427968,long method,strategy,0,0,0
+6427227,blob,strategy,0,0,0
+6427227,blob,with_size,0,0,0
+6385711,blob,strategy,0,0,0
+6385711,blob,with_size,0,0,0
+6412439,data class,strategy,0,0,0
+6383930,blob,strategy,0,0,1
+6383930,blob,with_size,0,0,1
+6424791,feature envy,law_of_demeter,0,,0
+6424656,data class,strategy,0,1,0
+6417561,long method,strategy,0,0,0
+6404028,data class,strategy,0,0,0
+6375252,blob,strategy,0,0,0
+6375252,blob,with_size,0,0,0
+6413248,blob,strategy,0,0,0
+6413248,blob,with_size,0,0,0
+6413795,blob,strategy,0,0,1
+6413795,blob,with_size,0,0,1
+6406918,long method,strategy,0,0,0
+6375517,blob,strategy,0,1,1
+6375517,blob,with_size,0,1,1
+6398820,data class,strategy,0,0,0
+6369779,data class,strategy,0,0,0
+6371353,long method,strategy,0,0,0
+6372035,long method,strategy,0,0,0
+6428158,blob,strategy,0,0,0
+6428158,blob,with_size,0,0,0
+6403812,feature envy,law_of_demeter,0,,0
+6416620,blob,strategy,0,0,0
+6416620,blob,with_size,0,0,0
+6419975,long method,strategy,0,0,0
+6370656,feature envy,law_of_demeter,0,,0
+6414926,feature envy,law_of_demeter,0,,0
+6392324,feature envy,law_of_demeter,0,,0
+6387077,blob,strategy,0,0,0
+6387077,blob,with_size,0,0,0
+6406137,blob,strategy,0,0,1
+6406137,blob,with_size,0,0,1
+6417488,feature envy,law_of_demeter,0,,1
+6386818,long method,strategy,0,0,0
+6398249,long method,strategy,0,0,0
+6387608,long method,strategy,0,0,0
+6379553,data class,strategy,0,0,1
+6393344,feature envy,law_of_demeter,0,,0
+6425142,blob,strategy,0,0,0
+6425142,blob,with_size,0,0,0
+6391534,blob,strategy,0,0,0
+6391534,blob,with_size,0,0,0
+6427852,feature envy,law_of_demeter,0,,1
+6414719,blob,strategy,0,0,0
+6414719,blob,with_size,0,0,0
+6389069,long method,strategy,0,0,0
+6396521,feature envy,law_of_demeter,0,,0
+6393486,data class,strategy,0,0,0
+6419181,long method,strategy,0,0,1
+6372633,blob,strategy,0,0,0
+6372633,blob,with_size,0,0,0
+6371049,blob,strategy,0,0,1
+6371049,blob,with_size,0,0,1
+6388458,blob,strategy,0,0,0
+6388458,blob,with_size,0,0,0
+6368019,feature envy,law_of_demeter,0,,0
+6387249,blob,strategy,0,0,0
+6387249,blob,with_size,0,0,0
+6374724,blob,strategy,0,0,1
+6374724,blob,with_size,0,1,1
+6157376,blob,strategy,0,0,1
+6157376,blob,with_size,0,0,1
+6157639,data class,strategy,0,0,0
+6178268,blob,strategy,0,0,0
+6178268,blob,with_size,0,0,0
+6191838,blob,strategy,0,0,0
+6191838,blob,with_size,0,0,0
+6186565,feature envy,law_of_demeter,0,,1
+6180154,long method,strategy,0,0,0
+6185975,feature envy,law_of_demeter,0,,0
+6192331,blob,strategy,0,0,0
+6192331,blob,with_size,0,0,0
+6172019,data class,strategy,0,0,0
+6191994,long method,strategy,0,0,0
+6216254,blob,strategy,0,0,1
+6216254,blob,with_size,0,0,1
+6236496,long method,strategy,0,0,0
+6234592,long method,strategy,0,0,1
+6239751,blob,strategy,0,0,1
+6239751,blob,with_size,0,0,1
+6241200,long method,strategy,0,0,0
+6205101,blob,strategy,0,0,0
+6205101,blob,with_size,0,0,0
+6240859,feature envy,law_of_demeter,0,,0
+6207748,long method,strategy,0,0,0
+6243619,long method,strategy,0,0,0
+7929441,long method,strategy,0,0,0
+7938128,blob,strategy,0,0,0
+7938128,blob,with_size,0,0,0
+7938714,data class,strategy,0,0,0
+7936623,blob,strategy,0,0,0
+7936623,blob,with_size,0,0,0
+7928759,data class,strategy,0,0,0
+7930012,data class,strategy,0,0,1
+7934374,long method,strategy,0,0,1
+7935629,blob,strategy,0,0,0
+7935629,blob,with_size,0,0,0
+7934496,blob,strategy,0,0,0
+7934496,blob,with_size,0,0,0
+7929479,data class,strategy,0,0,0
+7933439,blob,strategy,0,0,0
+7933439,blob,with_size,0,0,0
+6221911,blob,strategy,0,0,0
+6221911,blob,with_size,0,0,0
+6221363,data class,strategy,0,0,0
+6218887,blob,strategy,0,0,0
+6218887,blob,with_size,0,0,0
+6225158,blob,strategy,0,0,0
+6225158,blob,with_size,0,0,0
+6236024,long method,strategy,0,0,0
+6247819,long method,strategy,0,0,0
+6250253,long method,strategy,0,0,0
+6257015,data class,strategy,0,0,1
+6251730,long method,strategy,0,0,0
+6257330,long method,strategy,0,0,0
+6254667,blob,strategy,0,0,1
+6254667,blob,with_size,0,0,1
+6255385,data class,strategy,1,0,1
+6248023,feature envy,law_of_demeter,0,,0
+6245494,blob,strategy,0,0,1
+6245494,blob,with_size,0,0,1
+6246396,feature envy,law_of_demeter,0,,0
+6244944,long method,strategy,0,0,0
+6244777,long method,strategy,0,0,0
+6246389,blob,strategy,0,0,0
+6246389,blob,with_size,0,0,0
+6244614,blob,strategy,0,0,0
+6244614,blob,with_size,0,0,0
+6263358,data class,strategy,0,0,1
+6261774,blob,strategy,0,0,1
+6261774,blob,with_size,0,0,1
+6266289,blob,strategy,0,0,1
+6266289,blob,with_size,0,0,1
+6265027,feature envy,law_of_demeter,0,,0
+6260668,data class,strategy,0,0,0
+6266221,long method,strategy,0,0,1
+6259739,blob,strategy,0,0,0
+6259739,blob,with_size,0,0,0
+6286234,feature envy,law_of_demeter,0,,0
+6298870,feature envy,law_of_demeter,0,,0
+6299837,feature envy,law_of_demeter,0,,1
+6297548,feature envy,law_of_demeter,0,,0
+6295036,data class,strategy,0,0,0
+6293765,blob,strategy,0,0,1
+6293765,blob,with_size,0,0,1
+6287167,long method,strategy,0,0,0
+6296681,long method,strategy,0,0,0
+6281870,data class,strategy,0,0,1
+6290471,feature envy,law_of_demeter,0,,0
+6291892,feature envy,law_of_demeter,0,,0
+6301436,data class,strategy,0,0,0
+6289735,feature envy,law_of_demeter,0,,0
+6281757,long method,strategy,0,0,0
+6303431,long method,strategy,0,0,0
+6300889,long method,strategy,0,0,0
+6303935,feature envy,law_of_demeter,0,,0
+6282334,data class,strategy,0,0,0
+6293245,data class,strategy,0,0,1
+6296221,long method,strategy,0,0,1
+6267409,blob,strategy,0,0,0
+6267409,blob,with_size,0,0,0
+6280639,blob,strategy,0,0,0
+6280639,blob,with_size,0,0,0
+6278076,long method,strategy,0,0,0
+6277045,blob,strategy,0,0,0
+6277045,blob,with_size,0,0,0
+6276517,long method,strategy,1,1,1
+6279768,blob,strategy,0,0,1
+6279768,blob,with_size,0,1,1
+6268790,data class,strategy,0,0,0
+6277868,long method,strategy,0,0,0
+6266636,blob,strategy,0,0,1
+6266636,blob,with_size,0,0,1
+6279766,long method,strategy,0,0,0
+6270951,feature envy,law_of_demeter,0,,0
+6277787,data class,strategy,0,0,0
+6272855,data class,strategy,0,0,0
+6279420,data class,strategy,0,0,0
+6280313,data class,strategy,0,0,0
+6276415,blob,strategy,0,0,0
+6276415,blob,with_size,0,0,0
+6287432,feature envy,law_of_demeter,0,,0
+6285002,blob,strategy,0,0,0
+6285002,blob,with_size,0,0,0
+6288529,data class,strategy,0,0,0
+6288812,blob,strategy,0,0,0
+6288812,blob,with_size,0,0,0
+6284070,long method,strategy,0,0,0
+6328141,blob,strategy,0,0,0
+6328141,blob,with_size,0,0,0
+6328926,feature envy,law_of_demeter,0,,0
+6328915,long method,strategy,0,0,0
+6328547,data class,strategy,0,0,0
+6329948,long method,strategy,0,0,0
+6329919,data class,strategy,0,0,1
+6312810,blob,strategy,0,0,0
+6312810,blob,with_size,0,0,0
+6311678,long method,strategy,0,0,0
+6310643,feature envy,law_of_demeter,0,,0
+6310927,data class,strategy,0,0,0
+6328482,blob,strategy,0,0,0
+6328482,blob,with_size,0,0,0
+6320805,blob,strategy,0,0,0
+6320805,blob,with_size,0,0,0
+6325165,blob,strategy,0,0,0
+6325165,blob,with_size,0,0,0
+6330576,blob,strategy,0,0,1
+6330576,blob,with_size,0,0,1
+6308382,blob,strategy,0,0,0
+6308382,blob,with_size,0,0,0
+6318697,feature envy,law_of_demeter,0,,1
+6334421,data class,strategy,0,0,1
+6323354,long method,strategy,0,1,0
+6311026,data class,strategy,0,0,0
+6310576,long method,strategy,0,0,0
+6329944,long method,strategy,0,0,0
+6312967,long method,strategy,0,0,0
+6328221,long method,strategy,0,0,0
+6329210,long method,strategy,0,0,0
+6329418,long method,strategy,0,0,0
+6310723,long method,strategy,0,0,0
+6317098,blob,strategy,0,0,0
+6317098,blob,with_size,0,0,0
+6310221,long method,strategy,0,0,1
+6315350,feature envy,law_of_demeter,0,,0
+6306509,feature envy,law_of_demeter,0,,0
+6322415,blob,strategy,0,0,0
+6322415,blob,with_size,0,0,0
+6306007,long method,strategy,0,0,0
+6306158,blob,strategy,0,0,1
+6306158,blob,with_size,0,0,1
+6350501,blob,strategy,0,1,1
+6350501,blob,with_size,0,1,1
+6346740,long method,strategy,0,0,0
+6344285,long method,strategy,0,1,1
+6340979,long method,strategy,0,0,0
+6337145,data class,strategy,0,0,0
+6339455,long method,strategy,0,0,0
+6344428,blob,strategy,0,0,0
+6344428,blob,with_size,0,0,0
+6341451,data class,strategy,0,0,0
+6351518,feature envy,law_of_demeter,0,,1
+6350174,long method,strategy,0,0,0
+6346063,long method,strategy,0,0,0
+6340833,long method,strategy,0,0,0
+6341238,long method,strategy,0,0,0
+6340836,blob,strategy,0,0,0
+6340836,blob,with_size,0,0,0
+6340126,feature envy,law_of_demeter,0,,0
+6342054,feature envy,law_of_demeter,0,,0
+6357053,blob,strategy,0,0,0
+6357053,blob,with_size,0,0,0
+6358306,blob,strategy,0,0,1
+6358306,blob,with_size,0,0,1
+6363556,blob,strategy,0,0,0
+6363556,blob,with_size,0,0,0
+6363175,blob,strategy,0,0,0
+6363175,blob,with_size,0,0,0
+6363367,data class,strategy,0,0,0
+6364375,data class,strategy,0,0,0
+6431408,long method,strategy,0,0,0
+6435518,feature envy,law_of_demeter,0,,0
+6432897,data class,strategy,0,0,0
+6446491,blob,strategy,0,0,0
+6446491,blob,with_size,0,0,0
+6445238,blob,strategy,0,0,1
+6445238,blob,with_size,0,0,1
+6436372,feature envy,law_of_demeter,0,,0
+6437526,blob,strategy,0,0,0
+6437526,blob,with_size,0,0,0
+6445781,feature envy,law_of_demeter,0,,0
+6437408,data class,strategy,0,0,0
+6434677,blob,strategy,0,0,0
+6434677,blob,with_size,0,0,0
+6438819,data class,strategy,1,0,0
+6462019,long method,strategy,0,0,0
+6432034,long method,strategy,0,0,0
+6431594,long method,strategy,0,0,0
+6431696,long method,strategy,0,0,0
+6462072,long method,strategy,0,0,0
+6465533,long method,strategy,0,0,0
+6445236,feature envy,law_of_demeter,0,,0
+6430791,long method,strategy,0,0,1
+6459837,feature envy,law_of_demeter,0,,0
+6459836,long method,strategy,0,0,0
+6546542,blob,strategy,0,0,0
+6546542,blob,with_size,0,0,0
+6546622,feature envy,law_of_demeter,0,,0
+6546066,blob,strategy,0,0,0
+6546066,blob,with_size,0,0,0
+6834699,feature envy,law_of_demeter,0,,0
+6836240,blob,strategy,0,0,0
+6836240,blob,with_size,0,0,0
+6840313,long method,strategy,0,0,0
+6839392,feature envy,law_of_demeter,0,,0
+6841877,blob,strategy,0,0,0
+6841877,blob,with_size,0,0,0
+6544247,blob,strategy,0,0,1
+6544247,blob,with_size,0,0,1
+6834927,blob,strategy,0,0,1
+6834927,blob,with_size,0,0,1
+6844792,long method,strategy,0,1,1
+6613156,data class,strategy,0,0,0
+6610964,feature envy,law_of_demeter,0,,0
+6889571,long method,strategy,0,0,0
+6873573,long method,strategy,0,0,1
+6610938,long method,strategy,0,0,0
+6953316,feature envy,law_of_demeter,0,,0
+6871109,feature envy,law_of_demeter,0,,0
+6611503,blob,strategy,1,1,1
+6611503,blob,with_size,1,1,1
+6835472,feature envy,law_of_demeter,0,,0
+6951541,data class,strategy,0,0,0
+6546019,data class,strategy,0,0,0
+6946489,long method,strategy,0,0,0
+6846111,feature envy,law_of_demeter,0,,0
+6610923,long method,strategy,0,0,0
+6614282,feature envy,law_of_demeter,0,,0
+6605165,long method,strategy,0,0,0
+6840071,feature envy,law_of_demeter,0,,0
+6945437,feature envy,law_of_demeter,0,,0
+6392412,data class,strategy,0,0,0
+6407807,blob,strategy,0,0,0
+6407807,blob,with_size,0,0,0
+6398884,data class,strategy,0,0,0
+6398866,long method,strategy,0,0,0
+6394642,data class,strategy,0,0,0
+6397068,data class,strategy,0,0,0
+6405981,data class,strategy,0,0,0
+6400040,long method,strategy,0,0,1
+6391015,blob,strategy,1,0,0
+6391015,blob,with_size,1,1,0
+6452606,blob,strategy,0,0,0
+6452606,blob,with_size,0,0,0
+6457258,long method,strategy,0,0,1
+6464947,blob,strategy,0,0,0
+6464947,blob,with_size,0,0,0
+6487817,long method,strategy,0,0,0
+6486798,feature envy,law_of_demeter,0,,0
+6470701,blob,strategy,0,0,0
+6470701,blob,with_size,0,0,0
+6483192,blob,strategy,0,0,0
+6483192,blob,with_size,0,0,0
+6464959,long method,strategy,0,0,0
+6470076,data class,strategy,0,0,1
+6454619,long method,strategy,0,0,0
+6484821,blob,strategy,0,0,0
+6484821,blob,with_size,0,0,0
+6468434,blob,strategy,0,0,0
+6468434,blob,with_size,0,0,0
+6471245,long method,strategy,0,0,0
+6450144,data class,strategy,0,0,1
+6455346,feature envy,law_of_demeter,0,,1
+6475184,long method,strategy,0,0,0
+6488574,feature envy,law_of_demeter,0,,0
+6483071,data class,strategy,0,0,1
+6464966,data class,strategy,0,0,1
+6442583,long method,strategy,0,1,1
+6445346,blob,strategy,0,0,0
+6445346,blob,with_size,0,0,0
+6444284,long method,strategy,0,0,1
+6446899,feature envy,law_of_demeter,0,,0
+6441911,blob,strategy,0,0,0
+6441911,blob,with_size,0,0,0
+6442866,data class,strategy,0,0,0
+6443200,blob,strategy,0,0,0
+6443200,blob,with_size,0,0,0
+6458155,blob,strategy,0,0,0
+6458155,blob,with_size,0,0,0
+6457553,feature envy,law_of_demeter,0,,0
+6458156,long method,strategy,0,0,0
+6466237,data class,strategy,0,0,0
+6459500,long method,strategy,0,0,0
+6457764,feature envy,law_of_demeter,0,,0
+6458150,long method,strategy,0,0,0
+6463026,data class,strategy,0,0,1
+6458427,long method,strategy,0,0,0
+6454251,data class,strategy,0,0,1
+6465751,long method,strategy,0,0,0
+6453968,long method,strategy,0,0,0
+6462487,feature envy,law_of_demeter,0,,0
+6462651,blob,strategy,0,0,0
+6462651,blob,with_size,0,0,0
+6471435,feature envy,law_of_demeter,0,,0
+6478457,long method,strategy,0,0,0
+6481321,data class,strategy,0,0,0
+6479689,long method,strategy,0,0,0
+6480563,blob,strategy,0,0,1
+6480563,blob,with_size,0,1,1
+6547794,long method,strategy,0,0,1
+6548259,blob,strategy,0,0,1
+6548259,blob,with_size,0,0,1
+6548279,feature envy,law_of_demeter,0,,0
+6553535,feature envy,law_of_demeter,0,,0
+6552410,long method,strategy,0,0,0
+6550344,blob,strategy,0,0,0
+6550344,blob,with_size,0,0,0
+6547476,blob,strategy,0,0,1
+6547476,blob,with_size,0,0,1
+6551559,blob,strategy,0,0,0
+6551559,blob,with_size,0,0,0
+6564431,blob,strategy,0,0,0
+6564431,blob,with_size,0,0,0
+6563346,long method,strategy,0,0,0
+6571650,data class,strategy,0,0,0
+6579063,feature envy,law_of_demeter,0,,0
+6579891,feature envy,law_of_demeter,0,,0
+6563293,long method,strategy,0,0,0
+6578541,blob,strategy,0,0,1
+6578541,blob,with_size,0,0,1
+6560581,blob,strategy,0,0,0
+6560581,blob,with_size,0,0,0
+6554999,blob,strategy,0,0,1
+6554999,blob,with_size,0,0,1
+6564535,long method,strategy,0,1,1
+6573709,data class,strategy,0,0,0
+6562309,blob,strategy,0,0,1
+6562309,blob,with_size,0,0,1
+6548643,feature envy,law_of_demeter,0,,0
+6573661,data class,strategy,0,0,0
+6577681,long method,strategy,0,0,0
+6555966,data class,strategy,0,0,1
+6567017,feature envy,law_of_demeter,0,,0
+6571855,blob,strategy,0,0,1
+6571855,blob,with_size,0,0,1
+6583398,long method,strategy,0,0,0
+6562963,long method,strategy,0,0,0
+6581292,long method,strategy,0,0,0
+6547907,blob,strategy,0,0,0
+6547907,blob,with_size,0,0,0
+6568804,data class,strategy,0,0,0
+6589712,blob,strategy,0,0,0
+6589712,blob,with_size,0,0,0
+6569900,data class,strategy,0,0,0
+6572017,data class,strategy,0,0,0
+6589858,long method,strategy,0,0,0
+6562164,long method,strategy,0,0,0
+6571793,blob,strategy,0,0,0
+6571793,blob,with_size,0,0,0
+6491821,feature envy,law_of_demeter,0,,0
+6492213,feature envy,law_of_demeter,0,,0
+6493535,blob,strategy,0,0,1
+6493535,blob,with_size,0,0,1
+6502815,feature envy,law_of_demeter,0,,0
+6492058,data class,strategy,0,0,0
+6493330,data class,strategy,0,0,0
+6494643,data class,strategy,0,0,0
+6503132,data class,strategy,0,0,0
+6493734,long method,strategy,0,0,0
+6493712,data class,strategy,0,0,0
+6500087,long method,strategy,0,0,0
+6496450,long method,strategy,0,0,0
+6501266,data class,strategy,0,0,0
+6521680,long method,strategy,0,0,0
+6522495,blob,strategy,0,0,0
+6522495,blob,with_size,0,0,0
+6533221,feature envy,law_of_demeter,0,,0
+6536605,long method,strategy,0,0,0
+6537117,feature envy,law_of_demeter,0,,0
+6533723,long method,strategy,0,0,0
+6535592,blob,strategy,0,0,0
+6535592,blob,with_size,0,0,0
+6532912,data class,strategy,0,0,0
+6532406,feature envy,law_of_demeter,0,,0
+6536222,long method,strategy,0,0,0
+6530288,feature envy,law_of_demeter,0,,0
+6537106,long method,strategy,0,0,0
+6522676,data class,strategy,0,0,0
+6537386,feature envy,law_of_demeter,0,,0
+6538820,data class,strategy,0,0,1
+6536158,long method,strategy,0,0,0
+6531904,data class,strategy,0,0,1
+6535841,blob,strategy,0,0,0
+6535841,blob,with_size,0,0,0
+6534806,long method,strategy,0,0,0
+6530870,long method,strategy,0,0,0
+6529636,feature envy,law_of_demeter,0,,1
+7939585,feature envy,law_of_demeter,0,,0
+7942055,blob,strategy,0,0,0
+7942055,blob,with_size,0,0,0
+7940168,data class,strategy,0,0,0
+7942242,blob,strategy,0,0,1
+7942242,blob,with_size,0,0,1
+6507301,feature envy,law_of_demeter,0,,0
+6511935,blob,strategy,0,0,1
+6511935,blob,with_size,0,0,1
+6511643,feature envy,law_of_demeter,0,,0
+6510757,data class,strategy,0,0,0
+6512007,blob,strategy,0,0,0
+6512007,blob,with_size,0,0,0
+6512990,feature envy,law_of_demeter,0,,0
+6515617,long method,strategy,0,0,1
+6513603,feature envy,law_of_demeter,0,,0
+6515344,long method,strategy,0,0,0
+6513676,blob,strategy,0,0,0
+6513676,blob,with_size,0,0,0
+6514803,data class,strategy,0,0,0
+6517482,long method,strategy,0,0,0
+6514981,feature envy,law_of_demeter,0,,0
+6518021,blob,strategy,0,0,0
+6518021,blob,with_size,0,0,0
+6516443,data class,strategy,0,0,0
+6518475,feature envy,law_of_demeter,0,,0
+6519143,data class,strategy,0,0,0
+6520782,blob,strategy,0,0,0
+6520782,blob,with_size,0,0,0
+6519318,long method,strategy,0,0,0
+6519706,long method,strategy,0,0,0
+6541523,data class,strategy,0,0,1
+6541577,data class,strategy,0,0,0
+8039190,long method,strategy,0,0,0
+8048739,long method,strategy,0,0,0
+8049293,data class,strategy,0,0,0
+8049248,long method,strategy,0,0,0
+8049187,data class,strategy,0,0,0
+8049118,data class,strategy,0,1,1
+8052959,feature envy,law_of_demeter,0,,0
+8073031,blob,strategy,0,0,0
+8073031,blob,with_size,0,0,0
+8089702,data class,strategy,0,0,0
+8082495,blob,strategy,0,0,0
+8082495,blob,with_size,0,0,0
+8088678,long method,strategy,0,0,0
+8099651,blob,strategy,0,0,1
+8099651,blob,with_size,0,0,1
+8092397,long method,strategy,0,0,0
+8090357,feature envy,law_of_demeter,0,,0
+8145522,feature envy,law_of_demeter,0,,0
+8051310,long method,strategy,0,0,0
+8055895,long method,strategy,0,0,0
+8097613,long method,strategy,0,0,0
+8029682,long method,strategy,0,1,1
+8128905,blob,strategy,0,0,0
+8128905,blob,with_size,0,0,0
+8102140,long method,strategy,0,0,0
+8038797,feature envy,law_of_demeter,0,,0
+8131397,blob,strategy,0,0,0
+8131397,blob,with_size,0,0,0
+8123359,long method,strategy,0,1,1
+8118314,long method,strategy,0,0,0
+8139442,data class,strategy,0,0,1
+8142421,blob,strategy,0,0,1
+8142421,blob,with_size,0,0,1
+8085059,feature envy,law_of_demeter,0,,0
+8119264,long method,strategy,0,0,0
+8095977,long method,strategy,0,0,0
+8132913,long method,strategy,0,0,0
+8059396,blob,strategy,0,0,0
+8059396,blob,with_size,0,0,0
+8087321,long method,strategy,0,0,0
+8132887,long method,strategy,0,0,0
+8144651,long method,strategy,0,0,1
+8132817,data class,strategy,0,1,1
+8119000,blob,strategy,0,0,1
+8119000,blob,with_size,0,1,1
+8102677,long method,strategy,0,0,0
+8083609,data class,strategy,0,0,0
+8038156,blob,strategy,0,0,0
+8038156,blob,with_size,0,0,0
+8131217,data class,strategy,0,0,0
+8043712,blob,strategy,0,0,1
+8043712,blob,with_size,0,0,1
+8044671,feature envy,law_of_demeter,0,,0
+8003657,blob,strategy,0,0,0
+8003657,blob,with_size,0,0,0
+8025832,feature envy,law_of_demeter,0,,0
+8009401,blob,strategy,0,0,0
+8009401,blob,with_size,0,0,0
+8025955,long method,strategy,0,0,0
+8026786,long method,strategy,0,0,0
+8027029,long method,strategy,0,0,0
+8004086,blob,strategy,0,1,1
+8004086,blob,with_size,0,1,1
+8026269,data class,strategy,0,0,0
+8050224,blob,strategy,0,0,0
+8050224,blob,with_size,0,0,0
+8025468,blob,strategy,1,0,1
+8025468,blob,with_size,1,1,1
+8049874,long method,strategy,0,0,0
+7969235,long method,strategy,0,0,0
+7996314,long method,strategy,0,0,0
+7972876,long method,strategy,0,0,0
+7975103,blob,strategy,0,0,0
+7975103,blob,with_size,0,0,0
+7979179,feature envy,law_of_demeter,0,,0
+8031279,data class,strategy,0,0,0
+8008599,feature envy,law_of_demeter,0,,0
+8065474,blob,strategy,0,0,1
+8065474,blob,with_size,0,0,1
+8008116,data class,strategy,0,0,0
+8039539,feature envy,law_of_demeter,0,,0
+7969819,long method,strategy,0,0,0
+8007538,long method,strategy,0,0,0
+8000801,data class,strategy,0,0,0
+8008638,feature envy,law_of_demeter,0,,0
+8024325,blob,strategy,0,0,0
+8024325,blob,with_size,0,0,0
+8002487,blob,strategy,0,0,0
+8002487,blob,with_size,0,1,0
+8067020,long method,strategy,0,0,0
+7982015,long method,strategy,0,0,0
+8044367,blob,strategy,0,0,1
+8044367,blob,with_size,0,0,1
+8051978,long method,strategy,0,0,0
+7995724,long method,strategy,0,0,0
+8033367,feature envy,law_of_demeter,0,,0
+8051170,feature envy,law_of_demeter,0,,0
+8031559,blob,strategy,0,0,0
+8031559,blob,with_size,0,0,0
+8001801,long method,strategy,0,0,0
+8001101,data class,strategy,0,0,0
+8039112,feature envy,law_of_demeter,0,,0
+8024350,blob,strategy,0,0,0
+8024350,blob,with_size,0,0,0
+7968650,data class,strategy,0,0,0
+8030414,long method,strategy,0,0,0
+7976979,blob,strategy,0,0,0
+7976979,blob,with_size,0,0,0
+7980032,feature envy,law_of_demeter,0,,0
+8007508,long method,strategy,0,0,0
+8003697,blob,strategy,0,0,0
+8003697,blob,with_size,0,0,0
+8030709,feature envy,law_of_demeter,0,,0
+8104990,long method,strategy,0,0,0
+8067041,blob,strategy,0,0,0
+8067041,blob,with_size,0,0,0
+7997794,blob,strategy,0,0,0
+7997794,blob,with_size,0,0,0
+8049687,feature envy,law_of_demeter,0,,0
+8080847,long method,strategy,0,0,0
+8017375,blob,strategy,0,0,0
+8017375,blob,with_size,0,0,0
+7998319,blob,strategy,0,0,0
+7998319,blob,with_size,0,0,0
+8100520,long method,strategy,0,0,0
+7996783,blob,strategy,0,0,0
+7996783,blob,with_size,0,0,0
+7986025,blob,strategy,0,0,1
+7986025,blob,with_size,0,0,1
+7944714,feature envy,law_of_demeter,1,,1
+7962366,long method,strategy,0,0,0
+7957449,long method,strategy,0,1,1
+7944953,blob,strategy,0,1,1
+7944953,blob,with_size,0,1,1
+7992251,blob,strategy,0,0,0
+7992251,blob,with_size,0,0,0
+8082183,feature envy,law_of_demeter,0,,0
+7997206,long method,strategy,0,0,0
+7989222,feature envy,law_of_demeter,0,,0
+7965671,long method,strategy,0,0,0
+7988090,blob,strategy,0,0,0
+7988090,blob,with_size,0,0,0
+8011549,data class,strategy,0,0,0
+7987571,long method,strategy,0,1,1
+8109341,blob,strategy,0,0,0
+8109341,blob,with_size,0,0,0
+7992491,feature envy,law_of_demeter,0,,1
+7964380,long method,strategy,0,1,1
+8199173,long method,strategy,0,0,0
+8201369,feature envy,law_of_demeter,0,,0
+8201390,long method,strategy,0,0,0
+8211343,feature envy,law_of_demeter,0,,0
+8202625,blob,strategy,0,0,0
+8202625,blob,with_size,0,0,0
+8226389,feature envy,law_of_demeter,0,,0
+8198711,blob,strategy,0,0,1
+8198711,blob,with_size,0,1,1
+8260696,long method,strategy,0,0,0
+8260331,blob,strategy,0,0,0
+8260331,blob,with_size,0,0,0
+8261354,long method,strategy,0,0,0
+8195306,feature envy,law_of_demeter,0,,0
+8213894,feature envy,law_of_demeter,0,,0
+8219927,blob,strategy,0,0,0
+8219927,blob,with_size,0,0,0
+8263546,blob,strategy,0,0,0
+8263546,blob,with_size,0,0,0
+8264635,long method,strategy,0,0,0
+8225151,long method,strategy,0,0,0
+8190064,blob,strategy,0,0,0
+8190064,blob,with_size,0,0,0
+8254484,long method,strategy,0,0,1
+8203593,long method,strategy,0,0,0
+8262479,data class,strategy,0,0,0
+8267819,blob,strategy,0,0,0
+8267819,blob,with_size,0,0,0
+8271243,long method,strategy,0,0,0
+8217946,blob,strategy,0,0,0
+8217946,blob,with_size,0,0,0
+8219824,long method,strategy,0,0,0
+8272324,data class,strategy,0,0,0
+8268165,data class,strategy,0,0,0
+8201878,blob,strategy,0,0,0
+8201878,blob,with_size,0,0,0
+8258895,data class,strategy,0,0,0
+8202824,blob,strategy,0,0,0
+8202824,blob,with_size,0,0,0
+8255035,long method,strategy,0,0,0
+8224570,long method,strategy,0,0,0
+8215542,blob,strategy,0,0,0
+8215542,blob,with_size,0,0,0
+8271551,blob,strategy,0,0,0
+8271551,blob,with_size,0,0,0
+8271042,blob,strategy,0,0,0
+8271042,blob,with_size,0,0,0
+8256644,blob,strategy,0,0,0
+8256644,blob,with_size,0,0,0
+8263441,blob,strategy,0,0,0
+8263441,blob,with_size,0,0,0
+8217435,blob,strategy,0,0,1
+8217435,blob,with_size,0,0,1
+6542357,blob,strategy,0,0,0
+6542357,blob,with_size,0,0,0
+6578382,long method,strategy,0,0,0
+6579602,long method,strategy,0,0,0
+6569509,long method,strategy,0,0,0
+6577272,long method,strategy,0,0,1
+6578481,blob,strategy,0,0,0
+6578481,blob,with_size,0,1,0
+6579581,long method,strategy,0,0,0
+8198529,data class,strategy,0,0,0
+8200621,long method,strategy,0,0,0
+8201469,feature envy,law_of_demeter,0,,0
+8141607,long method,strategy,0,0,0
+8140286,blob,strategy,0,0,1
+8140286,blob,with_size,0,0,1
+8209082,data class,strategy,0,0,0
+8207672,blob,strategy,0,0,0
+8207672,blob,with_size,0,0,0
+8195539,long method,strategy,0,0,1
+8194817,feature envy,law_of_demeter,0,,0
+8140898,long method,strategy,0,0,0
+6594157,data class,strategy,0,0,1
+6593393,blob,strategy,0,0,0
+6593393,blob,with_size,0,0,0
+6593325,feature envy,law_of_demeter,0,,0
+6595547,long method,strategy,0,0,0
+6594892,feature envy,law_of_demeter,0,,0
+6595424,feature envy,law_of_demeter,0,,0
+6598935,feature envy,law_of_demeter,0,,0
+6600361,blob,strategy,0,0,0
+6600361,blob,with_size,0,0,0
+6600350,feature envy,law_of_demeter,0,,0
+6606189,feature envy,law_of_demeter,0,,0
+6605811,blob,strategy,0,0,0
+6605811,blob,with_size,0,0,0
+6605818,long method,strategy,0,0,0
+6601584,feature envy,law_of_demeter,0,,1
+6603072,blob,strategy,0,0,1
+6603072,blob,with_size,0,0,1
+6623499,long method,strategy,0,0,0
+6623370,feature envy,law_of_demeter,0,,0
+6623354,data class,strategy,0,0,0
+6621005,blob,strategy,0,0,1
+6621005,blob,with_size,0,0,1
+6615560,long method,strategy,0,0,0
+6617747,blob,strategy,0,0,0
+6617747,blob,with_size,0,0,0
+7880048,blob,strategy,0,0,0
+7880048,blob,with_size,0,0,0
+7880496,long method,strategy,0,0,0
+7880833,long method,strategy,0,0,0
+7883291,feature envy,law_of_demeter,0,,0
+7883024,long method,strategy,0,0,0
+7885799,feature envy,law_of_demeter,0,,0
+7898105,data class,strategy,0,0,0
+7886991,blob,strategy,0,0,0
+7886991,blob,with_size,0,0,0
+7900059,long method,strategy,0,0,0
+7902148,long method,strategy,0,0,0
+7902495,long method,strategy,0,0,0
+7910366,feature envy,law_of_demeter,0,,0
+7911805,blob,strategy,0,0,0
+7911805,blob,with_size,0,0,0
+7882655,long method,strategy,0,1,1
+7910247,long method,strategy,0,0,1
+7906999,blob,strategy,0,0,0
+7906999,blob,with_size,0,0,0
+7876519,feature envy,law_of_demeter,0,,0
+7899540,data class,strategy,0,0,0
+7879764,long method,strategy,0,0,0
+7909952,long method,strategy,0,0,0
+7892253,blob,strategy,1,1,1
+7892253,blob,with_size,1,1,1
+7879255,data class,strategy,0,0,0
+7899639,data class,strategy,0,0,0
+7896708,feature envy,law_of_demeter,0,,0
+7911276,data class,strategy,0,0,0
+7899501,data class,strategy,0,0,1
+7886445,blob,strategy,0,0,0
+7886445,blob,with_size,0,0,0
+7881040,long method,strategy,0,0,0
+7875037,long method,strategy,0,1,1
+7905552,long method,strategy,0,1,1
+7911455,blob,strategy,0,0,0
+7911455,blob,with_size,0,0,0
+7887244,blob,strategy,0,0,0
+7887244,blob,with_size,0,0,0
+7893182,long method,strategy,0,0,0
+7906258,long method,strategy,0,0,0
+7895531,data class,strategy,0,0,0
+7900945,feature envy,law_of_demeter,0,,0
+7907397,feature envy,law_of_demeter,0,,0
+7904510,feature envy,law_of_demeter,0,,0
+7893144,feature envy,law_of_demeter,0,,0
+7888064,long method,strategy,0,0,0
+7907703,feature envy,law_of_demeter,0,,0
+7907062,feature envy,law_of_demeter,0,,0
+7883895,data class,strategy,0,0,1
+7889326,feature envy,law_of_demeter,0,,0
+6638631,data class,strategy,0,0,0
+6637469,feature envy,law_of_demeter,0,,0
+6638995,blob,strategy,0,0,1
+6638995,blob,with_size,0,0,1
+6637982,long method,strategy,0,0,0
+6636428,blob,strategy,0,0,0
+6636428,blob,with_size,0,0,0
+6637734,data class,strategy,0,0,1
+6639778,long method,strategy,0,0,0
+6639942,blob,strategy,0,0,0
+6639942,blob,with_size,0,0,0
+6772589,data class,strategy,0,0,1
+6725492,blob,strategy,0,0,0
+6725492,blob,with_size,0,1,0
+6680697,feature envy,law_of_demeter,0,,0
+6785826,blob,strategy,0,0,1
+6785826,blob,with_size,0,1,1
+6785745,long method,strategy,0,0,0
+6778053,feature envy,law_of_demeter,0,,0
+6695177,long method,strategy,0,0,0
+6679515,long method,strategy,0,0,0
+6761580,long method,strategy,0,0,0
+6658744,long method,strategy,0,0,0
+6666668,long method,strategy,0,0,0
+6746974,feature envy,law_of_demeter,0,,0
+6658892,long method,strategy,0,0,0
+6694346,long method,strategy,0,0,0
+6765637,long method,strategy,0,0,0
+6661908,data class,strategy,0,0,0
+6764592,long method,strategy,0,0,0
+6773071,data class,strategy,0,0,1
+6734039,feature envy,law_of_demeter,0,,0
+6773572,long method,strategy,0,0,0
+6757343,feature envy,law_of_demeter,0,,0
+6666849,feature envy,law_of_demeter,0,,0
+6761533,long method,strategy,0,0,0
+6772849,long method,strategy,0,0,0
+6775552,long method,strategy,0,0,0
+6725232,long method,strategy,0,0,0
+6753599,blob,strategy,0,0,0
+6753599,blob,with_size,0,0,0
+6641988,blob,strategy,0,0,0
+6641988,blob,with_size,0,0,0
+6640747,feature envy,law_of_demeter,0,,0
+6647337,blob,strategy,0,0,0
+6647337,blob,with_size,0,0,0
+6640728,feature envy,law_of_demeter,0,,0
+6713364,feature envy,law_of_demeter,0,,0
+6710734,blob,strategy,0,0,0
+6710734,blob,with_size,0,0,0
+6721230,long method,strategy,0,0,0
+6703649,blob,strategy,1,0,0
+6703649,blob,with_size,1,1,0
+6701931,long method,strategy,0,0,0
+6706164,blob,strategy,0,0,0
+6706164,blob,with_size,0,0,0
+6717886,blob,strategy,0,0,1
+6717886,blob,with_size,0,0,1
+6913242,data class,strategy,0,0,0
+6915312,feature envy,law_of_demeter,0,,0
+6915447,feature envy,law_of_demeter,0,,0
+6917328,long method,strategy,0,0,0
+6917283,data class,strategy,0,0,1
+6913795,feature envy,law_of_demeter,0,,0
+6912423,blob,strategy,0,0,0
+6912423,blob,with_size,0,0,0
+6914478,long method,strategy,0,0,0
+6905182,long method,strategy,1,1,1
+6981479,long method,strategy,0,0,0
+6772326,data class,strategy,0,0,0
+6782933,feature envy,law_of_demeter,0,,0
+6847809,data class,strategy,0,0,0
+6860231,feature envy,law_of_demeter,0,,0
+6861082,blob,strategy,0,0,0
+6861082,blob,with_size,0,0,0
+6854281,blob,strategy,0,0,0
+6854281,blob,with_size,0,0,0
+6858458,feature envy,law_of_demeter,0,,0
+6872266,blob,strategy,0,0,0
+6872266,blob,with_size,0,0,0
+6863460,long method,strategy,0,0,0
+6866247,blob,strategy,0,0,0
+6866247,blob,with_size,0,0,0
+6847478,blob,strategy,0,0,1
+6847478,blob,with_size,0,0,1
+6847448,data class,strategy,0,0,0
+6880454,data class,strategy,0,0,0
+6854314,feature envy,law_of_demeter,0,,0
+6857899,long method,strategy,0,1,0
+6847017,long method,strategy,0,1,1
+6850586,blob,strategy,0,0,0
+6850586,blob,with_size,0,0,0
+6865229,data class,strategy,0,0,0
+6857065,blob,strategy,0,0,0
+6857065,blob,with_size,0,0,0
+6877863,feature envy,law_of_demeter,0,,0
+6875532,long method,strategy,0,0,0
+6850932,data class,strategy,0,0,0
+6858059,blob,strategy,0,0,1
+6858059,blob,with_size,0,1,1
+6860363,blob,strategy,0,0,0
+6860363,blob,with_size,0,0,0
+6850124,long method,strategy,0,0,0
+6848482,feature envy,law_of_demeter,0,,0
+6863627,blob,strategy,0,0,0
+6863627,blob,with_size,0,0,0
+6876949,data class,strategy,0,0,1
+6854666,blob,strategy,0,0,0
+6854666,blob,with_size,0,0,0
+6788928,feature envy,law_of_demeter,0,,0
+6788988,data class,strategy,0,0,0
+6839966,long method,strategy,0,0,0
+6840403,feature envy,law_of_demeter,0,,0
+6842405,blob,strategy,0,0,0
+6842405,blob,with_size,0,0,0
+6841292,long method,strategy,0,0,0
+6842606,feature envy,law_of_demeter,0,,0
+6790483,long method,strategy,0,0,1
+6800794,data class,strategy,0,0,0
+6806316,blob,strategy,0,0,0
+6806316,blob,with_size,0,0,0
+6793253,long method,strategy,0,0,0
+6795278,long method,strategy,0,0,0
+6800764,data class,strategy,0,0,0
+6807935,data class,strategy,0,0,0
+6810674,blob,strategy,0,0,0
+6810674,blob,with_size,0,0,0
+6820808,data class,strategy,0,0,0
+6815544,blob,strategy,0,0,0
+6815544,blob,with_size,0,0,0
+6814400,blob,strategy,0,0,0
+6814400,blob,with_size,0,0,0
+6816458,long method,strategy,0,0,0
+6813948,data class,strategy,0,0,0
+6825782,blob,strategy,0,0,0
+6825782,blob,with_size,0,0,0
+6826288,long method,strategy,0,0,0
+6832744,blob,strategy,0,0,0
+6832744,blob,with_size,0,0,0
+6866681,data class,strategy,0,0,0
+6864294,long method,strategy,0,0,0
+6870293,blob,strategy,0,0,0
+6870293,blob,with_size,0,0,0
+6860284,data class,strategy,0,0,0
+6863919,long method,strategy,0,1,1
+6893864,blob,strategy,0,0,0
+6893864,blob,with_size,0,0,0
+6920891,long method,strategy,0,0,0
+6921162,long method,strategy,0,0,0
+6920729,blob,strategy,0,0,1
+6920729,blob,with_size,0,0,1
+6921833,long method,strategy,0,0,0
+6923759,long method,strategy,0,0,0
+6939776,long method,strategy,0,0,0
+6940151,feature envy,law_of_demeter,0,,0
+6920597,long method,strategy,0,0,0
+6940330,blob,strategy,0,0,0
+6940330,blob,with_size,0,0,0
+6921656,blob,strategy,0,0,0
+6921656,blob,with_size,0,0,0
+6938240,long method,strategy,0,0,0
+6937721,blob,strategy,0,0,0
+6937721,blob,with_size,0,0,0
+6933669,long method,strategy,0,0,0
+6935551,feature envy,law_of_demeter,0,,0
+6925834,long method,strategy,0,0,0
+6933417,long method,strategy,0,0,0
+6927449,blob,strategy,0,0,0
+6927449,blob,with_size,0,0,0
+6935647,blob,strategy,0,0,0
+6935647,blob,with_size,0,0,0
+6917981,feature envy,law_of_demeter,0,,0
+6920454,long method,strategy,0,0,0
+6923170,long method,strategy,0,0,1
+6923161,long method,strategy,0,0,0
+6923657,data class,strategy,0,0,1
+6937904,feature envy,law_of_demeter,0,,0
+6941861,long method,strategy,0,0,0
+6943892,feature envy,law_of_demeter,0,,0
+7071931,blob,strategy,0,0,0
+7071931,blob,with_size,0,0,0
+7074267,feature envy,law_of_demeter,0,,0
+7078266,feature envy,law_of_demeter,0,,0
+7056354,data class,strategy,0,0,0
+7075575,data class,strategy,0,0,1
+7077189,blob,strategy,0,0,1
+7077189,blob,with_size,0,0,1
+7075624,data class,strategy,0,0,0
+7085469,long method,strategy,0,0,0
+7084780,blob,strategy,0,0,0
+7084780,blob,with_size,0,0,0
+7085407,long method,strategy,0,1,1
+7095948,feature envy,law_of_demeter,0,,0
+7097449,long method,strategy,0,0,0
+7107337,feature envy,law_of_demeter,0,,0
+7072307,blob,strategy,0,0,0
+7072307,blob,with_size,0,0,0
+7077563,long method,strategy,0,0,0
+7117242,long method,strategy,0,0,0
+7105505,blob,strategy,0,0,0
+7105505,blob,with_size,0,0,0
+7094545,long method,strategy,0,0,0
+7100929,blob,strategy,0,0,1
+7100929,blob,with_size,0,0,1
+7094260,feature envy,law_of_demeter,0,,0
+7102262,long method,strategy,0,1,1
+7115420,long method,strategy,0,0,0
+7092657,feature envy,law_of_demeter,0,,1
+7108794,long method,strategy,0,0,0
+7108130,long method,strategy,0,1,1
+7115956,data class,strategy,0,0,1
+7093849,data class,strategy,0,0,1
+7114490,long method,strategy,0,0,0
+7087370,feature envy,law_of_demeter,0,,0
+7114027,long method,strategy,0,0,0
+7113719,long method,strategy,0,0,0
+7066831,blob,strategy,0,0,0
+7066831,blob,with_size,0,0,0
+7093536,feature envy,law_of_demeter,0,,0
+7113247,data class,strategy,0,0,1
+7090476,feature envy,law_of_demeter,0,,0
+7110712,long method,strategy,0,0,0
+7101859,data class,strategy,0,0,1
+7081925,blob,strategy,0,0,0
+7081925,blob,with_size,0,1,0
+7094329,feature envy,law_of_demeter,0,,1
+7113239,blob,strategy,0,0,0
+7113239,blob,with_size,0,0,0
+7071050,feature envy,law_of_demeter,0,,0
+7067326,blob,strategy,0,0,0
+7067326,blob,with_size,0,1,0
+7065127,long method,strategy,0,0,0
+6967137,feature envy,law_of_demeter,0,,0
+6977949,data class,strategy,0,0,0
+6976868,data class,strategy,0,0,0
+7002598,blob,strategy,0,0,0
+7002598,blob,with_size,0,0,0
+7005446,blob,strategy,0,0,0
+7005446,blob,with_size,0,0,0
+7009433,long method,strategy,0,0,0
+7003619,blob,strategy,0,0,0
+7003619,blob,with_size,0,0,0
+7002844,feature envy,law_of_demeter,0,,0
+7006068,blob,strategy,0,0,0
+7006068,blob,with_size,0,0,0
+7007225,blob,strategy,0,0,1
+7007225,blob,with_size,0,0,1
+7009087,long method,strategy,0,0,0
+7010604,blob,strategy,0,0,0
+7010604,blob,with_size,0,0,0
+7005369,blob,strategy,0,0,1
+7005369,blob,with_size,0,0,1
+6999266,long method,strategy,0,0,0
+6999436,blob,strategy,0,0,1
+6999436,blob,with_size,0,0,1
+7000207,blob,strategy,0,0,0
+7000207,blob,with_size,0,0,0
+7000071,data class,strategy,0,0,0
+7001897,long method,strategy,0,0,0
+7002266,long method,strategy,0,0,0
+7038229,long method,strategy,0,0,0
+7048370,data class,strategy,0,0,1
+7037560,blob,strategy,1,1,1
+7037560,blob,with_size,1,1,1
+7047868,blob,strategy,1,0,1
+7047868,blob,with_size,1,1,1
+7032959,long method,strategy,0,0,1
+7036119,blob,strategy,0,0,1
+7036119,blob,with_size,0,0,1
+7056433,long method,strategy,0,0,1
+7056882,long method,strategy,0,0,1
+7045316,feature envy,law_of_demeter,0,,0
+7025249,blob,strategy,0,0,0
+7025249,blob,with_size,0,1,0
+7047050,blob,strategy,1,1,1
+7047050,blob,with_size,1,1,1
+7044394,long method,strategy,0,0,0
+7061885,blob,strategy,0,0,0
+7061885,blob,with_size,0,0,0
+7026284,long method,strategy,0,0,0
+7026461,long method,strategy,1,1,1
+7017211,blob,strategy,0,0,0
+7017211,blob,with_size,0,0,0
+7017732,data class,strategy,0,0,0
+7030257,long method,strategy,0,0,1
+7034516,long method,strategy,0,0,0
+7026916,long method,strategy,0,0,0
+7048486,blob,strategy,0,0,0
+7048486,blob,with_size,0,0,0
+7046440,feature envy,law_of_demeter,0,,0
+7049236,long method,strategy,0,0,1
+7047929,blob,strategy,0,0,0
+7047929,blob,with_size,0,0,0
+7070559,long method,strategy,0,0,0
+7076084,data class,strategy,0,0,0
+7076341,feature envy,law_of_demeter,0,,0
+7074998,long method,strategy,0,0,0
+7074773,feature envy,law_of_demeter,0,,0
+7074847,data class,strategy,0,0,0
+7075067,long method,strategy,0,0,0
+7074545,blob,strategy,0,0,0
+7074545,blob,with_size,0,0,0
+9087398,blob,strategy,0,0,0
+9087398,blob,with_size,0,0,0
+9087427,feature envy,law_of_demeter,0,,0
+9094711,blob,strategy,0,0,0
+9094711,blob,with_size,0,0,0
+9092553,blob,strategy,0,0,0
+9092553,blob,with_size,0,0,0
+9094331,long method,strategy,0,0,0
+9093538,long method,strategy,0,0,0
+9093819,feature envy,law_of_demeter,0,,0
+9095246,data class,strategy,0,0,0
+9097530,long method,strategy,0,0,0
+9097418,data class,strategy,0,0,0
+9097958,feature envy,law_of_demeter,0,,0
+9104666,blob,strategy,0,0,1
+9104666,blob,with_size,0,0,1
+9102455,data class,strategy,0,0,1
+9093197,blob,strategy,0,0,0
+9093197,blob,with_size,0,0,0
+9104309,blob,strategy,0,0,0
+9104309,blob,with_size,0,0,0
+9095266,blob,strategy,0,0,1
+9095266,blob,with_size,0,0,1
+9102911,blob,strategy,0,0,0
+9102911,blob,with_size,0,0,0
+9096801,blob,strategy,0,0,0
+9096801,blob,with_size,0,0,0
+9093112,feature envy,law_of_demeter,0,,0
+9096815,data class,strategy,0,0,0
+9095202,blob,strategy,0,0,0
+9095202,blob,with_size,0,0,0
+7402299,long method,strategy,0,0,0
+7404871,long method,strategy,0,0,0
+7405705,blob,strategy,0,0,0
+7405705,blob,with_size,0,0,0
+7410586,long method,strategy,0,0,0
+7409821,long method,strategy,0,0,0
+7423016,blob,strategy,0,0,1
+7423016,blob,with_size,0,0,1
+7424019,feature envy,law_of_demeter,0,,0
+7422066,long method,strategy,0,0,0
+7428271,blob,strategy,0,0,0
+7428271,blob,with_size,0,0,0
+7448715,feature envy,law_of_demeter,0,,0
+7451785,long method,strategy,0,0,0
+7452272,blob,strategy,0,0,0
+7452272,blob,with_size,0,0,0
+7451343,long method,strategy,0,0,0
+7454470,long method,strategy,0,0,0
+7454233,long method,strategy,0,0,0
+7458584,long method,strategy,0,0,0
+7424164,feature envy,law_of_demeter,0,,0
+7460703,blob,strategy,0,0,0
+7460703,blob,with_size,0,0,0
+7465309,blob,strategy,0,0,0
+7465309,blob,with_size,0,0,0
+7478016,feature envy,law_of_demeter,0,,0
+7486125,feature envy,law_of_demeter,0,,0
+7496171,long method,strategy,0,0,0
+7501823,long method,strategy,0,0,0
+7513430,blob,strategy,0,0,0
+7513430,blob,with_size,0,0,0
+7515654,long method,strategy,0,0,0
+7513758,feature envy,law_of_demeter,0,,0
+7513487,long method,strategy,0,0,0
+7517076,long method,strategy,0,0,0
+7496363,blob,strategy,1,1,1
+7496363,blob,with_size,1,1,1
+7441493,blob,strategy,0,0,0
+7441493,blob,with_size,0,0,0
+7491946,long method,strategy,0,0,0
+7418065,blob,strategy,0,0,1
+7418065,blob,with_size,0,0,1
+7480589,data class,strategy,0,0,0
+7438576,blob,strategy,0,0,0
+7438576,blob,with_size,0,0,0
+7451699,long method,strategy,0,0,0
+7399428,blob,strategy,0,0,1
+7399428,blob,with_size,0,1,1
+7486357,data class,strategy,0,0,0
+7396410,data class,strategy,0,0,0
+7413961,data class,strategy,0,0,1
+7475455,long method,strategy,0,0,0
+7393053,blob,strategy,0,0,0
+7393053,blob,with_size,0,0,0
+7492767,long method,strategy,1,1,1
+7395810,data class,strategy,1,0,0
+7451069,feature envy,law_of_demeter,0,,0
+7452621,blob,strategy,0,0,0
+7452621,blob,with_size,0,1,0
+7429354,blob,strategy,0,0,0
+7429354,blob,with_size,0,0,0
+7467151,long method,strategy,0,0,0
+7414155,blob,strategy,0,0,0
+7414155,blob,with_size,0,0,0
+7518556,long method,strategy,0,0,0
+7399310,feature envy,law_of_demeter,0,,0
+7413911,long method,strategy,0,0,0
+7403028,long method,strategy,0,0,0
+7436139,feature envy,law_of_demeter,0,,0
+7495736,feature envy,law_of_demeter,0,,0
+7465296,blob,strategy,0,0,0
+7465296,blob,with_size,0,0,0
+7445434,long method,strategy,0,0,0
+7452135,data class,strategy,0,0,0
+7400506,feature envy,law_of_demeter,0,,0
+7501833,blob,strategy,0,0,0
+7501833,blob,with_size,0,0,0
+7394017,blob,strategy,0,0,0
+7394017,blob,with_size,0,0,0
+7437145,blob,strategy,0,0,0
+7437145,blob,with_size,0,0,0
+7512464,data class,strategy,0,0,0
+7394379,blob,strategy,0,0,0
+7394379,blob,with_size,0,0,0
+7492805,blob,strategy,0,0,0
+7492805,blob,with_size,0,0,0
+7440963,feature envy,law_of_demeter,0,,0
+7513555,blob,strategy,0,0,0
+7513555,blob,with_size,0,0,0
+7406616,data class,strategy,0,0,0
+7454098,blob,strategy,0,0,0
+7454098,blob,with_size,0,0,0
+7511055,data class,strategy,0,0,0
+7451347,blob,strategy,0,0,0
+7451347,blob,with_size,0,0,0
+7434990,data class,strategy,0,0,0
+7441078,blob,strategy,0,0,0
+7441078,blob,with_size,0,0,0
+7462222,blob,strategy,0,0,0
+7462222,blob,with_size,0,0,0
+7465317,long method,strategy,0,0,0
+7198476,long method,strategy,0,0,0
+7198785,feature envy,law_of_demeter,0,,0
+7196784,long method,strategy,0,0,0
+7196708,data class,strategy,0,0,0
+7197017,long method,strategy,0,0,0
+7197198,feature envy,law_of_demeter,0,,0
+7198305,data class,strategy,0,0,1
+7198779,data class,strategy,0,0,0
+7205422,long method,strategy,0,0,0
+7201007,blob,strategy,0,0,0
+7201007,blob,with_size,0,0,0
+7200142,blob,strategy,0,0,0
+7200142,blob,with_size,0,0,0
+7204833,long method,strategy,0,0,0
+7204338,long method,strategy,0,0,0
+7204450,blob,strategy,0,0,0
+7204450,blob,with_size,0,0,0
+7204508,feature envy,law_of_demeter,0,,0
+7205731,feature envy,law_of_demeter,0,,0
+7205348,feature envy,law_of_demeter,0,,0
+7204626,data class,strategy,0,0,0
+7205580,long method,strategy,0,0,1
+7201768,feature envy,law_of_demeter,0,,1
+7205803,long method,strategy,0,0,0
+7197581,long method,strategy,0,1,1
+7186067,long method,strategy,0,0,1
+7200879,blob,strategy,0,0,0
+7200879,blob,with_size,0,0,0
+7190715,blob,strategy,0,0,0
+7190715,blob,with_size,0,0,0
+7207168,long method,strategy,0,0,0
+7185320,blob,strategy,0,0,0
+7185320,blob,with_size,0,0,0
+7201055,data class,strategy,0,0,0
+7195523,long method,strategy,0,0,0
+7196750,feature envy,law_of_demeter,0,,0
+7207869,long method,strategy,0,0,0
+7197234,long method,strategy,0,0,0
+7199388,blob,strategy,0,0,0
+7199388,blob,with_size,0,0,0
+7196538,blob,strategy,0,0,0
+7196538,blob,with_size,0,0,0
+7186027,blob,strategy,0,0,0
+7186027,blob,with_size,0,0,0
+7206504,data class,strategy,0,0,1
+7188781,blob,strategy,0,0,0
+7188781,blob,with_size,0,0,0
+7187010,long method,strategy,0,0,0
+7185831,long method,strategy,0,0,0
+7195480,data class,strategy,0,0,0
+7186496,long method,strategy,0,0,0
+7188797,blob,strategy,0,0,0
+7188797,blob,with_size,0,0,0
+7179618,data class,strategy,0,0,0
+7182108,data class,strategy,0,0,1
+7180104,feature envy,law_of_demeter,0,,0
+7183873,data class,strategy,0,0,0
+7184071,long method,strategy,1,1,1
+7269783,data class,strategy,0,0,0
+7272514,feature envy,law_of_demeter,0,,0
+7273316,feature envy,law_of_demeter,0,,0
+7273013,feature envy,law_of_demeter,1,,0
+7272444,data class,strategy,0,0,0
+7273813,feature envy,law_of_demeter,0,,0
+7274207,blob,strategy,0,0,1
+7274207,blob,with_size,0,0,1
+7257331,blob,strategy,0,0,0
+7257331,blob,with_size,0,0,0
+7247219,blob,strategy,0,0,1
+7247219,blob,with_size,0,0,1
+7272610,feature envy,law_of_demeter,0,,0
+7249097,blob,strategy,0,0,0
+7249097,blob,with_size,0,0,0
+7273237,long method,strategy,0,0,0
+7245998,blob,strategy,0,0,0
+7245998,blob,with_size,0,0,0
+7255045,feature envy,law_of_demeter,0,,0
+7247159,data class,strategy,0,0,0
+7251791,data class,strategy,0,0,0
+7268054,long method,strategy,0,0,0
+7255679,long method,strategy,0,0,0
+7267070,long method,strategy,0,0,0
+7245995,long method,strategy,0,0,0
+7276259,feature envy,law_of_demeter,0,,0
+7248409,feature envy,law_of_demeter,0,,0
+7254154,blob,strategy,0,0,0
+7254154,blob,with_size,0,0,0
+7257899,long method,strategy,0,0,1
+7265565,blob,strategy,0,0,0
+7265565,blob,with_size,0,0,0
+7274451,data class,strategy,0,0,1
+7270024,long method,strategy,0,0,0
+7246708,long method,strategy,0,0,0
+7269177,blob,strategy,0,0,0
+7269177,blob,with_size,0,0,0
+7274045,feature envy,law_of_demeter,0,,0
+7254402,long method,strategy,0,0,0
+7210387,feature envy,law_of_demeter,0,,0
+7210083,blob,strategy,0,0,1
+7210083,blob,with_size,0,0,1
+7209681,feature envy,law_of_demeter,0,,0
+7211250,long method,strategy,0,0,0
+7211700,data class,strategy,0,0,0
+7215246,long method,strategy,0,0,0
+7214745,long method,strategy,0,0,0
+7214444,blob,strategy,0,0,0
+7214444,blob,with_size,0,0,0
+7216175,data class,strategy,0,0,0
+7218982,feature envy,law_of_demeter,0,,0
+7228058,data class,strategy,0,0,1
+7225000,feature envy,law_of_demeter,0,,0
+7222257,feature envy,law_of_demeter,0,,0
+7227811,data class,strategy,0,0,0
+7221713,long method,strategy,0,0,0
+7228404,feature envy,law_of_demeter,0,,0
+7229219,feature envy,law_of_demeter,0,,0
+7229362,feature envy,law_of_demeter,0,,0
+7229025,blob,strategy,0,0,0
+7229025,blob,with_size,0,0,0
+7231342,long method,strategy,0,0,0
+7238349,feature envy,law_of_demeter,0,,0
+7237730,blob,strategy,0,0,0
+7237730,blob,with_size,0,0,0
+7231644,long method,strategy,0,0,0
+7239385,blob,strategy,0,0,1
+7239385,blob,with_size,0,0,1
+7234731,feature envy,law_of_demeter,0,,0
+7236664,long method,strategy,0,0,0
+7231995,long method,strategy,0,0,0
+7232869,long method,strategy,0,0,0
+7240692,data class,strategy,0,1,1
+7235982,data class,strategy,0,0,0
+7233373,feature envy,law_of_demeter,0,,0
+7236147,blob,strategy,0,0,0
+7236147,blob,with_size,0,0,0
+7233796,long method,strategy,0,0,0
+7529982,blob,strategy,0,0,0
+7529982,blob,with_size,0,0,0
+7284429,long method,strategy,0,0,0
+7287653,long method,strategy,0,0,0
+7284688,feature envy,law_of_demeter,0,,0
+7286228,blob,strategy,0,0,0
+7286228,blob,with_size,0,0,0
+7290109,data class,strategy,0,0,0
+7294696,long method,strategy,0,0,0
+7294753,long method,strategy,0,0,0
+7294889,feature envy,law_of_demeter,0,,0
+7294593,blob,strategy,0,0,0
+7294593,blob,with_size,0,0,0
+7294947,blob,strategy,0,0,1
+7294947,blob,with_size,0,0,1
+7291517,feature envy,law_of_demeter,1,,1
+7291569,long method,strategy,0,0,0
+7295107,blob,strategy,0,0,1
+7295107,blob,with_size,0,0,1
+7294182,long method,strategy,0,0,0
+7294667,feature envy,law_of_demeter,0,,0
+7294422,long method,strategy,0,0,0
+7293098,blob,strategy,0,0,0
+7293098,blob,with_size,0,0,0
+7298628,data class,strategy,0,0,0
+7298896,long method,strategy,0,0,0
+7300150,data class,strategy,0,0,1
+7306360,long method,strategy,0,0,0
+7307669,data class,strategy,0,0,1
+7307441,blob,strategy,0,0,1
+7307441,blob,with_size,0,0,1
+7308132,blob,strategy,0,0,0
+7308132,blob,with_size,0,0,0
+7326860,blob,strategy,0,0,0
+7326860,blob,with_size,0,0,0
+7325700,feature envy,law_of_demeter,0,,0
+7330361,data class,strategy,0,0,0
+7369780,blob,strategy,0,0,1
+7369780,blob,with_size,0,0,1
+7374061,long method,strategy,0,0,0
+7373962,feature envy,law_of_demeter,0,,0
+7373964,blob,strategy,0,0,0
+7373964,blob,with_size,0,0,0
+7375322,long method,strategy,0,0,0
+7373999,blob,strategy,0,0,0
+7373999,blob,with_size,0,0,0
+7375884,data class,strategy,0,0,0
+7377296,blob,strategy,0,0,0
+7377296,blob,with_size,0,0,0
+7374778,data class,strategy,0,0,0
+7375915,blob,strategy,0,0,0
+7375915,blob,with_size,0,0,0
+7381763,blob,strategy,0,0,0
+7381763,blob,with_size,0,0,0
+7381518,data class,strategy,0,0,0
+7370553,data class,strategy,0,0,0
+7376354,blob,strategy,0,0,0
+7376354,blob,with_size,0,0,0
+7377288,blob,strategy,0,0,0
+7377288,blob,with_size,0,0,0
+7385102,feature envy,law_of_demeter,0,,0
+7379244,data class,strategy,0,0,0
+7386739,feature envy,law_of_demeter,0,,0
+7372240,blob,strategy,1,0,1
+7372240,blob,with_size,1,1,1
+7388482,long method,strategy,0,0,0
+7389374,long method,strategy,0,0,0
+7387764,blob,strategy,0,0,0
+7387764,blob,with_size,0,0,0
+7385364,long method,strategy,0,0,0
+7372146,data class,strategy,0,0,0
+7378490,long method,strategy,0,0,1
+7372565,long method,strategy,0,0,0
+7375581,long method,strategy,0,0,0
+7369379,blob,strategy,0,0,0
+7369379,blob,with_size,0,0,0
+7351641,blob,strategy,0,0,1
+7351641,blob,with_size,0,0,1
+7351843,data class,strategy,1,0,0
+7361930,data class,strategy,0,0,0
+7360627,feature envy,law_of_demeter,0,,0
+7377589,long method,strategy,0,0,0
+7377189,long method,strategy,0,0,0
+7379790,feature envy,law_of_demeter,0,,0
+7379441,feature envy,law_of_demeter,0,,0
+7386253,blob,strategy,0,0,1
+7386253,blob,with_size,0,0,1
+7385876,long method,strategy,0,0,0
+7391055,blob,strategy,0,0,1
+7391055,blob,with_size,0,0,1
+7391660,long method,strategy,0,0,0
+7391521,blob,strategy,0,0,0
+7391521,blob,with_size,0,0,0
+7457996,blob,strategy,0,0,1
+7457996,blob,with_size,0,0,1
+7457519,blob,strategy,0,0,0
+7457519,blob,with_size,0,0,0
+7476496,blob,strategy,0,0,0
+7476496,blob,with_size,0,0,0
+7473205,long method,strategy,0,0,0
+7477969,blob,strategy,0,0,0
+7477969,blob,with_size,0,0,0
+7468700,blob,strategy,0,0,1
+7468700,blob,with_size,0,0,1
+7478608,blob,strategy,0,0,0
+7478608,blob,with_size,0,0,0
+7483452,feature envy,law_of_demeter,0,,0
+7482808,blob,strategy,0,0,0
+7482808,blob,with_size,0,0,0
+7483890,feature envy,law_of_demeter,0,,0
+7483476,feature envy,law_of_demeter,0,,0
+7485370,feature envy,law_of_demeter,0,,0
+7484147,long method,strategy,0,0,0
+7482898,data class,strategy,0,0,0
+7471737,blob,strategy,0,0,0
+7471737,blob,with_size,0,0,0
+7484156,blob,strategy,0,0,0
+7484156,blob,with_size,0,0,0
+7481501,blob,strategy,0,0,1
+7481501,blob,with_size,0,0,1
+7461973,blob,strategy,0,0,0
+7461973,blob,with_size,0,0,0
+7468395,blob,strategy,0,0,0
+7468395,blob,with_size,0,0,0
+7476486,long method,strategy,0,0,0
+7455354,blob,strategy,0,0,0
+7455354,blob,with_size,0,0,0
+7482780,blob,strategy,0,0,0
+7482780,blob,with_size,0,0,0
+7455825,blob,strategy,0,0,0
+7455825,blob,with_size,0,0,0
+7460730,blob,strategy,0,0,0
+7460730,blob,with_size,0,0,0
+7482608,blob,strategy,0,0,1
+7482608,blob,with_size,0,0,1
+7463516,data class,strategy,0,0,1
+7455167,blob,strategy,0,0,0
+7455167,blob,with_size,0,0,0
+7476183,blob,strategy,0,0,0
+7476183,blob,with_size,0,0,0
+7409026,long method,strategy,0,0,0
+7416098,feature envy,law_of_demeter,0,,0
+7416545,long method,strategy,0,0,0
+7410927,data class,strategy,0,0,0
+7410446,long method,strategy,0,0,0
+7420655,long method,strategy,0,0,0
+7412708,data class,strategy,0,0,0
+7426271,feature envy,law_of_demeter,0,,0
+7428769,blob,strategy,0,0,1
+7428769,blob,with_size,0,0,1
+7432284,long method,strategy,0,1,1
+7446885,blob,strategy,0,0,1
+7446885,blob,with_size,0,0,1
+7447081,blob,strategy,0,0,0
+7447081,blob,with_size,0,0,0
+7446209,blob,strategy,0,0,0
+7446209,blob,with_size,0,0,0
+7446120,blob,strategy,0,0,0
+7446120,blob,with_size,0,0,0
+7450485,blob,strategy,0,0,0
+7450485,blob,with_size,0,0,0
+7469146,long method,strategy,0,0,0
+7471950,blob,strategy,0,0,0
+7471950,blob,with_size,0,0,0
+7465368,blob,strategy,0,0,0
+7465368,blob,with_size,0,0,0
+7492060,long method,strategy,0,0,0
+7501187,blob,strategy,0,0,1
+7501187,blob,with_size,0,0,1
+7502933,long method,strategy,0,0,0
+8213437,feature envy,law_of_demeter,0,,0
+8213293,data class,strategy,0,0,0
+8212971,blob,strategy,0,0,0
+8212971,blob,with_size,0,0,0
+8212330,blob,strategy,0,0,0
+8212330,blob,with_size,0,0,0
+8214224,data class,strategy,0,0,0
+8212082,long method,strategy,0,0,0
+7577346,feature envy,law_of_demeter,0,,0
+7576371,long method,strategy,0,1,1
+7591041,blob,strategy,0,0,0
+7591041,blob,with_size,0,0,0
+7576345,data class,strategy,0,0,0
+7589426,long method,strategy,0,0,0
+7588699,feature envy,law_of_demeter,0,,1
+7588956,feature envy,law_of_demeter,0,,1
+7586207,blob,strategy,0,0,0
+7586207,blob,with_size,0,0,0
+7613058,data class,strategy,0,0,0
+7577692,feature envy,law_of_demeter,0,,0
+7605003,blob,strategy,0,0,1
+7605003,blob,with_size,0,0,1
+7583462,data class,strategy,0,0,0
+7599209,blob,strategy,0,0,0
+7599209,blob,with_size,0,0,0
+7593524,long method,strategy,0,0,0
+7581323,feature envy,law_of_demeter,0,,0
+7563790,blob,strategy,1,0,0
+7563790,blob,with_size,1,1,0
+7560859,long method,strategy,0,0,0
+7580470,long method,strategy,0,0,1
+7584763,long method,strategy,0,0,0
+7580167,long method,strategy,0,0,0
+7561940,data class,strategy,0,0,1
+7563653,feature envy,law_of_demeter,0,,0
+7568142,feature envy,law_of_demeter,0,,0
+7570873,blob,strategy,0,0,0
+7570873,blob,with_size,0,0,0
+7581965,long method,strategy,0,0,1
+7564300,blob,strategy,0,0,0
+7564300,blob,with_size,0,0,0
+7581956,long method,strategy,0,0,0
+7563057,blob,strategy,1,1,1
+7563057,blob,with_size,1,1,1
+7574549,feature envy,law_of_demeter,0,,0
+7568688,blob,strategy,0,0,0
+7568688,blob,with_size,0,0,0
+7563795,long method,strategy,0,1,1
+7563593,blob,strategy,0,0,0
+7563593,blob,with_size,0,0,0
+7619908,blob,strategy,0,0,0
+7619908,blob,with_size,0,0,0
+7586356,feature envy,law_of_demeter,0,,0
+7564248,blob,strategy,0,0,0
+7564248,blob,with_size,0,0,0
+7588520,data class,strategy,1,0,1
+7584816,data class,strategy,0,0,0
+7523131,long method,strategy,0,0,0
+7522826,feature envy,law_of_demeter,0,,0
+7523283,data class,strategy,0,0,1
+7520782,long method,strategy,0,0,0
+7521109,blob,strategy,0,0,0
+7521109,blob,with_size,0,0,0
+7526716,long method,strategy,0,0,0
+7525557,data class,strategy,0,0,0
+7525975,long method,strategy,0,0,0
+7628549,long method,strategy,0,0,0
+7627967,long method,strategy,0,0,0
+7625090,feature envy,law_of_demeter,0,,0
+7628757,long method,strategy,0,0,0
+7633041,data class,strategy,0,0,0
+7634280,data class,strategy,0,0,0
+7636168,data class,strategy,0,0,0
+7626113,data class,strategy,0,0,0
+7640021,data class,strategy,0,0,0
+7633038,data class,strategy,0,0,0
+7628568,long method,strategy,0,0,0
+7612278,blob,strategy,0,0,0
+7612278,blob,with_size,0,0,0
+7619958,data class,strategy,0,0,0
+7621803,long method,strategy,0,0,0
+7617518,blob,strategy,0,0,0
+7617518,blob,with_size,0,0,0
+7610926,long method,strategy,0,0,0
+7638064,feature envy,law_of_demeter,0,,0
+7623277,blob,strategy,0,0,1
+7623277,blob,with_size,0,0,1
+7633445,blob,strategy,0,0,0
+7633445,blob,with_size,0,0,0
+7602224,feature envy,law_of_demeter,0,,0
+7613495,blob,strategy,0,0,0
+7613495,blob,with_size,0,0,0
+7622719,feature envy,law_of_demeter,0,,0
+7630180,data class,strategy,0,0,0
+7638207,data class,strategy,0,0,1
+7619442,long method,strategy,0,0,0
+7631100,blob,strategy,0,0,1
+7631100,blob,with_size,0,0,1
+7605359,data class,strategy,0,0,0
+7604836,long method,strategy,0,0,0
+7528188,blob,strategy,0,0,0
+7528188,blob,with_size,0,0,0
+7527099,blob,strategy,0,0,0
+7527099,blob,with_size,0,0,0
+7528643,long method,strategy,0,0,0
+7530504,long method,strategy,0,0,0
+7533998,long method,strategy,0,0,0
+7533683,long method,strategy,0,0,0
+7549648,data class,strategy,0,0,0
+7553936,data class,strategy,0,0,0
+7548776,data class,strategy,0,0,1
+7551760,feature envy,law_of_demeter,0,,0
+7548967,data class,strategy,0,0,0
+7544867,blob,strategy,0,0,0
+7544867,blob,with_size,0,0,0
+7543232,long method,strategy,0,0,0
+7553034,blob,strategy,0,0,0
+7553034,blob,with_size,0,0,0
+7554762,long method,strategy,0,0,1
+7538101,long method,strategy,0,0,0
+7538561,blob,strategy,0,0,0
+7538561,blob,with_size,0,0,0
+7540579,long method,strategy,0,0,0
+7539038,blob,strategy,0,0,0
+7539038,blob,with_size,0,0,0
+7540589,blob,strategy,0,0,0
+7540589,blob,with_size,0,0,0
+7542000,feature envy,law_of_demeter,0,,0
+7539853,feature envy,law_of_demeter,0,,0
+7539445,long method,strategy,0,0,0
+7540312,long method,strategy,0,0,0
+7541111,blob,strategy,0,0,0
+7541111,blob,with_size,0,0,0
+7542297,long method,strategy,0,0,1
+7539523,blob,strategy,0,0,0
+7539523,blob,with_size,0,0,0
+7538873,blob,strategy,0,0,0
+7538873,blob,with_size,0,0,0
+7546490,feature envy,law_of_demeter,0,,0
+7557707,data class,strategy,0,0,0
+7558115,long method,strategy,0,0,0
+7558669,data class,strategy,0,0,0
+7558740,blob,strategy,0,0,0
+7558740,blob,with_size,0,0,0
+7600324,data class,strategy,0,0,0
+7587149,long method,strategy,0,0,0
+7609535,data class,strategy,0,0,1
+7592195,long method,strategy,0,0,0
+7594410,data class,strategy,0,0,0
+7590824,data class,strategy,0,0,0
+7594427,blob,strategy,0,0,0
+7594427,blob,with_size,0,0,0
+7592205,feature envy,law_of_demeter,0,,0
+7585761,long method,strategy,0,0,0
+7600342,data class,strategy,0,0,0
+7599926,feature envy,law_of_demeter,0,,0
+7594784,data class,strategy,0,0,0
+7595459,feature envy,law_of_demeter,0,,0
+7619400,blob,strategy,0,0,0
+7619400,blob,with_size,0,0,0
+7619076,blob,strategy,0,0,0
+7619076,blob,with_size,0,0,0
+7618843,long method,strategy,0,0,0
+7625447,data class,strategy,0,1,1
+7651598,blob,strategy,0,0,0
+7651598,blob,with_size,0,0,0
+7643849,blob,strategy,0,0,0
+7643849,blob,with_size,0,0,0
+7650722,data class,strategy,0,0,0
+7643210,data class,strategy,0,0,0
+7644249,long method,strategy,0,0,1
+7649261,blob,strategy,0,0,0
+7649261,blob,with_size,0,0,0
+7648196,blob,strategy,0,0,0
+7648196,blob,with_size,0,0,0
+7641912,long method,strategy,0,0,0
+7640513,data class,strategy,0,0,0
+7645267,feature envy,law_of_demeter,0,,0
+7652241,data class,strategy,1,1,1
+7654989,blob,strategy,0,0,0
+7654989,blob,with_size,0,0,0
+7655364,blob,strategy,0,0,0
+7655364,blob,with_size,0,0,0
+7655847,blob,strategy,0,0,1
+7655847,blob,with_size,0,0,1
+7655690,data class,strategy,0,0,1
+7661107,data class,strategy,0,0,0
+7663402,feature envy,law_of_demeter,0,,0
+7659358,long method,strategy,0,0,0
+7658621,data class,strategy,0,0,0
+7659113,blob,strategy,0,0,0
+7659113,blob,with_size,0,0,0
+7659271,blob,strategy,0,0,0
+7659271,blob,with_size,0,0,0
+7657534,data class,strategy,0,0,0
+7656657,long method,strategy,0,0,0
+7666721,blob,strategy,0,0,0
+7666721,blob,with_size,0,0,0
+7664957,blob,strategy,0,0,0
+7664957,blob,with_size,0,0,0
+7665235,blob,strategy,0,0,0
+7665235,blob,with_size,0,0,0
+7681481,blob,strategy,0,0,1
+7681481,blob,with_size,0,0,1
+7674694,long method,strategy,0,0,0
+7686388,blob,strategy,0,0,0
+7686388,blob,with_size,0,0,0
+7677023,blob,strategy,0,0,1
+7677023,blob,with_size,0,0,1
+7686662,data class,strategy,0,0,0
+7684728,data class,strategy,1,1,1
+7678894,feature envy,law_of_demeter,0,,0
+7689561,blob,strategy,0,0,1
+7689561,blob,with_size,0,0,1
+7686456,data class,strategy,0,0,0
+7702332,long method,strategy,0,0,1
+7706698,feature envy,law_of_demeter,0,,0
+7711083,long method,strategy,0,0,0
+7710744,long method,strategy,0,0,0
+7711363,blob,strategy,0,0,0
+7711363,blob,with_size,0,0,0
+7718229,long method,strategy,0,0,0
+7720851,feature envy,law_of_demeter,0,,0
+7720540,long method,strategy,0,0,0
+7726338,blob,strategy,0,0,0
+7726338,blob,with_size,0,0,0
+7721873,data class,strategy,0,0,0
+7718829,blob,strategy,0,0,0
+7718829,blob,with_size,0,0,0
+7725777,data class,strategy,0,0,1
+7725751,feature envy,law_of_demeter,0,,0
+7726353,blob,strategy,0,0,0
+7726353,blob,with_size,0,0,0
+7717968,data class,strategy,0,0,0
+7720470,blob,strategy,0,0,0
+7720470,blob,with_size,0,0,0
+7726305,feature envy,law_of_demeter,0,,0
+7716255,blob,strategy,0,0,0
+7716255,blob,with_size,0,0,0
+7717190,long method,strategy,0,0,1
+7716650,long method,strategy,0,0,0
+7725645,data class,strategy,0,0,1
+7728455,blob,strategy,0,0,0
+7728455,blob,with_size,0,0,0
+7725810,long method,strategy,0,0,0
+7728166,feature envy,law_of_demeter,1,,0
+7727842,feature envy,law_of_demeter,1,,0
+7722604,blob,strategy,0,0,1
+7722604,blob,with_size,0,0,1
+7727470,long method,strategy,0,0,0
+7727545,long method,strategy,0,0,1

@@ -86,6 +86,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-74 | Rubrika hyn në punim para se të mbushet fleta | 2026-09-08 | aktiv |
 | VD-75 | Faktet përgatiten, gjykimi jo | 2026-09-08 | aktiv |
 | VD-76 | Krahasimi me PMD-në, me pragjet e tij | 2026-09-08 | aktiv |
+| VD-77 | Fitorja vendoset nga intervali, jo nga dy pika | 2026-09-09 | aktiv |
 
 ---
 
@@ -2798,3 +2799,47 @@ rikuperimi, ajo deklaron se u përdor, dhe të dy lexuesit testohen se japin të
 **Teksti degëzohet mbi rezultatin.** Cila anë del përpara shkruhet nga të dhënat me
 katër degë — ne, ata, barazim, pa përgjigje — sepse kjo tabelë ishte gjëja e parë që
 mund ta bënte punimin të pohonte një fitore që numrat nuk e mbajnë.
+
+
+### VD-77: Fitorja vendoset nga intervali, jo nga dy pika
+
+**Konteksti.** VD-76 e vuri PMD-në përballë detektorëve të këtij punimi mbi të
+njëjtat mostra. Tabela doli me dy MCC krah njëri-tjetrit, dhe teksti duhej të
+thoshte kush del përpara. Vendimi mbështetej te një prag prej **0.005**: nën të
+quhej barazim, mbi të fitore. Ai numër nuk vinte nga asgjë — pikërisht ajo që
+ENGINEERING.md §7 e ndalon jashtë `thresholds.py`.
+
+**Çfarë fshihte.** Me atë prag, Data Class dilte fitore e jona me ndryshim 0.009,
+dhe Blob-i me strategjinë dilte humbje e jona me 0.035. Të dyja u raportuan si
+të tilla në një lexim të parë. Riterheqja tregon se **asnjëra nuk qëndron**:
+intervali i çiftuar për Blob-in është −0.086 deri +0.014 dhe për Data Class-in
+−0.077 deri +0.104, të dy e përmbajnë zeron.
+
+**Vendimi.** Ana që del përpara vendoset nga intervali i çiftuar mbi riterheqje
+depoje, me `evaluation/intervals.py` që projekti e përdor tashmë për detektorët e
+vet. Të dyja anët pikëzohen mbi **të njëjtën** terheqje, sepse dy qasje të
+gjykuara mbi të njëjtat mostra duhen riterhequr mbi të njëjtat mostra; njësia e
+terheqjes është depoja e jo rreshti (VD-12).
+
+**Rezultati që mbetet.** Nga katër krahasimet me përgjigje, dy e përmbajnë zeron
+dhe dy jo; te të dyja ku ndryshimi qëndron, del përpara ky punim. Long Method-i
+është ndryshimi i madh, +0.264 deri +0.442, dhe shkaku është prag e jo algoritëm:
+NcssCount-i i PMD-së ndez te 60 rreshta dhe gjen 14 nga 191 raste. Kjo thuhet si
+ndryshim kalibrimi, jo si epërsi metode.
+
+**Dy defekte të tjera dolën rrugës.**
+
+Lista e depove që dështojnë nuk ruhej te pika e kontrollit, ndaj një rinisje e
+nisi bosh dhe përmbledhja raportoi dështimet e seancës së fundit sikur të ishin
+të gjitha. Pesë depo u zhdukën ashtu, dhe u gjetën vetëm duke numëruar mostrat:
+449 mungonin, dhe vetëm 134 shpjegoheshin. Tani pika e kontrollit i mban, dhe të
+449-ta i përkasin **14** depove që PMD nuk i përpunoi dot. E njëjta gjë si VD-55:
+informacioni ekzistonte gjatë tërë ekzekutimit dhe hidhej pikërisht kur bëhej
+përgjigje.
+
+`--score-only` rillogarit përmbledhjen nga rreshtat për-mostër pa e prekur PMD-në.
+Një defekt pikëzimi kushtonte tetëdhjetë minuta ekzekutimi; tani kushton sekonda.
+Skedari i komituar u prodhua në dy hapa dhe e mban këtë të shënuar te fusha
+`rescored_without_rerunning_pmd`, sepse një ekzekutim që nuk ndodhi nuk
+raportohet si i ri. Rreshtat për-mostër janë vetë hyrja e pikëzimit dhe janë të
+komituara, ndaj kushdo mund ta rindërtojë përmbledhjen prej tyre me një komandë.
