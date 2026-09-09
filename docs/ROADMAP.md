@@ -25,6 +25,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Krahasimi me mjet të jashtëm | ✅ e plotë | PMD 7.27.0 me pragjet e veta; intervale të çiftuara mbi riterheqje depoje (VD-76, VD-77) |
 | Cilësia e rishkrimeve | 🟡 aparati gati | mostër e mbjellë dhe rubrikë e fiksuar (VD-72, VD-74); gjykimi i autorit mbetet |
+| Pse nuk ndezin strategjitë | ✅ e plotë | klauzola bllokuese për çdo mospërputhje (VD-78); hipoteza e ATFD-së u përgënjeshtrua |
 | Figurat e punimit | ✅ 8 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
 | Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
 

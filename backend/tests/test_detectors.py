@@ -16,9 +16,10 @@ from pathlib import Path
 import pytest
 
 from javasmell.analysis import analyze_path, analyze_source
-from javasmell.detectors.base import Severity
-from javasmell.detectors.rules import detect_all, detect_in_class
+from javasmell.detectors.base import Condition, Severity
+from javasmell.detectors.rules import detect_all, detect_in_class, god_class_clauses
 from javasmell.detectors.thresholds import Thresholds
+from javasmell.model.entities import ClassInfo
 
 FIXTURES = str(Path(__file__).parent / "fixtures")
 
@@ -262,3 +263,93 @@ def test_smell_serialises_for_the_api(project):
     assert payload["smell_type"]
     assert payload["refactorings"]
     assert isinstance(payload["metrics"], dict)
+
+
+# ----------------------------------------------------------------------
+# A clause answers for itself, and the detector decides from the answer
+# ----------------------------------------------------------------------
+def bare_class(**metrics: float) -> ClassInfo:
+    """A class with nothing in it, to exercise the clauses on missing metrics."""
+    return ClassInfo(
+        name="Empty",
+        kind="class",
+        package="p",
+        file_path="Empty.java",
+        modifiers=frozenset(),
+        superclass=None,
+        interfaces=[],
+        fields=[],
+        methods=[],
+        start_line=1,
+        end_line=2,
+        metrics=dict(metrics),
+    )
+
+
+def test_a_strict_comparison_rejects_the_threshold_itself():
+    """ATFD > FEW, with FEW = 3 and ATFD = 3, is not satisfied.
+
+    The boundary is where a duplicated comparison used to be able to drift:
+    the ``if`` said ``>`` and nothing forced the recorded clause to agree.
+    """
+    assert not Condition("ATFD", ">", 3, 3).satisfied
+    assert Condition("ATFD", ">", 3, 4).satisfied
+
+
+def test_an_inclusive_comparison_accepts_the_threshold():
+    """WMC >= VERY_HIGH, with both at 47, is satisfied."""
+    assert Condition("WMC", ">=", 47, 47).satisfied
+
+
+def test_the_downward_clauses_read_the_other_way():
+    """TCC < ONE_THIRD is satisfied by low cohesion, not by high."""
+    assert Condition("TCC", "<", 0.33, 0.30).satisfied
+    assert not Condition("TCC", "<", 0.33, 0.33).satisfied
+    assert Condition("FDP", "<=", 3, 3).satisfied
+
+
+def test_an_operator_nobody_defined_raises():
+    """Silence here would make an unsatisfied clause look satisfied."""
+    with pytest.raises(ValueError, match="unknown operator"):
+        _ = Condition("WMC", "==", 47, 47).satisfied
+
+
+def test_god_class_clauses_are_measured_even_when_none_hold():
+    """A class with no metrics at all still yields three evaluated clauses.
+
+    This is what makes a *miss* explainable: the strategy did not fire, and the
+    three clauses say which measurements were responsible.
+    """
+    cls = bare_class()
+
+    clauses = god_class_clauses(cls)
+
+    assert [c.metric for c in clauses] == ["WMC", "TCC", "ATFD"]
+    assert not any(c.satisfied for c in clauses)
+
+
+def test_the_missing_metric_defaults_point_away_from_firing():
+    """An unmeasured class must not be flagged by the absence of evidence.
+
+    TCC defaults to 1.0, perfect cohesion, so the clause that wants low
+    cohesion fails; ATFD and WMC default to 0.
+    """
+    cls = bare_class()
+
+    by_metric = {c.metric: c for c in god_class_clauses(cls)}
+
+    assert by_metric["TCC"].value == 1.0
+    assert by_metric["WMC"].value == 0.0
+    assert by_metric["ATFD"].value == 0.0
+
+
+def test_the_clauses_the_detector_reports_are_the_ones_it_decided_from():
+    """The finding's justification cannot disagree with the finding."""
+    project = analyze_source(build_god_class(cohesive=False, envious=True), "G.java")
+    cls = project.units[0].classes[0]
+
+    found = [s for s in detect_in_class(cls) if s.smell_type == "GodClass"]
+
+    assert found, "fixture no longer crosses the God Class thresholds"
+    assert found[0].conditions == god_class_clauses(cls)
+    assert all(c.satisfied for c in found[0].conditions)

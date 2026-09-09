@@ -1,0 +1,50 @@
+{
+  "by_smell": {
+    "blob": {
+      "blocked_by_one_clause": 61,
+      "clauses_failing": {
+        "1": 61,
+        "2": 127,
+        "3": 127
+      },
+      "median_shortfall": {
+        "ATFD": 0.4,
+        "TCC": 0.3333,
+        "WMC": 0.5213
+      },
+      "missed": 315,
+      "sole_blocker": {
+        "ATFD": 9,
+        "TCC": 22,
+        "WMC": 30
+      }
+    },
+    "feature envy": {
+      "blocked_by_one_clause": 24,
+      "clauses_failing": {
+        "1": 24,
+        "2": 34
+      },
+      "median_shortfall": {
+        "ATFD": 0.8,
+        "FDP": 0.7143,
+        "LAA": 0.8334
+      },
+      "missed": 58,
+      "sole_blocker": {
+        "ATFD": 13,
+        "FDP": 9,
+        "LAA": 2
+      }
+    }
+  },
+  "environment": {
+    "commit": "1e0e249e67120add570847574db1a6c420c3df24",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "strategies": {
+    "blob": "GodClass",
+    "feature envy": "FeatureEnvy"
+  }
+}

@@ -42,6 +42,32 @@ class Condition:
     value: float
 
     @property
+    def satisfied(self) -> bool:
+        """Whether the measurement actually meets this clause.
+
+        The detectors used to write each comparison twice: once in the ``if``
+        that decided, and once in the ``Condition`` that explained. Nothing tied
+        the two together, so a threshold changed in one place and not the other
+        would produce a finding whose own justification contradicted it. The
+        clause now answers the question, and the detector decides from the
+        answer, which makes that disagreement unrepresentable.
+
+        It is also what lets a *missed* detection be explained: a conjunction
+        that did not fire has one or more clauses that failed, and naming them
+        is the difference between "the detector missed it" and "the detector
+        missed it because ATFD was 2 where it needed 3".
+        """
+        if self.operator == ">":
+            return self.value > self.threshold
+        if self.operator == ">=":
+            return self.value >= self.threshold
+        if self.operator == "<":
+            return self.value < self.threshold
+        if self.operator == "<=":
+            return self.value <= self.threshold
+        raise ValueError(f"unknown operator: {self.operator!r}")
+
+    @property
     def excess(self) -> float:
         """How far past the threshold the measurement is, as a ratio >= 1.
 

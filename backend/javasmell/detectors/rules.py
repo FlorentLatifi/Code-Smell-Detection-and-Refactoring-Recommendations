@@ -87,20 +87,26 @@ def detect_god_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """
     if _skip(cls):
         return None
-    wmc = cls.metrics.get("WMC", 0.0)
-    tcc = cls.metrics.get("TCC", 1.0)
-    atfd = cls.metrics.get("ATFD", 0.0)
-    if not (wmc >= t.god_class_wmc and tcc < t.god_class_tcc and atfd > t.god_class_atfd):
+    clauses = god_class_clauses(cls, t)
+    if not all(clause.satisfied for clause in clauses):
         return None
-    return _class_smell(
-        cls,
-        "GodClass",
-        [
-            Condition("WMC", ">=", t.god_class_wmc, wmc),
-            Condition("TCC", "<", t.god_class_tcc, tcc),
-            Condition("ATFD", ">", t.god_class_atfd, atfd),
-        ],
-    )
+    return _class_smell(cls, "GodClass", clauses)
+
+
+def god_class_clauses(cls: ClassInfo, t: Thresholds = DEFAULT) -> list[Condition]:
+    """The three clauses, measured, whether or not they hold.
+
+    Separate from the detector because a clause list that exists only when the
+    strategy fires can explain a detection and never a miss. Recall for this
+    strategy is under 0.10 on MLCQ, so *why* the other 90% did not fire is the
+    more interesting half, and it is answerable only from the clauses that were
+    evaluated and rejected.
+    """
+    return [
+        Condition("WMC", ">=", t.god_class_wmc, cls.metrics.get("WMC", 0.0)),
+        Condition("TCC", "<", t.god_class_tcc, cls.metrics.get("TCC", 1.0)),
+        Condition("ATFD", ">", t.god_class_atfd, cls.metrics.get("ATFD", 0.0)),
+    ]
 
 
 def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
@@ -183,21 +189,19 @@ def detect_feature_envy(
     """
     if method.is_constructor or method.is_accessor:
         return None
-    atfd = method.metrics.get("ATFD", 0.0)
-    laa = method.metrics.get("LAA", 1.0)
-    fdp = method.metrics.get("FDP", 0.0)
-    if not (atfd > t.feature_envy_atfd and laa < t.feature_envy_laa and fdp <= t.feature_envy_fdp):
+    clauses = feature_envy_clauses(method, t)
+    if not all(clause.satisfied for clause in clauses):
         return None
-    return _method_smell(
-        cls,
-        method,
-        "FeatureEnvy",
-        [
-            Condition("ATFD", ">", t.feature_envy_atfd, atfd),
-            Condition("LAA", "<", t.feature_envy_laa, laa),
-            Condition("FDP", "<=", t.feature_envy_fdp, fdp),
-        ],
-    )
+    return _method_smell(cls, method, "FeatureEnvy", clauses)
+
+
+def feature_envy_clauses(method: MethodInfo, t: Thresholds = DEFAULT) -> list[Condition]:
+    """The three clauses, measured, whether or not they hold."""
+    return [
+        Condition("ATFD", ">", t.feature_envy_atfd, method.metrics.get("ATFD", 0.0)),
+        Condition("LAA", "<", t.feature_envy_laa, method.metrics.get("LAA", 1.0)),
+        Condition("FDP", "<=", t.feature_envy_fdp, method.metrics.get("FDP", 0.0)),
+    ]
 
 
 def detect_long_method(cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAULT) -> Smell | None:

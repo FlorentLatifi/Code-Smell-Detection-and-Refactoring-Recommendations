@@ -663,6 +663,34 @@ def _context_conclusion() -> str:
     )
 
 
+def _blocking_in_discussion() -> list:
+    """Gjetja e tretë që tregon në të njëjtin drejtim si dy të parat.
+
+    Ndërtuar nga të dhënat e jo e shtypur, sepse është pohim numerik brenda
+    prozës së diskutimit dhe pikërisht atje rrëshqiti Kapitulli 6 një herë
+    (VD-73). Nëse analiza mungon, paragrafi nuk ekziston fare, dhe dy gjetjet e
+    tjera qëndrojnë vetë.
+    """
+    data = _load_if_present("blocking_conditions.json")
+    if data is None:
+        return []
+    entry = data["by_smell"].get("blob")
+    if entry is None:
+        return []
+
+    missed = int(str(entry["missed"]))
+    alone = int(str(entry["blocked_by_one_clause"]))
+    many = missed - alone
+    return [
+        f"E treta vjen nga vetë mospërputhjet. Nga {missed} raste që rishikuesit i "
+        f"quajtën Blob dhe strategjia nuk i ndezi, {many} nuk e kalojnë as dy nga tri "
+        "klauzolat. Nuk janë raste kufitare që një prag pak më i butë do t'i kapte: "
+        "janë entitete që, të matura me këto metrika, nuk i ngjajnë erës nga disa anë "
+        "njëherësh. Kjo e ndan pyetjen e kalibrimit nga pyetja e përkufizimit, dhe e "
+        "vendos këtë rast te e dyta.",
+    ]
+
+
 def chapter_6() -> list:
     """Diskutimi dhe përfundimet, me pohimet empirike të lexuara nga rezultatet.
 
@@ -709,7 +737,8 @@ def chapter_6() -> list:
                 "E dyta: shtimi i një detektori që mbështetet vetëm te madhësia e "
                 "përmirëson ndjeshëm përputhjen me gjykimin e rishikuesve për të njëjtën "
                 "erë.",
-                "Të dyja sugjerojnë se ajo që rishikuesit e MLCQ-së e quajnë «blob» "
+                *_blocking_in_discussion(),
+                "Këto sugjerojnë se ajo që rishikuesit e MLCQ-së e quajnë «blob» "
                 "shpjegohet më mirë me madhësi sesa me kushtin e kohezionit që strategjia "
                 "e publikuar e vendos në qendër. Kjo nuk e zhvlerëson strategjinë, por "
                 "tregon se ajo mat diçka pak më ndryshe nga ajo që emërton.",
@@ -1069,6 +1098,7 @@ def chapter_5() -> list:
                 *_pmd_comparison_paragraphs(),
             ],
         ),
+        *_blocking_section(),
         *_severity_section(),
         *_confidence_section(),
     ]
@@ -1378,7 +1408,7 @@ def _confidence_section() -> list:
     ]
 
     if ceiling is None:
-        return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+        return [("5.9", "Sa peshë mban një shifër e vetme", paragraphs)]
 
     ceiling_rows = [
         [
@@ -1411,7 +1441,7 @@ def _confidence_section() -> list:
         "po ashtu çdo shifër e literaturës që raportohet pa të.",
     ]
 
-    return [("5.7", "Sa peshë mban një shifër e vetme", paragraphs)]
+    return [("5.9", "Sa peshë mban një shifër e vetme", paragraphs)]
 
 
 def _explanation_paragraphs(ml: dict) -> list:
@@ -1570,6 +1600,107 @@ def _combined_paragraphs(ml: dict) -> list:
     ]
 
 
+CLAUSE_SQ = {
+    "WMC": "WMC, kompleksiteti i peshuar",
+    "TCC": "TCC, kohezioni",
+    "ATFD": "ATFD, qasja në të dhëna të huaja",
+    "LAA": "LAA, qasja te të vetat",
+    "FDP": "FDP, sa klasa të huaja",
+}
+
+
+def _near_or_far(entry: dict) -> str:
+    """Sa larg janë të humburat, thënë me dy fakte e jo me një verdikt.
+
+    Dy gjëra të ndryshme quhen «afër»: sa klauzola dështuan, dhe sa larg ishte
+    secila. Ato nuk lëvizin bashkë — një erë mund t'i dështojë dy klauzola dhe
+    prapë t'i ketë të dyja pranë — ndaj shkruhen të dyja. Një fjali e vetme që i
+    përzien do të thoshte «nuk janë afër» për një rast ku gjysma janë.
+    """
+    missed = int(str(entry["missed"]))
+    alone = int(str(entry["blocked_by_one_clause"]))
+    many = missed - alone
+    distances = [float(v) for v in dict(entry["median_shortfall"]).values()]
+
+    if many > alone:
+        shape = (
+            f"{many} nga {missed} i dështojnë dy ose tri klauzola njëkohësisht, pra "
+            "shumica nuk janë raste që një prag pak më i butë do t'i kapte: janë "
+            "entitete që, të matura me këto metrika, nuk i ngjajnë erës nga disa anë "
+            "njëherësh."
+        )
+    else:
+        shape = (
+            f"{alone} nga {missed} bllokohen nga një klauzolë e vetme, pra shumica "
+            "janë raste kufitare ku mungesa është distancë e jo natyrë."
+        )
+
+    if not distances:
+        return shape
+    return (
+        shape
+        + f" Aty ku bllokuesi është një i vetëm, medianat e afrisë shkojnë nga "
+        f"{min(distances):.2f} te {max(distances):.2f} e pragut."
+    )
+
+def _blocking_section() -> list:
+    """Pse nuk ndezin strategjitë, klauzolë për klauzolë.
+
+    Nënkapitulli 5.1 raporton se sa gjejnë detektorët. Ky raporton pse nuk gjejnë
+    pjesën tjetër, çka është pyetja që një lexues bën menjëherë pas së parës dhe
+    që asnjë normë e vetme nuk e përgjigjet.
+    """
+    data = _load_if_present("blocking_conditions.json")
+    if data is None:
+        return []
+
+    rows = []
+    for smell, entry in data["by_smell"].items():
+        for metric, count in entry["sole_blocker"].items():
+            rows.append(
+                [
+                    SMELL_SQ.get(smell, smell),
+                    CLAUSE_SQ.get(metric, metric),
+                    str(count),
+                    f"{entry['median_shortfall'][metric]:.2f}",
+                ]
+            )
+
+    spread = []
+    for smell, entry in data["by_smell"].items():
+        counts = ", ".join(
+            f"{n} me {k} klauzolë" if k == "1" else f"{n} me {k} klauzola"
+            for k, n in sorted(entry["clauses_failing"].items())
+        )
+        spread.append([SMELL_SQ.get(smell, smell), str(entry["missed"]), counts])
+
+    paragraphs: list = [
+        "Një strategji e Lanza & Marinescu-t është konjunksion, ndaj çdo mospërputhje "
+        "ka shkak të emërtueshëm: një klauzolë, ose dy, ose të tria nuk qëndruan. "
+        "Matjet për ta thënë këtë ekzistojnë tashmë te tabela e veçorive, ndaj pyetja "
+        "«pse nuk ndezi» ka përgjigje pa asnjë ekzekutim të ri.",
+        ("table", "Sa klauzola dështuan te secila mospërputhje",
+         ["Era", "Të humbura", "Shpërndarja"], spread),  # fmt: skip
+        ("table", "Kur një klauzolë e vetme e ndal strategjinë",
+         ["Era", "Klauzola", "Rastet", "Mediana e afrisë"], rows),  # fmt: skip
+        "Kolona e fundit është distanca nga pragu si raport: 1.00 do të thoshte "
+        "saktësisht mbi prag, 0.50 gjysma e rrugës. Të dy drejtimet lexohen njësoj, "
+        "sepse një klauzolë që kërkon vlerë të madhe matet si e matura mbi pragun dhe "
+        "një që kërkon vlerë të vogël si pragu mbi të maturën.",
+    ]
+    for smell, entry in data["by_smell"].items():
+        paragraphs.append(f"**{SMELL_SQ.get(smell, smell)}.** " + _near_or_far(entry))
+
+    paragraphs.append(
+        "Kjo analizë kufizohet te dy strategjitë që janë konjunksione të pastra. Long "
+        "Method-i ka një klauzolë të vetme, ndaj pyetja ka një përgjigje të vetme dhe "
+        "të parashikueshme; Data Class-i përzien konjunksion me disjunksion, ku "
+        "«klauzola bllokuese» nuk përcaktohet pa vendosur se cila degë ishte më afër, "
+        "dhe ai vendim do të prodhonte një numër që varet nga vetë vendimi."
+    )
+    return [("5.7", "Pse nuk ndezin strategjitë", paragraphs)]
+
+
 def _severity_section() -> list:
     """Sa pajtohet ashpërsia që deriva sistemi me atë që caktuan rishikuesit.
 
@@ -1615,7 +1746,7 @@ def _severity_section() -> list:
 
     return [
         (
-            "5.6",
+            "5.8",
             "Ashpërsia e derivuar kundrejt gjykimit të rishikuesve",
             [
                 "Ashpërsia e sistemit nuk caktohet, por derivohet: ajo është mesatarja e "
@@ -2271,7 +2402,8 @@ REPRODUCTION = [
      "sekonda"),
     ("17", "review_rewrites.py --score", "cilësia e rishkrimeve sipas rishikuesit", "sekonda"),
     ("18", "fetch_pmd.py", "mjeti i jashtëm i krahasimit, jashtë git-it", "minuta, një herë"),
-    ("19", "compare_with_pmd.py", "krahasimi me PMD-në mbi të njëjtat mostra", "~3 orë"),
+    ("19", "compare_with_pmd.py", "krahasimi me PMD-në mbi të njëjtat mostra", "orë"),
+    ("20", "blocking_conditions.py", "cila klauzolë e ndal secilën strategji", "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"

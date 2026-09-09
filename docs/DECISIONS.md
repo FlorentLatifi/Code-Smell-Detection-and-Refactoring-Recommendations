@@ -87,6 +87,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-75 | Faktet përgatiten, gjykimi jo | 2026-09-08 | aktiv |
 | VD-76 | Krahasimi me PMD-në, me pragjet e tij | 2026-09-08 | aktiv |
 | VD-77 | Fitorja vendoset nga intervali, jo nga dy pika | 2026-09-09 | aktiv |
+| VD-78 | Klauzola që bllokon raportohet, jo vetëm norma | 2026-09-09 | aktiv |
 
 ---
 
@@ -2843,3 +2844,56 @@ Skedari i komituar u prodhua në dy hapa dhe e mban këtë të shënuar te fusha
 `rescored_without_rerunning_pmd`, sepse një ekzekutim që nuk ndodhi nuk
 raportohet si i ri. Rreshtat për-mostër janë vetë hyrja e pikëzimit dhe janë të
 komituara, ndaj kushdo mund ta rindërtojë përmbledhjen prej tyre me një komandë.
+
+
+### VD-78: Klauzola që bllokon raportohet, jo vetëm norma
+
+**Konteksti.** Kapitulli 5 raportonte se strategjia God Class arrin recall nën
+0.10 dhe Feature Envy jo shumë më mirë. Të dyja shifra të sakta dhe të dyja të
+padobishme vetëm: lexuesi mëson se nëntë nga dhjetë blob-e të rishikuara nuk
+ndizen, dhe asgjë për **çfarë** do të duhej të ndryshonte.
+
+**Vendimi.** Një strategji e Lanza & Marinescu-t është konjunksion, ndaj çdo
+mospërputhje ka shkak të emërtueshëm. `evaluation/blocking.py` numëron, për çdo
+pozitiv të rishikuar që nuk u ndez, cilat klauzola dështuan dhe sa larg ishin.
+Kushton sekonda: çdo fushë që lexojnë ato klauzola është kolonë e tabelës së
+veçorive (VD-23).
+
+**Kushti tani përgjigjet vetë.** Detektorët e shkruanin çdo krahasim dy herë:
+një herë te `if`-i që vendoste, një herë te `Condition`-i që shpjegonte. Asgjë
+nuk i lidhte, ndaj një prag i ndryshuar në njërin vend dhe jo në tjetrin do të
+prodhonte një gjetje që e kundërshton vetë arsyetimin e vet. `Condition.satisfied`
+e bën atë mospërputhje **të pashprehshme**, dhe pikërisht ajo veti e bën të
+matshme edhe mungesën: një konjunksion që nuk ndezi ka klauzola që dështuan, dhe
+emërtimi i tyre është dallimi mes «detektori e humbi» dhe «detektori e humbi
+sepse ATFD ishte 2 ku i duheshin 6».
+
+**Rezultati, dhe ai nuk është ai që pritej.** Hipoteza ishte se ATFD do të ishte
+tavani, sepse analizuesi nuk zgjidh simbole dhe qasja në të dhëna të huaja
+nënnumërohet nga ndërtimi. Të dhënat e përgënjeshtruan: te Blob-i, ATFD-ja është
+bllokuesi **më i rrallë** i vetëm (9 raste nga 61), ndërsa WMC-ja është më i
+shpeshti (30). Dhe vetëm 61 nga 315 mospërputhje bllokohen nga një klauzolë e
+vetme fare; **254 dështojnë te dy ose tri njëkohësisht**.
+
+Pra recall-i i ulët i Blob-it nuk është problem akordimi dhe nuk është problem i
+një matjeje të vetme të dobët. Ato entitete, të matura me këto metrika, nuk i
+ngjajnë erës nga disa anë njëherësh. Kjo është dëshmia e tretë e pavarur për
+atë që Nënkapitulli 6.2 e thoshte tashmë nga dy anë të tjera: strategjia mat
+diçka pak më ndryshe nga ajo që emërton.
+
+**Feature Envy sillet ndryshe, dhe kjo raportohet veç.** Aty medianat e afrisë
+janë 0.71 deri 0.83 e pragut dhe asnjë mospërputhje nuk i dështon të tria
+klauzolat. Për të, kalibrimi është ndërhyrja që do ta lëvizte normën. Dy strategji,
+dy përgjigje; një fjali e vetme që i mbulon të dyja nuk do të thoshte asnjërën.
+
+**Vetëm konjunksionet e pastra.** Long Method-i ka një klauzolë, ndaj pyetja ka
+një përgjigje të parashikueshme. Data Class-i përzien konjunksion me disjunksion,
+ku «klauzola bllokuese» nuk përcaktohet pa vendosur se cila degë ishte më afër, dhe
+ai vendim do të prodhonte një numër që varet nga vetë vendimi.
+
+**Dy defekte dolën rrugës.** Dokumenti kishte **dy nënkapituj 5.6**: PMD-ja u
+shtua si 5.6 pa u rinumëruar ato pas saj. Kontrolluesi që do ta kapte,
+`_check_numbering_of_sections`, ekzistonte, ishte i dokumentuar dhe **nuk ishte
+lidhur kurrë** te lista e kontrolleve, ndaj invarianti që mbronte kishte qëndruar
+i pambrojtur gjithë kohën. U lidh, e kapi menjëherë defektin, dhe seksionet u
+rinumëruan.

@@ -398,6 +398,7 @@ def report(path: Path) -> list[str]:
         _check_captions,
         _check_markup,
         _check_numbering,
+        _check_numbering_of_sections,
         _check_lists,
         _check_sections,
         _check_geometry,
