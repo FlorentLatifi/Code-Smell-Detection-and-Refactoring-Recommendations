@@ -16,6 +16,7 @@ dallojë cili është i vjetruar.
 
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -43,6 +44,15 @@ def _load_if_present(name: str) -> dict | None:
     """
     path = RESULTS / name
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def _rows_if_present(name: str) -> list[dict[str, str]] | None:
+    """Një rezultat CSV që mund të mos ekzistojë ende, si `_load_if_present`."""
+    path = RESULTS / name
+    if not path.exists():
+        return None
+    with path.open(encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
 
 
 def _provenance() -> tuple[dict[str, str], set[str], set[str]]:
@@ -2105,9 +2115,40 @@ def _overturned(regressions: int, total: int) -> str:
         "rishkrimeve nuk sillet kështu, por ekzistenca e tij e kufizon pretendimin që "
         "mund të bëhet. Toleranca «pa lloj të ri gabimi» mbetet dëshmi e përdorshme "
         "atje ku kompilimi i plotë nuk arrihet; ajo nuk është garanci se kompilimi me "
-        "kontekstin e projektit do të pajtohej me të. Rasti nuk u veçua: matja mban "
-        "numra të grumbulluar, ndaj identifikimi i tij kërkon një ekzekutim të synuar "
-        "dhe mbetet punë e pabërë."
+        "kontekstin e projektit do të pajtohej me të."
+        + _overturned_case()
+    )
+
+
+def _overturned_case() -> str:
+    """Cili rishkrim është, tani që rreshtat për-rishkrim ruhen.
+
+    Kjo fjali qëndroi muaj si «rasti nuk u veçua». Ai ishte pohim i vërtetë për
+    një matje që i hidhte rreshtat kur mbaronte me sukses (VD-55); ekzekutimi i
+    dytë i ruajti, dhe rasti u emërtua. Lexohet nga skedari e nuk shtypet, që të
+    mos rrijë i vjetruar po të ndryshojë mostra.
+    """
+    rows = _rows_if_present("verify_with_project_samples.csv")
+    if rows is None:
+        return ""
+    overturned = [
+        row for row in rows if row["alone"] == "no_new_errors" and row["in_project"] == "new_errors"
+    ]
+    if len(overturned) != 1:
+        return ""
+
+    case = overturned[0]
+    where = f"{case['class_name']}.{case['method']}"
+    return (
+        f" Rasti u veçua. Është një Extract Method mbi {where} te "
+        "«AlertSummaryRenderer.java» e projektit Ambari, dhe të tria gabimet që shton "
+        "janë të të njëjtit lloj: paketa të palëve të treta që nuk ekzistojnë. "
+        "Shkaku nuk është transformimi por korpusi. Nxjerrja e bllokut e kalon një "
+        "tip nga trupi i metodës te nënshkrimi i saj, dhe një tip te nënshkrimi duhet "
+        "zgjidhur i plotë, bashkë me anotacionet e veta; ato anotacione vijnë nga një "
+        "bibliotekë që korpusi nuk e mban, sepse ai ruan vetëm skedarë «.java» dhe "
+        "asnjë jar (Nënkapitulli 6.3). Në një projekt me varësitë e veta i njëjti "
+        "rishkrim nuk do të kishte çfarë të shtonte."
     )
 
 

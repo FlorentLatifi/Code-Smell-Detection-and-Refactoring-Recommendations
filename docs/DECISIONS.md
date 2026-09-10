@@ -91,6 +91,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-79 | Puna e ardhshme nuk premton atë që u bë | 2026-09-09 | aktiv |
 | VD-80 | Feature Envy mbetet pa referencë të jashtme, dhe arsyeja shkruhet | 2026-09-09 | aktiv |
 | VD-81 | Detektori vendos nga klauzolat e veta, kudo | 2026-09-10 | aktiv |
+| VD-82 | Përmbysja e vetme u veçua, dhe shkaku është korpusi | 2026-09-10 | aktiv |
 
 ---
 
@@ -3000,3 +3001,44 @@ reja dhe të katërta u kapën.
 **Një test i ri e ruan pohimin drejtpërdrejt.** Mbi çdo entitet të fikstuarave dhe
 çdo strategji, asnjë klauzolë e raportuar nuk lejohet të jetë e paplotësuar. Ai
 test do të kishte dështuar për çdo defekt të llojit që kjo hyrje e mbyll.
+
+
+### VD-82: Përmbysja e vetme u veçua, dhe shkaku është korpusi
+
+**Konteksti.** VD-55 raportoi se një rishkrim nga 405 e përmbys verdiktin brenda
+kontekstit të projektit, dhe se nuk dihej cili: rreshtat për-rishkrim ekzistonin
+gjatë ekzekutimit shtatë-orësh dhe fshiheshin bashkë me skedarin e progresit kur
+ai mbaronte me sukses. Skripti u ndreq atëherë që t'i ruajë, por skedari i
+komituar ishte nga ekzekutimi i mëparshëm. Kjo hyrje raporton ri-ekzekutimin.
+
+**Rezultati u riprodhua.** Verdiktet kryesore dolën identike: 46 «kompilon» dhe
+**një** «me gabim të ri». Ndryshoi vetëm ndarja mes «i kontrolluar» dhe «i
+pakontrolluar» — 7 skedarë e kaluan kufirin kohor kundrejt 15 herën e parë — çka
+Shtojca 8.5 e kishte parashikuar tashmë si varësi nga ngarkesa e makinës.
+
+**Rasti.** Një Extract Method mbi `AlertSummaryRenderer.finalizeResult(Result)`
+te projekti Ambari. Gabimet që shton janë tri, dhe të tria të të njëjtit lloj:
+`package ... does not exist` për `com.fasterxml.jackson.annotation`,
+`org.codehaus.jackson.annotate` dhe `org.codehaus.jackson.map.annotate`.
+
+**Shkaku nuk është transformimi.** Korpusi mban **zero** jar-e, sepse
+`fetch_corpus.py` ruan vetëm anëtarë `.java` (VD-53). Nxjerrja e bllokut e kalon
+`AlertStateSummary` nga trupi i metodës te nënshkrimi i metodës së re, dhe një tip
+te nënshkrimi duhet zgjidhur i plotë; `AlertStateSummary.java` importon
+`org.codehaus.jackson.annotate.JsonProperty`, që korpusi nuk e ka. Në një projekt
+me varësitë e veta i njëjti rishkrim nuk do të kishte çfarë të shtonte.
+
+**Pasoja për pretendimin.** Përmbysja mbetet e numëruar dhe e raportuar; nuk
+fshihet dhe nuk zbutet. Por tani dihet se ç'është, dhe teksti mund ta thotë se
+kufizimi që ajo dëshmon është i korpusit e jo i motorit. Kjo është më e saktë se
+të dyja gjendjet e mëparshme: nga «asnjë përmbysje» te «një përmbysje e paemërtuar»
+te «një përmbysje e emërtuar me shkak të ditur».
+
+**Çfarë mbetet ende e paverifikuar.** Se i njëjti rishkrim do të kompilonte pastër
+me jar-et e Ambari-t nuk u provua, sepse ato jar-e nuk ekzistojnë këtu. Ajo është
+pasojë e arsyetuar nga tri gabimet e vëzhguara, jo matje, dhe shkruhet si e tillë.
+
+**Pika e kontrollit mbetet një-herë-për-skedar.** Një skedar i vetëm i kësaj mostre
+mban 118 rishkrime dhe rri orë të tëra pa shkruar gjë, ndaj një ndërprerje aty
+humbet ato orë. Nuk u ndryshua tani sepse do të prishte ekzekutimin në vazhdim, dhe
+regjistrohet si punë e mundshme e jo si defekt i heshtur.
