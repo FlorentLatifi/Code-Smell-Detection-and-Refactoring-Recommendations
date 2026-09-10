@@ -17,7 +17,13 @@ import pytest
 
 from javasmell.analysis import analyze_path, analyze_source
 from javasmell.detectors.base import Condition, Severity
-from javasmell.detectors.rules import detect_all, detect_in_class, god_class_clauses
+from javasmell.detectors.rules import (
+    detect_all,
+    detect_data_class,
+    detect_in_class,
+    detect_large_class,
+    god_class_clauses,
+)
 from javasmell.detectors.thresholds import Thresholds
 from javasmell.model.entities import ClassInfo
 
@@ -353,3 +359,75 @@ def test_the_clauses_the_detector_reports_are_the_ones_it_decided_from():
     assert found, "fixture no longer crosses the God Class thresholds"
     assert found[0].conditions == god_class_clauses(cls)
     assert all(c.satisfied for c in found[0].conditions)
+
+
+# ----------------------------------------------------------------------
+# The strategies that are not plain conjunctions
+# ----------------------------------------------------------------------
+def test_the_disjunction_reports_only_the_clause_that_carried_it():
+    """CLOC 250 > 200 but NOM 5 <= 20: Large Class fires on the first alone.
+
+    Reporting the unsatisfied NOM clause too would show a justification that
+    does not hold, which is exactly what a disjunction must not do.
+    """
+    cls = bare_class(CLOC=250.0, NOM=5.0)
+
+    found = detect_large_class(cls)
+
+    assert found is not None
+    assert [c.metric for c in found.conditions] == ["CLOC"]
+
+
+def test_the_disjunction_reports_both_when_both_hold():
+    cls = bare_class(CLOC=250.0, NOM=25.0)
+
+    found = detect_large_class(cls)
+
+    assert found is not None
+    assert [c.metric for c in found.conditions] == ["CLOC", "NOM"]
+
+
+def test_data_class_prefers_the_narrower_branch_when_both_hold():
+    """WOC 0.1, exposed 12, WMC 20 satisfies both branches.
+
+    The small branch wants exposed > 5 and WMC < 31; the large one wants
+    exposed > 10 and WMC < 47. Both hold, and the finding must cite the tighter
+    pair, because those are the limits that actually carry it.
+    """
+    cls = bare_class(WOC=0.1, NOPA=12.0, NOAM=0.0, WMC=20.0)
+
+    found = detect_data_class(cls)
+
+    assert found is not None
+    assert [c.threshold for c in found.conditions] == [1 / 3, 5, 31]
+
+
+def test_data_class_falls_to_the_wider_branch_when_only_it_holds():
+    """Exposed 12 and WMC 40: too complex for the small branch, inside the large one."""
+    cls = bare_class(WOC=0.1, NOPA=12.0, NOAM=0.0, WMC=40.0)
+
+    found = detect_data_class(cls)
+
+    assert found is not None
+    assert [c.threshold for c in found.conditions] == [1 / 3, 10, 47]
+
+
+def test_data_class_needs_the_interface_clause_whatever_the_branch():
+    """WOC 0.9 is a class that does work, so neither branch can rescue it."""
+    cls = bare_class(WOC=0.9, NOPA=12.0, NOAM=0.0, WMC=20.0)
+
+    assert detect_data_class(cls) is None
+
+
+def test_every_condition_a_finding_carries_is_one_that_holds():
+    """The invariant the whole conversion exists to guarantee.
+
+    A finding used to build its conditions separately from the comparison that
+    decided it, so the two could disagree. Across every strategy and every
+    fixture entity, no reported clause may be unsatisfied.
+    """
+    project = analyze_path(FIXTURES)
+
+    for smell in detect_all(project):
+        unmet = [c.describe() for c in smell.conditions if not c.satisfied]
+        assert not unmet, f"{smell.smell_type} reports clauses that do not hold: {unmet}"

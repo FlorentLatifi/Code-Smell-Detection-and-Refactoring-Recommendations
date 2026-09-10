@@ -124,29 +124,41 @@ def detect_data_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """
     if _skip(cls):
         return None
+    interface, branch = data_class_clauses(cls, t)
+    if not interface.satisfied:
+        return None
+    satisfied = [pair for pair in branch if all(clause.satisfied for clause in pair)]
+    if not satisfied:
+        return None
+    # Dega e vogel ka perparesi kur te dyja qendrojne, sepse kufijte e saj jane
+    # me te ngushte dhe gjetja duhet te citoje pragun qe e mban vertet.
+    return _class_smell(cls, "DataClass", [interface, *satisfied[0]])
+
+
+def data_class_clauses(
+    cls: ClassInfo, t: Thresholds = DEFAULT
+) -> tuple[Condition, tuple[tuple[Condition, Condition], ...]]:
+    """The WOC clause, and the two branches of the disjunction behind it.
+
+    Returned apart rather than as one flat list because the strategy is not a
+    conjunction: the first clause must hold and then *either* pair must, so a
+    caller that flattened them would have to rediscover which is which.
+    """
     woc = cls.metrics.get("WOC", 1.0)
-    nopa = cls.metrics.get("NOPA", 0.0)
-    noam = cls.metrics.get("NOAM", 0.0)
     wmc = cls.metrics.get("WMC", 0.0)
-    exposed = nopa + noam
-
-    if woc >= t.data_class_woc:
-        return None
-    small_interface = exposed > t.data_class_public_members and wmc < t.data_class_wmc_low
-    large_interface = exposed > t.data_class_public_members_many and wmc < t.data_class_wmc_high
-    if not (small_interface or large_interface):
-        return None
-
-    limit = t.data_class_public_members if small_interface else t.data_class_public_members_many
-    wmc_limit = t.data_class_wmc_low if small_interface else t.data_class_wmc_high
-    return _class_smell(
-        cls,
-        "DataClass",
-        [
-            Condition("WOC", "<", t.data_class_woc, woc),
-            Condition("NOPA+NOAM", ">", limit, exposed),
-            Condition("WMC", "<", wmc_limit, wmc),
-        ],
+    exposed = cls.metrics.get("NOPA", 0.0) + cls.metrics.get("NOAM", 0.0)
+    return (
+        Condition("WOC", "<", t.data_class_woc, woc),
+        (
+            (
+                Condition("NOPA+NOAM", ">", t.data_class_public_members, exposed),
+                Condition("WMC", "<", t.data_class_wmc_low, wmc),
+            ),
+            (
+                Condition("NOPA+NOAM", ">", t.data_class_public_members_many, exposed),
+                Condition("WMC", "<", t.data_class_wmc_high, wmc),
+            ),
+        ),
     )
 
 
@@ -161,16 +173,21 @@ def detect_large_class(cls: ClassInfo, t: Thresholds = DEFAULT) -> Smell | None:
     """
     if _skip(cls):
         return None
-    loc = cls.metrics.get("CLOC", 0.0)
-    nom = cls.metrics.get("NOM", 0.0)
-    if not (loc > t.large_class_loc or nom > t.large_class_nom):
+    clauses = large_class_clauses(cls, t)
+    satisfied = [clause for clause in clauses if clause.satisfied]
+    if not satisfied:
         return None
-    conditions = []
-    if loc > t.large_class_loc:
-        conditions.append(Condition("CLOC", ">", t.large_class_loc, loc))
-    if nom > t.large_class_nom:
-        conditions.append(Condition("NOM", ">", t.large_class_nom, nom))
-    return _class_smell(cls, "LargeClass", conditions)
+    # Vetem ato qe u plotesuan hyjne te gjetja: kjo eshte disjunksion, ndaj nje
+    # klauzole e paplotesuar nuk e mban gjetjen dhe do te lexohej si e tille.
+    return _class_smell(cls, "LargeClass", satisfied)
+
+
+def large_class_clauses(cls: ClassInfo, t: Thresholds = DEFAULT) -> list[Condition]:
+    """Both clauses of the disjunction, measured, whether or not they hold."""
+    return [
+        Condition("CLOC", ">", t.large_class_loc, cls.metrics.get("CLOC", 0.0)),
+        Condition("NOM", ">", t.large_class_nom, cls.metrics.get("NOM", 0.0)),
+    ]
 
 
 # ----------------------------------------------------------------------
@@ -212,15 +229,10 @@ def detect_long_method(cls: ClassInfo, method: MethodInfo, t: Thresholds = DEFAU
     Comment and blank lines are already excluded by the parser's LOC counter,
     so a well-documented method is not punished for its documentation.
     """
-    loc = method.metrics.get("MLOC", 0.0)
-    if loc <= t.long_method_loc:
+    clause = Condition("MLOC", ">", t.long_method_loc, method.metrics.get("MLOC", 0.0))
+    if not clause.satisfied:
         return None
-    return _method_smell(
-        cls,
-        method,
-        "LongMethod",
-        [Condition("MLOC", ">", t.long_method_loc, loc)],
-    )
+    return _method_smell(cls, method, "LongMethod", [clause])
 
 
 def detect_brain_method(
@@ -234,28 +246,22 @@ def detect_brain_method(
     A stricter, higher-confidence relative of Long Method: the method is not
     merely long, it concentrates the logic of its class.
     """
-    loc = method.metrics.get("MLOC", 0.0)
-    cc = method.metrics.get("CC", 0.0)
-    nesting = method.metrics.get("MAXNESTING", 0.0)
-    noav = method.metrics.get("NOAV", 0.0)
-    if not (
-        loc > t.brain_method_loc
-        and cc >= t.brain_method_cc
-        and nesting >= t.brain_method_nesting
-        and noav > t.brain_method_noav
-    ):
+    clauses = brain_method_clauses(method, t)
+    if not all(clause.satisfied for clause in clauses):
         return None
-    return _method_smell(
-        cls,
-        method,
-        "BrainMethod",
-        [
-            Condition("MLOC", ">", t.brain_method_loc, loc),
-            Condition("CC", ">=", t.brain_method_cc, cc),
-            Condition("MAXNESTING", ">=", t.brain_method_nesting, nesting),
-            Condition("NOAV", ">", t.brain_method_noav, noav),
-        ],
-    )
+    return _method_smell(cls, method, "BrainMethod", clauses)
+
+
+def brain_method_clauses(method: MethodInfo, t: Thresholds = DEFAULT) -> list[Condition]:
+    """The four clauses, measured, whether or not they hold."""
+    return [
+        Condition("MLOC", ">", t.brain_method_loc, method.metrics.get("MLOC", 0.0)),
+        Condition("CC", ">=", t.brain_method_cc, method.metrics.get("CC", 0.0)),
+        Condition(
+            "MAXNESTING", ">=", t.brain_method_nesting, method.metrics.get("MAXNESTING", 0.0)
+        ),
+        Condition("NOAV", ">", t.brain_method_noav, method.metrics.get("NOAV", 0.0)),
+    ]
 
 
 def detect_long_parameter_list(
@@ -269,15 +275,10 @@ def detect_long_parameter_list(
     parameter list is long when it exceeds what a reader holds at once, which is
     the same quantity the other strategies are written in.
     """
-    np = method.metrics.get("NP", 0.0)
-    if np <= t.long_parameter_list_np:
+    clause = Condition("NP", ">", t.long_parameter_list_np, method.metrics.get("NP", 0.0))
+    if not clause.satisfied:
         return None
-    return _method_smell(
-        cls,
-        method,
-        "LongParameterList",
-        [Condition("NP", ">", t.long_parameter_list_np, np)],
-    )
+    return _method_smell(cls, method, "LongParameterList", [clause])
 
 
 def detect_deep_nesting(
@@ -291,15 +292,10 @@ def detect_deep_nesting(
     ``Replace Nested Conditional with Guard Clauses`` exists to remove, and it
     is one of the transformations the refactor engine can apply mechanically.
     """
-    nesting = method.metrics.get("MAXNESTING", 0.0)
-    if nesting <= t.deep_nesting:
+    clause = Condition("MAXNESTING", ">", t.deep_nesting, method.metrics.get("MAXNESTING", 0.0))
+    if not clause.satisfied:
         return None
-    return _method_smell(
-        cls,
-        method,
-        "DeepNesting",
-        [Condition("MAXNESTING", ">", t.deep_nesting, nesting)],
-    )
+    return _method_smell(cls, method, "DeepNesting", [clause])
 
 
 CLASS_DETECTORS = (detect_god_class, detect_data_class, detect_large_class)

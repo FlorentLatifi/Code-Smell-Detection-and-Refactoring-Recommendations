@@ -90,6 +90,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-78 | Klauzola që bllokon raportohet, jo vetëm norma | 2026-09-09 | aktiv |
 | VD-79 | Puna e ardhshme nuk premton atë që u bë | 2026-09-09 | aktiv |
 | VD-80 | Feature Envy mbetet pa referencë të jashtme, dhe arsyeja shkruhet | 2026-09-09 | aktiv |
+| VD-81 | Detektori vendos nga klauzolat e veta, kudo | 2026-09-10 | aktiv |
 
 ---
 
@@ -2963,3 +2964,39 @@ deklaruar.
 plotësuar rreshtin. Ai mat zinxhirë mesazhesh dhe jo qasje në të dhëna të huaja;
 hartimi i tij te Feature Envy do të prodhonte një numër që duket krahasim dhe nuk
 është. Shifra e tij raportohet nën emrin e vet dhe kurrë si matje e Feature Envy-së.
+
+
+### VD-81: Detektori vendos nga klauzolat e veta, kudo
+
+**Konteksti.** Çdo detektor e shkruante krahasimin dy herë: një herë te `if`-i që
+vendoste, dhe një herë te `Condition` që shpjegonte. Asgjë nuk i lidhte të dyja.
+Një prag i ndryshuar në njërin vend e jo në tjetrin do të prodhonte një gjetje
+justifikimi i së cilës e kundërshton vetë gjetjen, dhe asnjë test nuk do ta kapte,
+sepse të dyja anët do të ishin «të sakta» veç e veç.
+
+**Vendimi.** `Condition.satisfied` e përgjigjet vetë pyetjen, dhe detektori vendos
+prej saj. Mospërputhja bëhet e paparaqitshme, jo thjesht e pakapur. VD-78 e nisi
+këtë për dy strategjitë që i duheshin analizës së klauzolave; kjo hyrje e mbaron
+për të tetat, sepse gjysma e një garancie nuk është garanci.
+
+**Format nuk janë të njëjta, dhe konvertimi i respekton.**
+
+- **Konjunksionet** — God Class, Feature Envy, Brain Method — ndezin kur `all()`
+  e klauzolave qëndron, dhe i raportojnë të gjitha.
+- **Large Class** është disjunksion, ndaj raporton **vetëm** klauzolat që
+  qëndrojnë. Përfshirja e së papërmbushurës do të shfaqte një arsye që nuk vlen.
+- **Data Class** është një klauzolë e ndjekur nga zgjedhje mes dy degëve. Degët
+  kthehen veçmas e nuk rrafshohen, sepse një thirrës që i rrafshon duhet ta
+  rizbulojë cila është cila. Kur të dyja qëndrojnë, fiton e ngushta: gjetja duhet
+  të citojë pragun që e mban vërtet.
+
+**Verifikimi ishte mbi korpusin, jo vetëm mbi testet.** Një rishkrim që ruan
+sjelljen duhet ta provojë atë mbi të dhënat që prodhojnë numrat e punimit.
+`rules_evaluation_samples.csv`, 4 534 verdikte, doli **bajt për bajt identik**, po
+ashtu edhe skedari i mospërputhjeve të VD-78; te fshirja dhe kalibrimi ndryshoi
+vetëm commit-i që secili regjistron. Katër mutacione u provuan mbi konvertimet e
+reja dhe të katërta u kapën.
+
+**Një test i ri e ruan pohimin drejtpërdrejt.** Mbi çdo entitet të fikstuarave dhe
+çdo strategji, asnjë klauzolë e raportuar nuk lejohet të jetë e paplotësuar. Ai
+test do të kishte dështuar për çdo defekt të llojit që kjo hyrje e mbyll.
