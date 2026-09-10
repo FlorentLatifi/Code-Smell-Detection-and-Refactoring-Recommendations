@@ -15,6 +15,9 @@ import {
   rules,
   sweep,
   variantScore,
+  blockingFor,
+  pmd,
+  PMD_ROW_SQ,
 } from "./evaluation";
 import type { Aggregation } from "./evaluation";
 
@@ -201,6 +204,7 @@ export function Results() {
           <div>
             <h4>Recall sipas ashpërsisë që caktuan rishikuesit</h4>
             <SeverityRecalls smell={smell} />
+            <Blockers smell={smell} />
             <h4>Pajtimi mes dy qasjeve</h4>
             <AgreementBar smell={smell} />
             <h4>Veçoritë që zgjodhi modeli</h4>
@@ -216,6 +220,8 @@ export function Results() {
           </div>
         </div>
       </Panel>
+
+      <ExternalTool />
 
       <p className="quiet footnote">
         Prodhuar me Python {rules.environment.python}, {rules.environment.platform}
@@ -240,6 +246,109 @@ export function Results() {
       </p>
     </div>
   );
+}
+
+function Blockers({ smell }: { smell: string }) {
+  const blocking = blockingFor(smell);
+  // Vetëm dy strategjitë që janë konjunksione të pastra e kanë këtë llogari; te
+  // të tjerat pyetja «cila klauzolë e ndali» nuk ka përgjigje të vetme.
+  if (!blocking) return null;
+
+  const sole = Object.entries(blocking.sole_blocker).sort((a, b) => b[1] - a[1]);
+  const many = blocking.missed - blocking.blocked_by_one_clause;
+  return (
+    <>
+      <h4>Pse nuk ndezi</h4>
+      <p className="quiet">
+        {blocking.missed.toLocaleString("sq")} raste që rishikuesit i quajtën të tilla dhe
+        strategjia nuk i ndezi. Te {many.toLocaleString("sq")} prej tyre dështoi më shumë se
+        një klauzolë, ndaj nuk janë raste kufitare.
+      </p>
+      <table className="grid">
+        <thead>
+          <tr>
+            <th scope="col">Klauzola e vetme që ndaloi</th>
+            <th scope="col">Raste</th>
+            <th scope="col">Sa afër erdhi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sole.map(([metric, count]) => (
+            <tr key={metric}>
+              <th scope="row">
+                <code>{metric}</code>
+              </th>
+              <td className="figures">{count.toLocaleString("sq")}</td>
+              <td>
+                <Bar value={blocking.median_shortfall[metric]} tone="rules" format="percent" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="quiet">
+        «Sa afër» është mediana e matjes si pjesë e pragut, vetëm për rastet që i ndaloi një
+        klauzolë e vetme. Sa më afër njëshit, aq më shumë do të ndihmonte një prag i lëvizur.
+      </p>
+    </>
+  );
+}
+
+function ExternalTool() {
+  const rows = Object.entries(pmd.by_smell);
+  return (
+    <Panel
+      title="Kundrejt një mjeti të gatshëm"
+      note={`PMD ${pmd.pmd_version} mbi të njëjtat depo, me pragjet e veta, i pikëzuar me të njëjtin kod. Intervali është i çiftuar mbi riterheqje depoje: kur e përmban zeron, dy anët nuk dallohen.`}
+    >
+      <table className="grid wide">
+        <thead>
+          <tr>
+            <th scope="col">Era</th>
+            <th scope="col">Mostra</th>
+            <th scope="col">PMD</th>
+            <th scope="col">Ky punim</th>
+            <th scope="col">Ndryshimi, IB 95%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([key, row]) => (
+            <tr key={key}>
+              <th scope="row">{PMD_ROW_SQ[key] ?? key}</th>
+              <td className="figures quiet">{row.scored.toLocaleString("sq")}</td>
+              <td>
+                <Bar value={row.pmd.mcc} tone="rules" />
+              </td>
+              <td>{row.ours ? <Bar value={row.ours.mcc} tone="model" /> : <Missing />}</td>
+              <td className="figures">
+                {row.difference ? (
+                  <span className={row.difference.excludes_zero ? "band holds" : "band"}>
+                    {row.difference.low >= 0 ? "+" : ""}
+                    {row.difference.low.toFixed(3)} deri{" "}
+                    {row.difference.high >= 0 ? "+" : ""}
+                    {row.difference.high.toFixed(3)}
+                  </span>
+                ) : (
+                  <Missing />
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="quiet">
+        Feature Envy nuk ka krahasim: PMD nuk ka rregull për të, dhe LawOfDemeter mat zinxhirë
+        mesazhesh e jo qasje në të dhëna të huaja. Shifra e tij qëndron nën emrin e vet.{" "}
+        {pmd.repositories_failed.length} depo nuk u përpunuan dot dhe{" "}
+        {pmd.files_pmd_could_not_read.toLocaleString("sq")} skedarë nuk u lexuan; mostrat e tyre
+        dalin nga të dyja kolonat njësoj.
+      </p>
+    </Panel>
+  );
+}
+
+function Missing() {
+  return <span className="quiet">s'ka</span>;
 }
 
 function SeverityRecalls({ smell }: { smell: string }) {

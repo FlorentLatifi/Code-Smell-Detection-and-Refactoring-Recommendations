@@ -802,6 +802,19 @@ select:hover {
   white-space: nowrap;
 }
 
+/* Intervali i çiftuar. Kur nuk e përmban zeron, ndryshimi qëndron mbi
+   riterheqje, dhe kjo është e vetmja gjë që e dallon nga një lëkundje. */
+.band {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink-faint);
+}
+
+.band.holds {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .grid .strong {
   font-weight: 600;
 }

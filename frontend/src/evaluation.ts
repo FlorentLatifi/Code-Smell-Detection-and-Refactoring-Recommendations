@@ -9,8 +9,10 @@
 //
 // Burimi i vetëm mbetet `data/results/`; asnjë numër nuk kopjohet në frontend.
 
+import blockingJson from "../../data/results/blocking_conditions.json";
 import datasetJson from "../../data/results/mlcq_dataset.json";
 import mlJson from "../../data/results/ml_evaluation.json";
+import pmdJson from "../../data/results/pmd_comparison.json";
 import refactoringJson from "../../data/results/refactoring_evaluation.json";
 import rulesJson from "../../data/results/rules_evaluation.json";
 import sweepJson from "../../data/results/threshold_sweep.json";
@@ -180,17 +182,99 @@ export function variantScore(smell: string, aggregation: Aggregation): Score | n
   return extra ? variants[extra].by_aggregation[aggregation] : null;
 }
 
+
+
+
+// ----------------------------------------------------------------------
+// Pse nuk ndezin strategjitë
+// ----------------------------------------------------------------------
+// Paneli tregon recall-in e Blob-it si 10%, dhe deri tani nuk thoshte asgjë për
+// arsyen. Një strategji e Lanza & Marinescu-t është konjunksion, ndaj çdo
+// mospërputhje ka shkak të emërtueshëm: një klauzolë, dy, ose të tria nuk
+// qëndruan. Këta numra e mbajnë atë përgjigje.
+
+export interface Blocking {
+  missed: number;
+  blocked_by_one_clause: number;
+  clauses_failing: Record<string, number>;
+  sole_blocker: Record<string, number>;
+  median_shortfall: Record<string, number>;
+}
+
+interface BlockingFile {
+  by_smell: Record<string, Blocking>;
+  environment: { commit: string; python: string; platform: string };
+}
+
+const blockingData = blockingJson as BlockingFile;
+
+/** Llogaria e klauzolave për një erë, ose null kur strategjia s'është konjunksion. */
+export function blockingFor(smell: string): Blocking | null {
+  return blockingData.by_smell[smell] ?? null;
+}
+
+// ----------------------------------------------------------------------
+// Krahasimi me një mjet të jashtëm
+// ----------------------------------------------------------------------
+// Dy MCC krah njëri-tjetrit ftojnë lexuesin të lexojë fitore aty ku ka vetëm
+// lëkundje, ndaj intervali i çiftuar shkon bashkë me to dhe kurrë veç.
+
+export interface PmdSide {
+  mcc: number | null;
+  precision: number | null;
+  recall: number;
+}
+
+export interface PmdDifference {
+  low: number;
+  high: number;
+  median: number;
+  excludes_zero: boolean;
+}
+
+export interface PmdRow {
+  scored: number;
+  pmd: PmdSide;
+  ours?: PmdSide;
+  difference?: PmdDifference;
+}
+
+interface PmdFile {
+  pmd_version: string;
+  repositories: number;
+  repositories_failed: string[];
+  files_pmd_could_not_read: number;
+  by_smell: Record<string, PmdRow>;
+  environment: { commit: string; python: string; platform: string };
+}
+
+export const pmd = pmdJson as PmdFile;
+
+/** Emrat e rreshtave si i shkruan punimi, që tabela të mos flasë me çelësa. */
+export const PMD_ROW_SQ: Record<string, string> = {
+  "blob/strategy": "Blob, strategjia",
+  "blob/with_size": "Blob, me madhësinë",
+  "data class/strategy": "Data Class",
+  "feature envy/law_of_demeter": "Feature Envy (LawOfDemeter)",
+  "long method/strategy": "Long Method",
+};
+
 /**
  * Çdo commit që qëndron pas numrave të këtij paneli, pa përsëritje.
  *
- * Paneli i lexon pesë skedarë rezultati dhe secili mban mjedisin e vet.
+ * Paneli i lexon disa skedarë rezultati dhe secili mban mjedisin e vet.
  * Eksperimentet u ekzekutuan sipas radhës në të cilën u shkruan, ndaj ata
  * mjedise nuk janë një: fusnota shtypte commit-in e `rules_evaluation.json`
  * sikur t'i kishte prodhuar të gjithë, dhe ai ishte i saktë vetëm për dy nga
  * pesë. I njëjti defekt te punimi u ndreq si VD-59.
+ *
+ * Lista rritet bashkë me panelin. Kur u shtuan krahasimi me PMD-në dhe llogaria
+ * e klauzolave, fusnota do të kishte vazhduar të pretendonte prejardhjen e vjetër
+ * po të mos ishin shtuar edhe këtu — pikërisht defekti që kjo listë ekziston për
+ * ta ndaluar.
  */
+export const SOURCES = [rules, ml, refactoring, dataset, sweep, pmd, blockingData] as const;
+
 export const COMMITS: string[] = [
-  ...new Set(
-    [rules, ml, refactoring, dataset, sweep].map((source) => source.environment.commit.slice(0, 10)),
-  ),
+  ...new Set(SOURCES.map((source) => source.environment.commit.slice(0, 10))),
 ].sort();

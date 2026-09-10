@@ -93,6 +93,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-81 | Detektori vendos nga klauzolat e veta, kudo | 2026-09-10 | aktiv |
 | VD-82 | Përmbysja e vetme u veçua, dhe shkaku është korpusi | 2026-09-10 | aktiv |
 | VD-83 | Pika e kontrollit ruan çdo rishkrim, jo çdo skedar | 2026-09-10 | aktiv |
+| VD-84 | Paneli tregon pse nuk ndezin, dhe kundrejt çfarë | 2026-09-10 | aktiv |
 
 ---
 
@@ -3076,3 +3077,36 @@ erën, dhe janë e njëjta metodë e ndezur nga dy strategji — dallimi u kontr
 **Rezultatet nuk ndryshojnë.** Kjo prek mënyrën si ruhet gjendja gjatë ekzekutimit,
 jo çfarë matet, ndaj skedarët e komituar mbeten ata të VD-82 dhe nuk u ri-ekzekutua
 asgjë për të.
+
+
+### VD-84: Paneli tregon pse nuk ndezin, dhe kundrejt çfarë
+
+**Konteksti.** Paneli i rezultateve shfaqte recall-in e Blob-it si 10% dhe, dy
+rreshta më poshtë, «major 5.0%, 1/20». Pyetja që ato shifra ngrenë — pse — nuk
+kishte përgjigje askund në ekran, ndonëse punimi e kishte fituar atë përgjigje te
+VD-78. Njësoj, krahasimi me PMD-në (VD-76, VD-77) ekzistonte vetëm te punimi.
+Ndërfaqja kishte mbetur pas.
+
+**Vendimi.** Dy panele të reja, të dyja të lexuara nga skedarët e komituar, si
+gjithçka tjetër aty: asnjë numër nuk kopjohet dhe asnjë nuk kalon nëpër API.
+
+- **«Pse nuk ndezi»** rri pikërisht nën recall-in sipas ashpërsisë, sepse aty
+  lind pyetja. Tregon sa mospërputhje dështuan në më shumë se një klauzolë, cila
+  klauzolë i ndaloi ato që i ndaloi një e vetme, dhe sa afër erdhën.
+- **«Kundrejt një mjeti të gatshëm»** jep tabelën e PMD-së me intervalin e
+  çiftuar. Intervali nuk shfaqet kurrë veç nga dy MCC-të, sepse dy numra krah
+  njëri-tjetrit pa të ftojnë të lexohet fitore aty ku ka lëkundje.
+
+**Prejardhja u rrit bashkë me panelin, dhe testi e detyroi.** Fusnota numëron
+commit-et pas numrave që shfaq. Sapo u shtuan dy burime, dy teste dështuan — ata
+që VD-59 i la për pikërisht këtë. U rilidhën me listën e vërtetë të burimeve e jo
+me një numër të shtypur, ndaj burimi i ardhshëm nuk mund të hyjë i heshtur.
+Fusnota kaloi nga tre commit-e te pesë.
+
+**Etiketat u mbuluan që në fillim.** Çelësat e krahasimit janë `blob/with_size`
+dhe të ngjashëm; pa përkthim ata do të dilnin të papërkthyer mes emrash shqip dhe
+do të dukeshin të saktë, siç ndodhi një herë me verdiktin `parses`. Një test i ri
+kërkon që çdo rresht i matur të ketë emër.
+
+**Verifikimi u bë në shfletues, jo vetëm te testet.** Të dy panelet u hapën, u
+lexuan me të dhënat e vërteta, dhe fusnota u kontrollua në ekran.
