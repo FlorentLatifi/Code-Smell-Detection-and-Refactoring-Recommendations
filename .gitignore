@@ -33,6 +33,8 @@ data/tools/
 data/results/*.part
 data/results/*progress.json
 data/results/*.progress.json
+# Shkrimi atomik i pikave te kontrollit e le kete nese vdes pikerisht ne mes.
+data/results/*.tmp
 
 # OS
 Thumbs.db

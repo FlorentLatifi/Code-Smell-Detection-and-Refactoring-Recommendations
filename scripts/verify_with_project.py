@@ -95,6 +95,8 @@ SEED = 20260902
 # Generous, because a context compile pulls in a dependency closure rather than
 # one file. A timeout is counted, never read as success -- the same distinction
 # `verify.error_messages` makes.
+NEWLINE = chr(10)
+
 JAVAC_TIMEOUT_S = 180
 
 PACKAGE = re.compile(rb"^\s*package\s+([\w.]+)\s*;", re.M)
@@ -268,6 +270,37 @@ def rewrites_in(path: Path, source: bytes) -> list[Rewrite]:
     return found
 
 
+Rows = dict[str, list[list[str]]]
+
+
+def load_progress(path: Path, resume: bool) -> tuple[Rows, Rows]:
+    """Skedarët e mbaruar, dhe rreshtat e atij që u ndërpre në mes.
+
+    Formati i vjetër ishte një hartë e vetme skedar -> rreshta, ku çdo hyrje
+    nënkuptonte «i mbaruar». Ai lexohet ende, që një pikë kontrolli e mëparshme
+    të mos hidhet: çelësat atje janë shtigje skedarësh dhe nuk përplasen kurrë me
+    dy emrat e formatit të ri.
+    """
+    if not resume or not path.is_file():
+        return {}, {}
+    try:
+        stored = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as failure:
+        print(f"checkpoint unreadable ({failure}); starting over", file=sys.stderr)
+        return {}, {}
+    if isinstance(stored, dict) and "done" in stored and "partial" in stored:
+        return stored["done"], stored["partial"]
+    return stored, {}
+
+
+def save_progress(path: Path, done: Rows, partial: Rows) -> None:
+    """Shkruar te një i përkohshëm dhe zëvendësuar, që ndërprerja të mos e prishë."""
+    scratch = path.with_suffix(".tmp")
+    payload = json.dumps({"done": done, "partial": partial}, sort_keys=True)
+    scratch.write_text(payload + NEWLINE, encoding="utf-8")
+    scratch.replace(path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sites", type=Path, default=DEFAULT_SITES)
@@ -295,10 +328,11 @@ def main() -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     progress_path = args.out / PROGRESS_NAME
-    done: dict[str, list[list[str]]] = {}
-    if args.resume and progress_path.is_file():
-        done = json.loads(progress_path.read_text(encoding="utf-8"))
-        print(f"Resuming: {len(done)} files already checked", flush=True)
+    done, partial = load_progress(progress_path, args.resume)
+    if done or partial:
+        carried = sum(len(rows) for rows in partial.values())
+        note = f", plus {carried} rewrites of one left half-done" if carried else ""
+        print(f"Resuming: {len(done)} files already checked{note}", flush=True)
 
     corpus = args.corpus.resolve()
     roots_cache: dict[str, list[str]] = {}
@@ -313,11 +347,13 @@ def main() -> int:
             project = corpus / path.resolve().relative_to(corpus).parts[0]
         except (OSError, ValueError):
             done[file_path] = []
+            save_progress(progress_path, done, partial)
             continue
 
         rewritten = rewrites_in(path, source)
         if not rewritten:
             done[file_path] = []
+            save_progress(progress_path, done, partial)
             continue
 
         if str(project) not in roots_cache:
@@ -330,8 +366,10 @@ def main() -> int:
             alone_before = compile_alone(javac, path.name, source, work / "alone")
             context_before = compile_in_context(javac, path, source, roots, work)
 
-        outcomes: list[list[str]] = []
-        for rewrite in rewritten:
+        # Rreshtat e mbajtur nga një ndërprerje e mëparshme mbi këtë skedar. Vetëm
+        # bazat rillogariten, sepse ato jane dy kompilime kundrejt qindra.
+        outcomes: list[list[str]] = list(partial.get(file_path, []))
+        for rewrite in rewritten[len(outcomes) :]:
             with tempfile.TemporaryDirectory() as tmp:
                 work = Path(tmp)
                 (work / "alone").mkdir()
@@ -347,8 +385,17 @@ def main() -> int:
                     verdict_for(context_before, context_after).value,
                 ]
             )
+            # Pas cdo rishkrimi, jo pas cdo skedari. Nje skedar i vetem i kesaj
+            # mostre mban 118 rishkrime dhe rri ore te tera; nje nderprerje aty i
+            # humbte te gjitha, dhe laptopi ka vdekur ne mes te nje ekzekutimi me
+            # shume se nje here.
+            partial[file_path] = outcomes
+            save_progress(progress_path, done, partial)
+            if not args.quiet and len(rewritten) > 20 and len(outcomes) % 20 == 0:
+                print(f"    {len(outcomes)}/{len(rewritten)} in {path.name}", flush=True)
         done[file_path] = outcomes
-        progress_path.write_text(json.dumps(done, sort_keys=True) + "\n", encoding="utf-8")
+        partial.pop(file_path, None)
+        save_progress(progress_path, done, partial)
         if not args.quiet:
             print(f"  {number}/{len(chosen)} files", flush=True)
 

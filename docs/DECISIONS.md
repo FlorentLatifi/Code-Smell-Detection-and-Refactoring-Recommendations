@@ -92,6 +92,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-80 | Feature Envy mbetet pa referencë të jashtme, dhe arsyeja shkruhet | 2026-09-09 | aktiv |
 | VD-81 | Detektori vendos nga klauzolat e veta, kudo | 2026-09-10 | aktiv |
 | VD-82 | Përmbysja e vetme u veçua, dhe shkaku është korpusi | 2026-09-10 | aktiv |
+| VD-83 | Pika e kontrollit ruan çdo rishkrim, jo çdo skedar | 2026-09-10 | aktiv |
 
 ---
 
@@ -3042,3 +3043,36 @@ pasojë e arsyetuar nga tri gabimet e vëzhguara, jo matje, dhe shkruhet si e ti
 mban 118 rishkrime dhe rri orë të tëra pa shkruar gjë, ndaj një ndërprerje aty
 humbet ato orë. Nuk u ndryshua tani sepse do të prishte ekzekutimin në vazhdim, dhe
 regjistrohet si punë e mundshme e jo si defekt i heshtur.
+
+
+### VD-83: Pika e kontrollit ruan çdo rishkrim, jo çdo skedar
+
+**Konteksti.** VD-82 e la këtë të hapur me arsye: ekzekutimi ishte në vazhdim dhe
+ndryshimi do ta prishte. Tani ka mbaruar, ndaj bëhet.
+
+`verify_with_project.py` e shkruante pikën e kontrollit **një herë për skedar**.
+Një skedar i vetëm i kësaj mostre mban 118 rishkrime dhe rri orë të tëra pa
+shkruar gjë, ndaj një ndërprerje aty i humbte të gjitha ato orë. Laptopi ka vdekur
+në mes të një ekzekutimi më shumë se një herë, ndaj kjo nuk ishte rrezik teorik.
+
+**Vendimi.** Pika ruhet pas çdo rishkrimi. Skedarët e mbaruar dhe ai i ndërprerë
+mbahen veç — `done` dhe `partial` — sepse rinisja duhet të dijë ku ta rimarrë
+brenda skedarit e jo vetëm cilin skedar ta kapërcejë. Vetëm dy kompilimet bazë
+rillogariten, çka është çmim i vogël kundrejt qindra.
+
+**Formati i vjetër lexohet ende.** Ai ishte një hartë e vetme skedar -> rreshta ku
+çdo hyrje nënkuptonte «i mbaruar». Çelësat atje janë shtigje dhe nuk përplasen me
+dy emrat e rinj, ndaj një pikë kontrolli e mëparshme nuk hidhet.
+
+**Shkrimi u bë atomik**, si te VD-77: i përkohshëm dhe zëvendësim. Një fikje në mes
+të shkrimit linte më parë një skedar bosh atje ku ishin orë pune.
+
+**Verifikimi ishte i vërtetë, jo vetëm i lexuar.** Një ekzekutim u ndërpre me dhunë
+në mes të një skedari; pika mbajti një rresht; rinisja e njohu («plus 1 rewrites of
+one left half-done»), vazhdoi nga i dyti, dhe CSV-ja përfundimtare doli me nëntë
+rreshta pa asnjë dublikatë. Dy rreshta duken si dublikatë nën një çelës që lë jashtë
+erën, dhe janë e njëjta metodë e ndezur nga dy strategji — dallimi u kontrollua.
+
+**Rezultatet nuk ndryshojnë.** Kjo prek mënyrën si ruhet gjendja gjatë ekzekutimit,
+jo çfarë matet, ndaj skedarët e komituar mbeten ata të VD-82 dhe nuk u ri-ekzekutua
+asgjë për të.
