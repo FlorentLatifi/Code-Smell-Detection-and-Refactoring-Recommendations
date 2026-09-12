@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { analyse, Cancelled } from "./api";
 import { Detail } from "./Detail";
 import { SMELL_SQ } from "./evaluation";
@@ -28,6 +28,43 @@ const ORDER_LABELS: Record<Order, string> = {
 };
 
 const REMEMBERED_PATH = "javasmell.path";
+
+/**
+ * Gjendja që i përket adresës, e jo vetëm kujtesës së komponentit.
+ *
+ * Pa këtë, rifreskimi e zbrazte gjithçka, butoni «prapa» e mbyllte faqen në vend
+ * që të kthehej te lista, dhe asnjë pamje nuk ndahej dot me dikë tjetër. Nuk u
+ * shtua bibliotekë rrugëzimi: vendimi te `View` qëndron, dhe katër parametra
+ * kërkimi e bëjnë tërë punën.
+ *
+ * Shkruhet me `replaceState` e jo me `pushState`, sepse ndryshimi i një filtri
+ * nuk është vend ku dikush do të kthehej — një histori me njëzet hapa filtrash
+ * do ta bënte butonin «prapa» të padobishëm.
+ */
+function readAddress(): { view: View; path: string; query: string; kind: string } {
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view");
+  return {
+    view: view === "results" ? "results" : "analysis",
+    path: params.get("path") ?? "",
+    query: params.get("q") ?? "",
+    kind: params.get("kind") ?? "all",
+  };
+}
+
+function writeAddress(view: View, path: string, query: string, kind: string): void {
+  const params = new URLSearchParams();
+  if (view === "results") params.set("view", view);
+  if (path.trim()) params.set("path", path.trim());
+  if (query.trim()) params.set("q", query.trim());
+  if (kind !== "all") params.set("kind", kind);
+
+  const search = params.toString();
+  const next = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+  if (next !== window.location.pathname + window.location.search) {
+    window.history.replaceState(null, "", next);
+  }
+}
 
 /**
  * The last path analysed, so the tool opens where it was left.
@@ -73,12 +110,17 @@ type Screen =
 type View = "analysis" | "results";
 
 export function App() {
-  const [view, setView] = useState<View>("analysis");
-  const [path, setPath] = useState(() => remembered(REMEMBERED_PATH));
+  // Adresa lexohet një herë, në ngarkim. Pas saj burimi i vërtetë është gjendja;
+  // adresa e ndjek atë e nuk e drejton.
+  const address = useRef(readAddress()).current;
+  const [view, setView] = useState<View>(address.view);
+  // Shtegu te adresa fiton mbi atë të kujtuar: një link i ndarë duhet të hapë atë
+  // që premton, e jo atë që ky shfletues pa herën e fundit.
+  const [path, setPath] = useState(() => address.path || remembered(REMEMBERED_PATH));
   const [screen, setScreen] = useState<Screen>({ state: "idle" });
   const [severity, setSeverity] = useState<Severity | "all">("all");
-  const [kind, setKind] = useState<string>("all");
-  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState<string>(address.kind);
+  const [query, setQuery] = useState(address.query);
   const [order, setOrder] = useState<Order>("severity");
   // Whether the model was asked, kept apart from whether it answered: an
   // untrained checkout has no models, and the difference has to stay visible.
@@ -121,6 +163,9 @@ export function App() {
   function stop(): void {
     running.current?.abort();
   }
+
+  // Adresa përditësohet pas çdo renderimi që e ndryshon atë që ajo mban.
+  useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
 
   const smells = screen.state === "ready" ? screen.analysis.smells : [];
   const model = useMemo(
@@ -201,6 +246,27 @@ export function App() {
     setShownSmell(site.smells[0]);
   }
 
+  /**
+   * Ndërro pamjen dhe çoje fokusin te përmbajtja e re.
+   *
+   * Pa këtë, një përdorues me tastierë shtyp skedën dhe fokusi mbetet mbi butonin:
+   * ekrani ndryshon tërësisht poshtë tij dhe asgjë nuk e thotë. Tabulimi i radhës
+   * nis nga koka, jo nga ajo që sapo u hap.
+   */
+  /** Kthen listën te gjendja e saj e plotë, pa e prekur analizën. */
+  function clearFilters(): void {
+    setSeverity("all");
+    setKind("all");
+    setQuery("");
+    setAgreed(false);
+  }
+
+  function show(next: View): void {
+    setView(next);
+    // Pas renderimit, ndryshe fokusi shkon te përmbajtja e vjetër.
+    requestAnimationFrame(() => document.getElementById("content")?.focus());
+  }
+
   return (
     <div className="page">
       <header>
@@ -209,14 +275,14 @@ export function App() {
         <nav className="tabs">
           <button
             className={view === "analysis" ? "tab on" : "tab"}
-            onClick={() => setView("analysis")}
+            onClick={() => show("analysis")}
             aria-pressed={view === "analysis"}
           >
             Analizo një projekt
           </button>
           <button
             className={view === "results" ? "tab on" : "tab"}
-            onClick={() => setView("results")}
+            onClick={() => show("results")}
             aria-pressed={view === "results"}
           >
             Rezultatet e vlerësimit
@@ -224,6 +290,7 @@ export function App() {
         </nav>
       </header>
 
+      <main id="content" tabIndex={-1}>
       {view === "results" && <Results />}
 
       {view === "analysis" && (
@@ -261,7 +328,11 @@ export function App() {
         </p>
       )}
 
-      {screen.state === "loading" && <p className="empty">Duke matur skedarët…</p>}
+      {screen.state === "loading" && (
+        <p className="empty" role="status">
+          Duke matur skedarët…
+        </p>
+      )}
 
       {screen.state === "error" && (
         <p className="failure" role="alert">
@@ -280,7 +351,12 @@ export function App() {
             <>
             <Patch path={screen.path} ready={automatable(allSites)} total={allSites.length} />
             <div className="layout">
-              <section className="list" ref={listRef} onKeyDown={navigate}>
+              <section
+                className="list"
+                aria-label="Vendet e gjetura"
+                ref={listRef}
+                onKeyDown={navigate}
+              >
                 <Filters
                   analysis={screen.analysis}
                   severity={severity}
@@ -295,11 +371,21 @@ export function App() {
                   onQuery={setQuery}
                   onAgreed={setAgreed}
                 />
-                <p className="count">
+                {/* Ndryshon me çdo filtër dhe me çdo analizë, ndaj është vendi i
+                    natyrshëm ku një lexues ekrani duhet ta marrë vesh se sa mbetën. */}
+                <p className="count" aria-live="polite">
                   {shown.length} nga {allSites.length} {allSites.length === 1 ? "vend" : "vende"}
                   {", "}
                   {countSmells(shown)} erëra
                 </p>
+                {shown.length === 0 && (
+                  <p className="empty">
+                    Asnjë vend nuk i plotëson filtrat.{" "}
+                    <button className="link" onClick={clearFilters}>
+                      Pastro filtrat
+                    </button>
+                  </p>
+                )}
                 <ul>
                   {shown.map((site) => (
                     <li key={site.key}>
@@ -317,14 +403,16 @@ export function App() {
                             </span>
                             <span className="grade">
                               {site.smells.some((s) => agreementOn(model, s)) && (
-                                <abbr className="both" title="Modeli e shënoi po ashtu">
-                                  A∩B
-                                </abbr>
+                                <span className="both">
+                                  <span aria-hidden="true">A∩B</span>
+                                  <span className="sr-only">Modeli e shënoi po ashtu.</span>
+                                </span>
                               )}
                               {site.automated && (
-                                <abbr className="auto" title="Motori e rishkruan vetë">
-                                  ✎
-                                </abbr>
+                                <span className="auto">
+                                  <span aria-hidden="true">✎</span>
+                                  <span className="sr-only">Motori e rishkruan vetë.</span>
+                                </span>
                               )}
                               {site.worst}
                             </span>
@@ -387,6 +475,7 @@ export function App() {
       )}
       </>
       )}
+      </main>
     </div>
   );
 }
