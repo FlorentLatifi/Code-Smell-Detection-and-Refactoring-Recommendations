@@ -158,6 +158,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         payload: dict[str, Any] = {
             "summary": {
                 "files": len(project.units),
+                # Rreshtat efektivë, me të njëjtin përkufizim si CLOC: një
+                # përkufizim i vetëm për tërë sistemin, dhe ai që raporton punimi.
+                "loc": sum(unit.effective_loc for unit in project.units),
                 # Sa prej tyre nuk u parsuan pastër. Pa këtë, një projekt ku
                 # gjysma e skedarëve dështojnë lexohet si kod i pastër (VD-91).
                 "unparsed": len(project.unparsed),

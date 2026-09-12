@@ -114,6 +114,7 @@ class JavaParser:
             package=package,
             imports=imports,
             classes=classes,
+            effective_loc=effective_loc(ctx.lines),
             has_syntax_errors=root.has_error,
         )
 

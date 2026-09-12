@@ -76,6 +76,14 @@ export type ModelBlock =
 export interface Summary {
   files: number;
   /**
+   * Rreshtat efektivë të gjithçkaje që u lexua.
+   *
+   * I njëjti përkufizim si te CLOC: rreshtat bosh dhe ata që mbajnë vetëm
+   * strukturë nuk numërohen. Opsional, si `unparsed`, sepse një server i vjetër
+   * nuk e dërgon.
+   */
+  loc?: number;
+  /**
    * Sa nga ata skedarë nuk u parsuan pastër.
    *
    * Opsionale, sepse një server i vjetër nuk e dërgon; mungesa lexohet si

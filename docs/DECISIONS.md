@@ -3645,3 +3645,40 @@ Gjendja e pemës pyetet me një rrugë të vetën para se të planifikohet gjë,
 **Ç'nuk ndryshon.** Pragjet, detektorët, verifikimi dhe çdo numër i Kapitullit 5
 mbeten të njëjtët. Shkruhen vetëm skedarët që kanë kaluar tashmë verifikimin, pra
 vetëm përmbajtja e një `FilePatch`-i.
+
+### VD-101: Konteksti, rreshti anësor dhe kartat e rekomandimeve
+
+**Konteksti i analizës.** Rezultatet rrinin pa thënë çfarë u lexua. Një numër
+erërash nuk do të thotë asgjë pa madhësinë nga e cila doli, dhe dyzet erëra mbi
+treqind rreshta e dyzet mbi tridhjetë mijë janë dy gjendje krejt të ndryshme.
+Rreshti i ri thotë shtegun, rreshtat, skedarët, sa zgjati dhe a u pyet modeli, dhe
+rri **para** totaleve: e kundërta i jep lexuesit një numër para se t'i japë
+emëruesin.
+
+**Rreshtat matur te modeli, jo të mbledhur nga klasat.** `CompilationUnit` mban
+tani `effective_loc` për tërë skedarin, me të njëjtin përkufizim si CLOC. Mbledhja
+e CLOC-ve të klasave do të humbte deklarimin e paketës, importet dhe çdo gjë mes
+dy tipave, dhe do ta bënte totalin e projektit heshtazi më të vogël se skedari nga
+i cili doli. Koha matet te klienti sepse vetëm ai e di kur e nisi kërkesën.
+
+**Rreshti anësor.** Skedat u bënë kolonë majtas, me `aria-orientation="vertical"`
+të deklaruar: pa të, lexuesi i ekranit do t'i premtonte përdoruesit shigjetat e
+gabuara. Lart e poshtë e lëvizin tani, dhe majtas e djathtas mbahen gjithashtu,
+sepse dikush që e mësoi ndërfaqen e vjetër nuk duhet ta gjejë tastierën të vdekur.
+Nën 820px rreshti kthehet horizontal: një kolonë ikonash e ngushtë pranë një
+kolone përmbajtjeje të ngushtë nuk i lë vend asnjërës.
+
+**Kartat e rekomandimeve.** Dallimi mes «ja çfarë gjeta» dhe «ja çfarë mund të
+ndreq» rrinte si një distinktiv tetë pikësh mes pesëdhjetë rreshtash. Pesë kartat
+e numëruara e nxjerrin atë përpara. Numërimi vjen nga `ol` e jo nga një distinktiv
+i vizatuar, sepse radha është kuptimplote — më e rënda e para — dhe një lexues
+ekrani duhet ta dëgjojë.
+
+**Karta hap erën që ka rishkrim, jo më të rëndën e vendit.** Një metodë e gjatë
+dhe e folezuar i mban të dyja, dhe vetëm njëra rishkruhet. Lista vazhdon ta hapë
+më të rëndën, sepse ajo është ajo që lexuesi pa te rreshti; karta e emërton atë që
+premton.
+
+**Pesë karta e jo të gjitha.** Kjo është listë për të nisur punën e jo për ta
+inventarizuar: mbi një projekt real vendet e rishkrueshme shkojnë me qindra, dhe
+një listë e tillë do të ishte lista e plotë me një emër tjetër.

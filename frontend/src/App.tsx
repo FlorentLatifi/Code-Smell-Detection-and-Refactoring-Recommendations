@@ -8,6 +8,8 @@ import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
 import { Landing } from "./Landing";
 import { Breakdown } from "./Breakdown";
+import { Context } from "./Context";
+import { Recommendations } from "./Recommendations";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
 import { ModelBar, SummaryBar } from "./Summary";
@@ -107,7 +109,15 @@ type Screen =
   | { state: "idle" }
   | { state: "loading" }
   | { state: "error"; message: string }
-  | { state: "ready"; analysis: Analysis; path: string };
+  | {
+      state: "ready";
+      analysis: Analysis;
+      path: string;
+      /** Sa zgjati kërkesa, matur te klienti: vetëm ai e di kur e nisi. */
+      seconds: number;
+      /** A u pyet modeli për *këtë* analizë, e jo çfarë thotë kutiza tani. */
+      askedModel: boolean;
+    };
 
 // Dy pamje, pa router: një bibliotekë rrugëzimi për dy gjendje do të ishte më
 // shumë kod se vetë kalimi mes tyre.
@@ -150,9 +160,16 @@ export function App() {
     const asked = path;
     const controller = new AbortController();
     running.current = controller;
+    const started = performance.now();
     try {
       const analysis = await analyse(asked, askModel, controller.signal);
-      setScreen({ state: "ready", analysis, path: asked });
+      setScreen({
+        state: "ready",
+        analysis,
+        path: asked,
+        seconds: (performance.now() - started) / 1000,
+        askedModel: askModel,
+      });
       remember(REMEMBERED_PATH, asked);
     } catch (failure) {
       // Ndalimi nga vetë përdoruesi nuk është gabim: ekrani kthehet aty ku ishte,
@@ -271,9 +288,12 @@ export function App() {
   }
 
   /** Zgjedh një vend, dhe me të erën e tij më të rëndë. */
-  function choose(site: Site): void {
+  function choose(site: Site, smell?: Smell): void {
     setSelected(site);
-    setShownSmell(site.smells[0]);
+    // Parazgjedhja është më e rënda e vendit, sepse ajo është ajo që lexuesi
+    // pa te rreshti. Një rekomandim e emërton erën që ka rishkrim, e cila nuk
+    // është gjithnjë e njëjta.
+    setShownSmell(smell ?? site.smells[0]);
   }
 
   /**
@@ -299,7 +319,11 @@ export function App() {
    * e pazgjedhur do ta bënte atë të paarritshme fare.
    */
   function moveTab(event: React.KeyboardEvent): void {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    // Lart e poshtë sepse rreshti është vertikal; majtas e djathtas mbahen
+    // gjithashtu, sepse dikush që e mësoi ndërfaqen e vjetër horizontale nuk
+    // duhet ta gjejë tastierën të pafunksionale.
+    const moves = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    if (!moves.includes(event.key)) return;
     event.preventDefault();
     const next = view === "analysis" ? "results" : "analysis";
     show(next);
@@ -320,10 +344,14 @@ export function App() {
       <header>
         <h1>JavaSmell</h1>
         <p className="tagline">Detektim i code smells dhe rekomandime refaktorimi</p>
-        {/* `aria-pressed` i thoshte lexuesit se butoni është i shtypur, jo se është
-            skedë mes skedash. `tablist` e thotë sa janë, cila është e zgjedhura, dhe
-            se ato drejtojnë një panel — çka është e vërteta e kësaj ndërfaqeje. */}
-        <nav className="tabs" role="tablist" aria-label="Pamjet">
+      </header>
+
+      {/* Rreshti anësor. `aria-pressed` i thoshte lexuesit se butoni është i
+          shtypur, jo se është skedë mes skedash; `tablist` e thotë sa janë, cila
+          është e zgjedhura, dhe se ato drejtojnë një panel — çka është e vërteta
+          e kësaj ndërfaqeje. Orientimi deklarohet, ose lexuesi i ekranit do t'i
+          premtonte përdoruesit shigjetat e gabuara. */}
+      <nav className="rail" role="tablist" aria-orientation="vertical" aria-label="Pamjet">
           <button
             role="tab"
             id="tab-analysis"
@@ -334,7 +362,10 @@ export function App() {
             onClick={() => show("analysis")}
             onKeyDown={moveTab}
           >
-            Analizo një projekt
+            <span className="glyph" aria-hidden="true">
+              ⌕
+            </span>
+            <span className="label">Analizo një projekt</span>
           </button>
           <button
             role="tab"
@@ -346,10 +377,12 @@ export function App() {
             onClick={() => show("results")}
             onKeyDown={moveTab}
           >
-            Rezultatet e vlerësimit
+            <span className="glyph" aria-hidden="true">
+              ▤
+            </span>
+            <span className="label">Rezultatet e vlerësimit</span>
           </button>
-        </nav>
-      </header>
+      </nav>
 
       {/* `role="tabpanel"` mbi vetë `<main>` e mbivendos rolin e tij të nënkuptuar,
           dhe faqja mbetet pa landmark kryesor. Të dy rolet i duhen: njëri i thotë
@@ -406,9 +439,18 @@ export function App() {
 
       {screen.state === "ready" && (
         <>
+          {/* Konteksti para totaleve: çfarë u lexua, pastaj çfarë u gjet aty.
+              E kundërta i jep lexuesit një numër para se t'i japë emëruesin. */}
+          <Context
+            path={screen.path}
+            analysis={screen.analysis}
+            seconds={screen.seconds}
+            askedModel={screen.askedModel}
+          />
           <SummaryBar analysis={screen.analysis} sites={allSites} />
           {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
           <Breakdown summary={screen.analysis.summary} />
+          <Recommendations sites={allSites} onChoose={choose} />
           {screen.state === "ready" && (
             <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
           )}

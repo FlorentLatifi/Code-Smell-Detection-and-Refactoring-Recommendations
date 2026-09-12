@@ -164,6 +164,12 @@ class CompilationUnit:
     package: str
     imports: list[str]
     classes: list[ClassInfo]
+    #: Effective lines in the whole file, by the same rule ``CLOC`` uses for a
+    #: class: blank lines and lines holding nothing but structure do not count.
+    #: Kept per file rather than summed from the classes, which would miss the
+    #: package declaration, the imports and anything between two types -- and
+    #: would make the project total quietly smaller than the file it came from.
+    effective_loc: int = 0
     # tree-sitter recovers from syntax it cannot parse instead of failing, so a
     # file may yield a plausible but incomplete class list. Real corpora contain
     # such files: Hadoop's Hamlet.java uses `_` as a method name, illegal since

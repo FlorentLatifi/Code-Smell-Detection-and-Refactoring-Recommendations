@@ -619,3 +619,99 @@ describe("aplikimi mbi skedarët", () => {
     expect(await screen.findByRole("alert")).toBeDefined();
   });
 });
+
+describe("konteksti dhe rekomandimet", () => {
+  it("thotë çfarë u lexua përpara se të thotë sa u gjet", async () => {
+    // Dyzet erëra mbi treqind rreshta dhe dyzet mbi tridhjetë mijë janë dy
+    // gjendje krejt të ndryshme, dhe emëruesi mungonte.
+    const body = analysis([smell({ method: "m0(int)" })]);
+    serve({ ...body, summary: { ...body.summary, loc: 1234 } });
+    render(<App />);
+    await analyse();
+
+    const context = document.querySelector(".context");
+
+    // Formatimi i numrit varet nga `Intl` e ambientit, ndaj kërkohet i njëjti
+    // që prodhon komponenti e jo një varg i shtypur me dorë.
+    expect(context?.textContent).toContain((1234).toLocaleString("sq"));
+    expect(context?.textContent).toContain("rreshta kodi");
+    expect(context?.textContent).toContain("vetëm rregullat");
+  });
+
+  it("hesht për rreshtat kur serveri nuk i dërgon", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    expect(document.querySelector(".context")?.textContent).not.toContain("rreshta kodi");
+  });
+
+  it("i veçon rekomandimet që motori i rishkruan vetë", async () => {
+    // Dallimi mes «ja çfarë gjeta» dhe «ja çfarë mund të ndreq» rrinte si një
+    // distinktiv tetë pikësh mes pesëdhjetë rreshtash.
+    serve(
+      analysis([
+        smell({ method: "m0(int)", automated: true }),
+        smell({ method: "m1(int)", start_line: 300, smell_type: "DataClass", automated: false }),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+
+    const panel = screen.getByRole("region", { name: "Rekomandimet e refaktorimit" });
+
+    expect(within(panel).getAllByRole("listitem")).toHaveLength(1);
+    expect(within(panel).getByText(/ExtractMethod/)).toBeDefined();
+  });
+
+  it("nuk shfaqet kur asgjë nuk rishkruhet vetë", async () => {
+    serve(analysis([smell({ method: "m0(int)", automated: false, refactorings: [] })]));
+    render(<App />);
+    await analyse();
+
+    expect(screen.queryByRole("region", { name: "Rekomandimet e refaktorimit" })).toBeNull();
+  });
+
+  it("hap erën që ka rishkrim, e jo më të rëndën e vendit", async () => {
+    // Një metodë e gjatë dhe e folezuar mban të dyja, dhe vetëm njëra rishkruhet.
+    const critical = smell({ method: "m0(int)", smell_type: "DataClass", automated: false });
+    const fixable = smell({
+      method: "m0(int)",
+      smell_type: "DeepNesting",
+      severity: "minor",
+      automated: true,
+      refactorings: ["ReplaceNestedConditionalWithGuardClauses"],
+    });
+    serve(analysis([critical, fixable]));
+    render(<App />);
+    await analyse();
+
+    const panel = screen.getByRole("region", { name: "Rekomandimet e refaktorimit" });
+    fireEvent.click(within(panel).getByRole("button", { name: "Shfaq ndryshimin" }));
+
+    const detail = document.querySelector(".detail");
+
+    expect(detail?.querySelector("h2")?.textContent).toBe("DeepNesting");
+  });
+});
+
+describe("rreshti anësor", () => {
+  it("e deklaron veten vertikal, që shigjetat e premtuara të jenë ato që punojnë", async () => {
+    render(<App />);
+
+    const rail = screen.getByRole("tablist", { name: "Pamjet" });
+
+    expect(rail.getAttribute("aria-orientation")).toBe("vertical");
+  });
+
+  it("kalon mes pamjeve me shigjetën poshtë", async () => {
+    render(<App />);
+    const analysisTab = screen.getByRole("tab", { name: /Analizo një projekt/ });
+
+    fireEvent.keyDown(analysisTab, { key: "ArrowDown" });
+
+    expect(screen.getByRole("tab", { name: /Rezultatet/ }).getAttribute("aria-selected")).toBe(
+      "true",
+    );
+  });
+});

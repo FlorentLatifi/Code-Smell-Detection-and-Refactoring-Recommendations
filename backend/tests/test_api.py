@@ -348,6 +348,18 @@ def test_source_refuses_a_backwards_range(client):
 # ----------------------------------------------------------------------
 
 
+def test_the_summary_carries_the_size_of_what_was_read(client):
+    """A count of findings means nothing without the size it came from.
+
+    Effective lines, by the same rule CLOC uses: one definition across the
+    system, and the one the thesis reports.
+    """
+    summary = client.post("/analyze", json={"path": "src"}).json()["summary"]
+
+    assert summary["loc"] > summary["classes"]
+    assert summary["loc"] < 200, "the fixture is one small file"
+
+
 def test_the_summary_says_how_many_files_did_not_parse(client, tmp_path):
     """Tree-sitter returns a tree for a broken file, so silence reads as cleanliness.
 
