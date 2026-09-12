@@ -94,6 +94,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-82 | Përmbysja e vetme u veçua, dhe shkaku është korpusi | 2026-09-10 | aktiv |
 | VD-83 | Pika e kontrollit ruan çdo rishkrim, jo çdo skedar | 2026-09-10 | aktiv |
 | VD-84 | Paneli tregon pse nuk ndezin, dhe kundrejt çfarë | 2026-09-10 | aktiv |
+| VD-85 | Auditim i ndërfaqes, dhe çfarë u ndreq prej tij | 2026-09-12 | aktiv |
 
 ---
 
@@ -3110,3 +3111,57 @@ kërkon që çdo rresht i matur të ketë emër.
 
 **Verifikimi u bë në shfletues, jo vetëm te testet.** Të dy panelet u hapën, u
 lexuan me të dhënat e vërteta, dhe fusnota u kontrollua në ekran.
+
+
+### VD-85: Auditim i ndërfaqes, dhe çfarë u ndreq prej tij
+
+**Konteksti.** Ndërfaqja nuk ishte audituar kurrë si produkt: ishte shkruar pjesë
+pas pjese bashkë me atë që shfaq. Ky auditim e kaloi tërë atë — 2 937 rreshta,
+kontratën me API-në, dhe vetë aplikacionin e ndezur — dhe nxori katërmbëdhjetë
+gjetje, katër prej të cilave u riprodhuan në shfletues me numra të matur.
+
+**Gjashtë pyetje nuk kishin objekt, dhe kjo u shkrua e nuk u mbush.** Authentication,
+role, protected routes, token storage dhe pagesa nuk ekzistojnë këtu sepse §6 i
+`ENGINEERING.md` i vendos jashtë fushëveprimit: serveri lidhet me localhost dhe
+shërben një përdorues. Shtimi i tyre do të ishte teatër sigurie dhe do të hapte
+pikërisht sipërfaqen që vendimi e mbylli.
+
+**Dy defekte kritike.**
+
+Shigjetat ishin lidhur te seksioni i listës, dhe filtrat rrinë brenda saj. Ngjarja
+fluturonte lart, `preventDefault()` thirrej, dhe fokusi ikte: një përdorues me
+tastierë **nuk e ndryshonte dot** filtrin e ashpërsisë. Dështim i qartë i WCAG
+2.1.1 mbi kontrollin kryesor të ekranit. Trajtuesi tani kërkon që fokusi të jetë
+mbi një rresht.
+
+`/refactor/preview` e kthen **tërë** skedarin, dhe klienti ndërtonte mbi të një
+tabelë LCS me `n²` qeliza. E matur: 500 rreshta 16 ms, 3 000 rreshta 356 ms.
+Korpusi mban një skedar prej 15 292 rreshtash, i cili do të kërkonte rreth nëntë
+sekonda dhe 1.8 GB. Tani prefiksi dhe prapashtesa e përbashkët priten me një kalim
+të vetëm, dhe vetëm ndryshimi i vërtetë hyn te tabela; mbi një kufi prej dy
+milionë qelizash kthehet bllok-hequr dhe bllok-shtuar në vend që skeda të ngrijë.
+Nëntë testet ekzistuese me vlera të derivuara me dorë kaluan të pandryshuara, dhe
+gjashtë të reja e mbajnë prerjen të ndershme.
+
+**Kodet e refuzimit u ndanë.** Shtatë arsye të ndryshme arrinin te thirrësi nën
+`path_rejected`, ndaj ndërfaqja nuk i dallonte dot pa analizuar prozë angleze.
+Tani secila ka kodin e vet, dhe frontend-i i përkthen një nga një. Të dyja anët
+kanë test: një kod i ri e thyen backend-in sepse bashkësia nuk përputhet, dhe
+frontend-in sepse përkthimi mungon.
+
+**Të tjerat.** Shtegu i analizuar kapet te gjendja, ndaj redaktimi i kutisë nuk e
+prish më panelin. Çdo kërkesë ka afat dyminutësh dhe një buton «Ndalo». Forma nuk
+del më jashtë ekranit te 360, 390 dhe 430 px. `--ink-faint` kaloi te `#686f78`,
+4.62:1 mbi letrën. U shtuan `<main>`, emri i listës, njoftimi i numërimit, teksti
+i arritshëm i distinktivëve, dhe zhvendosja e fokusit kur ndërrohet pamja. Një
+`ErrorBoundary` e zëvendëson faqen bosh; u provua duke e thyer renderimin me
+qëllim dhe duke e kthyer pas. Gjendja shkon te adresa me `replaceState`, pa
+bibliotekë rrugëzimi. `App.tsx` ra nga 711 rreshta te 481, me tre skedarë të rinj.
+
+**Një gjetje e raportit doli e gabuar dhe nuk u «ndreq».** `/metrics` u shënua si
+sipërfaqe e vdekur sepse frontend-i nuk e thërret. Ai është vendim i regjistruar
+(VD-35 e më tej), pjesë e deklaruar e API-së dhe me test. Mbetet ashtu si është.
+
+**Ndarja e bundle-it u refuzua me qëllim.** 82 KB nga 219 janë JSON rezultatesh që
+i duhen vetëm skedës së dytë. Mjeti shërbehet nga localhost te një përdorues,
+ndaj kursimi nuk ka efekt real, dhe optimizimi pa ndikim është kohë e humbur.
