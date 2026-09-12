@@ -21,14 +21,15 @@ confirms what exists outside it.
 
 from __future__ import annotations
 
+import json
 import shutil
 import time
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from javasmell.analysis import analyze_path
@@ -48,7 +49,7 @@ from javasmell.model.entities import ProjectModel
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
-from javasmell.refactor.patch import Plan, plan, unified
+from javasmell.refactor.patch import Plan, Progress, iter_plan, plan, unified
 from javasmell.refactor.registry import ADVISORY_ONLY, for_smell
 
 API_TITLE = "JavaSmell"
@@ -65,6 +66,10 @@ MAX_SOURCE_LINES = 400
 # which is a larger drop than any measurement that leaves it above. Five is
 # therefore enough to always carry the decisive measurement when one exists.
 MAX_CONTRIBUTIONS = 5
+
+# Çdo objekt i një rrjedhe NDJSON mbyllet me një rresht të ri, dhe klienti e ndan
+# pikërisht aty.
+NDJSON_END = "\n"
 
 # ATFD and CBO are defined against the types of the *project*, so in a one-file
 # "project" they collapse towards zero and the strategies that read them stop
@@ -279,7 +284,57 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         result = plan(target, smells, javac, deadline=time.monotonic() + config.timeout_s)
         return _plan_json(result, javac)
 
+    @app.post("/refactor/patch/stream", response_model=None)
+    def patch_stream(request: PathRequest) -> StreamingResponse:
+        """The same patch, reported as it is planned.
+
+        Identical work and an identical final answer; only the delivery differs.
+        The route above returns one object and is what a script wants -- it pipes
+        into ``jq`` and it is what the tests assert against. This one is what a
+        person waiting two and a half minutes wants, and neither shape serves
+        both (VD-98).
+
+        **Why newline-delimited JSON and not server-sent events.** SSE arrives
+        through ``EventSource``, which issues a GET and cannot carry a request
+        body; the path would have to move into the query string, where
+        ENGINEERING.md §6 does not want it. A streamed POST read with ``fetch``
+        needs no such move.
+
+        **Why the path is checked before the stream opens.** Once a streaming
+        response has begun, its status code is already sent, so a rejection
+        afterwards would arrive as a 200 with an error inside it. Everything that
+        can refuse the request happens here, in the handler, where it can still
+        answer 400.
+        """
+        target = confine(request.path, config.root)
+        java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
+
+        def lines() -> Iterator[str]:
+            project = analyze_path(str(target))
+            smells = detect_all(project)
+            javac = shutil.which("javac")
+
+            for step in iter_plan(
+                target, smells, javac, deadline=time.monotonic() + config.timeout_s
+            ):
+                body = (
+                    {"result": _plan_json(step, javac)}
+                    if isinstance(step, Plan)
+                    else {"progress": _progress_json(step)}
+                )
+                yield json.dumps(body) + NDJSON_END
+
+        return StreamingResponse(lines(), media_type="application/x-ndjson")
+
     return app
+
+
+def _progress_json(step: Progress) -> dict[str, Any]:
+    return {
+        "files_done": step.files_done,
+        "files_total": step.files_total,
+        "changes": step.changes,
+    }
 
 
 def _plan_json(result: Plan, javac: str | None) -> dict[str, Any]:

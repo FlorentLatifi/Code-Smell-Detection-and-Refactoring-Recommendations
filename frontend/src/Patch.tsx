@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { patch } from "./api";
 import { REFUSAL_SQ } from "./evaluation";
-import type { DeclinedSite, PatchResult } from "./types";
+import type { DeclinedSite, PatchProgress, PatchResult } from "./types";
 
 /**
  * The last step the engine can take on its own: hand the author the change.
@@ -19,6 +19,7 @@ import type { DeclinedSite, PatchResult } from "./types";
 export function Patch({ path, ready, total }: { path: string; ready: number; total: number }) {
   const [result, setResult] = useState<PatchResult | null>(null);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<PatchProgress | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -26,13 +27,15 @@ export function Patch({ path, ready, total }: { path: string; ready: number; tot
     setBusy(true);
     setFailure(null);
     setResult(null);
+    setProgress(null);
     setCopied(false);
     try {
-      setResult(await patch(path));
+      setResult(await patch(path, undefined, setProgress));
     } catch (error) {
       setFailure((error as Error).message);
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -67,6 +70,8 @@ export function Patch({ path, ready, total }: { path: string; ready: number; tot
         </p>
       </div>
 
+      {busy && <Working progress={progress} />}
+
       {failure && (
         <p className="failure" role="alert">
           {failure}
@@ -75,6 +80,47 @@ export function Patch({ path, ready, total }: { path: string; ready: number; tot
 
       {result && <Outcome result={result} onCopy={copy} copied={copied} />}
     </section>
+  );
+}
+
+/**
+ * Sa larg ka shkuar, ndërsa shkon.
+ *
+ * Kjo është e vetmja punë e mjetit që matet me minuta: një patch mbi 322
+ * skedarë u mat dy minuta e gjysmë, dhe deri tani e gjithë ajo kohë dukej
+ * njësoj si një mjet i ngecur. Serveri e verifikon çdo skedar me `javac`, ndaj
+ * kostoja rritet me atë që gjen e jo me atë që lexon, dhe as ai vetë nuk e di
+ * sa do të zgjasë — prandaj shifra është «ku jam», jo «sa mbetet».
+ *
+ * Para leximit të parë shiriti nuk shfaqet fare: një shirit te zeroja duket i
+ * ngecur pikërisht ashtu si mungesa e tij, dhe gënjen për më tepër.
+ */
+function Working({ progress }: { progress: PatchProgress | null }) {
+  if (!progress) {
+    return (
+      <p className="note" role="status">
+        Duke matur skedarët…
+      </p>
+    );
+  }
+
+  const share = progress.files_total
+    ? Math.round((progress.files_done / progress.files_total) * 100)
+    : 0;
+  return (
+    <div className="working">
+      <progress value={progress.files_done} max={progress.files_total} />
+      {/* `aria-live` te teksti e jo te shiriti: një lexues ekrani duhet ta dëgjojë
+          numrin, e jo çdo lëvizje piksele. */}
+      <p className="note" role="status">
+        {progress.files_done} nga {progress.files_total}{" "}
+        {word(progress.files_total, "skedar", "skedarë")} ({share}%),{" "}
+        {progress.changes === 0
+          ? "ende asnjë ndryshim"
+          : `${progress.changes} ${word(progress.changes, "ndryshim", "ndryshime")} deri tani`}
+        .
+      </p>
+    </div>
   );
 }
 

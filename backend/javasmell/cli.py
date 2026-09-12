@@ -42,9 +42,16 @@ from javasmell.detectors.rules import REFACTORINGS, detect_all
 from javasmell.detectors.thresholds import DEFAULT
 from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel, posix
-from javasmell.refactor.patch import plan, unified
+from javasmell.refactor.patch import Plan, iter_plan, unified
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
+
+#: Gjeresia e rreshtit te progresit. Rreshti rishkruhet mbi vetveten, ndaj duhet
+#: mbushur deri ketu qe nje rresht i meparshem me i gjate te mos lere bisht.
+PROGRESS_WIDTH = 44
+
+#: Kthimi i karroces, i emeruar qe te mos rrije nje shenje e padukshme te teksti.
+CR = chr(13)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -158,6 +165,36 @@ def _emit(fmt: str, project: ProjectModel, smells: list[Smell], stream: TextIO) 
         _write_report(stream, project, smells)
 
 
+def _planned(root: Path, smells: list[Smell], javac: str | None) -> Plan:
+    """Plan the patch, saying where it has got to while it works.
+
+    The same operation the interface shows a bar for, and the same reason: a
+    patch over 322 files was measured at two and a half minutes, and a terminal
+    that prints nothing for that long is one a reader assumes has hung.
+
+    The line is rewritten over itself and goes to stderr, where everything that
+    is not diff already goes: redirecting stdout into ``git apply`` is the usage
+    this format documents, and a progress line in the middle of a patch would
+    corrupt it. When stderr is not a terminal nothing is printed at all, or the
+    rewrites would pile up in a log file (VD-98).
+    """
+    live = sys.stderr.isatty()
+    result: Plan | None = None
+    for step in iter_plan(root, smells, javac):
+        if isinstance(step, Plan):
+            result = step
+        elif live:
+            line = f"{step.files_done}/{step.files_total} files, {step.changes} change(s)"
+            print(CR + line.ljust(PROGRESS_WIDTH), end="", file=sys.stderr, flush=True)
+    if live:
+        # Fshihet me hapesira e jo me nje sekuence ANSI: kthimin e karroces dhe
+        # hapesirat i kupton cdo terminal, ndersa nje sekuence e paperkrahur do
+        # te dilte si tekst i papunuar pikerisht atje ku nuk kuptohet.
+        print(CR + " " * PROGRESS_WIDTH + CR, end="", file=sys.stderr, flush=True)
+    assert result is not None
+    return result
+
+
 def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
     """The diff to stdout, the account of it to stderr.
 
@@ -175,7 +212,7 @@ def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> 
         stream.reconfigure(newline="")
 
     javac = shutil.which("javac")
-    result = plan(Path(project.root), smells, javac)
+    result = _planned(Path(project.root), smells, javac)
     stream.write(unified(result.patches))
 
     print(

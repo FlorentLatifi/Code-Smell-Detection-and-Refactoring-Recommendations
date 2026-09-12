@@ -164,6 +164,19 @@ export interface DeclinedSite {
   detail: string;
 }
 
+/**
+ * Sa larg ka shkuar përgatitja e patch-it.
+ *
+ * `changes` rri pranë numëruesve sepse «34 nga 322 skedarë» dhe «34 nga 322
+ * skedarë, ende asnjë ndryshim» janë dy pritje të ndryshme, dhe një shirit që
+ * numëron vetëm skedarë nuk e thotë dot cila prej të dyjave është.
+ */
+export interface PatchProgress {
+  files_done: number;
+  files_total: number;
+  changes: number;
+}
+
 export interface PatchResult {
   diff: string;
   files: number;

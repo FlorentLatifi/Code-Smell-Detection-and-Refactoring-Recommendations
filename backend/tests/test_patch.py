@@ -23,7 +23,7 @@ import pytest
 from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import detect_all
-from javasmell.refactor.patch import plan, plan_file, unified
+from javasmell.refactor.patch import Plan, Progress, iter_plan, plan, plan_file, unified
 
 JAVAC = shutil.which("javac")
 
@@ -378,3 +378,70 @@ def test_the_file_two_extractions_produce_compiles(tmp_path: Path) -> None:
 
     assert result.dropped == ()
     assert len(result.patches) == 1
+
+
+# ----------------------------------------------------------------------
+# Progress
+# ----------------------------------------------------------------------
+def test_the_generator_reports_after_every_file_and_the_plan_last(tmp_path: Path) -> None:
+    """Two files, so two readings and then the plan: three items in that order.
+
+    The order is the contract the streaming route relies on. A plan arriving
+    anywhere but last would be read as a progress reading and dropped.
+    """
+    root = written(tmp_path, "Ledger.java", LEDGER)
+    (root / "Twice.java").write_text(TWICE, encoding="utf-8")
+
+    steps = list(iter_plan(root, smells_in(root), javac=None))
+
+    assert [type(step) for step in steps] == [Progress, Progress, Plan]
+
+
+def test_progress_counts_up_to_the_total(tmp_path: Path) -> None:
+    """Two files: 1 of 2, then 2 of 2. The total never moves."""
+    root = written(tmp_path, "Ledger.java", LEDGER)
+    (root / "Twice.java").write_text(TWICE, encoding="utf-8")
+
+    readings = [s for s in iter_plan(root, smells_in(root), javac=None) if isinstance(s, Progress)]
+
+    assert [(r.files_done, r.files_total) for r in readings] == [(1, 2), (2, 2)]
+
+
+def test_progress_carries_the_changes_found_so_far(tmp_path: Path) -> None:
+    """`Ledger.java` alone yields three rewrites, and the reading says so.
+
+    Counted, not guessed: "34 of 322 files" and "34 of 322 files, nothing yet"
+    are different things to wait through.
+    """
+    root = written(tmp_path, "Ledger.java", LEDGER)
+
+    readings = [s for s in iter_plan(root, smells_in(root), javac=None) if isinstance(s, Progress)]
+
+    assert readings[-1].changes == 3
+
+
+def test_a_clean_project_still_yields_a_plan(tmp_path: Path) -> None:
+    """No files to plan means no readings, but the plan is never absent.
+
+    `plan` drains this generator and asserts the last item is a Plan, so an
+    empty run must still produce one or that assertion would fire on a project
+    with nothing wrong with it.
+    """
+    root = written(tmp_path, "Clean.java", CLEAN)
+
+    steps = list(iter_plan(root, smells_in(root), javac=None))
+
+    assert isinstance(steps[-1], Plan)
+
+
+def test_draining_the_generator_gives_what_plan_gives(tmp_path: Path) -> None:
+    """One implementation, two shapes: the shapes must not disagree."""
+    root = written(tmp_path, "Ledger.java", LEDGER)
+    found = smells_in(root)
+
+    drained = next(s for s in iter_plan(root, found, javac=None) if isinstance(s, Plan))
+    direct = plan(root, found, javac=None)
+
+    assert drained.changes == direct.changes
+    assert drained.declined == direct.declined
+    assert unified(drained.patches) == unified(direct.patches)

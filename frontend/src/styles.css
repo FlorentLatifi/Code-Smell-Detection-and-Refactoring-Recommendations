@@ -1545,3 +1545,38 @@ select:hover {
 .rewrite-notes li {
   margin: 4px 0;
 }
+
+/* Shiriti i progresit gjatë përgatitjes së patch-it. */
+.working {
+  margin-top: 12px;
+}
+
+.working progress {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  height: 6px;
+  border: none;
+  border-radius: 3px;
+  background: var(--rule-soft);
+  appearance: none;
+}
+
+.working progress::-webkit-progress-bar {
+  border-radius: 3px;
+  background: var(--rule-soft);
+}
+
+.working progress::-webkit-progress-value {
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.working progress::-moz-progress-bar {
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.working .note {
+  margin-top: 6px;
+}

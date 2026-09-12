@@ -2,6 +2,7 @@ import type {
   Analysis,
   ApiError,
   PatchResult,
+  PatchProgress,
   Preview,
   RewriteNote,
   Smell,
@@ -134,8 +135,98 @@ export function preview(path: string, smell: Smell): Promise<Preview> {
 }
 
 /** Every safe rewrite under the analysed path, as one diff. Writes nothing. */
-export function patch(path: string, signal?: AbortSignal): Promise<PatchResult> {
-  return post<PatchResult>("/refactor/patch", { path }, signal, PATCH_TIMEOUT_MS);
+/**
+ * Përgatit patch-in, duke raportuar sa ka mbetur ndërsa punon.
+ *
+ * Rruga që përdoret është ajo me rrjedhë: serveri e kthen një objekt JSON për
+ * rresht, një lexim pas çdo skedari dhe rezultatin te i fundit. Përgjigja e
+ * vetme mbetet te `/refactor/patch` për këdo që e do atë formë, por ky ekran e
+ * do tjetrën — një patch mbi 322 skedarë u mat dy minuta e gjysmë, dhe deri tani
+ * e gjithë ajo kohë dukej njësoj si një mjet i ngecur (VD-98).
+ *
+ * Refuzimet e shtegut mbërrijnë ende si status jo-200 me kodin e vet, sepse
+ * serveri i kontrollon para se ta hapë rrjedhën.
+ */
+export async function patch(
+  path: string,
+  signal?: AbortSignal,
+  onProgress?: (progress: PatchProgress) => void,
+): Promise<PatchResult> {
+  const deadline = AbortSignal.timeout(PATCH_TIMEOUT_MS);
+  const abort = signal ? AbortSignal.any([signal, deadline]) : deadline;
+
+  let response: Response;
+  try {
+    response = await fetch("/api/refactor/patch/stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path }),
+      signal: abort,
+    });
+  } catch (failure) {
+    if (signal?.aborted) throw new Cancelled("Përgatitja u ndal.");
+    if ((failure as Error).name === "TimeoutError") throw new Error(PATCH_TOO_LONG);
+    throw new Error("Serveri nuk u arrit. A është i ndezur në portin 8000?");
+  }
+
+  if (!response.ok || !response.body) {
+    await refuse(response);
+  }
+
+  let result: PatchResult | null = null;
+  try {
+    for await (const line of ndjson(response.body as ReadableStream<Uint8Array>)) {
+      const message = JSON.parse(line) as { progress?: PatchProgress; result?: PatchResult };
+      if (message.progress) onProgress?.(message.progress);
+      if (message.result) result = message.result;
+    }
+  } catch (failure) {
+    if (signal?.aborted) throw new Cancelled("Përgatitja u ndal.");
+    if ((failure as Error).name === "TimeoutError") throw new Error(PATCH_TOO_LONG);
+    throw failure;
+  }
+
+  // Rrjedha mbaroi pa rezultat do të thotë se serveri u këput në mes. Heshtja
+  // këtu do ta linte ekranin te «Duke përgatitur…» përgjithmonë.
+  if (result === null) throw new Error("Rrjedha mbaroi para se patch-i të mbërrinte.");
+  return result;
+}
+
+const PATCH_TOO_LONG =
+  "Përgatitja e patch-it zgjati më shumë se pesë minuta dhe u ndal. Provo një nëndosje.";
+
+/**
+ * Ndaje trupin e përgjigjes në rreshta JSON, sapo secili të mbërrijë.
+ *
+ * Një copë e lexuar nga rrjeti nuk përkon me një rresht: mund të mbajë gjysmë
+ * objekti, ose tre e gjysmë. Mbajtësi e ruan bishtin e papërfunduar për copën
+ * pasardhëse, dhe pa të një lexim i vetëm i ndarë keq do të prishte gjithçka pas
+ * tij.
+ */
+async function* ndjson(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let held = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    held += decoder.decode(value, { stream: true });
+    const lines = held.split("\n");
+    held = lines.pop() ?? "";
+    for (const line of lines) {
+      if (line.trim()) yield line;
+    }
+  }
+  if (held.trim()) yield held;
+}
+
+/** E njëjta hartë kodesh si te `post`, për një përgjigje që s'u hap dot si rrjedhë. */
+async function refuse(response: Response): Promise<never> {
+  const payload = (await response.json().catch(() => null)) as ApiError | null;
+  const code = payload?.error?.code;
+  if (code && ERROR_SQ[code]) throw new Error(ERROR_SQ[code]);
+  if (payload?.error?.message) throw new Error(payload.error.message);
+  throw new Error(`Serveri ktheu ${response.status}.`);
 }
 
 export function source(path: string, smell: Smell): Promise<Source> {

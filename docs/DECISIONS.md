@@ -3516,3 +3516,49 @@ propozon, nuk aplikon.
 
 **Asnjë numër i komituar nuk lëviz.** Shënimi nuk e ndryshon verdiktin, ndaj
 tabela N/M/K e Kapitullit 5 mbetet e njëjta.
+
+### VD-98: Progresi i patch-it, dhe pse rrjedhë e jo anketim
+
+**Konteksti.** Përgatitja e patch-it është e vetmja punë e mjetit që matet me
+minuta: mbi 322 skedarë u mat 2 minuta e 25 sekonda, sepse verifikimi thërret
+`javac` një herë për çdo skedar të rishkruar. Gjatë gjithë asaj kohe ndërfaqja
+thoshte «Duke përgatitur…» dhe vija komanduese nuk thoshte asgjë. Të dyja duken
+saktësisht si një mjet i ngecur.
+
+**Planifikuesi u bë gjenerator.** `iter_plan` jep një `Progress` pas çdo skedari
+dhe `Plan`-in te fundi; `plan` e kullon dhe kthen atë të fundit. Një cikël i dytë
+i mbajtur në hap me të parin me dorë është pikërisht mënyra si u ndanë dy
+numëruesit e rreshtave te VD-21, dhe planifikuesi është vendi i fundit që e
+përballon atë.
+
+**Përse leximi ndodh mes skedarëve.** Po aty ku kontrollohet afati: një skedar
+planifikohet, verifikohet dhe merret i tëri ose nuk merret fare, ndaj një lexim
+nga brenda tij do të përshkruante një gjendje që motori nuk e ofron kurrë.
+
+**NDJSON mbi POST, jo SSE dhe jo anketim.** `EventSource` bën GET dhe nuk mban
+trup kërkese, ndaj shtegu do të duhej të kalonte te vargu i pyetjes, ku §6 nuk e
+do. Anketimi i një pune do të kërkonte gjendje te serveri, çka moduli i API-së e
+ka refuzuar shprehimisht. Një POST i lexuar si rrjedhë me `fetch` nuk kërkon
+asnjërën.
+
+**Dy rrugë, një punë.** `/refactor/patch` mbetet e paprekur dhe kthen një objekt
+të vetëm: ajo është ç'i duhet një skripti dhe ajo kundrejt së cilës pohojnë
+testet. `/refactor/patch/stream` jep të njëjtën punë rresht pas rreshti. Asnjëra
+formë nuk u shërben të dyja nevojave, dhe ngjitja e tyre do të detyronte çdo
+thirrës të kalonte nëpër një degë që nuk e do.
+
+**Refuzimi ndodh para se rrjedha të hapet.** Sapo një përgjigje me rrjedhë nis,
+kodi i saj i statusit është dërguar tashmë, ndaj një refuzim më pas do të mbërrinte
+si 200 me një gabim brenda. Çdo gjë që mund ta refuzojë kërkesën ndodh te vetë
+trajtuesi, ku ende mund të përgjigjet 400.
+
+**Te vija komanduese** rreshti rishkruhet mbi vetveten dhe shkon te stderr, ku
+shkon gjithçka që nuk është diff: stdout-i tubohet te `git apply` dhe një rresht
+progresi brenda patch-it do ta prishte. Kur stderr nuk është terminal nuk shtypet
+asgjë, përndryshe rishkrimet do të grumbulloheshin në një skedar log-u.
+
+**Një test i paqëndrueshëm u ndreq bashkë me këtë.** «shton dyqind të tjera kur
+kërkohet» ndërton 450 vende dhe rendit 400 rreshta te DOM-i; u mat rreth 7
+sekonda, mbi afatin e parazgjedhur prej 5, ndaj kalimi varej nga sa e ngarkuar
+ishte makina. Afati u shkrua shprehimisht. Pohimi mbetet i njëjti; largohet vetëm
+varësia nga shpejtësia.

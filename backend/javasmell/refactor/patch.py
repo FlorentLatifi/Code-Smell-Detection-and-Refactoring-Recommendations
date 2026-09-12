@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import difflib
 import time
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -258,13 +258,75 @@ class Plan:
         return sum(len(p.deferred) for p in self.patches)
 
 
+@dataclass(frozen=True)
+class Progress:
+    """How far a run has got, reported between files.
+
+    Between files and never inside one, for the same reason the deadline is
+    checked there: a file is planned, verified and either taken whole or not at
+    all, so a reading from inside one would describe a state the engine never
+    offers.
+
+    ``changes`` is carried alongside the counts because "34 of 322 files" and
+    "34 of 322 files, nothing to change yet" are different things to wait
+    through, and a progress bar that only counts files hides which one this is.
+    """
+
+    files_done: int
+    files_total: int
+    changes: int
+
+
+def iter_plan(
+    root: Path,
+    smells: Iterable[Smell],
+    javac: str | None,
+    deadline: float | None = None,
+) -> Iterator[Progress | Plan]:
+    """Plan each file's rewrite, reporting after each, and yield the whole last.
+
+    The generator exists so that a caller who is going to wait minutes can say
+    how long is left, and it is the only implementation: :func:`plan` drains it.
+    A second loop kept in step with this one by hand is how the two line
+    counters drifted apart (VD-21), and the planner is the last place that can
+    afford it.
+
+    The last item is always the :class:`Plan`, and the ones before it are always
+    :class:`Progress`. Split into two types rather than a pair, so that a caller
+    that ignores the difference gets a type error instead of a patch it silently
+    treats as a progress reading.
+    """
+    by_file: dict[str, list[Smell]] = {}
+    for smell in smells:
+        by_file.setdefault(smell.file_path, []).append(smell)
+
+    patches: list[FilePatch] = []
+    dropped: list[Rejected] = []
+    declined: list[Declined] = []
+    unreached = 0
+    ordered = sorted(by_file)
+    for done, file_path in enumerate(ordered, start=1):
+        if deadline is not None and time.monotonic() >= deadline:
+            unreached += 1
+            continue
+        planned, refused = plan_file(Path(file_path), root, by_file[file_path], javac)
+        declined.extend(refused)
+        if isinstance(planned, FilePatch):
+            patches.append(planned)
+        elif isinstance(planned, Rejected):
+            dropped.append(planned)
+        yield Progress(done, len(ordered), sum(len(patch.applied) for patch in patches))
+
+    yield Plan(tuple(patches), tuple(dropped), tuple(declined), unreached)
+
+
 def plan(
     root: Path,
     smells: Iterable[Smell],
     javac: str | None,
     deadline: float | None = None,
 ) -> Plan:
-    """Group the findings by file and plan each file's rewrite.
+    """Everything :func:`iter_plan` produces, with the progress thrown away.
 
     ``deadline`` is a ``time.monotonic`` reading to stop at. Verification runs
     ``javac`` once per rewritten file and a compile of a large generated file was
@@ -277,25 +339,13 @@ def plan(
     The check happens between files, never inside one. A half-planned file would
     be a rewrite nobody verified.
     """
-    by_file: dict[str, list[Smell]] = {}
-    for smell in smells:
-        by_file.setdefault(smell.file_path, []).append(smell)
-
-    patches: list[FilePatch] = []
-    dropped: list[Rejected] = []
-    declined: list[Declined] = []
-    unreached = 0
-    for file_path in sorted(by_file):
-        if deadline is not None and time.monotonic() >= deadline:
-            unreached += 1
-            continue
-        planned, refused = plan_file(Path(file_path), root, by_file[file_path], javac)
-        declined.extend(refused)
-        if isinstance(planned, FilePatch):
-            patches.append(planned)
-        elif isinstance(planned, Rejected):
-            dropped.append(planned)
-    return Plan(tuple(patches), tuple(dropped), tuple(declined), unreached)
+    last: Progress | Plan | None = None
+    for step in iter_plan(root, smells, javac, deadline):
+        last = step
+    # Nje gjenerator qe s'jep asgje nuk ekziston: `iter_plan` e jep gjithmone
+    # planin, edhe kur nuk ka asnje skedar per te planifikuar.
+    assert isinstance(last, Plan)
+    return last
 
 
 def _mark_missing_newline(lines: list[str]) -> list[str]:

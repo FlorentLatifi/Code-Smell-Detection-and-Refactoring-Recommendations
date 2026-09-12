@@ -8,9 +8,9 @@
 // testin e vet (`test_api_paths.py::REJECTION_CODES`), ndaj një kod i ri i thyen
 // të dyja: atje sepse bashkësia nuk përputhet, këtu sepse përkthimi mungon.
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ERROR_SQ, noteText } from "./api";
+import { ERROR_SQ, noteText, patch } from "./api";
 
 /** Nga `api/paths.py` dhe nga thirrjet e `error(...)` te `api/app.py`. */
 const CODES_FROM_BACKEND = [
@@ -64,5 +64,83 @@ describe("noteText", () => {
   it("falls back to the code when a note has no translation yet", () => {
     // I shëmtuar, por i sinqertë: më mirë kodi se një fjali e trilluar.
     expect(noteText({ code: "something_new" })).toBe("something_new");
+  });
+});
+
+describe("patch, si rrjedhë", () => {
+  /** Një trup përgjigjeje që i lëshon copat pikërisht ashtu si u dhanë. */
+  function streamed(chunks: string[]): Response {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const encoder = new TextEncoder();
+        for (const chunk of chunks) controller.enqueue(encoder.encode(chunk));
+        controller.close();
+      },
+    });
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": "application/x-ndjson" },
+    });
+  }
+
+  const RESULT = { diff: "d", files: 1, changes: 2, declines: [], dropped: [] };
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("reports each progress line and returns the last result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        streamed([
+          '{"progress":{"files_done":1,"files_total":2,"changes":0}}\n',
+          '{"progress":{"files_done":2,"files_total":2,"changes":2}}\n',
+          `{"result":${JSON.stringify(RESULT)}}\n`,
+        ]),
+      ),
+    );
+
+    const seen: number[] = [];
+    const result = await patch("src", undefined, (p) => seen.push(p.files_done));
+
+    expect(seen).toEqual([1, 2]);
+    expect(result.changes).toBe(2);
+  });
+
+  it("survives an object split across two network chunks", async () => {
+    // Një copë e lexuar nga rrjeti nuk përkon me një rresht. Pa mbajtësin e
+    // bishtit, çdo gjë pas një ndarjeje të keqe do të prishej.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        streamed(['{"progress":{"files_done":1,"files_', 'total":3,"changes":0}}\n']),
+      ),
+    );
+
+    const seen: number[] = [];
+    await patch("src", undefined, (p) => seen.push(p.files_total)).catch(() => undefined);
+
+    expect(seen).toEqual([3]);
+  });
+
+  it("refuses a stream that ended without a result", async () => {
+    // Heshtja këtu do ta linte ekranin te «Duke përgatitur…» përgjithmonë.
+    vi.stubGlobal("fetch", vi.fn(async () => streamed(['{"progress":{"files_done":1,"files_total":1,"changes":0}}\n'])));
+
+    await expect(patch("src")).rejects.toThrow(/para se patch-i/);
+  });
+
+  it("turns a rejected path into its Albanian message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ error: { code: "path_outside_root", message: "x" } }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }),
+      ),
+    );
+
+    await expect(patch("../x")).rejects.toThrow(ERROR_SQ.path_outside_root);
   });
 });

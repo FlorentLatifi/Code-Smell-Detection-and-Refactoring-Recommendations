@@ -7,6 +7,8 @@ that a failure comes back as a code and a message rather than as a stack trace.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -402,6 +404,44 @@ REFUSES = """public class Refuses {
     }
 }
 """
+
+
+def test_the_streaming_patch_reports_progress_then_the_result(client):
+    """Newline-delimited JSON: a reading per file, and the patch on the last line.
+
+    The whole point is that a wait of minutes stops looking like a hang, so the
+    readings must arrive as their own objects rather than folded into the end.
+    """
+    with client.stream("POST", "/refactor/patch/stream", json={"path": "src"}) as response:
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("application/x-ndjson")
+        objects = [json.loads(line) for line in response.iter_lines() if line.strip()]
+
+    assert all("progress" in o for o in objects[:-1])
+    assert "result" in objects[-1]
+    assert objects[-1]["result"]["changes"] >= 1
+
+
+def test_the_streamed_result_is_the_same_patch_as_the_plain_route(client):
+    """Two shapes of one answer. A difference between them is a defect in one."""
+    plain = client.post("/refactor/patch", json={"path": "src"}).json()
+    with client.stream("POST", "/refactor/patch/stream", json={"path": "src"}) as response:
+        streamed = [json.loads(line) for line in response.iter_lines() if line.strip()][-1]
+
+    assert streamed["result"]["diff"] == plain["diff"]
+    assert streamed["result"]["declined"] == plain["declined"]
+
+
+def test_a_rejected_path_fails_before_the_stream_opens(client):
+    """Once a streaming response starts, its status is already sent.
+
+    A rejection after that would arrive as a 200 with an error inside it, which
+    every caller would have to special-case.
+    """
+    response = client.post("/refactor/patch/stream", json={"path": "../secret"})
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "path_outside_root"
 
 
 def test_patch_names_the_reason_for_each_site_it_declined(client, tmp_path):

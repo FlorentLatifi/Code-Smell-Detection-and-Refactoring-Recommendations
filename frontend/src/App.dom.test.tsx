@@ -149,15 +149,24 @@ describe("lista", () => {
     expect(screen.getByText(/Shfaq 50 të tjera/)).toBeDefined();
   });
 
-  it("shton dyqind të tjera kur kërkohet", async () => {
-    serve(many(450));
-    render(<App />);
-    await analyse();
+  // Afat i shkruar shprehimisht, e jo pesë sekondat e parazgjedhura. Testi
+  // ndërton 450 vende dhe pastaj rendit 400 rreshta te DOM-i: u mat rreth 7
+  // sekonda mbi këtë makinë, ndaj parazgjedhja e bën kalimin të varet nga sa e
+  // ngarkuar është makina në atë çast. Pohimi mbetet i njëjti; largohet vetëm
+  // varësia nga shpejtësia (VD-98).
+  it(
+    "shton dyqind të tjera kur kërkohet",
+    async () => {
+      serve(many(450));
+      render(<App />);
+      await analyse();
 
-    fireEvent.click(screen.getByRole("button", { name: /Shfaq 200 të tjera/ }));
+      fireEvent.click(screen.getByRole("button", { name: /Shfaq 200 të tjera/ }));
 
-    expect(screen.getAllByRole("button", { name: ROW })).toHaveLength(400);
-  });
+      expect(screen.getAllByRole("button", { name: ROW })).toHaveLength(400);
+    },
+    30_000,
+  );
 
   it("e mban numërimin mbi tërë listën, jo mbi dritaren", async () => {
     // Numri që lexohet duhet të mbetet emëruesi i vërtetë, ndryshe prerja fsheh
@@ -383,5 +392,61 @@ describe("skedarët që nuk parsohen dhe dosja e lejuar", () => {
     await analyse();
 
     expect(screen.queryByText(/nuk u parsua pastër/)).toBeNull();
+  });
+});
+
+describe("progresi i patch-it", () => {
+  /** Një rrjedhë NDJSON e dorëzuar copë-copë, si te rrjeti. */
+  function streamedPatch(lines: string[]): Response {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const encoder = new TextEncoder();
+        for (const line of lines) controller.enqueue(encoder.encode(line));
+        controller.close();
+      },
+    });
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": "application/x-ndjson" },
+    });
+  }
+
+  it("tregon sa skedarë kanë mbaruar ndërsa pret", async () => {
+    // Deri tani e gjithë pritja dukej njësoj si një mjet i ngecur (VD-98).
+    const body = analysis([smell({ method: "m0(int)" })]);
+    // Mbahet e hapur derisa ekrani të jetë te gjendja «duke përgatitur», që
+    // testi ta shohë shiritin e jo vetëm rezultatin.
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).endsWith("/analyze")) {
+          return new Response(JSON.stringify(body), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (String(url).endsWith("/refactor/patch/stream")) {
+          await held;
+          return streamedPatch(['{"progress":{"files_done":3,"files_total":8,"changes":1}}\n']);
+        }
+        return new Response("{}", { status: 404 });
+      }),
+    );
+
+    render(<App />);
+    await analyse();
+    fireEvent.click(screen.getByRole("button", { name: "Përgatit patch-in" }));
+    release();
+
+    // Teksti ndahet në disa nyje nga interpolimi, ndaj lexohet i tëri.
+    const status = await screen.findByText(/3 nga 8 skedarë/);
+
+    expect(status.textContent).toContain("(38%)");
+    expect(status.textContent).toContain("1 ndryshim deri tani");
   });
 });
