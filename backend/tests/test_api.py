@@ -147,16 +147,38 @@ def test_metrics_are_returned_per_class_and_method(client):
 
 @pytest.mark.parametrize(
     "path",
-    ["../secret/keys.txt", "src/../../secret", "/etc/passwd", "C:\\Windows\\System32"],
-    ids=["traversal", "traversal-through", "absolute-posix", "absolute-windows"],
+    ["../secret/keys.txt", "src/../../secret"],
+    ids=["traversal", "traversal-through"],
 )
-def test_a_path_outside_the_root_is_refused_over_http(client, path):
+def test_a_traversal_is_named_as_a_traversal(client, path):
+    """Emri i sakte, jo nje kod i vetem per shtate refuzime.
+
+    Nderfaqja duhet ta dalloje daljen jashte rrenjes nga nje shteg qe thjesht nuk
+    ekziston: fjalia qe i tregon perdoruesit cfare te beje nuk eshte e njejta.
+    """
     response = client.post("/analyze", json={"path": path})
 
     assert response.status_code == 400
-    # Emri i sakte, jo nje kod i vetem per shtate refuzime: nderfaqja duhet ta
-    # dalloje daljen jashte rrenjes nga nje shteg qe thjesht nuk ekziston.
     assert response.json()["error"]["code"] == "path_outside_root"
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["/etc/passwd", r"C:\Windows\System32"],
+    ids=["absolute-posix", "absolute-windows"],
+)
+def test_an_absolute_path_elsewhere_is_refused_over_http(client, path):
+    """Refuzimi eshte i sigurt; **cili** refuzim varet nga platforma.
+
+    Nje shteg si ai i Windows-it eshte absolut atje dhe relativ mbi Linux, ku
+    prapaslesha nuk eshte ndares: atje bie brenda rrenjes dhe thjesht nuk ekziston.
+    Te dyja jane refuzime te sakta. Ky test dikur e pinte njerin, dhe doli i kuq
+    vetem mbi CI-ne — nje pohim per platformen, i veshur si pohim per sigurine.
+    """
+    response = client.post("/analyze", json={"path": path})
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] in {"path_outside_root", "path_not_found"}
 
 
 def test_an_error_carries_a_code_and_a_message_only(client):
