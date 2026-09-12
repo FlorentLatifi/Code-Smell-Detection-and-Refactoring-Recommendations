@@ -3945,8 +3945,9 @@ që çdo ndryshim pamjeje shoqërohet me një kalim mbi faqen e vërtetë.
 **Konteksti.** Suita e aksesueshmërisë e ndalon `color-contrast` që kur u shkrua,
 me arsyen e drejtë se jsdom nuk llogarit ngjyra të trashëguara. Pasojë e paparë:
 kontrasti nuk kontrollohej nga asnjë portë. Ndërrimi i paletës te VD-106 kaloi
-pastër nëpër njëqind e dymbëdhjetë teste dhe futi **tridhjetë e dy shkelje** të
-WCAG 2.1 AA, të gjitha të dukshme me sy nëse dikush do t'i kishte kërkuar.
+pastër nëpër njëqind e dymbëdhjetë teste dhe futi shkelje të WCAG 2.1 AA në çdo
+pamje: 16 nyje te paneli në errësirë, 26 te i njëjti panel në dritë dhe 12 te
+pamja e vlerësimit. Të gjitha të dukshme me sy nëse dikush do t'i kishte kërkuar.
 
 **Çfarë kishte rënë.** Teksti i vogël gri mbi kartë (3.75:1 në errësirë, 2.56:1 në
 dritë), etiketat e ashpërsisë mbi tintën e vet (3.22:1), ikonat e rreshtit anësor

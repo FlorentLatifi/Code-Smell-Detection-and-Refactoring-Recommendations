@@ -7,9 +7,9 @@ import { expect, test, type Page } from "@playwright/test";
  * Suita me jsdom e ndalon `color-contrast`, sepse jsdom nuk llogarit ngjyra të
  * trashëguara dhe një mjet që pretendon më shumë se sa mat është më keq se asnjë
  * mjet. Kjo do të thoshte se kontrasti mbetej i pakontrolluar nga çdo portë, dhe
- * pikërisht aty u gjetën tridhjetë e dy shkelje pas ndërrimit të paletës: teksti
- * i vogël gri mbi kartë, etiketat e ashpërsisë mbi tintën e vet, ikona e rreshtit
- * anësor (VD-108).
+ * pikërisht aty u gjetën deri në njëzet e gjashtë shkelje për pamje pas ndërrimit
+ * të paletës: teksti i vogël gri mbi kartë, etiketat e ashpërsisë mbi tintën e
+ * vet, ikona e rreshtit anësor (VD-108).
  *
  * Këtu asnjë rregull nuk ndalohet. Chromium-i i jep axe-it ngjyrat e llogaritura,
  * ndaj kontrasti matet vërtet, dhe të dyja temat kontrollohen: ato kanë palete të
