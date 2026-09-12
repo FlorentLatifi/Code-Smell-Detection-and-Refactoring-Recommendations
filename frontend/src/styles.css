@@ -88,37 +88,42 @@
   --control: 34px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e6e8eb;
-    --ink-soft: #a3aab4;
-    --ink-faint: #8b929c;
-    --paper: #0f1216;
-    --surface: #171b21;
-    --sunken: #1d222a;
-    --rule: #333a44;
-    --rule-soft: #262c34;
+/* Klasa, jo `prefers-color-scheme`: butoni i temës te shiriti e vendos `dark`
+   mbi `<html>`, dhe nëse kjo fletë do të dëgjonte sistemin operativ, gjysma e
+   ekranit do të ndiqte butonin dhe gjysma tjetër sistemin. Ajo ndarje u pa:
+   lista dhe paneli i detajit mbetën të bardha nën një kornizë të errët (VD-106).
+   `color-scheme` shkon bashkë me të, që `select`-at dhe shiritat e shfletuesit
+   të mos mbeten të çelët brenda një ekrani të errët. */
+:root.dark {
+  color-scheme: dark;
+  --ink: #e6e8eb;
+  --ink-soft: #a3aab4;
+  --ink-faint: #8b929c;
+  --paper: #0f1216;
+  --surface: #171b21;
+  --sunken: #1d222a;
+  --rule: #333a44;
+  --rule-soft: #262c34;
 
-    --accent: #5b96d2;
-    --accent-hover: #74a8dd;
-    --accent-wash: #17232f;
-    --accent-line: #4d7ea8;
+  --accent: #5b96d2;
+  --accent-hover: #74a8dd;
+  --accent-wash: #17232f;
+  --accent-line: #4d7ea8;
 
-    --critical: #f08a7e;
-    --critical-wash: #2a1614;
-    --major: #e0a960;
-    --major-wash: #2a2114;
-    --minor: #a3aab4;
-    --minor-wash: #20252c;
+  --critical: #f08a7e;
+  --critical-wash: #2a1614;
+  --major: #e0a960;
+  --major-wash: #2a2114;
+  --minor: #a3aab4;
+  --minor-wash: #20252c;
 
-    --added: #6ec18f;
-    --added-wash: #13241a;
-    --removed: #f08a7e;
-    --removed-wash: #2a1614;
+  --added: #6ec18f;
+  --added-wash: #13241a;
+  --removed: #f08a7e;
+  --removed-wash: #2a1614;
 
-    --lift: 0 1px 2px rgb(0 0 0 / 40%);
-    --lift-lg: 0 4px 10px -2px rgb(0 0 0 / 50%);
-  }
+  --lift: 0 1px 2px rgb(0 0 0 / 40%);
+  --lift-lg: 0 4px 10px -2px rgb(0 0 0 / 50%);
 }
 
 * {
@@ -543,6 +548,9 @@ select:hover {
    loose text on the page. Still ruled rows inside it: the rule is what says
    "these are the same kind of thing", and a card per row would say the opposite. */
 .list {
+  /* Shiriti i kokës rri ngjitur sipër, ndaj një kërcim te lista do ta linte
+     rreshtin e filtrave nën të. */
+  scroll-margin-top: 72px;
   border: 1px solid var(--rule-soft);
   border-radius: var(--r-md);
   background: var(--surface);
@@ -559,9 +567,14 @@ select:hover {
   border-top: 1px solid var(--rule-soft);
 }
 
+/* `height: auto` e mbivendos rregullin e përgjithshëm `button`, i cili i jep
+   çdo butoni lartësinë e një kontrolli (34px). Një rresht i listës mban tre
+   rreshta teksti dhe ka nevojë për 82: pa këtë, emri i skedarit dilte mbi
+   rreshtin pasardhës. Defekti hyri me VD-104 dhe u gjet duke matur faqen. */
 .row {
   display: grid;
   grid-template-columns: 3px minmax(0, 1fr);
+  height: auto;
   gap: 0 var(--s-3);
   width: 100%;
   padding: var(--s-3) var(--s-3) var(--s-3) 0;

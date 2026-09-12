@@ -3903,3 +3903,39 @@ këtu: çmimi i grafikëve të gatshëm ndaj SVG-ve të shkruara me dorë të VD
 përmbledhja dhe e gjithë pamja e vlerësimit. Ato punojnë dhe janë të testuara;
 migrimi i tyre është kozmetikë me rrezik, ndaj bëhet kur të ketë arsye, jo për
 simetri.
+
+### VD-107: Tri defekte që vetëm faqja e gjallë i tregoi
+
+**Konteksti.** Pas lidhjes së panelit (VD-106) ekrani u fotografua i tëri, nga
+kartat te paneli i detajit. Tri gjëra dolën, asnjëra prej të cilave nuk kapet nga
+një test që lexon DOM-in, sepse të treja janë paraqitje.
+
+**Rreshtat e listës ishin 34 piksela kur u duheshin 82.** `styles.css` e ka një
+rregull të përgjithshëm `button { height: var(--control) }`, i cili i jep çdo
+butoni lartësinë e një kontrolli. Një rresht i listës është buton dhe mban tre
+rreshta teksti, ndaj emri i skedarit dilte mbi rreshtin pasardhës. Defekti hyri me
+VD-104, jo me migrimin, dhe qëndroi i pavënë re sepse asnjë pamje e mëparshme nuk
+ishte rrëshqitur deri te lista. `.row` e shkruan tani `height: auto`.
+
+**Gjysma e ekranit ndiqte butonin e temës dhe gjysma tjetër sistemin operativ.**
+Paleta e errët e `styles.css` rrinte nën `@media (prefers-color-scheme: dark)`,
+ndërsa korniza e re e ndez temën me klasën `dark` mbi `<html>`. Mbi një sistem të
+vendosur në dritë, lista, filtrat dhe paneli i detajit mbeteshin të bardhë brenda
+një paneli të errët. Blloku u kalua te `:root.dark`, me `color-scheme: dark`
+bashkë me të, që `select`-at dhe shiritat e shfletuesit të mos mbeten të çelët.
+
+**Shiriti ngjitur i hante krerët.** Një kërcim te lista e linte rreshtin e
+filtrave nën kokën `sticky`, dhe ndërrimi i pamjes e mbante pozicionin e vjetër
+të rrëshqitjes, ndaj vlerësimi hapej në mes. `scroll-margin-top` te `.list` dhe
+një kthim te kreu sa herë ndërrohet pamja i zgjidhin të dyja. Kthimi nuk mjaftoi
+i vetëm: pas tij, fokusimi i `<main>` — ai që i jep lexuesit të ekranit
+përmbajtjen e re — e rrëshqiste vetë atë në pamje dhe e linte faqen saktësisht 56
+piksela poshtë, sa lartësia e kokës. `focus({ preventScroll: true })` e mban
+fokusin dhe e heq kërcimin.
+
+**Çfarë thotë kjo për testet.** Të treja u gjetën duke matur faqen e gjallë me
+një skript që krahason `scrollHeight` me kutinë e secilit buton, dhe duke lexuar
+CSSOM-in për të gjetur rregullin që caktonte lartësinë. jsdom-i nuk llogarit
+paraqitje, ndaj njëqind e dymbëdhjetë testet kaluan gjatë gjithë kohës që rreshtat
+mbivendoseshin. Kjo nuk është arsye për t'i shtuar teste pikselësh — është arsyeja
+që çdo ndryshim pamjeje shoqërohet me një kalim mbi faqen e vërtetë.

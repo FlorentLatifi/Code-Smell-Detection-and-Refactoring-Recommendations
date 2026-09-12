@@ -243,6 +243,12 @@ export function App() {
 
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
 
+  // Ndërrimi i pamjes e nis lexuesin nga kreu i saj. Pa këtë, dikush që kalon te
+  // vlerësimi nga fundi i listës e gjen pamjen e re të nisur në mes.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [view]);
+
   // Gjendja e pemës pyetet një herë për çdo shteg të analizuar, që kolona e
   // veglave ta thotë para se dikush ta provojë shkrimin (VD-100).
   useEffect(() => {
@@ -394,7 +400,12 @@ export function App() {
   function show(next: View): void {
     setView(next);
     // Pas renderimit, ndryshe fokusi shkon te përmbajtja e vjetër.
-    requestAnimationFrame(() => document.getElementById("content")?.focus());
+    //
+    // `preventScroll`: fokusimi i `<main>` e rrëshqet atë vetë në pamje, dhe meqë
+    // koka rri ngjitur sipër, pamja e re hapej 56 piksela poshtë kreut të vet.
+    requestAnimationFrame(() =>
+      document.getElementById("content")?.focus({ preventScroll: true }),
+    );
   }
 
   const overview =

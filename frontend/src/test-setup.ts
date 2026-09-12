@@ -15,3 +15,14 @@ class NoopResizeObserver implements ResizeObserver {
 if (!("ResizeObserver" in globalThis)) {
   globalThis.ResizeObserver = NoopResizeObserver;
 }
+
+// `window.scrollTo` te jsdom nuk lëviz asgjë dhe ankohet me një rresht gabimi për
+// çdo thirrje. Aplikacioni e thërret sa herë ndërrohet pamja, ndaj dalja e testeve
+// mbushej me zhurmë që nuk tregon asnjë defekt.
+//
+// Kushti nuk është dekor: skedarët që nuk prekin DOM-in ekzekutohen te mjedisi
+// `node`, ku `window` nuk ekziston fare, dhe një caktim i pakushtëzuar i rrëzon
+// të pesë ata para se të nisë testi i parë.
+if (typeof window !== "undefined") {
+  window.scrollTo = () => {};
+}
