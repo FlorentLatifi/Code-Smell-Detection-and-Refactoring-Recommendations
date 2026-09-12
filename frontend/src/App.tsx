@@ -1,31 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { analyse, Cancelled } from "./api";
 import { Detail } from "./Detail";
-import { SMELL_SQ } from "./evaluation";
+import { Filters } from "./Filters";
+import type { Order } from "./Filters";
+import { Hotspots } from "./Hotspots";
 import { agreementOn, indexModel } from "./model";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
-import {
-  automatable,
-  byFile,
-  byScore,
-  bySeverity,
-  countByWorst,
-  groupBySite,
-  hotspots,
-} from "./sites";
+import { ModelBar, SummaryBar } from "./Summary";
+import { automatable, byFile, byScore, bySeverity, groupBySite } from "./sites";
 import type { Site } from "./sites";
-import type { Analysis, ModelBlock, Severity, Smell } from "./types";
+import type { Analysis, Severity, Smell } from "./types";
 
-
-/** How the list is ordered. Severity first is the default a reader wants. */
-type Order = "severity" | "score" | "file";
-
-const ORDER_LABELS: Record<Order, string> = {
-  severity: "ashpërsia",
-  score: "teprica",
-  file: "skedari",
-};
 
 const REMEMBERED_PATH = "javasmell.path";
 
@@ -376,7 +362,7 @@ export function App() {
                 <p className="count" aria-live="polite">
                   {shown.length} nga {allSites.length} {allSites.length === 1 ? "vend" : "vende"}
                   {", "}
-                  {countSmells(shown)} erëra
+                  {shown.reduce((total, site) => total + site.smells.length, 0)} erëra
                 </p>
                 {shown.length === 0 && (
                   <p className="empty">
@@ -476,236 +462,6 @@ export function App() {
       </>
       )}
       </main>
-    </div>
-  );
-}
-
-/**
- * Ku përqendrohet puna, aty ku më parë rrinte një fjali që nuk thoshte asgjë.
- *
- * Paneli i djathtë ishte bosh derisa zgjidhej diçka, dhe ai bosh zinte gjysmën e
- * ekranit. Ndarja e vendeve nëpër skedarë nuk është e barabartë — mbi projektin e
- * provës një skedar i vetëm mban gati një të tretën — ndaj kjo është pikërisht
- * pyetja që një lexues ka para se të klikojë kudo: nga t'ia nis.
- *
- * Klikimi shkruan te kërkimi, i cili tashmë filtron edhe mbi shtegun. Asnjë
- * dimension i ri filtrimi nuk u shtua për këtë.
- */
-function Hotspots({ sites, onPick }: { sites: Site[]; onPick: (file: string) => void }) {
-  const top = hotspots(sites);
-  if (top.length === 0) return null;
-  const most = top[0].sites;
-
-  return (
-    <div className="hotspots">
-      <h2>Ku përqendrohet</h2>
-      <p className="caption">
-        {sites.length} vende në {new Set(sites.map((s) => s.file_path)).size} skedarë. Kliko një
-        skedar për ta parë vetëm atë.
-      </p>
-      <ul>
-        {top.map((spot) => (
-          <li key={spot.file}>
-            <button className="spot" onClick={() => onPick(spot.file)}>
-              <span className="name">{spot.file.split(/[\/]/).pop()}</span>
-              <span className="track" aria-hidden="true">
-                <span className="fill" style={{ width: `${(spot.sites / most) * 100}%` }} />
-              </span>
-              <span className="tally">
-                {spot.sites} {spot.sites === 1 ? "vend" : "vende"}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** Sa erëra mbajnë këto vende bashkë. */
-function countSmells(sites: Site[]): number {
-  return sites.reduce((total, site) => total + site.smells.length, 0);
-}
-
-/**
- * Sa u mat, në të njëjtat njësi që përdor lista poshtë.
- *
- * Erërat dhe vendet janë të dyja aty me qëllim: numri i erërave është ai që
- * raporton motori, numri i vendeve është ai që lexuesi do të hapë. Pa të dytin,
- * shiriti thoshte 106 dhe lista thoshte 74 pa asgjë që ta shpjegonte dallimin.
- *
- * Ashpërsia numërohet **sipas vendit**, me të njëjtin rregull që përdor
- * distinktivi i çdo rreshti: më e rënda që mban vendi. Kështu shuma e tri
- * shifrave barazon numrin e vendeve, dhe klikimi nga shiriti te lista nuk
- * ndryshon njësi në rrugë.
- */
-function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Site[] }) {
-  const { summary } = analysis;
-  const byWorst = countByWorst(sites);
-  return (
-    <div className="summary">
-      <Figure value={summary.files} label="skedarë" />
-      <Figure value={summary.classes} label="klasa" />
-      <Figure value={summary.methods} label="metoda" />
-      <Figure value={summary.smells} label="erëra" />
-      <Figure value={sites.length} label={sites.length === 1 ? "vend" : "vende"} accent />
-      <div className="figure breakdown">
-        <b>
-          {(["critical", "major", "minor"] as const).map((level) =>
-            byWorst[level] ? (
-              <span key={level} className={level}>
-                {byWorst[level]} {level}
-              </span>
-            ) : null,
-          )}
-        </b>
-        <span>vende sipas më të rëndës</span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * What the second approach found, kept apart from what the rules found.
- *
- * Deliberately its own row rather than numbers folded into the summary. The two
- * approaches are not interchangeable: A's count is of published strategies
- * firing, B's is of a classifier trained on how reviewers labelled MLCQ, and
- * adding them would suggest a single total that no measurement supports.
- */
-function ModelBar({ block }: { block: ModelBlock }) {
-  if (!block.available) {
-    return (
-      <p className="note model-note">
-        Modeli nuk u pyet dot: {block.reason}
-      </p>
-    );
-  }
-
-  const skipped = block.smells.reduce((total, report) => total + report.incomplete, 0);
-
-  return (
-    <div className="summary model">
-      {/* The row says whose numbers these are. Without it the second row reads
-          as more of the first, and the two approaches are not additive. */}
-      <div className="figure name">
-        <b>Qasja B</b>
-        <span>modeli i trajnuar</span>
-      </div>
-      {block.smells.map((report) => (
-        <div className="figure" key={report.smell}>
-          <b>{report.flagged}</b>
-          <span>{SMELL_SQ[report.smell] ?? report.smell}</span>
-        </div>
-      ))}
-      {skipped > 0 && (
-        <p className="caption">
-          {skipped} entitete nuk u gjykuan: u mungonte një matje, dhe modeli nuk pyetet mbi një
-          zero të shpikur.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function Figure({
-  value,
-  label,
-  accent,
-  tone,
-}: {
-  value: number;
-  label: string;
-  accent?: boolean;
-  tone?: Severity;
-}) {
-  return (
-    <div className={`figure${accent ? " accent" : ""}${tone ? ` ${tone}` : ""}`}>
-      <b>{value}</b>
-      <span>{label}</span>
-    </div>
-  );
-}
-
-function Filters({
-  analysis,
-  severity,
-  kind,
-  order,
-  query,
-  agreed,
-  hasModel,
-  onSeverity,
-  onKind,
-  onOrder,
-  onQuery,
-  onAgreed,
-}: {
-  analysis: Analysis;
-  severity: Severity | "all";
-  kind: string;
-  order: Order;
-  query: string;
-  agreed: boolean;
-  hasModel: boolean;
-  onSeverity: (value: Severity | "all") => void;
-  onKind: (value: string) => void;
-  onOrder: (value: Order) => void;
-  onQuery: (value: string) => void;
-  onAgreed: (value: boolean) => void;
-}) {
-  return (
-    <div className="filters">
-      <label>
-        Ashpërsia
-        <select value={severity} onChange={(e) => onSeverity(e.target.value as Severity | "all")}>
-          <option value="all">të gjitha</option>
-          <option value="critical">critical</option>
-          <option value="major">major</option>
-          <option value="minor">minor</option>
-        </select>
-      </label>
-      <label>
-        Lloji
-        <select value={kind} onChange={(e) => onKind(e.target.value)}>
-          <option value="all">të gjitha</option>
-          {Object.keys(analysis.summary.by_type).map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Radhitur sipas
-        <select value={order} onChange={(e) => onOrder(e.target.value as Order)}>
-          {(Object.keys(ORDER_LABELS) as Order[]).map((name) => (
-            <option key={name} value={name}>
-              {ORDER_LABELS[name]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="grow">
-        Kërko
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => onQuery(e.target.value)}
-          placeholder="klasë, metodë ose skedar"
-        />
-      </label>
-      {hasModel && (
-        <label className="only-agreed" title="Prerja e dy qasjeve — sinjali më i fortë i matur">
-          <input
-            type="checkbox"
-            checked={agreed}
-            aria-label="Vetëm ku pajtohen të dyja qasjet"
-            onChange={(e) => onAgreed(e.target.checked)}
-          />
-          Vetëm ku pajtohen
-        </label>
-      )}
     </div>
   );
 }

@@ -143,7 +143,10 @@ function save(diff: string): void {
   link.href = url;
   link.download = "fixes.patch";
   link.click();
-  URL.revokeObjectURL(url);
+  // Revokimi lihet për ciklin e radhës. Në të njëjtin cikël me klikimin, disa
+  // shfletues e anulojnë shkarkimin para se ai të nisë: URL-ja zhduket ndërsa
+  // shfletuesi ende po e lexon.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 /**
