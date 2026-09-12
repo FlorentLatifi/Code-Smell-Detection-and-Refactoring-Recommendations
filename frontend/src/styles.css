@@ -1737,3 +1737,36 @@ select:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Shkrimi mbi skedarët: i vetmi veprim që e ndryshon kodin, ndaj i ndarë nga
+   veprimet e tjera me një vijë dhe me hapësirë. */
+.apply,
+.apply-blocked,
+.applied {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--rule-soft);
+}
+
+.apply .confirm p {
+  margin: 0 0 10px;
+  font-size: var(--t-small);
+  line-height: 1.6;
+}
+
+.applied p {
+  margin: 0;
+  font-size: var(--t-small);
+}
+
+.applied ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+}
+
+.apply-blocked {
+  color: var(--ink-soft);
+}

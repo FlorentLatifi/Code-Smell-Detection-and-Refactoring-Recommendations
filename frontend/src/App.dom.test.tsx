@@ -506,3 +506,116 @@ describe("shpërndarja e gjetjeve", () => {
     expect(screen.queryByRole("region", { name: "Sipas llojit" })).toBeNull();
   });
 });
+
+describe("aplikimi mbi skedarët", () => {
+  const PATCH = {
+    diff: "--- a/x\n+++ b/x\n",
+    files: 2,
+    changes: 3,
+    declined: 0,
+    declines: [],
+    deferred: 0,
+    unreached: 0,
+    verified_with_javac: true,
+    dropped: [],
+    applied: [],
+  };
+
+  /** Serven analizën, patch-in si rrjedhë, dhe përgjigjet e shkrimit. */
+  function serveApply(tree: unknown, apply?: { status: number; body: unknown }) {
+    const body = analysis([smell({ method: "m0(int)" })]);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const target = String(url);
+        if (target.endsWith("/analyze")) return json(body);
+        if (target.endsWith("/refactor/tree")) return json(tree);
+        if (target.endsWith("/refactor/apply")) {
+          return new Response(JSON.stringify(apply?.body ?? {}), {
+            status: apply?.status ?? 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (target.endsWith("/refactor/patch/stream")) {
+          return new Response(
+            new ReadableStream<Uint8Array>({
+              start(controller) {
+                controller.enqueue(
+                  new TextEncoder().encode(`{"result":${JSON.stringify(PATCH)}}\n`),
+                );
+                controller.close();
+              },
+            }),
+            { status: 200, headers: { "Content-Type": "application/x-ndjson" } },
+          );
+        }
+        return new Response("{}", { status: 404 });
+      }),
+    );
+  }
+
+  function json(value: unknown): Response {
+    return new Response(JSON.stringify(value), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  async function preparePatch(): Promise<void> {
+    render(<App />);
+    await analyse();
+    fireEvent.click(screen.getByRole("button", { name: "Përgatit patch-in" }));
+    await screen.findByRole("button", { name: "Kopjo patch-in" });
+  }
+
+  it("nuk e ofron shkrimin kur pema nuk është e pastër", async () => {
+    // Pa depo git nuk ka kthim, dhe motori nuk shkruan pa një të tillë.
+    serveApply({ writable: false, reason: "tree_not_clean", detail: "2 file(s)" });
+    await preparePatch();
+
+    expect(await screen.findByText(/ndryshime të paruajtura/)).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Apliko te skedarët" })).toBeNull();
+  });
+
+  it("kërkon një hap të dytë para se të shkruajë", async () => {
+    // Veprimi i vetëm që e ndryshon kodin është i vetmi me dy hapa.
+    serveApply({ writable: true, reason: null, detail: "" });
+    await preparePatch();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
+
+    expect(screen.getByText(/do të rishkruajë/)).toBeDefined();
+    expect(screen.getByRole("button", { name: "Po, shkruaji" })).toBeDefined();
+  });
+
+  it("emërton skedarët e shkruar dhe komandën që i kthen", async () => {
+    serveApply(
+      { writable: true, reason: null, detail: "" },
+      {
+        status: 200,
+        body: { written: ["A.java", "B.java"], revert: "git restore .", changes: 3, verified_with_javac: true },
+      },
+    );
+    await preparePatch();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
+    fireEvent.click(screen.getByRole("button", { name: "Po, shkruaji" }));
+
+    expect(await screen.findByText(/2 skedarë u shkruan/)).toBeDefined();
+    expect(screen.getByText("git restore .")).toBeDefined();
+    expect(screen.getByText("A.java")).toBeDefined();
+  });
+
+  it("e thotë shqip kur serveri e refuzon shkrimin", async () => {
+    serveApply(
+      { writable: true, reason: null, detail: "" },
+      { status: 409, body: { error: { code: "tree_not_clean", message: "tree_not_clean" } } },
+    );
+    await preparePatch();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
+    fireEvent.click(screen.getByRole("button", { name: "Po, shkruaji" }));
+
+    expect(await screen.findByRole("alert")).toBeDefined();
+  });
+});

@@ -177,6 +177,21 @@ export interface PatchProgress {
   changes: number;
 }
 
+/** Çfarë arriti te skedarët, dhe komanda që e kthen gjithçka. */
+export interface ApplyResult {
+  written: string[];
+  revert: string;
+  changes: number;
+  verified_with_javac: boolean;
+}
+
+/** A do të lejohej një shkrim këtu, pyetur para se të planifikohet gjë. */
+export interface TreeState {
+  writable: boolean;
+  reason: string | null;
+  detail: string;
+}
+
 export interface PatchResult {
   diff: string;
   files: number;

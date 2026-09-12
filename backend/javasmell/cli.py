@@ -14,14 +14,20 @@ applying it stays the author's decision (ENGINEERING.md §4).
 
 Exit codes are part of that scriptable contract, so each failure gets its own:
 0 on success, 1 when the path was analysable but held no Java class, 2 when the
-path itself is unusable. Giving the last two the same code is what let a
-mistyped path in an experiment read as a project with nothing in it.
+path itself is unusable, 4 when ``--apply`` was asked for and refused. Giving the
+first two the same code is what let a mistyped path in an experiment read as a
+project with nothing in it.
 
 3 is different from all of them: it means the command worked and the project did
 not. Only ``--fail-on`` produces it, and only then, so a build gate can tell "the
 tool broke" from "the code is over the line" without parsing any output. Finding
 smells is otherwise a success, because reporting is what this command is for
 (VD-92).
+
+``--apply`` is the one option that changes the author's files, and it is the only
+one that can produce 4. A refusal there is an ordinary outcome -- the tree was
+not clean, the path is not a repository -- but a script that asked for a write
+and did not get one must not read as success (VD-100).
 """
 
 from __future__ import annotations
@@ -42,6 +48,7 @@ from javasmell.detectors.rules import REFACTORINGS, detect_all
 from javasmell.detectors.thresholds import DEFAULT
 from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel, posix
+from javasmell.refactor.apply import Refusal, apply_patches
 from javasmell.refactor.patch import Plan, iter_plan, unified
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
@@ -79,6 +86,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(REFACTORINGS),
         metavar="TYPE",
         help="Only report this smell type (repeatable). One of: " + ", ".join(sorted(REFACTORINGS)),
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Write the verified rewrites to the files. Requires a clean git working "
+        "tree, so that one 'git restore .' undoes everything this wrote",
     )
     parser.add_argument(
         "--fail-on",
@@ -131,14 +144,21 @@ def main(argv: list[str] | None = None) -> int:
         wanted = set(args.smell)
         smells = [s for s in smells if s.smell_type in wanted]
 
+    # Planifikuar nje here dhe ndare: `--apply` shkruan pikerisht ate qe diff-i
+    # pershkruan, e jo nje plan te dyte qe mund te ndryshoje.
+    planned = _planned(Path(project.root), smells, shutil.which("javac")) if args.apply else None
+
     if args.out:
         with Path(args.out).open("w", encoding="utf-8", newline="") as stream:
-            _emit(args.format, project, smells, stream)
+            _emit(args.format, project, smells, stream, planned)
         # Reported only after the file closed cleanly; claiming a write that
         # raised half way through would be worse than saying nothing.
         print(f"Wrote {args.out}", file=sys.stderr)
     else:
-        _emit(args.format, project, smells, sys.stdout)
+        _emit(args.format, project, smells, sys.stdout, planned)
+
+    if planned is not None and not _apply(planned, Path(project.root)):
+        return 4
 
     if args.fail_on is not None:
         limit = SEVERITY_ORDER[args.fail_on]
@@ -152,7 +172,13 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _emit(fmt: str, project: ProjectModel, smells: list[Smell], stream: TextIO) -> None:
+def _emit(
+    fmt: str,
+    project: ProjectModel,
+    smells: list[Smell],
+    stream: TextIO,
+    planned: Plan | None = None,
+) -> None:
     if fmt == "json":
         json.dump([s.to_dict() for s in smells], stream, indent=2)
     elif fmt == "csv":
@@ -160,9 +186,30 @@ def _emit(fmt: str, project: ProjectModel, smells: list[Smell], stream: TextIO) 
     elif fmt == "metrics":
         _write_metric_csv(stream, project)
     elif fmt == "patch":
-        _write_patch(stream, project, smells)
+        _write_patch(stream, project, smells, planned)
     else:
         _write_report(stream, project, smells)
+
+
+def _apply(planned: Plan, root: Path) -> bool:
+    """Write the verified rewrites, or say why nothing was written.
+
+    Returns whether the write happened, so the caller can exit non-zero: a
+    script that asked for a write and got a refusal must not read as success
+    (VD-100).
+    """
+    outcome = apply_patches(planned.patches, root, requested=True)
+    if isinstance(outcome, Refusal):
+        print(f"Nothing was written: {outcome.detail or outcome.reason}", file=sys.stderr)
+        return False
+
+    for relative in outcome.written:
+        print(f"wrote {relative}", file=sys.stderr)
+    print(
+        f"{len(outcome.written)} file(s) written. To undo all of it: {outcome.revert}",
+        file=sys.stderr,
+    )
+    return True
 
 
 def _planned(root: Path, smells: list[Smell], javac: str | None) -> Plan:
@@ -195,7 +242,12 @@ def _planned(root: Path, smells: list[Smell], javac: str | None) -> Plan:
     return result
 
 
-def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
+def _write_patch(
+    stream: TextIO,
+    project: ProjectModel,
+    smells: list[Smell],
+    planned: Plan | None = None,
+) -> None:
     """The diff to stdout, the account of it to stderr.
 
     Kept apart on purpose: the patch has to be pipeable into ``git apply``, so
@@ -212,7 +264,9 @@ def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> 
         stream.reconfigure(newline="")
 
     javac = shutil.which("javac")
-    result = _planned(Path(project.root), smells, javac)
+    # Kur `--apply` e ka llogaritur tashme planin, ai perdoret: planifikimi mat
+    # me minuta mbi nje projekt real, dhe dy here do te thoshte dy here aq.
+    result = planned if planned is not None else _planned(Path(project.root), smells, javac)
     stream.write(unified(result.patches))
 
     print(

@@ -3601,3 +3601,47 @@ role e jo për stil.
 **Panelet fituan emër të arritshëm.** Një `section` pa të nuk është `region` fare:
 lexuesi i ekranit nuk e njofton dhe nuk kalohet dot mes paneleve. Lidhja me vetë
 titullin e jep atë emër pa e dyfishuar tekstin.
+
+### VD-100: Motori tani shkruan, dhe kushtet që e lejojnë
+
+**Konteksti.** Maketi e kishte «APPLY PATCH» si veprim qendror, ndërsa motori
+kurrë nuk kishte shkruar mbi kodin. VD-49 e vendosi atë qëndrim dhe ENGINEERING
+§4 e formulon me kujdes: «Never write in place by default. In-place modification
+requires an explicit flag and a clean working tree.» Pra shkrimi nuk ishte i
+ndaluar; ishte i pakushtëzuar dhe prandaj i pandërtuar. Autori e kërkoi, dhe të
+dyja gjysmat e kushtit tani zbatohen nga vetë kodi e nuk i besohen thirrësit.
+
+**Pse git dhe jo një kopje rezervë.** Një kopje pranë skedarit është një gjë e
+dytë për t'u besuar, pastruar dhe ngatërruar, dhe i përgjigjet pyetjes «si e kthej
+këtë» me një procedurë. Një pemë git e pastër i përgjigjet me një komandë të
+vetme që autori e di përmendsh. Kërkesa nuk është burokraci: ajo **është** kthimi.
+
+**Ç'do të thotë e pastër.** Asnjë skedar i modifikuar ose i vënë në fazë, kudo te
+depoja, e jo vetëm te skedarët që do të preken. Ngushtimi u peshua dhe u refuzua:
+qëllimi është që autori të ekzekutojë një komandë pas kësaj dhe të jetë i sigurt
+se çfarë kthen, dhe ajo siguri nuk mbijeton me redaktime të tjera në të njëjtën
+pemë. Skedarët e paregjistruar lejohen, sepse `git restore .` nuk i prek dhe
+refuzimi mbi ta do të bllokonte rastin e zakonshëm të një dosjeje ndërtimi.
+
+**Gjithçka ose asgjë.** Bajtët e çdo patch-i krahasohen me ata në disk para se të
+shkruhet i pari. Një patch gjysmak është i vetmi përfundim pa kthim të qartë:
+`git restore .` do t'i kthente rishkrimet e verifikuara që u shkruan dhe do ta
+linte autorin të gjente vetë se cilat ishin.
+
+**Tri sipërfaqe, një modul.** `--apply` te vija komanduese, `POST /refactor/apply`
+te API-ja me `confirm` që duhet dërguar shprehimisht, dhe një buton me dy hapa te
+ndërfaqja. Të tria thërrasin të njëjtin modul, i cili e kontrollon vetë pemën.
+Një refuzim është 409 e jo 500: asgjë nuk shkoi keq, një kusht nuk qëndroi.
+
+**Dalja 4 te vija komanduese.** Një skript që kërkoi shkrim dhe mori refuzim nuk
+guxon të lexohet si sukses, dhe kodet 1 e 2 do të thonë se vetë mjeti nuk punoi.
+
+**Dy hapa te ndërfaqja.** Klikimi i parë tregon sa skedarë do të preken dhe
+komandën që i kthen; i dyti e kryen. Një dialog `confirm()` do ta bënte të njëjtën
+punë dhe do ta thoshte më keq: nuk do të mund të emërtonte as skedarët, as kthimin.
+Gjendja e pemës pyetet me një rrugë të vetën para se të planifikohet gjë, sepse
+«ky shteg nuk është depo git» duhet thënë menjëherë e jo pas dy minutash pritjeje.
+
+**Ç'nuk ndryshon.** Pragjet, detektorët, verifikimi dhe çdo numër i Kapitullit 5
+mbeten të njëjtët. Shkruhen vetëm skedarët që kanë kaluar tashmë verifikimin, pra
+vetëm përmbajtja e një `FilePatch`-i.

@@ -46,6 +46,8 @@ from javasmell.ml.serving import (
     rule_equivalent,
 )
 from javasmell.model.entities import ProjectModel
+from javasmell.refactor.apply import Refusal as ApplyRefusal
+from javasmell.refactor.apply import apply_patches, working_tree_state
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
@@ -101,6 +103,13 @@ class AnalyseRequest(PathRequest):
     #: explained against costs about a second, and a caller that wants only the
     #: rules should not pay it on every request.
     include_model: bool = False
+
+
+class ApplyRequest(PathRequest):
+    #: Asked for explicitly, and never defaulted to true. A caller that forgets
+    #: the field gets the refusal, which is the safe answer for the one route
+    #: that can destroy work.
+    confirm: bool = False
 
 
 class SourceRequest(BaseModel):
@@ -325,6 +334,57 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 yield json.dumps(body) + NDJSON_END
 
         return StreamingResponse(lines(), media_type="application/x-ndjson")
+
+    @app.post("/refactor/apply", response_model=None)
+    def apply_patch(request: ApplyRequest) -> dict[str, Any] | JSONResponse:
+        """Write the verified rewrites to the files, once every condition holds.
+
+        The only route that changes the caller's code, and the only one whose
+        request body carries a confirmation. ENGINEERING.md §4 permits in-place
+        modification "with an explicit flag and a clean working tree", and both
+        are enforced: ``confirm`` must be true here, and
+        :mod:`javasmell.refactor.apply` checks the tree for itself rather than
+        trusting that someone did (VD-100).
+
+        A refusal is a 409 and not a 500: nothing went wrong, a condition did not
+        hold, and the caller is told which so it can say so in its own words.
+        """
+        target = confine(request.path, config.root)
+        java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
+
+        project = analyze_path(str(target))
+        smells = detect_all(project)
+        javac = shutil.which("javac")
+        planned = plan(target, smells, javac, deadline=time.monotonic() + config.timeout_s)
+
+        outcome = apply_patches(planned.patches, target, requested=request.confirm)
+        if isinstance(outcome, ApplyRefusal):
+            return JSONResponse(
+                status_code=409,
+                content={"error": {"code": outcome.reason.value, "message": outcome.detail}},
+            )
+        return {
+            "written": list(outcome.written),
+            "revert": outcome.revert,
+            "changes": planned.changes,
+            "verified_with_javac": javac is not None,
+        }
+
+    @app.post("/refactor/tree")
+    def tree(request: PathRequest) -> dict[str, Any]:
+        """Whether a write would be allowed here, asked before anything is planned.
+
+        The interface needs it to say "this is not a git repository" up front
+        rather than after two minutes of planning, and asking costs two git
+        commands.
+        """
+        target = confine(request.path, config.root)
+        state = working_tree_state(target)
+        return {
+            "writable": state is None,
+            "reason": None if state is None else state.reason.value,
+            "detail": "" if state is None else state.detail,
+        }
 
     return app
 

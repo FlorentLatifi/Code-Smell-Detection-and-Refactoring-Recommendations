@@ -8,6 +8,8 @@ that a failure comes back as a code and a message rather than as a stack trace.
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 
 import pytest
 from fastapi.testclient import TestClient
@@ -506,3 +508,65 @@ def test_a_spent_budget_yields_a_shorter_patch_not_an_error(tmp_path):
     assert body["diff"] == ""
     assert body["changes"] == 0
     assert body["unreached"] == 1
+
+
+# ----------------------------------------------------------------------
+# Applying, which is the only route that touches the caller's files
+# ----------------------------------------------------------------------
+GIT = shutil.which("git")
+
+
+def committed(root):
+    """Turn the fixture workspace into a clean git tree."""
+    for command in (
+        ["init", "-q"],
+        ["config", "user.email", "t@example.com"],
+        ["config", "user.name", "T"],
+        ["config", "core.autocrlf", "false"],
+        ["add", "."],
+        ["commit", "-q", "-m", "first"],
+    ):
+        subprocess.run([str(GIT), "-C", str(root), *command], check=True, capture_output=True)
+
+
+def test_applying_without_confirmation_is_refused(client, tmp_path):
+    """A caller that forgets the field gets the safe answer, not the write."""
+    before = (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes()
+    response = client.post("/refactor/apply", json={"path": "src"})
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "not_requested"
+    assert (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes() == before
+
+
+def test_applying_outside_a_repository_is_refused(client, tmp_path):
+    """Without git there is no undo, and the engine will not write without one."""
+    before = (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes()
+    response = client.post("/refactor/apply", json={"path": "src", "confirm": True})
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "not_a_repository"
+    assert (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes() == before
+
+
+@pytest.mark.skipif(not GIT, reason="git not installed")
+def test_applying_into_a_clean_tree_writes_and_names_the_undo(client, tmp_path):
+    source = tmp_path / "workspace" / "src" / "Ledger.java"
+    before = source.read_bytes()
+    committed(tmp_path / "workspace")
+
+    body = client.post("/refactor/apply", json={"path": "src", "confirm": True}).json()
+
+    assert body["written"] == ["Ledger.java"]
+    assert body["revert"] == "git restore ."
+    assert source.read_bytes() != before
+
+
+@pytest.mark.skipif(not GIT, reason="git not installed")
+def test_the_tree_route_answers_before_anything_is_planned(client, tmp_path):
+    """Asked up front so the interface need not wait two minutes to say no."""
+    assert client.post("/refactor/tree", json={"path": "src"}).json()["writable"] is False
+
+    committed(tmp_path / "workspace")
+
+    assert client.post("/refactor/tree", json={"path": "src"}).json()["writable"] is True

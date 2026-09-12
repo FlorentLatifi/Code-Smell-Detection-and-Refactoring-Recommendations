@@ -2,11 +2,13 @@ import type {
   Analysis,
   ApiError,
   PatchResult,
+  ApplyResult,
   PatchProgress,
   Preview,
   RewriteNote,
   Smell,
   Source,
+  TreeState,
 } from "./types";
 
 // The server answers a failure with { error: { code, message } } and never with
@@ -275,4 +277,58 @@ export function noteText(note: RewriteNote): string {
     );
   }
   return note.code;
+}
+
+/**
+ * Çfarë do të thotë secili refuzim i shkrimit, shqip.
+ *
+ * Lidhur me kodin si çdo gabim tjetër. Teksti i thotë përdoruesit çfarë të bëjë,
+ * sepse çdo njëri prej këtyre refuzimeve ka një veprim që e zgjidh.
+ */
+export const APPLY_REFUSAL_SQ: Record<string, string> = {
+  not_requested: "Shkrimi nuk u konfirmua.",
+  not_a_repository:
+    "Ky shteg nuk është brenda një depoje git. Motori shkruan vetëm aty ku një «git restore .» " +
+    "mund ta kthejë gjithçka.",
+  tree_not_clean:
+    "Pema e punës ka ndryshime të paruajtura. Komito ose hidhi ato së pari, që kthimi të prekë " +
+    "vetëm atë që shkruan mjeti.",
+  nothing_to_write: "Asnjë rishkrim i verifikuar për t'u shkruar.",
+  file_changed:
+    "Një skedar ka ndryshuar që kur u mat. Ri-ekzekuto analizën, që rishkrimi të llogaritet mbi " +
+    "atë që është në disk tani.",
+};
+
+/** A do të lejohej një shkrim te ky shteg, pa planifikuar ende asgjë. */
+export function treeState(path: string): Promise<TreeState> {
+  return post<TreeState>("/refactor/tree", { path });
+}
+
+/**
+ * Shkruaj rishkrimet e verifikuara te skedarët.
+ *
+ * I vetmi funksion i këtij moduli që e ndryshon kodin e përdoruesit. `confirm`
+ * dërgohet shprehimisht e nuk nënkuptohet, dhe afati është ai i patch-it sepse
+ * puna është e njëjta: planifikimi mat me minuta.
+ */
+export async function applyPatch(path: string, signal?: AbortSignal): Promise<ApplyResult> {
+  try {
+    return await post<ApplyResult>(
+      "/refactor/apply",
+      { path, confirm: true },
+      signal,
+      PATCH_TIMEOUT_MS,
+    );
+  } catch (failure) {
+    throw new Error(translateRefusal((failure as Error).message));
+  }
+}
+
+/**
+ * Refuzimet e shkrimit mbërrijnë si 409 me kodin e vet, të cilin `post` e lë të
+ * pandryshuar sepse nuk është te `ERROR_SQ`. Përkthimi bëhet këtu, që harta e
+ * gabimeve të përgjithshme të mos mbushet me kode që i takojnë një rruge të vetme.
+ */
+function translateRefusal(message: string): string {
+  return APPLY_REFUSAL_SQ[message] ?? message;
 }
