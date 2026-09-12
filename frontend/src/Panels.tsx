@@ -4,16 +4,31 @@
 // tyre ishin shirita, qeliza dhe korniza që nuk dinë asgjë për erërat: ato lexohen
 // një herë dhe pastaj janë vetëm zhurmë mes paneleve që mbajnë kuptimin.
 
+import { useId } from "react";
+
 export function Distribution({
   counts,
   labels,
   total,
+  order,
+  tone = "rules",
 }: {
   counts: Record<string, number>;
   labels: Record<string, string>;
   total: number;
+  /**
+   * Radha e çelësave, kur ata kanë një të tillë natyrore.
+   *
+   * Pa të rendit sipas numrit, çka është e drejtë për arsyet e refuzimit dhe
+   * për llojet e erërave — aty asnjë nuk vjen para tjetrës — dhe e gabuar për
+   * ashpërsinë, ku dy gjetje kritike duhet të rrinë mbi njëzet të lehta.
+   */
+  order?: string[];
+  tone?: string;
 }) {
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const entries = order
+    ? order.filter((key) => counts[key] !== undefined).map((key) => [key, counts[key]] as const)
+    : Object.entries(counts).sort((a, b) => b[1] - a[1]);
   return (
     <table className="grid">
       <tbody>
@@ -21,7 +36,7 @@ export function Distribution({
           <tr key={key}>
             <th scope="row">{labels[key] ?? key}</th>
             <td>
-              <Bar value={value / total} tone="rules" format="percent" />
+              <Bar value={value / total} tone={tone} format="percent" />
             </td>
             <td className="figures quiet">{value.toLocaleString("sq")}</td>
           </tr>
@@ -85,11 +100,15 @@ export function Panel({
   note?: string;
   children: React.ReactNode;
 }) {
+  // Një `section` pa emër të arritshëm nuk është `region` fare: lexuesi i ekranit
+  // nuk e njofton dhe nuk kalohet dot mes paneleve. Lidhja me vetë titullin e jep
+  // atë emër pa e dyfishuar tekstin.
+  const headingId = useId();
   return (
-    <section className="panel">
+    <section className="panel" aria-labelledby={headingId}>
       {/* `h2`, jo `h3`: faqja mban një `h1` te koka, dhe axe e kapi kapërcimin e
           nivelit. Pamja nuk ndryshon — stili lidhet me `.panel`, jo me etiketën. */}
-      <h2>{title}</h2>
+      <h2 id={headingId}>{title}</h2>
       {note && <p className="quiet">{note}</p>}
       {children}
     </section>

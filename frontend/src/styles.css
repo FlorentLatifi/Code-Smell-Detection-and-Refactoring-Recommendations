@@ -1580,3 +1580,160 @@ select:hover {
 .working .note {
   margin-top: 6px;
 }
+
+/* ----------------------------------------------------------------------
+   Ekrani i parë.
+
+   Tri kolona për tri qasjet, sepse ato janë tri dhe sepse krahasimi mes tyre
+   është gjëja e parë që dikush do të bëjë. Nën 900px bëhen një kolonë: në atë
+   gjerësi tri tabela MCC-je pranë njëra-tjetrës shtypen deri sa shifrat të
+   mbivendosen, dhe një kolonë e gjatë lexohet më mirë se tri të ngushta.
+   ---------------------------------------------------------------------- */
+.landing {
+  margin-top: var(--s-4);
+}
+
+.landing .lead {
+  max-width: 62ch;
+  margin-bottom: var(--s-5);
+}
+
+.landing .lead h2 {
+  margin: 0 0 var(--s-3);
+  font: 400 var(--t-title) / 1.15 var(--serif);
+}
+
+.landing .lead p {
+  margin: 0 0 var(--s-3);
+  font-size: var(--t-lead);
+  line-height: 1.55;
+}
+
+.landing .hint {
+  color: var(--ink-faint);
+  font-size: var(--t-small);
+  line-height: 1.6;
+}
+
+.approaches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-bottom: var(--s-5);
+  border: 1px solid var(--rule-soft);
+  background: var(--rule-soft);
+}
+
+.approach {
+  padding: var(--s-4);
+  background: var(--surface);
+}
+
+.approach h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--s-3);
+  font: 600 var(--t-body) / 1.2 var(--sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Shkronja e qasjes si distinktiv: A, B dhe C janë emrat që përdor punimi, dhe
+   ky ekran është vendi ku lexuesi i mëson. */
+.approach .tag {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font: 600 var(--t-micro) / 1 var(--sans);
+  place-items: center;
+}
+
+.approach p {
+  margin: 0 0 var(--s-3);
+  color: var(--ink-soft);
+  font-size: var(--t-small);
+  line-height: 1.6;
+}
+
+.approach .mcc {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+}
+
+.approach .mcc th {
+  padding: 3px 0;
+  font-weight: 400;
+  text-align: left;
+}
+
+.approach .mcc td {
+  padding: 3px 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.figures-row {
+  display: flex;
+  gap: var(--s-4);
+  margin: 0;
+}
+
+.figures-row.wide {
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+
+.figures-row .figure {
+  padding: 0;
+  border: 0;
+}
+
+.figures-row dt {
+  font: 400 var(--t-title) / 1.05 var(--serif);
+}
+
+.figures-row dd {
+  margin: 2px 0 0;
+  color: var(--ink-faint);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.evidence h3 {
+  margin: 0 0 var(--s-3);
+  font: 600 var(--t-body) / 1.2 var(--sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.evidence .hint {
+  max-width: 68ch;
+  margin-top: var(--s-3);
+}
+
+@media (max-width: 900px) {
+  .approaches {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dy panelet e shpërndarjes rri pranë njëri-tjetrit: janë dy pamje të së njëjtës
+   bashkësi, dhe krahasimi mes tyre është arsyeja pse ekzistojnë. */
+.distributions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+@media (max-width: 820px) {
+  .distributions {
+    grid-template-columns: 1fr;
+  }
+}

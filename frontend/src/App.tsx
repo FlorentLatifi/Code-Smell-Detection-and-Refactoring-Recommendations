@@ -6,6 +6,8 @@ import type { Order } from "./Filters";
 import { Hotspots } from "./Hotspots";
 import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
+import { Landing } from "./Landing";
+import { Breakdown } from "./Breakdown";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
 import { ModelBar, SummaryBar } from "./Summary";
@@ -388,19 +390,7 @@ export function App() {
         </label>
       </form>
 
-      {screen.state === "idle" && (
-        <p className="empty">
-          Shkruaj shtegun e një projekti Java për të filluar. Analiza lexon vetëm brenda dosjes
-          që serveri e ka të lejuar
-          {root ? (
-            <>
-              , që është <code>{root}</code>. Shtegu shkruhet relativ ndaj saj.
-            </>
-          ) : (
-            "."
-          )}
-        </p>
-      )}
+      {screen.state === "idle" && <Landing root={root} />}
 
       {screen.state === "loading" && (
         <p className="empty" role="status">
@@ -418,6 +408,7 @@ export function App() {
         <>
           <SummaryBar analysis={screen.analysis} sites={allSites} />
           {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
+          <Breakdown summary={screen.analysis.summary} />
           {screen.state === "ready" && (
             <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
           )}

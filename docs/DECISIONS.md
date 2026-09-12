@@ -3562,3 +3562,42 @@ kërkohet» ndërton 450 vende dhe rendit 400 rreshta te DOM-i; u mat rreth 7
 sekonda, mbi afatin e parazgjedhur prej 5, ndaj kalimi varej nga sa e ngarkuar
 ishte makina. Afati u shkrua shprehimisht. Pohimi mbetet i njëjti; largohet vetëm
 varësia nga shpejtësia.
+
+### VD-99: Ekrani i parë tregon punën, dhe çfarë nuk u marrë nga maketi
+
+**Konteksti.** U dorëzua një maket i një paneli të dendur dhe një vërejtje e
+saktë: faqja kryesore hapej me një fjali të vetme dhe dukej sikur sistemi nuk
+kishte bërë asgjë, ndërsa vlerësimi i tij mbi 522 depo rrinte i komituar te
+`data/results/`.
+
+**Çfarë u mor.** Ekrani i parë tani tregon tri qasjet me MCC-në e secilës erë,
+numrat e refaktorimit dhe madhësinë e bazamentit. Asnjë shifër nuk shtypet me
+dorë: të gjitha lexohen nga të njëjtët skedarë që ndërton Kapitulli 5, ndaj
+ekrani nuk mund të pohojë diçka që punimi nuk e raporton. Te rezultatet u shtuan
+dy panele shpërndarjeje, sipas llojit dhe sipas ashpërsisë, nga fusha `by_type`
+dhe `by_severity` që ishin te përgjigjja që në fillim dhe nuk shiheshin askund.
+
+**Çfarë nuk u mor, dhe pse.** Maketi mban një buton «APPLY PATCH» si veprim
+qendror. Motori nuk shkruan mbi kodin (VD-49, §4), ndaj ai buton do të ishte ose
+një premtim i pambajtur ose një ndryshim i vendimit bazë të sigurisë. Mban edhe
+një kronologji «APPLIED REFACTORINGS» me data, e cila kërkon gjendje te serveri
+që moduli i API-së e ka refuzuar shprehimisht, dhe që do të listonte veprime që
+mjeti nuk i kryen. Mban «SELECT RULES (PMD, CHECKSTYLE)», ndërsa PMD përdoret
+vetëm te krahasimi i Kapitullit 5 dhe Checkstyle nuk përdoret fare. Mban
+«CONFIGURE DETECTORS», ndërsa pragjet janë të fiksuara e të cituara dhe
+ndryshimi i tyre nga ekrani do ta prishte riprodhueshmërinë që shtojca premton.
+Dhe mban një zgjedhës projektesh, ndërsa nuk ka regjistër projektesh.
+
+**Çfarë maketi nuk e ka dhe nuk u hoq.** Shpjegimi i çdo gjetjeje me klauzolat e
+matura kundrejt pragut, Qasja B dhe pajtimi A∩B, arsyet e refuzimit, kodi burim
+brenda panelit, dhe skeda e vlerësimit. Këto janë ajo që e dallon këtë mjet nga
+një numërues erërash, dhe maketi nuk i tregon fare.
+
+**Një përplasje emrash u kap nga shfletuesi e jo nga testet.** Klasa `.breakdown`
+ishte tashmë e zënë nga qeliza e ashpërsive te shiriti përmbledhës, ndaj rregullat
+e reja të rrjetit zbatoheshin edhe mbi të. Testet kalonin, sepse ato pyesin për
+role e jo për stil.
+
+**Panelet fituan emër të arritshëm.** Një `section` pa të nuk është `region` fare:
+lexuesi i ekranit nuk e njofton dhe nuk kalohet dot mes paneleve. Lidhja me vetë
+titullin e jep atë emër pa e dyfishuar tekstin.

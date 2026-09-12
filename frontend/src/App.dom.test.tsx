@@ -43,6 +43,13 @@ function smell(overrides: Partial<Smell> = {}): Smell {
   };
 }
 
+function counted(values: string[]): Record<string, number> {
+  const tally: Record<string, number> = {};
+  for (const value of values) tally[value] = (tally[value] ?? 0) + 1;
+  return tally;
+}
+
+/** Përmbledhja derivohet nga vetë erërat, që fikstuara të mos bjerë ndesh me vetveten. */
 function analysis(smells: Smell[]): Analysis {
   return {
     summary: {
@@ -50,8 +57,8 @@ function analysis(smells: Smell[]): Analysis {
       classes: 1,
       methods: smells.length,
       smells: smells.length,
-      by_severity: { critical: smells.length },
-      by_type: { LongMethod: smells.length },
+      by_severity: counted(smells.map((s) => s.severity)),
+      by_type: counted(smells.map((s) => s.smell_type)),
     },
     smells,
   };
@@ -448,5 +455,54 @@ describe("progresi i patch-it", () => {
 
     expect(status.textContent).toContain("(38%)");
     expect(status.textContent).toContain("1 ndryshim deri tani");
+  });
+});
+
+describe("shpërndarja e gjetjeve", () => {
+  it("tregon llojet dhe ashpërsitë si pjesë e së tërës", async () => {
+    // `by_type` dhe `by_severity` ishin te përgjigjja që në fillim dhe nuk
+    // shiheshin askund veç si distinktivë të shpërndarë nëpër rreshta.
+    serve(
+      analysis([
+        smell({ method: "m0(int)" }),
+        smell({ method: "m1(int)", start_line: 200, smell_type: "DeepNesting", severity: "minor" }),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+
+    const types = screen.getByRole("region", { name: "Sipas llojit" });
+
+    expect(within(types).getByText("LongMethod")).toBeDefined();
+    expect(within(types).getByText("DeepNesting")).toBeDefined();
+  });
+
+  it("rendit ashpërsitë nga më e rënda, jo nga më e shpeshta", async () => {
+    // Dy kritike duhet të rrinë mbi njëzet të lehta; renditja sipas numrit do
+    // t'i kthente përmbys.
+    const smells = [
+      smell({ method: "m0(int)", severity: "critical" }),
+      ...Array.from({ length: 3 }, (_, i) =>
+        smell({ method: `m${i + 1}(int)`, start_line: 200 + i * 50, severity: "minor" }),
+      ),
+    ];
+    serve(analysis(smells));
+    render(<App />);
+    await analyse();
+
+    const panel = screen.getByRole("region", { name: "Sipas ashpërsisë" });
+    const rows = within(panel).getAllByRole("rowheader");
+
+    expect(rows.map((r) => r.textContent)).toEqual(["critical", "minor"]);
+  });
+
+  it("nuk shfaqet kur nuk u gjet asnjë erë", async () => {
+    serve(analysis([]));
+    render(<App />);
+    fireEvent.change(screen.getByLabelText("Shtegu i projektit"), { target: { value: "src" } });
+    fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
+
+    expect(await screen.findByText(/Asnjë erë e detektuar/)).toBeDefined();
+    expect(screen.queryByRole("region", { name: "Sipas llojit" })).toBeNull();
   });
 });
