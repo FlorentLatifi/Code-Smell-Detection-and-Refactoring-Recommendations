@@ -9,9 +9,9 @@
 //
 // **Çfarë mbulon dhe çfarë jo.** axe mbi jsdom kontrollon strukturën: role,
 // emërtime, atribute, hierarkinë e titujve. Nuk kontrollon kontrastin, sepse
-// jsdom nuk llogarit ngjyra të trashëguara; ai u mat me dorë dhe rri i shkruar te
-// vetë `styles.css`. Një mjet që pretendon më shumë se sa mat është më keq se
-// asnjë mjet.
+// jsdom nuk llogarit ngjyra të trashëguara, dhe një mjet që pretendon më shumë se
+// sa mat është më keq se asnjë mjet. Kontrasti matet te `e2e/a11y.spec.ts`, mbi
+// Chromium, ku ngjyrat e llogaritura ekzistojnë vërtet (VD-108).
 
 import axe from "axe-core";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";

@@ -30,7 +30,7 @@ export function ApplyControl({
 
   if (tree && !tree.writable) {
     return (
-      <p className="flex items-start gap-2 rounded-lg bg-medium/10 px-3 py-2 text-xs text-medium">
+      <p className="flex items-start gap-2 rounded-lg bg-medium/10 px-3 py-2 text-xs text-medium-ink">
         <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         {APPLY_REFUSAL_SQ[tree.reason ?? ""] ?? tree.detail}
       </p>
@@ -53,7 +53,7 @@ export function ApplyControl({
   return (
     <div className="space-y-2">
       {failure && (
-        <p className="rounded-lg bg-high/10 px-3 py-2 text-xs text-high" role="alert">
+        <p className="rounded-lg bg-high/10 px-3 py-2 text-xs text-high-ink" role="alert">
           {failure}
         </p>
       )}

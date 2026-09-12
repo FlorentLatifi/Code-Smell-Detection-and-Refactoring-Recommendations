@@ -22,9 +22,9 @@ export interface Suggestion {
 }
 
 const SEVERITY: Record<Severity, { chip: string; bar: string }> = {
-  critical: { chip: "bg-high/10 text-high ring-high/20", bar: "bg-high" },
-  major: { chip: "bg-medium/10 text-medium ring-medium/20", bar: "bg-medium" },
-  minor: { chip: "bg-low/10 text-low ring-low/20", bar: "bg-low" },
+  critical: { chip: "bg-high/10 text-high-ink ring-high/20", bar: "bg-high" },
+  major: { chip: "bg-medium/10 text-medium-ink ring-medium/20", bar: "bg-medium" },
+  minor: { chip: "bg-low/10 text-low-ink ring-low/20", bar: "bg-low" },
 };
 
 export function RefactoringActionList({
@@ -110,12 +110,12 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
               {item.smell}
             </span>
             {item.automated ? (
-              <span className="flex items-center gap-1 rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] font-medium text-brand-500">
+              <span className="flex items-center gap-1 rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] font-medium text-brand-ink">
                 <Wand2 className="h-3 w-3" aria-hidden="true" />
                 {item.refactoring}
               </span>
             ) : (
-              <span className="flex items-center gap-1 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-medium text-ink-500 dark:bg-ink-800 dark:text-ink-400">
+              <span className="flex items-center gap-1 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-medium text-ink-600 dark:bg-ink-800 dark:text-ink-300">
                 <Lock className="h-3 w-3" aria-hidden="true" />
                 vetëm propozim
               </span>
@@ -123,7 +123,7 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
           </div>
 
           <p className="mt-1 text-sm text-ink-600 dark:text-ink-300">{item.reason}</p>
-          <p className="mt-1 truncate font-mono text-xs text-ink-400 dark:text-ink-500">
+          <p className="mt-1 truncate font-mono text-xs text-ink-500 dark:text-ink-400">
             {item.file}:{item.line}
           </p>
         </div>
@@ -170,7 +170,7 @@ function AppliedTimeline({
                     aria-hidden="true"
                   />
                 )}
-                <span className="relative z-10 mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-low/15 text-low">
+                <span className="relative z-10 mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-low/15 text-low-ink">
                   <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">

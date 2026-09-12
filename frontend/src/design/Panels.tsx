@@ -42,6 +42,8 @@ export function PerformanceCharts({ scores }: { scores: ScoreRow[] }) {
   return (
     <Card title="Rregullat kundrejt modelit (MCC)">
       <div className="h-[280px] p-4" role="img" aria-label={label}>
+        {/* Si te unaza: etiketa e mban përmbajtjen, vizatimi fshihet. */}
+        <div className="h-full w-full" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={scores} barGap={6} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#64748b33" vertical={false} />
@@ -66,6 +68,7 @@ export function PerformanceCharts({ scores }: { scores: ScoreRow[] }) {
             <Bar dataKey="model" fill="#6366f1" radius={[4, 4, 0, 0]} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </Card>
   );
@@ -82,9 +85,9 @@ export interface FileRow {
 }
 
 const PILL: Record<Severity, string> = {
-  critical: "bg-high/10 text-high ring-high/20",
-  major: "bg-medium/10 text-medium ring-medium/20",
-  minor: "bg-low/10 text-low ring-low/20",
+  critical: "bg-high/10 text-high-ink ring-high/20",
+  major: "bg-medium/10 text-medium-ink ring-medium/20",
+  minor: "bg-low/10 text-low-ink ring-low/20",
 };
 
 export function SmellyFilesTable({
@@ -116,7 +119,7 @@ export function SmellyFilesTable({
               >
                 <td className="px-4 py-2.5">
                   <span className="flex items-center gap-2 font-medium text-ink-900 dark:text-white">
-                    <FileCode2 className="h-3.5 w-3.5 shrink-0 text-ink-400" aria-hidden="true" />
+                    <FileCode2 className="h-3.5 w-3.5 shrink-0 text-ink-500" aria-hidden="true" />
                     <span className="truncate">{row.cls}</span>
                   </span>
                 </td>

@@ -32,6 +32,28 @@
   --color-high: #f43f5e;
   --color-medium: #f59e0b;
   --color-low: #10b981;
+
+  /* Teksti mbi një tintë 10% të së njëjtës ngjyrë.
+   *
+   * Ngjyra e sipërme është e figurës: shtylla, unaza, vija e ashpërsisë. Mbi një
+   * tintë të zbehtë ajo bie nën 4.5:1 te teksti 11-12 piksela, ndaj etiketat
+   * marrin një hap më të errët në dritë dhe një më të çelët në errësirë. Vlerat
+   * janë matur, jo zgjedhur: `scripts/` nuk i llogarit dot, ndaj raporti i secilës
+   * rri te DECISIONS (VD-108). Më e ulëta është 4.65:1, mbi kufirin 4.5:1 të
+   * WCAG 2.1 AA për tekst normal. */
+  --color-high-ink: #be123c;
+  --color-medium-ink: #b45309;
+  --color-low-ink: #047857;
+  --color-brand-ink: #4f46e5;
+}
+
+/* Në errësirë e njëjta tintë ulet mbi të zezë, ndaj teksti duhet të shkojë lart
+   e jo poshtë. Të njëjtat katër role, të matura mbi `--color-ink-900`. */
+:root.dark {
+  --color-high-ink: #fb7185;
+  --color-medium-ink: #fbbf24;
+  --color-low-ink: #34d399;
+  --color-brand-ink: #818cf8;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

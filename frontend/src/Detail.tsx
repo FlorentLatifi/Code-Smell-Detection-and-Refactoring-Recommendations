@@ -150,7 +150,10 @@ function SourceView({ smell, path }: { smell: Smell; path: string }) {
 
   return (
     <>
-      <pre className="source">
+      {/* Rrëshqet horizontalisht kur një rresht është i gjatë, ndaj duhet të jetë
+          i arritshëm me tastierë: përndryshe pjesa e djathtë e kodit nuk shihet
+          dot pa mouse. `tabIndex` e bën fokusabël, dhe emri thotë çfarë është. */}
+      <pre className="source" tabIndex={0} role="region" aria-label="Kodi i gjetjes">
         {lines.lines.map((text, index) => (
           <span className="line" key={lines.start_line + index}>
             <span className="gutter">{lines.start_line + index}</span>

@@ -329,7 +329,9 @@ function Reasons({ result }: { result: PatchResult }) {
 function UnifiedDiff({ text }: { text: string }) {
   const lines = text.split("\n");
   return (
-    <pre className="unified">
+    // Rrëshqet horizontalisht si blloku i kodit, ndaj i duhet i njëjti trajtim:
+    // pa fokus me tastierë, ana e djathtë e diff-it nuk arrihet dot pa mouse.
+    <pre className="unified" tabIndex={0} role="region" aria-label="Ndryshimet e propozuara">
       {lines.map((line, index) => (
         <span key={index} className={`line ${classOf(line)}`}>
           {line}

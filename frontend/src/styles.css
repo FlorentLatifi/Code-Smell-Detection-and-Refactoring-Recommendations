@@ -29,8 +29,12 @@
      kontrastin e plotë. */
   --ink: #111827;
   --ink-soft: #4b5563;
-  /* 5.74:1 mbi të bardhën, pra mbi kufirin 4.5:1 të WCAG AA për tekst normal. */
-  --ink-faint: #6b7280;
+  /* 6.07:1 mbi të bardhën dhe 5.29:1 mbi tintën më të çelët ku ulet
+     (`--accent-wash`), pra mbi kufirin 4.5:1 të WCAG 2.1 AA për tekst normal.
+     Vlera e mëparshme #6b7280 e mbante kufirin vetëm mbi të bardhën e pastër
+     (4.83:1) dhe binte te 4.21:1 mbi tintat — matur me axe mbi faqen e gjallë,
+     jo mbi sfondin që supozohej (VD-108). */
+  --ink-faint: #5c636d;
   --paper: #f6f7f9;
   --surface: #ffffff;
   --sunken: #f1f3f5;
@@ -39,6 +43,11 @@
 
   /* Blu-ja e maketit dhe e figurave të punimit, me dy hapa për gjendjet. */
   --accent: #1f4e79;
+  /* Teksti mbi një sipërfaqe të mbushur me theksin. Në dritë theksi është blu i
+     errët dhe e bardha jep 8.66:1; në errësirë theksi është blu i çelët dhe e
+     bardha bie te 3.12:1, nën kufirin. Ngjyra e tekstit ndërron me temën, jo
+     sipërfaqja (VD-108). */
+  --on-accent: #ffffff;
   --accent-hover: #1a4267;
   --accent-wash: #eaf0f6;
   --accent-line: #4c7ba6;
@@ -106,6 +115,7 @@
   --rule-soft: #262c34;
 
   --accent: #5b96d2;
+  --on-accent: #0f1216;
   --accent-hover: #74a8dd;
   --accent-wash: #17232f;
   --accent-line: #4d7ea8;
@@ -290,7 +300,7 @@ h1 {
   z-index: 10;
   padding: 10px var(--s-3);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   text-decoration: none;
 }
 
@@ -380,7 +390,7 @@ button:active:not(:disabled) {
 button.primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -1056,7 +1066,7 @@ select:hover {
 
 .chip.on {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ---------- agreement bar ---------- */
@@ -1634,7 +1644,7 @@ select:hover {
   height: 20px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font: 600 var(--t-micro) / 1 var(--sans);
   place-items: center;
 }
@@ -1849,7 +1859,7 @@ select:hover {
 
 .rail .tab.on {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .rail .glyph {

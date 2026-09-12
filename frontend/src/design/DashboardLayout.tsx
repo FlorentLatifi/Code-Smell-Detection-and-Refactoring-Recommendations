@@ -59,9 +59,11 @@ export function DashboardLayout({
           <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
             <Boxes className="h-4 w-4" />
           </span>
-          <span className="text-[15px] font-semibold tracking-tight text-ink-900 dark:text-white">
+          {/* `h1` e jo `span`: faqja duhet të ketë një titull të nivelit të parë,
+              dhe emri i mjetit është i vetmi kandidat që qëndron te të dyja pamjet. */}
+          <h1 className="m-0 text-[15px] font-semibold tracking-tight text-ink-900 dark:text-white">
             JavaSmell
-          </span>
+          </h1>
         </div>
 
         {project}
@@ -125,12 +127,19 @@ function Rail({
     { id: "metrics" as const, icon: Gauge, label: "Rezultatet e vlerësimit" },
   ];
   return (
+    /* `role="tablist"` mbi vetë `<nav>` e mbivendos rolin e tij `navigation`, dhe
+       faqja mbetet me përmbajtje jashtë çdo landmark-u. Të dy rolet i duhen, te
+       elemente të ndara — e njëjta gjë si `<main>` dhe `tabpanel` më lart. */
     <nav
       aria-label="Pamjet"
-      role="tablist"
-      aria-orientation="vertical"
-      className="sticky top-14 flex h-[calc(100vh-3.5rem)] w-14 shrink-0 flex-col items-center gap-1 border-r border-ink-200 bg-white py-3 dark:border-ink-800 dark:bg-ink-900"
+      className="sticky top-14 h-[calc(100vh-3.5rem)] w-14 shrink-0 border-r border-ink-200 bg-white py-3 dark:border-ink-800 dark:bg-ink-900"
     >
+      <div
+        role="tablist"
+        aria-label="Pamjet"
+        aria-orientation="vertical"
+        className="flex flex-col items-center gap-1"
+      >
       {items.map((item) => (
         <button
           key={item.id}
@@ -144,13 +153,14 @@ function Rail({
           className={`grid h-10 w-10 place-items-center rounded-lg transition ${
             view === item.id
               ? "bg-brand-600 text-white"
-              : "text-ink-400 hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-ink-800 dark:hover:text-ink-100"
+              : "text-ink-500 hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-ink-800 dark:hover:text-ink-100"
           }`}
         >
           <item.icon className="h-[18px] w-[18px]" aria-hidden="true" />
           <span className="sr-only">{item.label}</span>
         </button>
       ))}
+      </div>
     </nav>
   );
 }

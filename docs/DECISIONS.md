@@ -3939,3 +3939,38 @@ CSSOM-in për të gjetur rregullin që caktonte lartësinë. jsdom-i nuk llogari
 paraqitje, ndaj njëqind e dymbëdhjetë testet kaluan gjatë gjithë kohës që rreshtat
 mbivendoseshin. Kjo nuk është arsye për t'i shtuar teste pikselësh — është arsyeja
 që çdo ndryshim pamjeje shoqërohet me një kalim mbi faqen e vërtetë.
+
+### VD-108: Kontrasti matet nga një shfletues, jo nga jsdom
+
+**Konteksti.** Suita e aksesueshmërisë e ndalon `color-contrast` që kur u shkrua,
+me arsyen e drejtë se jsdom nuk llogarit ngjyra të trashëguara. Pasojë e paparë:
+kontrasti nuk kontrollohej nga asnjë portë. Ndërrimi i paletës te VD-106 kaloi
+pastër nëpër njëqind e dymbëdhjetë teste dhe futi **tridhjetë e dy shkelje** të
+WCAG 2.1 AA, të gjitha të dukshme me sy nëse dikush do t'i kishte kërkuar.
+
+**Çfarë kishte rënë.** Teksti i vogël gri mbi kartë (3.75:1 në errësirë, 2.56:1 në
+dritë), etiketat e ashpërsisë mbi tintën e vet (3.22:1), ikonat e rreshtit anësor
+(2.56:1, nën kufirin 3:1 për elemente jo-tekst), dhe chip-i i zgjedhur i
+vlerësimit, ku e bardha mbi një blu të çelët jep 3.12:1. Bashkë me to doli një
+pohim i rremë te vetë `styles.css`: komenti i `--ink-faint` premtonte 5.74:1 «mbi
+të bardhën», ndërsa vlera e vërtetë është 4.83:1 mbi të bardhë dhe 4.21:1 mbi
+tintat ku ajo ngjyrë ulet vërtet.
+
+**Zgjidhja: ngjyra e figurës ndahet nga ngjyra e tekstit.** Katër shenja
+(`high`, `medium`, `low`, `brand`) kanë tani dy vlera: atë të shtyllës ose të
+unazës, dhe një `-ink` për tekstin mbi tintën e tyre. Në dritë `-ink` është një
+hap më e errët, në errësirë një hap më e çelët. Njësoj, `--on-accent` e ndan
+tekstin mbi një sipërfaqe të mbushur: e bardhë në dritë, ngjyra e letrës në
+errësirë. Më e ulëta e grupit është 4.65:1.
+
+**Porta e re.** `e2e/a11y.spec.ts` e ndez axe-in mbi Chromium, pa ndaluar asnjë
+rregull, në pesë gjendje dhe në të dyja temat. Kjo është e vetmja vend ku
+kontrasti matet vërtet, dhe kushton rreth dhjetë sekonda mbi një suitë që tashmë
+ndez të dy shërbimet. Ajo gjeti edhe tri gjëra që nuk kanë lidhje me ngjyrën: faqja
+pa titull të nivelit të parë, `role="tablist"` mbi `<nav>` që fshinte landmark-un
+e tij, dhe dy blloqe që rrëshqasin horizontalisht pa qenë të arritshme me tastierë.
+
+**Ç'nuk doli.** Rrjedhje horizontale nuk ka në asnjë gjerësi mes 375 dhe 1280
+pikselash. Matja e parë tregoi 487 piksela te 375, por ajo ishte artefakt i
+matjes menjëherë pas ndryshimit të dritares, para se kontejneri i Recharts-it të
+rillogaritej. E matur pas qetësimit, faqja nuk rrëshqet anash askund.

@@ -73,10 +73,10 @@ export function OverviewMetrics({ data }: { data: Overview }) {
 }
 
 const TONES = {
-  brand: { ring: "ring-brand-500/20", chip: "bg-brand-500/10 text-brand-500", value: "text-ink-900 dark:text-white" },
-  high: { ring: "ring-high/20", chip: "bg-high/10 text-high", value: "text-high" },
-  medium: { ring: "ring-medium/20", chip: "bg-medium/10 text-medium", value: "text-medium" },
-  low: { ring: "ring-low/20", chip: "bg-low/10 text-low", value: "text-low" },
+  brand: { ring: "ring-brand-500/20", chip: "bg-brand-500/10 text-brand-ink", value: "text-ink-900 dark:text-white" },
+  high: { ring: "ring-high/20", chip: "bg-high/10 text-high-ink", value: "text-high-ink" },
+  medium: { ring: "ring-medium/20", chip: "bg-medium/10 text-medium-ink", value: "text-medium-ink" },
+  low: { ring: "ring-low/20", chip: "bg-low/10 text-low-ink", value: "text-low-ink" },
 } as const;
 
 function Metric({
@@ -121,6 +121,10 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
   return (
     <div className="flex flex-wrap items-center gap-4 p-4">
       <div className="relative h-[150px] w-[150px] shrink-0" role="img" aria-label={label}>
+        {/* Vetë unaza fshihet nga pema e aksesueshmërisë: etiketa më lart e thotë
+            tërë përmbajtjen, dhe pa këtë, Recharts-i i jep çdo prerjeje një rol
+            `img` pa emër — pesë elemente pa kuptim për lexuesin e ekranit. */}
+        <div className="h-full w-full" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -132,6 +136,10 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
               paddingAngle={2}
               strokeWidth={0}
               isAnimationActive={false}
+              // Recharts-i e bën shtresën e prerjeve fokusabël me `tabindex=0`.
+              // Brenda një zone të fshehur ajo është kurth: tastiera ndalon te
+              // diçka që lexuesi i ekranit nuk e njofton dot.
+              rootTabIndex={-1}
             >
               {slices.map((slice) => (
                 <Cell key={slice.name} fill={slice.color} />
@@ -148,6 +156,7 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
             />
           </PieChart>
         </ResponsiveContainer>
+        </div>
         {/* Totali te vrima: numri që lexohet i pari, pa një etiketë të vetën. */}
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-center">
@@ -167,7 +176,7 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
             />
             <span className="min-w-0 flex-1 truncate text-ink-600 dark:text-ink-300">{slice.name}</span>
             <span className="tabular-nums text-ink-500 dark:text-ink-400">{slice.value}</span>
-            <span className="w-10 text-right text-xs tabular-nums text-ink-400 dark:text-ink-500">
+            <span className="w-10 text-right text-xs tabular-nums text-ink-500 dark:text-ink-400">
               {Math.round((slice.value / total) * 100)}%
             </span>
           </li>
@@ -196,7 +205,7 @@ function AutomationPanel({ data }: { data: Overview }) {
             vende me rishkrim që motori e provon
           </p>
         </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-low/10 px-2.5 py-1 text-xs font-semibold text-low">
+        <span className="flex items-center gap-1.5 rounded-full bg-low/10 px-2.5 py-1 text-xs font-semibold text-low-ink">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           {share}% e vendeve
         </span>
@@ -209,7 +218,7 @@ function AutomationPanel({ data }: { data: Overview }) {
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
           <dt className="text-xs text-ink-500 dark:text-ink-400">Aplikuar</dt>
-          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-low">{data.applied}</dd>
+          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-low-ink">{data.applied}</dd>
         </div>
         <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
           <dt className="text-xs text-ink-500 dark:text-ink-400">Në pritje</dt>
