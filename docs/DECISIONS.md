@@ -3737,3 +3737,38 @@ dështoi ndërsa ajo nuk ka nisur.
 **Ç'nuk humbi me shiritin përmbledhës.** Paralajmërimi për skedarët e paparsuar u
 nxor në komponentin e vet dhe rri mbi panelin: heshtja aty lexohet si kod i pastër
 (VD-91). Klasat dhe metodat kaluan te rreshti i kontekstit.
+
+### VD-103: Çfarë mbeti pas rindërtimit, dhe një defekt që vetëm ekrani i vogël e tregoi
+
+**Rrjeti shembej te ekranet e vogla, dhe testet nuk e shihnin dot.** Bllok i
+shtuar më vonë te fleta e stilit e ri-deklaronte `grid-template-columns` të
+panelit **pas** pyetjeve të medias. Me të njëjtën specifikë, i fundit fiton
+pavarësisht nëse media përputhet, ndaj te 375 piksela rrjeti mbetej me tri
+kolona: e majta 270, e djathta 240, dhe e mesmja **zero**. Matur: `matchMedia`
+kthente `true` për `max-width: 760px` dhe kolonat e llogaritura ishin ende
+`270px 0px 240px`.
+
+Vlera shkoi te rregulli bazë, ku i takonte. Pas saj, te 375 piksela rrjeti është
+një kolonë e vetme dhe faqja nuk rrëshqet anash; te 1 500, kolona e mesme merr
+775.
+
+**Emri i një ere e shtynte kartën jashtë kolonës.** Legjenda e unazës kishte
+`text-overflow: ellipsis` dhe elipsa nuk ndodhte kurrë: parazgjedhja e një
+artikulli flex është të mos tkurret nën përmbajtjen e vet, ndaj `LongParameterList`
+e zgjeronte kartën në vend që të pritej. `min-width: 0` e lejon prerjen.
+
+**Dy panele për një pyetje.** Tabela e skedarëve më të ndotur zuri vendin e vet te
+kolona e majtë, ndërsa paneli i djathtë vazhdonte ta shfaqte të njëjtën gjë derisa
+zgjidhej një gjetje. Njëri u hoq. Zëvendësimi nuk është fjalia «zgjidh diçka»:
+paneli zë gjysmën e ekranit, dhe gjysma e ekranit duhet të thotë diçka — tani thotë
+çfarë merret me atë klikim, që është pikërisht ajo që dikush nuk e di ende.
+
+**Faqja e parë nuk u zgjerua me panelin.** Kufiri i faqes u ngrit te 1 560 sepse
+paneli lexohet paralelisht; ekrani i parë lexohet me radhë, dhe te 1 470 piksela
+tabela e MCC-së bëhej dy kolona me një boshllëk të tërë mes emrit dhe numrit. U
+kufizua te 1 100.
+
+**Kod i vdekur.** U hoqën një komponent që askush nuk e importonte më dhe njëzet e
+dy rregulla CSS pa përdorues, secila e kontrolluar kundrejt burimit para se të
+hiqej. Një fletë stili që përshkruan ekrane që nuk ekzistojnë është e njëjta
+mangësi si dokumentacioni i vjetruar: lexohet si e vërtetë.

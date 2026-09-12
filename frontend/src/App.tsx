@@ -3,10 +3,10 @@ import { allowedRoot, analyse, Cancelled, treeState } from "./api";
 import { Detail } from "./Detail";
 import { Filters } from "./Filters";
 import type { Order } from "./Filters";
-import { Hotspots } from "./Hotspots";
 import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
 import { Landing } from "./Landing";
+import { Waiting } from "./Waiting";
 import { Context } from "./Context";
 import { PatchOutput, usePatch } from "./Patch";
 import { Dashboard } from "./Dashboard";
@@ -626,7 +626,7 @@ export function App() {
                     />
                   </>
                 ) : (
-                  <Hotspots sites={allSites} onPick={setQuery} />
+                  <Waiting />
                 )}
               </section>
             </div>

@@ -735,3 +735,26 @@ describe("rreshti anësor", () => {
     );
   });
 });
+
+describe("paneli i djathtë para zgjedhjes", () => {
+  it("thotë çfarë merret me klikimin, e jo vetëm «zgjidh diçka»", async () => {
+    // Aty rrinte tabela e skedarëve, e cila tani ka vendin e vet majtas: dy
+    // panele që i përgjigjen «nga t'ia nis» janë një më shumë se sa ka pyetje.
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    expect(screen.getByText(/Klauzolat/)).toBeDefined();
+    expect(screen.getByText(/Verdikti i modelit/)).toBeDefined();
+  });
+
+  it("ia lë vendin detajit sapo zgjidhet një gjetje", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    fireEvent.click(screen.getAllByRole("button", { name: ROW })[0]);
+
+    expect(screen.queryByText(/Verdikti i modelit/)).toBeNull();
+  });
+});
