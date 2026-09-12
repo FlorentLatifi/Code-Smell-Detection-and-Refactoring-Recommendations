@@ -1463,3 +1463,75 @@ select:hover {
   color: var(--ink);
   font-weight: 600;
 }
+
+/* Gjetjet që i shënoi vetëm modeli, dhe arsyet e refuzimit të motorit.
+   Të dyja janë tabela të dendura informacioni brenda një paneli; huazojnë
+   rregullat e `.metrics` dhe shtojnë vetëm atë që u duhet. */
+.model-only {
+  margin-top: 14px;
+}
+
+.predictions {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.predictions th,
+.predictions td {
+  padding: 4px 12px 4px 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.predictions thead th {
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.predictions tbody th {
+  font-family: var(--mono);
+  font-weight: 500;
+}
+
+.predictions .number {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.predictions .file {
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+}
+
+.declines {
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+
+.declines summary {
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.declines table {
+  margin-top: 8px;
+}
+
+.declines .number {
+  padding-right: 16px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.declines .file {
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+}

@@ -123,12 +123,32 @@ export interface DroppedFile {
  * and only naming them separately lets a reader tell "nothing to fix" from
  * "ran out of time".
  */
+/**
+ * One site the engine would not rewrite, and the reason it gave.
+ *
+ * The count alone answered "how many" and left the question a user actually
+ * asks. The reasons were computed all along and thrown away by the planner
+ * (VD-90).
+ */
+export interface DeclinedSite {
+  file_path: string;
+  class_name: string;
+  method: string | null;
+  start_line: number;
+  smell_type: string;
+  refactoring: string;
+  reason: string;
+  detail: string;
+}
+
 export interface PatchResult {
   diff: string;
   files: number;
   changes: number;
   /** Sites with no safe rewrite. */
   declined: number;
+  /** Why each of those sites was declined; `declined` is its length. */
+  declines: DeclinedSite[];
   /** Rewrites that collide with one already in the patch; offered again next run. */
   deferred: number;
   /** Files the time budget never reached. */

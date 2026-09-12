@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { agreementOn, indexModel } from "./model";
+import { agreementOn, indexModel, modelOnly } from "./model";
 import type { ModelBlock, Prediction, Smell } from "./types";
 
 function prediction(over: Partial<Prediction> = {}): Prediction {
@@ -166,5 +166,57 @@ describe("agreementOn", () => {
 
   it("answers nothing when there is no index at all", () => {
     expect(agreementOn(null, smell())).toBeNull();
+  });
+});
+
+describe("modelOnly", () => {
+  it("returns the entities no rule touched", () => {
+    // Rregullat e gjetën `Item`; modeli shënoi edhe `Item` edhe `Ledger`.
+    // Vetëm `Ledger` është i paarritshëm nga lista.
+    const index = indexModel(
+      block([
+        prediction({ class_name: "Item", start_line: 10 }),
+        prediction({ class_name: "Ledger", start_line: 40 }),
+      ]),
+    );
+
+    const found = modelOnly(index, [smell({ class_name: "Item", start_line: 10 })]);
+
+    expect(found.map((p) => p.class_name)).toEqual(["Ledger"]);
+  });
+
+  it("counts an entity as reached when any rule flagged it, whatever the kind", () => {
+    // Rregulli tha `DataClass`, modeli tha `long method`. Entiteti është në
+    // listë dhe mospajtimi shihet aty; nuk është gjetje e humbur.
+    const index = indexModel(block([prediction({ class_name: "Item", start_line: 10 })]));
+
+    const reached = smell({ smell_type: "DataClass", class_name: "Item", start_line: 10 });
+
+    expect(modelOnly(index, [reached])).toEqual([]);
+  });
+
+  it("shows one row for a verdict filed under several detectors", () => {
+    // Një model u përgjigjet çdo detektori që bën të njëjtën pyetje, ndaj i
+    // njëjti parashikim mbërrin një herë për secilin ekuivalent.
+    const index = indexModel(
+      block([prediction({ class_name: "Ledger" })], ["LongMethod", "BrainMethod"]),
+    );
+
+    expect(modelOnly(index, [])).toHaveLength(1);
+  });
+
+  it("orders by probability, strongest first", () => {
+    const index = indexModel(
+      block([
+        prediction({ class_name: "Weak", start_line: 10, probability: 0.6 }),
+        prediction({ class_name: "Strong", start_line: 40, probability: 0.95 }),
+      ]),
+    );
+
+    expect(modelOnly(index, []).map((p) => p.class_name)).toEqual(["Strong", "Weak"]);
+  });
+
+  it("has nothing to show when the model was never asked", () => {
+    expect(modelOnly(null, [])).toEqual([]);
   });
 });

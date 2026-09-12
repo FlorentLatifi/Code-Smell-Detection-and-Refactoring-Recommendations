@@ -276,3 +276,80 @@ describe("struktura e faqes", () => {
     expect(within(list).getAllByRole("button", { name: ROW })).toHaveLength(2);
   });
 });
+
+describe("gjetjet që i shënoi vetëm modeli", () => {
+  /** Analizë me një erë rregulli dhe një verdikt modeli mbi një entitet tjetër. */
+  function withModel(): Analysis {
+    return {
+      ...analysis([smell({ method: "m0(int)" })]),
+      model: {
+        available: true,
+        smells: [
+          {
+            smell: "data class",
+            rule_equivalent: ["DataClass"],
+            considered: 2,
+            incomplete: 0,
+            flagged: 2,
+            predictions: [
+              {
+                smell: "data class",
+                file_path: "com/acme/Ledger.java",
+                class_name: "Ledger",
+                method: "post",
+                start_line: 10,
+                end_line: 60,
+                probability: 0.8,
+                contributions: [],
+              },
+              {
+                smell: "data class",
+                file_path: "com/acme/Basket.java",
+                class_name: "Basket",
+                method: null,
+                start_line: 4,
+                end_line: 30,
+                probability: 0.93,
+                contributions: [
+                  { feature: "c_WOC", value: 0, typical: 0.6, drop: 0.5, decisive: true },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    };
+  }
+
+  it("shfaq entitetin që asnjë rregull nuk e gjeti", async () => {
+    // `Ledger` është te lista sepse një rregull e gjeti; `Basket` nuk ishte
+    // askund, ndonëse kutiza e Qasjes B e numëronte (VD-93).
+    serve(withModel());
+    render(<App />);
+    await analyse();
+
+    const section = screen.getByRole("region", { name: "Gjetjet vetëm të modelit" });
+
+    expect(within(section).getByText("Basket")).toBeDefined();
+    expect(within(section).queryByText("Ledger")).toBeNull();
+  });
+
+  it("jep gjasën dhe matjen vendimtare, jo vetëm emrin", async () => {
+    serve(withModel());
+    render(<App />);
+    await analyse();
+
+    const section = screen.getByRole("region", { name: "Gjetjet vetëm të modelit" });
+
+    expect(within(section).getByText("93%")).toBeDefined();
+    expect(within(section).getByText("c_WOC = 0")).toBeDefined();
+  });
+
+  it("nuk shfaqet fare kur modeli nuk u pyet", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    expect(screen.queryByRole("region", { name: "Gjetjet vetëm të modelit" })).toBeNull();
+  });
+});

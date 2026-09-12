@@ -4,7 +4,8 @@ import { Detail } from "./Detail";
 import { Filters } from "./Filters";
 import type { Order } from "./Filters";
 import { Hotspots } from "./Hotspots";
-import { agreementOn, indexModel } from "./model";
+import { agreementOn, indexModel, modelOnly } from "./model";
+import { ModelOnly } from "./ModelOnly";
 import { Patch } from "./Patch";
 import { Results } from "./Results";
 import { ModelBar, SummaryBar } from "./Summary";
@@ -398,6 +399,9 @@ export function App() {
         <>
           <SummaryBar analysis={screen.analysis} sites={allSites} />
           {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
+          {screen.state === "ready" && (
+            <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
+          )}
 
           {screen.analysis.smells.length === 0 ? (
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>

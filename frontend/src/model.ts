@@ -83,3 +83,41 @@ export function agreementOn(index: ModelIndex | null, smell: Smell): Prediction 
   const key = keyOf(smell.file_path, smell.class_name, smell.start_line, smell.smell_type);
   return index.flags.get(key) ?? null;
 }
+
+/**
+ * The model's flags on entities no rule flagged at all.
+ *
+ * These were always in the payload and never on the screen. The summary counted
+ * them -- "Qasja B: 2 blob" -- and the list showed only what a rule had found,
+ * so a reader was told a number and given no way to reach it. On one 322-file
+ * project that hid 515 of 1870 model verdicts (VD-93).
+ *
+ * The comparison is per entity rather than per verdict: a rule finding of *any*
+ * kind at the same place means the entity is already on the screen, and the
+ * model's opinion of it is shown there as agreement or as silence. Only an
+ * entity the rules never mentioned is unreachable.
+ */
+export function modelOnly(index: ModelIndex | null, smells: Smell[]): Prediction[] {
+  if (!index) return [];
+
+  const flagged = new Set(
+    smells.map((s) => JSON.stringify([s.file_path, s.class_name, s.start_line])),
+  );
+  const seen = new Set<string>();
+  const found: Prediction[] = [];
+  for (const prediction of index.flags.values()) {
+    const where = JSON.stringify([
+      prediction.file_path,
+      prediction.class_name,
+      prediction.start_line,
+    ]);
+    if (flagged.has(where)) continue;
+    // One verdict is filed under every detector that asks the same question, so
+    // the same prediction arrives here once per equivalent and must be shown once.
+    const once = JSON.stringify([where, prediction.smell]);
+    if (seen.has(once)) continue;
+    seen.add(once);
+    found.push(prediction);
+  }
+  return found.sort((a, b) => b.probability - a.probability);
+}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { patch } from "./api";
-import type { PatchResult } from "./types";
+import { REFUSAL_SQ } from "./evaluation";
+import type { DeclinedSite, PatchResult } from "./types";
 
 /**
  * The last step the engine can take on its own: hand the author the change.
@@ -59,8 +60,10 @@ export function Patch({ path, ready, total }: { path: string; ready: number; tot
           <b>
             {ready} nga {total} {total === 1 ? "vend" : "vende"}
           </b>{" "}
-          {ready === 1 ? "mban" : "mbajnë"} të paktën një rishkrim që motori e provon të sigurt. Nxjerr një diff të
-          unifikuar për to; asnjë skedar nuk preket, dhe aplikimi mbetet vendimi yt.
+          {ready === 1 ? "ka" : "kanë"} një lloj ere që motori di ta rishkruajë. Sa prej tyre
+          kalojnë vërtet varet nga parakushtet e çdo vendi dhe dihet vetëm pasi provohen, ndaj
+          numri i ndryshimeve del më i vogël dhe secili refuzim vjen me arsyen e vet. Asnjë skedar
+          nuk preket, dhe aplikimi mbetet vendimi yt.
         </p>
       </div>
 
@@ -115,6 +118,8 @@ function Outcome({
           " javac nuk u gjet, ndaj rishkrimi u verifikua vetëm për sintaksë."}
       </p>
 
+      <DeclineBreakdown declines={result.declines} />
+
       {result.dropped.length > 0 && (
         <ul className="dropped">
           {result.dropped.map((drop) => (
@@ -159,7 +164,56 @@ function word(count: number, one: string, many: string): string {
   return count === 1 ? one : many;
 }
 
-/** Why the patch is shorter than the finding list, in the engine's own terms. */
+/**
+ * Pse motori nuk e preku secilin vend, sipas arsyes.
+ *
+ * Arsyet ishin llogaritur gjithnjë dhe planifikuesi i hidhte, ndaj një projekt
+ * real jepte «714 vende pa rishkrim të sigurt» dhe asnjë fjalë më shumë (VD-90).
+ * I njëjti fjalor që skeda e vlerësimit e përdor për korpusin përdoret këtu për
+ * ekzekutimin e përdoruesit, që të dy anët të thonë të njëjtat fjalë.
+ *
+ * Të grupuara e jo të listuara një nga një: forma e refuzimeve është ajo që
+ * lexohet e para, dhe një projekt i mesëm refuzon qindra vende.
+ */
+function DeclineBreakdown({ declines }: { declines: DeclinedSite[] }) {
+  if (declines.length === 0) return null;
+
+  const byReason = new Map<string, DeclinedSite[]>();
+  for (const decline of declines) {
+    const found = byReason.get(decline.reason);
+    if (found) found.push(decline);
+    else byReason.set(decline.reason, [decline]);
+  }
+  const ordered = [...byReason.entries()].sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+
+  return (
+    <details className="declines">
+      <summary>
+        Pse {declines.length} {word(declines.length, "vend", "vende")}{" "}
+        {word(declines.length, "mbeti", "mbetën")} pa u prekur
+      </summary>
+      <table className="metrics">
+        <tbody>
+          {ordered.map(([reason, sites]) => (
+            <tr key={reason}>
+              <th scope="row">{REFUSAL_SQ[reason] ?? reason}</th>
+              <td className="number">{sites.length}</td>
+              <td className="file">
+                {sites[0].file_path}:{sites[0].start_line}
+                {sites.length > 1 && (
+                  <span className="quiet"> dhe {sites.length - 1} të tjera</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+  );
+}
+
 function Reasons({ result }: { result: PatchResult }) {
   const parts: string[] = [];
   if (result.declined) {

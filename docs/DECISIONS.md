@@ -3420,3 +3420,46 @@ kufi» pa lexuar asnjë rresht dalje.
 **Porta lexon atë që mbeti pas filtrave**, jo atë që u gjet. Ndryshe `--smell` dhe
 `--min-severity` do të vlenin për raportin e jo për vendimin, çka është pikërisht
 kurthi që e bën një portë të padobishme.
+
+### VD-93: Gjetjet që i shënoi vetëm modeli u bënë të arritshme
+
+**Konteksti.** Ndërfaqja i vë dy qasjet përballë njëra-tjetrës (VD-48), por vetëm
+njëra kishte listë. Rreshtat ndërtoheshin nga erërat e rregullave dhe verdikti i
+modelit shfaqej mbi to si pajtim ose si heshtje. Një entitet që modeli e shënoi
+dhe asnjë rregull nuk e preku numërohej te kutiza «Qasja B» dhe nuk shfaqej askund.
+Mbi `Esri__geometry-api-java` kjo do të thoshte 515 nga 1870 verdikte të modelit të
+panavigueshme; mbi nëndosjen `com/esri/core/geometry`, 429 entitete.
+
+**Ndryshimi.** `modelOnly` i nxjerr ato parashikime dhe `ModelOnly` i shfaq në një
+seksion të vetin: entiteti, era, gjasa, matja vendimtare dhe vendi.
+
+**Pse veç e jo te lista.** Lista renditet sipas ashpërsisë, dhe ashpërsia
+derivohet nga teprica mbi një prag. Një entitet që asnjë prag nuk e kaloi nuk ka
+ashpërsi, dhe futja e tij te lista do të kërkonte një ashpërsi të trilluar ose një
+rresht pa atë kolonë. E para është pikërisht gjëja që ky sistem nuk e bën; e dyta
+do ta prishte renditjen që e bën listën të lexueshme.
+
+**Krahasimi bëhet për entitet, jo për verdikt.** Nëse një rregull e ka gjetur atë
+vend për çfarëdo ere, entiteti është tashmë në ekran dhe mendimi i modelit shihet
+aty si pajtim ose si heshtje. Vetëm entiteti që rregullat nuk e përmendën fare
+është i paarritshëm.
+
+**Ç'tregon lista.** Mbi korpusin e provuar shumica e rreshtave janë `feature envy`
+me gjasë 100% dhe matje vendimtare `m_MLOC`, pra metoda të gjata që strategjia e
+Feature Envy-t nuk i ndez. Kjo është e njëjta histori që Nënkapitulli 5.2 e
+raporton për peshat e veçorive, tani e dukshme nga vetë mjeti.
+
+### VD-94: Shiriti i patch-it premtonte një provë që nuk kishte ndodhur
+
+**Konteksti.** Teksti thoshte se X vende «mbajnë të paktën një rishkrim që motori e
+provon të sigurt». Ai numër vjen nga `site.automated`, që do të thotë vetëm se
+lloji i erës ka një transformim të regjistruar. Asgjë nuk ishte provuar ende. Mbi
+një projekt real shiriti premtonte 630 vende dhe rezultati ishte 167 ndryshime, pa
+asnjë fjalë për hendekun.
+
+**Ndryshimi.** Teksti thotë tani se ato vende kanë një lloj ere që motori di ta
+rishkruajë, se sa prej tyre kalojnë varet nga parakushtet e çdo vendi, dhe se
+numri del më i vogël. Bashkë me VD-90 hendeku tani ka edhe shpjegim: nën patch-in
+e përfunduar rri një përmbledhje e refuzimeve sipas arsyes, me një shembull për
+secilën, e ndërtuar mbi të njëjtin fjalor shqip që skeda e vlerësimit përdor për
+korpusin.
