@@ -272,7 +272,7 @@ def run(
                 tally.record_missing()
                 continue
 
-            outcome = transform(site)
+            outcome = transform(site, frozenset())
             tally.record(outcome)
 
             verdict = Verdict.NOT_CHECKED

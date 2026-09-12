@@ -168,7 +168,7 @@ def regenerate(
             ):
                 continue
 
-            outcome = automated[1](located)
+            outcome = automated[1](located, frozenset())
             if not outcome.applied:
                 continue
             try:

@@ -256,7 +256,7 @@ def rewrites_in(path: Path, source: bytes) -> list[Rewrite]:
                 site = index.find(cls.name, smell.start_line, smell.method.partition("(")[0])
                 if site is None:
                     continue
-                outcome = automated[1](site)
+                outcome = automated[1](site, frozenset())
                 if outcome.applied:
                     found.append(
                         Rewrite(

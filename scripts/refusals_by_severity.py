@@ -132,7 +132,7 @@ def measure(files: list[Path], quiet: bool) -> tuple[dict[str, dict[str, Tally]]
                         overall.unlocatable += 1
                         continue
 
-                    outcome = automated[1](site)
+                    outcome = automated[1](site, frozenset())
                     if outcome.applied:
                         cell.applied += 1
                         overall.applied += 1
