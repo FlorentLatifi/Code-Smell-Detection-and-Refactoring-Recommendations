@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { allowedRoot, analyse, Cancelled } from "./api";
+import { allowedRoot, analyse, Cancelled, treeState } from "./api";
 import { Detail } from "./Detail";
 import { Filters } from "./Filters";
 import type { Order } from "./Filters";
@@ -7,15 +7,15 @@ import { Hotspots } from "./Hotspots";
 import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
 import { Landing } from "./Landing";
-import { Breakdown } from "./Breakdown";
 import { Context } from "./Context";
-import { Recommendations } from "./Recommendations";
-import { Patch } from "./Patch";
+import { PatchOutput, usePatch } from "./Patch";
+import { Dashboard } from "./Dashboard";
+import { Tools } from "./Tools";
 import { Results } from "./Results";
-import { ModelBar, SummaryBar } from "./Summary";
+import { ModelBar, Unparsed } from "./Summary";
 import { automatable, byFile, byScore, bySeverity, groupBySite } from "./sites";
 import type { Site } from "./sites";
-import type { Analysis, Severity, Smell } from "./types";
+import type { Analysis, Severity, Smell, TreeState } from "./types";
 
 
 const REMEMBERED_PATH = "javasmell.path";
@@ -151,6 +151,11 @@ export function App() {
   // Mbahet te një ref e jo te gjendja: e ndryshon vetëm trajtuesi, dhe asgjë në
   // ekran nuk varet prej saj përveç butonit që e përdor.
   const running = useRef<AbortController | null>(null);
+  // Shtegu i analizuar, e jo ai te kutia: patch-i dhe shkrimi i përkasin asaj
+  // që u matur vërtet.
+  const analysed = screen.state === "ready" ? screen.path : "";
+  const patchSession = usePatch(analysed);
+  const [tree, setTree] = useState<TreeState | null>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
@@ -188,6 +193,11 @@ export function App() {
     running.current?.abort();
   }
 
+  /** I njëjti ekzekutim si forma, i thirrur nga një buton pa ngjarje. */
+  async function rerun(): Promise<void> {
+    await run({ preventDefault() {} } as React.FormEvent);
+  }
+
   // Adresa përditësohet pas çdo renderimi që e ndryshon atë që ajo mban.
   useEffect(() => {
     let live = true;
@@ -200,6 +210,22 @@ export function App() {
   }, []);
 
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
+
+  // Gjendja e pemës pyetet një herë për çdo shteg të analizuar, që kolona e
+  // veglave ta thotë para se dikush ta provojë shkrimin (VD-100).
+  useEffect(() => {
+    if (!analysed) {
+      setTree(null);
+      return;
+    }
+    let live = true;
+    void treeState(analysed)
+      .then((state) => live && setTree(state))
+      .catch(() => live && setTree(null));
+    return () => {
+      live = false;
+    };
+  }, [analysed]);
 
   // Një filtër i ri e kthen dritaren te fillimi: rreshtat e zgjeruar i përkisnin
   // listës së mëparshme, dhe mbajtja e tyre do të hapte një dritare arbitrare mbi
@@ -359,6 +385,7 @@ export function App() {
             aria-controls="panel"
             tabIndex={view === "analysis" ? 0 : -1}
             className={view === "analysis" ? "tab on" : "tab"}
+            title="Analizo një projekt"
             onClick={() => show("analysis")}
             onKeyDown={moveTab}
           >
@@ -374,6 +401,7 @@ export function App() {
             aria-controls="panel"
             tabIndex={view === "results" ? 0 : -1}
             className={view === "results" ? "tab on" : "tab"}
+            title="Rezultatet e vlerësimit"
             onClick={() => show("results")}
             onKeyDown={moveTab}
           >
@@ -447,19 +475,32 @@ export function App() {
             seconds={screen.seconds}
             askedModel={screen.askedModel}
           />
-          <SummaryBar analysis={screen.analysis} sites={allSites} />
-          {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
-          <Breakdown summary={screen.analysis.summary} />
-          <Recommendations sites={allSites} onChoose={choose} />
-          {screen.state === "ready" && (
-            <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
-          )}
-
+          <Unparsed summary={screen.analysis.summary} />
           {screen.analysis.smells.length === 0 ? (
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
           ) : (
             <>
-            <Patch path={screen.path} ready={automatable(allSites)} total={allSites.length} />
+            <Dashboard
+              analysis={screen.analysis}
+              sites={allSites}
+              onPick={setQuery}
+              onChoose={choose}
+              tools={
+                <Tools
+                  session={patchSession}
+                  path={screen.path}
+                  ready={automatable(allSites)}
+                  total={allSites.length}
+                  tree={tree}
+                  askedModel={screen.askedModel}
+                  onReanalyse={() => void rerun()}
+                  onEvaluation={() => show("results")}
+                />
+              }
+            />
+            {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
+            <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
+            <PatchOutput session={patchSession} path={screen.path} />
             <div className="layout">
               <section
                 className="list"

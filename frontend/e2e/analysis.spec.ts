@@ -20,8 +20,12 @@ test("analizon një projekt dhe hap kodin e një gjetjeje", async ({ page }) => 
   await page.getByLabel("Shtegu i projektit").fill(FIXTURES);
   await page.getByRole("button", { name: "Analizo", exact: true }).click();
 
-  // Shifrat e përmbledhjes vijnë nga serveri, jo nga ndërfaqja.
-  await expect(page.getByText("skedarë", { exact: true })).toBeVisible();
+  // Shifrat vijnë nga serveri, jo nga ndërfaqja. Rreshti i kontekstit i mban:
+  // fikstuarat janë dy skedarë dhe pesë klasa, të fiksuara nga testet e backend-it.
+  await expect(page.locator(".context")).toContainText("2");
+  await expect(page.locator(".context")).toContainText("skedarë");
+  // Unaza e përmbledhjes e përshkruan veten, ndaj totali lexohet pa pikselë.
+  await expect(page.locator(".donut svg")).toHaveAttribute("aria-label", /erëra/);
 
   const rows = page.locator("button.row");
   await expect(rows.first()).toBeVisible();

@@ -3689,3 +3689,51 @@ nënkapitull. Pamja e analizës është panel kontrolli dhe lexohet ndryshe, sep
 lexuesi i shikon blloqet paralelisht e nuk i lexon me radhë. Kartat u dhanë vetëm
 aty. Shkrimi mbi vetë `.panel` do të kishte prishur një vendim të marrë me qëllim
 te skeda tjetër, e jo dendësuar këtë.
+
+### VD-102: Pamja e analizës u rindërtua si panel
+
+**Konteksti.** VD-101 e mori informacionin e maketit dhe e la formën e vjetër: një
+kolonë e vetme që shkon poshtë, shirita përqindjeje në vend të grafikëve, dhe një
+rresht anësor me etiketa që hante 186 piksela. Autori e tha drejt: nuk ishte ajo
+që kërkoi. Maketi është panel kontrolli dhe lexohet paralelisht; ajo që u ndërtua
+mbeti dokument me korniza.
+
+**Rrjet me tri kolona**, sepse ato janë tri pyetje të ndryshme: çfarë ka majtas,
+çfarë të bëj në mes, me çfarë djathtas. Kolonat anësore janë të fiksuara dhe e
+mesmja merr pjesën tjetër: kartat anësore mbajnë numra dhe tabela që nuk fitojnë
+asgjë nga gjerësia, ndërsa sugjerimet mbajnë emra metodash që fitojnë shumë.
+
+**Grafikët si SVG i shkruar këtu, pa bibliotekë.** Një unazë dhe tri shtylla janë
+gjeometri që zë tridhjetë rreshta, ndërsa çdo bibliotekë grafikësh sjell një model
+të vetin të dhënash, një temë për t'u mbivendosur dhe njëqind kilobajt te çdo
+ngarkim. Të dy grafikët e mbajnë numrin pranë ngjyrës dhe e përshkruajnë veten me
+`aria-label`: një legjendë ku ngjyra është i vetmi çelës nuk lexohet nga kush nuk
+i dallon ngjyrat.
+
+**Lartësia e shtyllave matet kundrejt më të lartës, jo kundrejt totalit.** Tri
+ashpërsi ku njëra mban gjysmën do të jepnin tri shtylla të shkurtra e të ngjashme,
+dhe grafiku do të thoshte më pak se tri numra.
+
+**Rreshti u bë shirit ikonash prej 54 pikselash** dhe faqja u ngrit te 1 560.
+Matur para ndryshimit, kolona e mesme kishte 368 piksela dhe teksti i një
+sugjerimi 121; pas tij, 675 dhe 427. Etiketat nuk u hoqën, vetëm u fshehën nga
+syri: emri i arritshëm mbetet i njëjti dhe `title` e kthen si këshillë për miun.
+
+**Patch-i u nda në hook dhe dy komponentë**, sepse paneli e ndan në dy vende:
+butoni te kolona e ngushtë, diff-i poshtë rrjetit ku ka gjerësi. Gjendja e vetme
+mes tyre është arsyeja pse është hook: dy komponentë që secili kërkon të vetin do
+të ishin dy patch-e për një pyetje.
+
+**Kolona e djathtë mban vetëm veprime që ekzistojnë.** Maketi liston katër, nga
+të cilat dy nuk kanë asgjë pas vetes: zgjedhja e rregullave të PMD-së dhe të
+Checkstyle-it, dhe konfigurimi i pragjeve. Poshtë tyre rri gjendja që i kushtëzon:
+a u gjet `javac`, a u pyet modeli, a lejohet shkrimi. Një buton që nuk do të punojë
+duhet ta thotë përpara.
+
+**Gjendja ka tri vlera, jo dy.** «Nuk dihet ende» dhe «jo» janë gjëra të ndryshme,
+dhe ngatërrimi i tyre është pikërisht si një ekran i thotë përdoruesit se diçka
+dështoi ndërsa ajo nuk ka nisur.
+
+**Ç'nuk humbi me shiritin përmbledhës.** Paralajmërimi për skedarët e paparsuar u
+nxor në komponentin e vet dhe rri mbi panelin: heshtja aty lexohet si kod i pastër
+(VD-91). Klasat dhe metodat kaluan te rreshti i kontekstit.

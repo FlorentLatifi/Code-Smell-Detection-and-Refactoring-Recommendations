@@ -1,7 +1,5 @@
 import { SMELL_SQ } from "./evaluation";
-import { countByWorst } from "./sites";
-import type { Site } from "./sites";
-import type { Analysis, ModelBlock } from "./types";
+import type { ModelBlock, Summary } from "./types";
 
 /**
  * Sa u mat, në të njëjtat njësi që përdor lista poshtë.
@@ -15,41 +13,24 @@ import type { Analysis, ModelBlock } from "./types";
  * shifrave barazon numrin e vendeve, dhe klikimi nga shiriti te lista nuk
  * ndryshon njësi në rrugë.
  */
-export function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Site[] }) {
-  const { summary } = analysis;
-  const byWorst = countByWorst(sites);
+/**
+ * Sa skedarë nuk u parsuan pastër.
+ *
+ * Ndarë nga shiriti përmbledhës kur ai u hoq për panelin: paralajmërimi nuk i
+ * përkiste atij shiriti, i përkiste analizës, dhe humbja e tij bashkë me të do
+ * ta kishte kthyer një projekt gjysmë të palexueshëm në një projekt të pastër
+ * (VD-91).
+ */
+export function Unparsed({ summary }: { summary: Summary }) {
+  if (!summary.unparsed) return null;
   return (
-    <>
-    {summary.unparsed ? (
-      <p className="note unparsed" role="status">
-        <b>
-          {summary.unparsed} nga {summary.files}{" "}
-          {summary.files === 1 ? "skedari" : "skedarët"}
-        </b>{" "}
-        nuk u parsua pastër, ndaj çfarë u gjet brenda tyre është e paplotë. Numrat më poshtë
-        janë të sakta për pjesën tjetër.
-      </p>
-    ) : null}
-    <div className="summary">
-      <Figure value={summary.files} label="skedarë" />
-      <Figure value={summary.classes} label="klasa" />
-      <Figure value={summary.methods} label="metoda" />
-      <Figure value={summary.smells} label="erëra" />
-      <Figure value={sites.length} label={sites.length === 1 ? "vend" : "vende"} accent />
-      <div className="figure breakdown">
-        <b>
-          {(["critical", "major", "minor"] as const).map((level) =>
-            byWorst[level] ? (
-              <span key={level} className={level}>
-                {byWorst[level]} {level}
-              </span>
-            ) : null,
-          )}
-        </b>
-        <span>vende sipas më të rëndës</span>
-      </div>
-    </div>
-    </>
+    <p className="note unparsed" role="status">
+      <b>
+        {summary.unparsed} nga {summary.files} {summary.files === 1 ? "skedari" : "skedarët"}
+      </b>{" "}
+      nuk u parsua pastër, ndaj çfarë u gjet brenda tyre është e paplotë. Numrat më poshtë janë të
+      sakta për pjesën tjetër.
+    </p>
   );
 }
 
@@ -92,23 +73,6 @@ export function ModelBar({ block }: { block: ModelBlock }) {
           zero të shpikur.
         </p>
       )}
-    </div>
-  );
-}
-
-function Figure({
-  value,
-  label,
-  accent,
-}: {
-  value: number;
-  label: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className={`figure${accent ? " accent" : ""}`}>
-      <b>{value}</b>
-      <span>{label}</span>
     </div>
   );
 }

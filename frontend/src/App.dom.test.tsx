@@ -459,9 +459,9 @@ describe("progresi i patch-it", () => {
 });
 
 describe("shpërndarja e gjetjeve", () => {
-  it("tregon llojet dhe ashpërsitë si pjesë e së tërës", async () => {
-    // `by_type` dhe `by_severity` ishin te përgjigjja që në fillim dhe nuk
-    // shiheshin askund veç si distinktivë të shpërndarë nëpër rreshta.
+  it("tregon llojet si unazë me legjendë të numëruar", async () => {
+    // Ngjyra e vetme si çelës do të detyronte lexuesin të kalonte sytë mes dy
+    // vendeve, dhe dikush që nuk i dallon ngjyrat nuk do ta lexonte fare.
     serve(
       analysis([
         smell({ method: "m0(int)" }),
@@ -471,15 +471,17 @@ describe("shpërndarja e gjetjeve", () => {
     render(<App />);
     await analyse();
 
-    const types = screen.getByRole("region", { name: "Sipas llojit" });
+    const overview = screen.getByRole("region", { name: "Përmbledhja" });
+    const legend = within(overview).getByRole("list");
 
-    expect(within(types).getByText("LongMethod")).toBeDefined();
-    expect(within(types).getByText("DeepNesting")).toBeDefined();
+    expect(within(legend).getByText("LongMethod")).toBeDefined();
+    expect(within(legend).getByText("DeepNesting")).toBeDefined();
+    // Unaza vetë është pamje, ndaj e përshkruan veten për një lexues ekrani.
+    expect(within(overview).getByRole("img").getAttribute("aria-label")).toContain("2 erëra");
   });
 
   it("rendit ashpërsitë nga më e rënda, jo nga më e shpeshta", async () => {
-    // Dy kritike duhet të rrinë mbi njëzet të lehta; renditja sipas numrit do
-    // t'i kthente përmbys.
+    // Dy kritike duhet të rrinë majtas njëzet të lehtave.
     const smells = [
       smell({ method: "m0(int)", severity: "critical" }),
       ...Array.from({ length: 3 }, (_, i) =>
@@ -491,9 +493,27 @@ describe("shpërndarja e gjetjeve", () => {
     await analyse();
 
     const panel = screen.getByRole("region", { name: "Sipas ashpërsisë" });
-    const rows = within(panel).getAllByRole("rowheader");
+    const chart = within(panel).getByRole("img");
 
-    expect(rows.map((r) => r.textContent)).toEqual(["critical", "minor"]);
+    expect(chart.getAttribute("aria-label")).toBe("critical 1, major 0, minor 3");
+  });
+
+  it("numëron vendet, jo erërat, që shuma të barazojë listën", async () => {
+    // I njëjti vend mban dy erëra: një vend kritik, e jo dy gjetje.
+    serve(
+      analysis([
+        smell({ method: "m0(int)", severity: "critical" }),
+        smell({ method: "m0(int)", smell_type: "DeepNesting", severity: "minor" }),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+
+    const panel = screen.getByRole("region", { name: "Sipas ashpërsisë" });
+
+    expect(within(panel).getByRole("img").getAttribute("aria-label")).toBe(
+      "critical 1, major 0, minor 0",
+    );
   });
 
   it("nuk shfaqet kur nuk u gjet asnjë erë", async () => {
@@ -503,7 +523,7 @@ describe("shpërndarja e gjetjeve", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
 
     expect(await screen.findByText(/Asnjë erë e detektuar/)).toBeDefined();
-    expect(screen.queryByRole("region", { name: "Sipas llojit" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Përmbledhja" })).toBeNull();
   });
 });
 

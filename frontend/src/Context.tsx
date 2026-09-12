@@ -34,6 +34,12 @@ export function Context({
         <span>
           <b>{analysis.summary.files.toLocaleString("sq")}</b> skedarë
         </span>
+        <span>
+          <b>{analysis.summary.classes.toLocaleString("sq")}</b> klasa
+        </span>
+        <span>
+          <b>{analysis.summary.methods.toLocaleString("sq")}</b> metoda
+        </span>
         <span>u analizua për {seconds < 1 ? "nën një sekondë" : `${Math.round(seconds)} s`}</span>
         <span>{askedModel ? "me modelin" : "vetëm rregullat"}</span>
       </span>

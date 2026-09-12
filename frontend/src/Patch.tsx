@@ -6,22 +6,41 @@ import type { ApplyResult, DeclinedSite, PatchProgress, PatchResult, TreeState }
 /**
  * The last step the engine can take on its own: hand the author the change.
  *
- * Deliberately not an "apply" button. Nothing here writes to the tree, and the
- * diff is shown before it can be taken anywhere, because the engine rewrites
- * the author's own source and a change nobody read is a change nobody agreed to
- * (ENGINEERING.md §4, VD-49).
+ * Ndarë në një hook dhe dy komponentë sepse paneli i ndan në dy vende: butoni
+ * rri te kolona e veglave, e ngushtë, dhe diff-i poshtë rrjetit, ku ka gjerësi.
+ * Gjendja e vetme mes tyre është arsyeja pse është hook e jo dy komponentë që
+ * secili kërkon të vetin — dy kërkesa për të njëjtin patch do të ishin dy patch-e.
  *
- * The counts beside it matter as much as the diff. A short patch has four
- * different meanings -- nothing was found, nothing was safe, some rewrites
- * collide, or the budget ran out -- and a reader who cannot tell them apart
- * would read "3 changes" as "3 problems".
+ * Asgjë këtu nuk shkruan vetë. Diff-i shfaqet para se të shkojë gjëkundi, sepse
+ * motori rishkruan burimin e vetë autorit dhe një ndryshim që askush nuk e lexoi
+ * është një ndryshim që askush nuk e pranoi (ENGINEERING.md §4, VD-49). Shkrimi
+ * ka rrugën e vet, me kushtet e veta (VD-100).
  */
-export function Patch({ path, ready, total }: { path: string; ready: number; total: number }) {
+export interface PatchSession {
+  result: PatchResult | null;
+  busy: boolean;
+  progress: PatchProgress | null;
+  failure: string | null;
+  copied: boolean;
+  ask: () => void;
+  copy: (text: string) => void;
+}
+
+export function usePatch(path: string): PatchSession {
   const [result, setResult] = useState<PatchResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<PatchProgress | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Një analizë e re e vjetërson patch-in e vjetër: ai u llogarit mbi bajtë të
+  // tjerë, dhe mbajtja e tij në ekran do të ishte një diff që i përket diçkaje
+  // që nuk shihet më.
+  useEffect(() => {
+    setResult(null);
+    setFailure(null);
+    setCopied(false);
+  }, [path]);
 
   async function ask() {
     setBusy(true);
@@ -50,51 +69,66 @@ export function Patch({ path, ready, total }: { path: string; ready: number; tot
     }
   }
 
+  return { result, busy, progress, failure, copied, ask, copy };
+}
+
+/** Butoni dhe shkalla e tij, aq të ngushtë sa hyjnë te kolona e veglave. */
+export function PatchTrigger({
+  session,
+  ready,
+  total,
+  path,
+}: {
+  session: PatchSession;
+  ready: number;
+  total: number;
+  path: string;
+}) {
+  return (
+    <div className="patch-trigger">
+      <button
+        className="primary wide"
+        onClick={session.ask}
+        disabled={session.busy || !path.trim()}
+      >
+        {session.busy ? "Duke përgatitur…" : "Përgatit patch-in"}
+      </button>
+      <p className="caption">
+        {/* Shkalla para shtypjes: butoni rrinte këtu pa thënë nëse do të dilnin dy
+            ndryshime apo dyqind, dhe ajo shifër llogaritet nga e njëjta fushë që vë
+            shenjën ✎ te çdo rresht. */}
+        <b>
+          {ready} nga {total} {total === 1 ? "vend" : "vende"}
+        </b>{" "}
+        {ready === 1 ? "ka" : "kanë"} një rishkrim që motori e provon.
+      </p>
+      {session.busy && <Working progress={session.progress} />}
+    </div>
+  );
+}
+
+/** Diff-i dhe llogaria e tij, poshtë rrjetit ku ka gjerësi për t'u lexuar. */
+export function PatchOutput({ session, path }: { session: PatchSession; path: string }) {
+  if (!session.failure && !session.result) return null;
   return (
     <section className="patch">
-      <div className="patch-bar">
-        <button className="primary" onClick={ask} disabled={busy || !path.trim()}>
-          {busy ? "Duke përgatitur…" : "Përgatit patch-in"}
-        </button>
-        <p className="caption">
-          {/* Shkalla para shtypjes: butoni rrinte këtu pa thënë nëse do të dilnin dy
-              ndryshime apo dyqind, dhe ajo shifër llogaritet nga e njëjta fushë që vë
-              shenjën ✎ te çdo rresht. */}
-          <b>
-            {ready} nga {total} {total === 1 ? "vend" : "vende"}
-          </b>{" "}
-          {ready === 1 ? "ka" : "kanë"} një lloj ere që motori di ta rishkruajë. Sa prej tyre
-          kalojnë vërtet varet nga parakushtet e çdo vendi dhe dihet vetëm pasi provohen, ndaj
-          numri i ndryshimeve del më i vogël dhe secili refuzim vjen me arsyen e vet. Asnjë skedar
-          nuk preket, dhe aplikimi mbetet vendimi yt.
-        </p>
-      </div>
-
-      {busy && <Working progress={progress} />}
-
-      {failure && (
+      {session.failure && (
         <p className="failure" role="alert">
-          {failure}
+          {session.failure}
         </p>
       )}
-
-      {result && <Outcome result={result} path={path} onCopy={copy} copied={copied} />}
+      {session.result && (
+        <Outcome
+          result={session.result}
+          path={path}
+          onCopy={session.copy}
+          copied={session.copied}
+        />
+      )}
     </section>
   );
 }
 
-/**
- * Sa larg ka shkuar, ndërsa shkon.
- *
- * Kjo është e vetmja punë e mjetit që matet me minuta: një patch mbi 322
- * skedarë u mat dy minuta e gjysmë, dhe deri tani e gjithë ajo kohë dukej
- * njësoj si një mjet i ngecur. Serveri e verifikon çdo skedar me `javac`, ndaj
- * kostoja rritet me atë që gjen e jo me atë që lexon, dhe as ai vetë nuk e di
- * sa do të zgjasë — prandaj shifra është «ku jam», jo «sa mbetet».
- *
- * Para leximit të parë shiriti nuk shfaqet fare: një shirit te zeroja duket i
- * ngecur pikërisht ashtu si mungesa e tij, dhe gënjen për më tepër.
- */
 function Working({ progress }: { progress: PatchProgress | null }) {
   if (!progress) {
     return (
