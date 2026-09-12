@@ -105,6 +105,14 @@ export function Detail({
         </p>
       )}
 
+      {result?.applied && result.notes?.length ? (
+        <ul className="note rewrite-notes">
+          {result.notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      ) : null}
+
       {result?.applied && result.before && result.after && (
         <Diff before={result.before} after={result.after} />
       )}

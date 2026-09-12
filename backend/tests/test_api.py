@@ -344,6 +344,25 @@ def test_source_refuses_a_backwards_range(client):
 # ----------------------------------------------------------------------
 
 
+def test_the_summary_says_how_many_files_did_not_parse(client, tmp_path):
+    """Tree-sitter returns a tree for a broken file, so silence reads as cleanliness.
+
+    Without this count a project where half the files fail shows fewer smells
+    and looks like better code (VD-91).
+    """
+    (tmp_path / "workspace" / "src" / "Broken.java").write_text(
+        "public class Broken {\n  void f( {\n", encoding="utf-8"
+    )
+    summary = client.post("/analyze", json={"path": "src"}).json()["summary"]
+
+    assert summary["unparsed"] == 1
+    assert summary["files"] > summary["unparsed"]
+
+
+def test_a_clean_project_reports_nothing_unparsed(client):
+    assert client.post("/analyze", json={"path": "src"}).json()["summary"]["unparsed"] == 0
+
+
 def test_patch_returns_a_diff_and_writes_nothing(client, tmp_path):
     before = (tmp_path / "workspace" / "src" / "Ledger.java").read_bytes()
     body = client.post("/refactor/patch", json={"path": "src"}).json()

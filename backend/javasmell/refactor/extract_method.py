@@ -51,6 +51,7 @@ from dataclasses import dataclass
 
 from tree_sitter import Node
 
+from javasmell.detectors.thresholds import DEFAULT, Thresholds
 from javasmell.refactor.base import Outcome, Refusal
 from javasmell.refactor.dataflow import (
     declarations_in,
@@ -293,7 +294,11 @@ def _render(
     return call, definition
 
 
-def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
+def apply(
+    site: Site,
+    reserved: frozenset[str] = frozenset(),
+    thresholds: Thresholds = DEFAULT,
+) -> Outcome:
     """Rewrite the site, or decline with the reason it does not fit.
 
     ``reserved`` carries names an earlier rewrite of this same file already
@@ -362,4 +367,29 @@ def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
             Edit(method.end_byte, method.end_byte, definition),
         ),
         introduced=(name,),
+        notes=_notes(planned, thresholds),
+    )
+
+
+def _notes(planned: Plan, thresholds: Thresholds) -> tuple[str, ...]:
+    """What the author should know about a rewrite that is otherwise correct.
+
+    Every value the block reads becomes a parameter, so a block reading seven
+    names yields a seven-parameter method -- and this same tool flags a method
+    with more than ``long_parameter_list_np`` parameters as Long Parameter List.
+    Measured over one corpus project, 19% of extractions land above that line,
+    one of them at eleven parameters.
+
+    Not a refusal. Fowler's own reading is that a block needing many parameters
+    is usually the wrong slice, but "usually" is not something a parse tree can
+    establish, and refusing on it would trade a correct rewrite for a guess.
+    Saying it is what the engine can honestly do (VD-97).
+    """
+    count = len(planned.inputs)
+    if count <= thresholds.long_parameter_list_np:
+        return ()
+    return (
+        f"the extracted method takes {count} parameters, which this tool would "
+        f"itself flag as Long Parameter List (above {thresholds.long_parameter_list_np:g}); "
+        "a block needing this many inputs is often the wrong slice to lift",
     )

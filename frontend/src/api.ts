@@ -13,6 +13,19 @@ import type { Analysis, ApiError, PatchResult, Preview, Smell, Source } from "./
  */
 const TIMEOUT_MS = 120_000;
 
+/**
+ * Afati i veçantë i patch-it, sepse ai ka buxhetin e vet te serveri.
+ *
+ * `/refactor/patch` e ndalon vetë punën te `timeout_s`, 300 sekonda si
+ * parazgjedhje, dhe kthen atë që arriti të planifikojë me numrin e skedarëve që
+ * s'i mbërriti. Me afatin e përbashkët prej dy minutash shfletuesi e priste
+ * lidhjen para se serveri ta mbaronte: një patch mbi 322 skedarë u mat 2 minuta
+ * e 25 sekonda dhe do të dukej si dështim ndonëse serveri e kishte kryer. Afati
+ * këtu rri mbi buxhetin e serverit, që ai të jetë i pari që dorëzohet dhe
+ * përgjigja e pjesshme të mbërrijë (VD-96).
+ */
+const PATCH_TIMEOUT_MS = 330_000;
+
 /** Ndalimi nga vetë përdoruesi dhe ndalimi nga afati lexohen ndryshe. */
 export class Cancelled extends Error {}
 
@@ -43,9 +56,14 @@ export const ERROR_SQ: Record<string, string> = {
   not_found: "Asnjë entitet te ai rresht. Analiza mund të jetë e vjetruar; ri-ekzekutoje.",
 };
 
-async function post<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+async function post<T>(
+  path: string,
+  body: unknown,
+  signal?: AbortSignal,
+  timeoutMs: number = TIMEOUT_MS,
+): Promise<T> {
   // Afati vlen gjithmonë; sinjali i thirrësit, kur ka, i shtohet atij.
-  const deadline = AbortSignal.timeout(TIMEOUT_MS);
+  const deadline = AbortSignal.timeout(timeoutMs);
   const abort = signal ? AbortSignal.any([signal, deadline]) : deadline;
 
   let response: Response;
@@ -109,7 +127,7 @@ export function preview(path: string, smell: Smell): Promise<Preview> {
 
 /** Every safe rewrite under the analysed path, as one diff. Writes nothing. */
 export function patch(path: string, signal?: AbortSignal): Promise<PatchResult> {
-  return post<PatchResult>("/refactor/patch", { path }, signal);
+  return post<PatchResult>("/refactor/patch", { path }, signal, PATCH_TIMEOUT_MS);
 }
 
 export function source(path: string, smell: Smell): Promise<Source> {
@@ -118,4 +136,26 @@ export function source(path: string, smell: Smell): Promise<Source> {
     start_line: smell.start_line,
     end_line: smell.end_line,
   });
+}
+
+/**
+ * Emri i dosjes brenda së cilës serveri lejon të lexohet.
+ *
+ * Vetëm emri, jo shtegu i plotë: serveri e kthen ashtu me qëllim (§6), dhe për
+ * përdoruesin ai është informacioni që mungonte. Rrënja caktohet me një
+ * ndryshore mjedisi kur niset serveri, ndaj dikush që e hap ndërfaqen nuk e di
+ * dot ndryshe se ku lejohet të kërkojë, dhe e mësonte vetëm duke gabuar (VD-95).
+ *
+ * Dështimi kthen `null` e nuk hidhet: ky është tregues ndihmës, dhe një ekran që
+ * nuk hapet dot sepse `/health` nuk u përgjigj do të ishte më keq se mungesa e tij.
+ */
+export async function allowedRoot(): Promise<string | null> {
+  try {
+    const response = await fetch("/api/health", { signal: AbortSignal.timeout(5_000) });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { root?: unknown };
+    return typeof body.root === "string" && body.root ? body.root : null;
+  } catch {
+    return null;
+  }
 }

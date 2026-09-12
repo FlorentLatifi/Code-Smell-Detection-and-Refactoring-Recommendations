@@ -69,7 +69,15 @@ def confine(candidate: str, root: Path) -> Path:
     # Resolution has already followed every symlink, so this single check covers
     # both `..` traversal and a link pointing out of the root.
     if target != root_resolved and root_resolved not in target.parents:
-        raise PathRejected("the path is outside the allowed directory", "path_outside_root")
+        # The folder's *name*, never its absolute path. Without it the caller is
+        # told the path is wrong and given nothing to correct it with, which on
+        # a tool whose root is set by an environment variable is most of the
+        # error's usefulness (VD-95). The name alone tells an attacker nothing
+        # they could not learn by trying one path.
+        raise PathRejected(
+            f"the path is outside the allowed directory, which is {root_resolved.name!r}",
+            "path_outside_root",
+        )
 
     if not target.exists():
         raise PathRejected("the path does not exist", "path_not_found")

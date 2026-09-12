@@ -353,3 +353,35 @@ describe("gjetjet që i shënoi vetëm modeli", () => {
     expect(screen.queryByRole("region", { name: "Gjetjet vetëm të modelit" })).toBeNull();
   });
 });
+
+describe("skedarët që nuk parsohen dhe dosja e lejuar", () => {
+  it("paralajmëron kur një skedar nuk u parsua pastër", async () => {
+    // Tree-sitter-i kthen pemë edhe për një skedar të prishur, ndaj heshtja
+    // do të lexohej si kod i pastër (VD-91).
+    const body = analysis([smell({ method: "m0(int)" })]);
+    serve({ ...body, summary: { ...body.summary, files: 4, unparsed: 2 } });
+    render(<App />);
+    await analyse();
+
+    expect(screen.getByText(/nuk u parsua pastër/)).toBeDefined();
+    expect(screen.getByText(/2 nga 4/)).toBeDefined();
+  });
+
+  it("hesht kur çdo skedar u parsua", async () => {
+    const body = analysis([smell({ method: "m0(int)" })]);
+    serve({ ...body, summary: { ...body.summary, unparsed: 0 } });
+    render(<App />);
+    await analyse();
+
+    expect(screen.queryByText(/nuk u parsua pastër/)).toBeNull();
+  });
+
+  it("nuk paralajmëron kur serveri nuk e dërgon fare shifrën", async () => {
+    // Mungesa lexohet si «nuk dihet», jo si zero.
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    expect(screen.queryByText(/nuk u parsua pastër/)).toBeNull();
+  });
+});

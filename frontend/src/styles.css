@@ -1535,3 +1535,13 @@ select:hover {
   font-family: var(--mono);
   font-size: 0.76rem;
 }
+
+/* Shënimet e një rishkrimi: të vërteta për të, jo arsye kundër tij. */
+.rewrite-notes {
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.rewrite-notes li {
+  margin: 4px 0;
+}

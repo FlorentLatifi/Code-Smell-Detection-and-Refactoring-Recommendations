@@ -86,6 +86,11 @@ class Outcome:
     #: would pick the same free name and the file would then declare it twice.
     #: Reporting the name lets the caller reserve it for the next site.
     introduced: tuple[str, ...] = ()
+    #: True things about an applied rewrite that are not reasons to refuse it.
+    #: A note never blocks the change; it tells the author something they would
+    #: want to know before taking it, which is the whole posture of an engine
+    #: that proposes rather than applies (VD-97).
+    notes: tuple[str, ...] = ()
 
     @property
     def applied(self) -> bool:
@@ -99,6 +104,7 @@ class Outcome:
         target: str,
         edits: tuple[Edit, ...],
         introduced: tuple[str, ...] = (),
+        notes: tuple[str, ...] = (),
     ) -> Outcome:
         if not edits:
             raise ValueError(f"{refactoring} claimed to apply at {target} with no edits")
@@ -108,6 +114,7 @@ class Outcome:
             target=target,
             edits=edits,
             introduced=introduced,
+            notes=notes,
         )
 
     @classmethod

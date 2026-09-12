@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { analyse, Cancelled } from "./api";
+import { allowedRoot, analyse, Cancelled } from "./api";
 import { Detail } from "./Detail";
 import { Filters } from "./Filters";
 import type { Order } from "./Filters";
@@ -120,6 +120,8 @@ export function App() {
   // që premton, e jo atë që ky shfletues pa herën e fundit.
   const [path, setPath] = useState(() => address.path || remembered(REMEMBERED_PATH));
   const [screen, setScreen] = useState<Screen>({ state: "idle" });
+  // Emri i dosjes së lejuar, që ftesa ta thotë para se dikush të gabojë (VD-95).
+  const [root, setRoot] = useState<string | null>(null);
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [kind, setKind] = useState<string>(address.kind);
   const [query, setQuery] = useState(address.query);
@@ -168,6 +170,16 @@ export function App() {
   }
 
   // Adresa përditësohet pas çdo renderimi që e ndryshon atë që ajo mban.
+  useEffect(() => {
+    let live = true;
+    void allowedRoot().then((name) => {
+      if (live) setRoot(name);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
 
   // Një filtër i ri e kthen dritaren te fillimi: rreshtat e zgjeruar i përkisnin
@@ -379,7 +391,14 @@ export function App() {
       {screen.state === "idle" && (
         <p className="empty">
           Shkruaj shtegun e një projekti Java për të filluar. Analiza lexon vetëm brenda dosjes
-          që serveri e ka të lejuar.
+          që serveri e ka të lejuar
+          {root ? (
+            <>
+              , që është <code>{root}</code>. Shtegu shkruhet relativ ndaj saj.
+            </>
+          ) : (
+            "."
+          )}
         </p>
       )}
 

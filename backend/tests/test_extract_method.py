@@ -634,3 +634,46 @@ def test_a_generic_method_is_refused():
     assert not outcome.applied
     assert outcome.refusal is Refusal.SHAPE_NOT_MATCHED
     assert "type parameters" in outcome.detail
+
+
+def test_a_wide_extraction_is_offered_with_a_note():
+    """The loop reads a, b, c, d, e, f, g and `total`, so eight values cross.
+
+    Eight parameters, over the Long Parameter List threshold of five that this
+    same tool flags. The rewrite is still correct and still offered; the note is
+    what stops the engine from quietly producing a finding it would report
+    (VD-97).
+    """
+    source = b"""public class T {
+    void m(int a, int b, int c, int d, int e, int f, int g) {
+        int total = 0;
+        for (int i = 0; i < a; i++) {
+            total += b + c;
+            total += d + e;
+            total += f + g;
+        }
+        System.out.println(total);
+    }
+}
+"""
+    outcome = transform(source)
+
+    assert outcome.applied
+    assert len(outcome.notes) == 1
+    assert "8 parameters" in outcome.notes[0]
+
+
+def test_a_narrow_extraction_carries_no_note():
+    """One parameter is not worth a sentence, and a note that always fires is noise."""
+    source = b"""public class T {
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i]);
+            }
+        }
+        System.out.println("done");
+    }
+}
+"""
+    assert transform(source).notes == ()

@@ -75,6 +75,13 @@ export type ModelBlock =
 
 export interface Summary {
   files: number;
+  /**
+   * Sa nga ata skedarë nuk u parsuan pastër.
+   *
+   * Opsionale, sepse një server i vjetër nuk e dërgon; mungesa lexohet si
+   * «nuk dihet» e jo si zero, ndaj paralajmërimi nuk shfaqet pa të dhëna.
+   */
+  unparsed?: number;
   classes: number;
   methods: number;
   smells: number;
@@ -95,6 +102,13 @@ export interface Preview {
   target: string;
   refusal?: string | null;
   detail?: string;
+  /**
+   * Gjëra të vërteta për një rishkrim që zbatohet, e jo arsye për ta refuzuar.
+   *
+   * Opsionale për të njëjtën arsye si `Summary.unparsed`: një server i vjetër
+   * nuk i dërgon, dhe mungesa nuk duhet lexuar si «nuk ka asgjë për të thënë».
+   */
+  notes?: string[];
   before?: string;
   after?: string;
 }

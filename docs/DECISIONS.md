@@ -3463,3 +3463,56 @@ numri del më i vogël. Bashkë me VD-90 hendeku tani ka edhe shpjegim: nën pat
 e përfunduar rri një përmbledhje e refuzimeve sipas arsyes, me një shembull për
 secilën, e ndërtuar mbi të njëjtin fjalor shqip që skeda e vlerësimit përdor për
 korpusin.
+
+### VD-95: Dosja e lejuar thuhet para se dikush të gabojë
+
+**Konteksti.** Rrënja caktohet me `JAVASMELL_ROOT` kur niset serveri. Ndërfaqja
+thoshte «Analiza lexon vetëm brenda dosjes që serveri e ka të lejuar» pa e thënë
+cila është, dhe refuzimi thoshte «ky shteg del jashtë dosjes së lejuar» me të
+njëjtën mungesë. Dikush që e hap mjetin nuk e mëson dot ku lejohet të kërkojë
+përveçse duke gabuar disa herë.
+
+**Ndryshimi.** `/health` e kthente tashmë emrin e dosjes; ftesa e lexon dhe e
+shfaq. Mesazhi i refuzimit te backend-i e emërton gjithashtu.
+
+**Emri, jo shtegu.** Të dyja anët japin vetëm emrin e dosjes. §6 e ndalon shtegun
+absolut te një përgjigje gabimi sepse ai i thotë një sulmuesi ku rri rrënja dhe
+çfarë ekziston jashtë saj. Emri i vetëm nuk i thotë asgjë që s'do ta mësonte duke
+provuar një shteg.
+
+### VD-96: Shfletuesi e priste patch-in para se serveri ta mbaronte
+
+**Konteksti.** Klienti ka një afat prej dy minutash për çdo kërkesë. `/refactor/patch`
+ka buxhetin e vet prej 300 sekondash dhe kthen atë që arriti të planifikojë bashkë
+me numrin e skedarëve që s'i mbërriti. Mbi 322 skedarë patch-i u mat 2 minuta e 25
+sekonda: shfletuesi e priste lidhjen, përdoruesi shihte dështim, dhe serveri e
+kryente punën pa e dorëzuar dot.
+
+**Ndryshimi.** Patch-i merr afatin e vet, mbi buxhetin e serverit, që serveri të
+jetë i pari që dorëzohet dhe përgjigja e pjesshme të mbërrijë. Afati i përgjithshëm
+mbetet dy minuta, sepse për çdo rrugë tjetër ai është mbi çdo punë të arsyeshme.
+
+### VD-97: Rishkrimi që prodhon një erë e thotë vetë
+
+**Konteksti.** Çdo vlerë që blloku lexon bëhet parametër, ndaj një bllok që lexon
+tetë emra jep një metodë me tetë parametra. I njëjti mjet e shënon si Long
+Parameter List çdo metodë mbi pesë. Mbi një nëndosje korpusi u matën 54 nxjerrje:
+10 prej tyre, ose 19%, dalin mbi atë prag, dhe njëra me njëmbëdhjetë parametra.
+
+**Tri rrugë u peshuan.** Ta refuzojmë nxjerrjen mbi pragun; ta ndryshojmë prerjen
+e bllokut; ta themi. U zgjodh e treta.
+
+Refuzimi do të hiqte një rishkrim të saktë për shkak të një rregulli stili. Fowler
+e lexon numrin e madh të parametrave si shenjë se prerja është e gabuar, por
+«zakonisht» nuk është diçka që pema sintaksore e vërteton, dhe refuzimi mbi të do
+të shkëmbente një rishkrim të provuar me një hamendje. Ndryshimi i prerjes kërkon
+një kriter zgjedhjeje mes bllokësh që sot nuk ekziston.
+
+**Ndryshimi.** `Outcome.notes` mban gjëra të vërteta për një rishkrim që zbatohet
+e që nuk janë arsye kundër tij. Kur metoda e re del mbi pragun, shënimi e thotë me
+numrin e vet dhe me arsyen pse ia vlen të shihet. Autori e merr ndryshimin dhe e
+di se çfarë merr, çka është i njëjti qëndrim si te e gjithë pjesa tjetër e motorit:
+propozon, nuk aplikon.
+
+**Asnjë numër i komituar nuk lëviz.** Shënimi nuk e ndryshon verdiktin, ndaj
+tabela N/M/K e Kapitullit 5 mbetet e njëjta.

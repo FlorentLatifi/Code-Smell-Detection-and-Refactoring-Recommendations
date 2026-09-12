@@ -19,6 +19,17 @@ export function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Sit
   const { summary } = analysis;
   const byWorst = countByWorst(sites);
   return (
+    <>
+    {summary.unparsed ? (
+      <p className="note unparsed" role="status">
+        <b>
+          {summary.unparsed} nga {summary.files}{" "}
+          {summary.files === 1 ? "skedari" : "skedarët"}
+        </b>{" "}
+        nuk u parsua pastër, ndaj çfarë u gjet brenda tyre është e paplotë. Numrat më poshtë
+        janë të sakta për pjesën tjetër.
+      </p>
+    ) : null}
     <div className="summary">
       <Figure value={summary.files} label="skedarë" />
       <Figure value={summary.classes} label="klasa" />
@@ -38,6 +49,7 @@ export function SummaryBar({ analysis, sites }: { analysis: Analysis; sites: Sit
         <span>vende sipas më të rëndës</span>
       </div>
     </div>
+    </>
   );
 }
 

@@ -171,3 +171,19 @@ def test_every_rejection_names_which_rejection_it_is(tmp_path):
 def test_a_rejection_without_a_code_still_names_one():
     """Parazgjedhja mbetet, qe nje `raise` i ri te mos dale pa kod fare."""
     assert PathRejected("dicka").code == "path_rejected"
+
+
+def test_the_rejection_names_the_folder_that_is_allowed(tmp_path):
+    """A path set by an environment variable is one the caller cannot guess.
+
+    The name only, never the absolute path: echoing the latter tells a caller
+    where the root sits and confirms what exists outside it (VD-95).
+    """
+    root = tmp_path / "workspace"
+    root.mkdir()
+
+    with pytest.raises(PathRejected) as raised:
+        confine("../elsewhere", root)
+
+    assert "workspace" in str(raised.value)
+    assert str(root) not in str(raised.value)
