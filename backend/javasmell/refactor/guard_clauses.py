@@ -52,8 +52,14 @@ def _sole_statement(body: Node) -> Node | None:
     return statements[0] if len(statements) == 1 else None
 
 
-def apply(site: Site) -> Outcome:
-    """Rewrite the site, or decline with the reason it does not fit."""
+def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
+    """Rewrite the site, or decline with the reason it does not fit.
+
+    ``reserved`` is accepted so that every transformation has one signature.
+    This transformation only reorders existing statements, so it
+    invents no names and the reserved set cannot concern it.
+    """
+    del reserved
     source = site.source
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"

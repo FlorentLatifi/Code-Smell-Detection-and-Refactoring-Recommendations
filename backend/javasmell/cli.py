@@ -16,6 +16,12 @@ Exit codes are part of that scriptable contract, so each failure gets its own:
 0 on success, 1 when the path was analysable but held no Java class, 2 when the
 path itself is unusable. Giving the last two the same code is what let a
 mistyped path in an experiment read as a project with nothing in it.
+
+3 is different from all of them: it means the command worked and the project did
+not. Only ``--fail-on`` produces it, and only then, so a build gate can tell "the
+tool broke" from "the code is over the line" without parsing any output. Finding
+smells is otherwise a success, because reporting is what this command is for
+(VD-92).
 """
 
 from __future__ import annotations
@@ -32,10 +38,10 @@ from typing import TextIO
 
 from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
-from javasmell.detectors.rules import detect_all
+from javasmell.detectors.rules import REFACTORINGS, detect_all
 from javasmell.detectors.thresholds import DEFAULT
 from javasmell.metrics.calculator import metric_names
-from javasmell.model.entities import ProjectModel
+from javasmell.model.entities import ProjectModel, posix
 from javasmell.refactor.patch import plan, unified
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
@@ -60,7 +66,19 @@ def build_parser() -> argparse.ArgumentParser:
         default="minor",
         help="Hide findings below this severity",
     )
-    parser.add_argument("--smell", action="append", help="Only report this smell type (repeatable)")
+    parser.add_argument(
+        "--smell",
+        action="append",
+        choices=sorted(REFACTORINGS),
+        metavar="TYPE",
+        help="Only report this smell type (repeatable). One of: " + ", ".join(sorted(REFACTORINGS)),
+    )
+    parser.add_argument(
+        "--fail-on",
+        choices=("minor", "major", "critical"),
+        help="Exit 3 when a finding at or above this severity survives the filters, "
+        "so the command can gate a build",
+    )
     return parser
 
 
@@ -114,6 +132,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Wrote {args.out}", file=sys.stderr)
     else:
         _emit(args.format, project, smells, sys.stdout)
+
+    if args.fail_on is not None:
+        limit = SEVERITY_ORDER[args.fail_on]
+        offending = [s for s in smells if SEVERITY_ORDER[s.severity.value] <= limit]
+        if offending:
+            print(
+                f"{len(offending)} finding(s) at or above {args.fail_on}.",
+                file=sys.stderr,
+            )
+            return 3
     return 0
 
 
@@ -155,11 +183,21 @@ def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> 
         + ("" if javac else "; javac not found, so verification stopped at syntax"),
         file=sys.stderr,
     )
-    if result.declined:
+    if result.declines:
         print(
-            f"{result.declined} site(s) had no safe rewrite and were declined.",
+            f"{result.declined} site(s) had no safe rewrite and were declined:",
             file=sys.stderr,
         )
+        # Grouped by reason rather than listed one per line: a real project
+        # declines hundreds of sites, and a reader wants the shape of the
+        # refusals first. The per-site detail is in the JSON the API returns.
+        for reason, count in sorted(
+            Counter(d.reason for d in result.declines).items(),
+            key=lambda pair: (-pair[1], pair[0]),
+        ):
+            example = next(d for d in result.declines if d.reason == reason)
+            suffix = f" e.g. {example.file_path}:{example.start_line}"
+            print(f"  {count:>5}  {reason}{suffix}", file=sys.stderr)
     if result.deferred:
         print(
             f"{result.deferred} deferred: their edits overlap a change already in the patch. "
@@ -170,11 +208,40 @@ def _write_patch(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> 
         print(f"dropped {drop.relative}: {drop.verdict.value} -- {drop.detail}", file=sys.stderr)
 
 
+#: How many unparseable files the report names before it stops listing them.
+#: Enough to recognise a pattern -- one package, one generator -- and few enough
+#: that the warning does not bury the findings.
+MAX_UNPARSED_NAMED = 5
+
+
+def _write_unparsed(stream: TextIO, project: ProjectModel) -> None:
+    """Say which files did not parse, because silence here reads as cleanliness.
+
+    Tree-sitter recovers from an error and returns a tree regardless, so such a
+    file still contributes a plausible but incomplete class list. A project
+    where half the files fail then shows fewer smells and looks like better
+    code, which is the one failure mode a detector must never have (VD-91).
+    """
+    unparsed = project.unparsed
+    if not unparsed:
+        return
+    named = ", ".join(posix(u.file_path) for u in unparsed[:MAX_UNPARSED_NAMED])
+    rest = len(unparsed) - MAX_UNPARSED_NAMED
+    more = "" if rest <= 0 else f", and {rest} more"
+    print(
+        f"WARNING: {len(unparsed)} file(s) did not parse cleanly, so what was found "
+        f"in them is incomplete: {named}{more}",
+        file=stream,
+    )
+
+
 def _write_report(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
     files = len(project.units)
     classes = len(project.classes)
     methods = sum(len(c.methods) for c in project.classes)
-    print(f"Analysed {files} file(s), {classes} class(es), {methods} method(s)\n", file=stream)
+    print(f"Analysed {files} file(s), {classes} class(es), {methods} method(s)", file=stream)
+    _write_unparsed(stream, project)
+    print(file=stream)
 
     if not smells:
         print("No smells detected.", file=stream)
@@ -228,7 +295,7 @@ def _write_smell_csv(stream: TextIO, smells: list[Smell]) -> None:
                 s.package,
                 s.class_name,
                 s.method or "",
-                s.file_path,
+                posix(s.file_path),
                 s.start_line,
                 s.end_line,
                 s.rationale,
@@ -247,7 +314,7 @@ def _write_metric_csv(stream: TextIO, project: ProjectModel) -> None:
             [
                 cls.package,
                 cls.name,
-                cls.file_path,
+                posix(cls.file_path),
                 cls.start_line,
                 *[round(cls.metrics.get(name, 0.0), 4) for name in columns],
             ]

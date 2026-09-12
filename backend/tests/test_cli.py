@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 from javasmell.cli import main
 from javasmell.metrics.calculator import metric_names
 
@@ -206,3 +208,77 @@ def test_a_redirected_patch_keeps_its_line_endings(tmp_path):
     raw = out.read_bytes()
     assert raw.count(b"\n") > 0
     assert raw.count(b"\r\n") == 0
+
+
+# ----------------------------------------------------------------------
+# Filters, gate and the things a typo should not be answered with
+# ----------------------------------------------------------------------
+def test_an_unknown_smell_name_is_refused_rather_than_reported_as_nothing():
+    """`--smell Blob` used to print "No smells detected" and exit 0.
+
+    That is the worst answer available: it is what a clean project looks like,
+    so a typo reads as a result. argparse refuses the value instead and names
+    every valid one (VD-92).
+    """
+    with pytest.raises(SystemExit) as raised:
+        main([FIXTURES, "--smell", "Blob"])
+
+    assert raised.value.code == 2
+
+
+def test_a_known_smell_name_still_filters(capsys):
+    """The guard must not have narrowed what the option accepts."""
+    assert main([FIXTURES, "--smell", "DataClass"]) == 0
+
+    out = capsys.readouterr().out
+    assert "DataClass" in out
+    assert "FeatureEnvy" not in out
+
+
+def test_without_the_gate_finding_smells_is_still_success(capsys):
+    """Reporting is what the command is for, so findings alone are not a failure."""
+    assert main([FIXTURES]) == 0
+
+
+def test_the_gate_fails_on_a_finding_at_the_named_severity(capsys):
+    """The fixture holds four critical findings, so a critical gate must trip."""
+    code = main([FIXTURES, "--fail-on", "critical"])
+
+    assert code == 3
+    assert "at or above critical" in capsys.readouterr().err
+
+
+def test_the_gate_respects_the_filters_above_it(capsys):
+    """`--smell DeepNesting` leaves one major finding and no critical one.
+
+    The gate reads what survived the filters, not what was found, or else
+    `--smell` and `--min-severity` would silently not apply to it.
+    """
+    assert main([FIXTURES, "--smell", "DeepNesting", "--fail-on", "critical"]) == 0
+    assert main([FIXTURES, "--smell", "DeepNesting", "--fail-on", "major"]) == 3
+
+
+def test_the_report_warns_about_a_file_that_did_not_parse(tmp_path, capsys):
+    """A broken file still yields a tree, so silence would read as cleanliness."""
+    (tmp_path / "Broken.java").write_text("public class B {\n  void f( {\n", encoding="utf-8")
+    (tmp_path / "Fine.java").write_text("public class F { int a; }\n", encoding="utf-8")
+
+    main([str(tmp_path)])
+
+    out = capsys.readouterr().out
+    assert "1 file(s) did not parse cleanly" in out
+    assert "Broken.java" in out
+
+
+def test_a_project_that_parses_cleanly_says_nothing_about_parsing(capsys):
+    """The warning has to stay rare enough to mean something."""
+    main([FIXTURES])
+
+    assert "did not parse" not in capsys.readouterr().out
+
+
+def test_reported_paths_use_one_separator(capsys):
+    """A single run mixed both on Windows: forward from the argument, back from the walk."""
+    main([FIXTURES, "--format", "csv"])
+
+    assert "\\" not in capsys.readouterr().out

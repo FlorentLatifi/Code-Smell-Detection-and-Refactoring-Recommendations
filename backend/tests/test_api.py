@@ -365,6 +365,49 @@ def test_patch_accounts_for_everything_it_did_not_change(client):
     assert isinstance(body["verified_with_javac"], bool)
 
 
+# A value-returning method four levels deep. Deep Nesting flags it and Guard
+# Clauses refuses it, because a guard has nothing to return early *with* -- which
+# is the shortest refusal the engine can be made to produce.
+REFUSES = """public class Refuses {
+    int deep(int mode, boolean flag, String tag) {
+        if (mode > 2) {
+            if (flag) {
+                if (tag != null) {
+                    if (tag.length() > 3) {
+                        return tag.length();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+}
+"""
+
+
+def test_patch_names_the_reason_for_each_site_it_declined(client, tmp_path):
+    """A count says how many; only a reason answers "why not this one"."""
+    (tmp_path / "workspace" / "src" / "Refuses.java").write_text(REFUSES, encoding="utf-8")
+    body = client.post("/refactor/patch", json={"path": "src"}).json()
+    declines = body["declines"]
+
+    assert declines, "Guard Clauses cannot rewrite a method that returns a value"
+    assert body["declined"] == len(declines)
+    first = declines[0]
+    assert set(first) == {
+        "file_path",
+        "class_name",
+        "method",
+        "start_line",
+        "smell_type",
+        "refactoring",
+        "reason",
+        "detail",
+    }
+    assert first["reason"]
+    assert not first["file_path"].startswith("/")
+
+
 def test_patch_names_each_change_it_made(client):
     applied = client.post("/refactor/patch", json={"path": "src"}).json()["applied"]
 

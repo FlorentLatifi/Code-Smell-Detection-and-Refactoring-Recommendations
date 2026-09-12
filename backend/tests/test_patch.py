@@ -13,6 +13,7 @@ running.
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from dataclasses import replace
 from pathlib import Path
@@ -23,6 +24,8 @@ from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import detect_all
 from javasmell.refactor.patch import plan, plan_file, unified
+
+JAVAC = shutil.which("javac")
 
 # `process` is private with six parameters and 33 effective lines, so Extract
 # Method and Introduce Parameter Object both apply to it; `report` is void with
@@ -169,7 +172,7 @@ def test_a_second_claim_on_the_same_bytes_is_deferred(tmp_path: Path) -> None:
     # Identical edits, so exactly one of the two can travel and the other waits.
     assert [c.smell_type for c in patch.applied] == ["BrainMethod"]  # sorts before LongMethod
     assert [c.smell_type for c in patch.deferred] == ["LongMethod"]
-    assert declined == 0
+    assert declined == []
 
 
 def test_a_site_with_no_safe_rewrite_is_declined_not_dropped(tmp_path: Path) -> None:
@@ -188,7 +191,12 @@ def test_a_site_with_no_safe_rewrite_is_declined_not_dropped(tmp_path: Path) -> 
     patch, declined = plan_file(root / "Ledger.java", root, [on_process], javac=None)
 
     assert patch is None
-    assert declined == 1
+    assert len(declined) == 1
+    # The reason is the point of the record: a user asks "why not this one".
+    assert declined[0].reason == "shape_not_matched"
+    assert declined[0].detail
+    assert declined[0].refactoring == "ReplaceNestedConditionalWithGuardClauses"
+    assert declined[0].smell_type == "DeepNesting"
 
 
 def test_a_rewrite_that_fails_verification_never_reaches_the_patch(
@@ -212,7 +220,7 @@ def test_a_rewrite_that_fails_verification_never_reaches_the_patch(
 
 def test_a_file_that_is_not_there_is_skipped_rather_than_raising(tmp_path: Path) -> None:
     root = written(tmp_path, "Ledger.java", LEDGER)
-    assert plan_file(root / "Gone.java", root, smells_in(root), javac=None) == (None, 0)
+    assert plan_file(root / "Gone.java", root, smells_in(root), javac=None) == (None, [])
 
 
 def test_the_patch_is_the_same_on_a_second_run(tmp_path: Path) -> None:
@@ -252,3 +260,121 @@ def test_git_applies_the_diff_and_reproduces_the_planned_bytes(
 
     assert applied.returncode == 0, applied.stderr
     assert (root / "Ledger.java").read_bytes() == patch.after
+
+
+# Two long methods in one class, each a clean Extract Method candidate and
+# neither touching the other's bytes, so both rewrites travel in the same patch.
+# This is the shape that produced "method extracted(int) is already defined" on
+# twelve files of one corpus project (VD-89).
+TWICE = """package com.acme;
+
+public class Twice {
+    private int taxRate = 2;
+
+    int first(int[] xs) {
+        int sum = 0;
+        for (int i = 0; i < xs.length; i++) {
+            sum += xs[i];
+            System.out.println("first 0");
+            System.out.println("first 1");
+            System.out.println("first 2");
+            System.out.println("first 3");
+            System.out.println("first 4");
+            System.out.println("first 5");
+            System.out.println("first 6");
+            System.out.println("first 7");
+            System.out.println("first 8");
+            System.out.println("first 9");
+            System.out.println("first 10");
+            System.out.println("first 11");
+            System.out.println("first 12");
+            System.out.println("first 13");
+            System.out.println("first 14");
+            System.out.println("first 15");
+            System.out.println("first 16");
+            System.out.println("first 17");
+            System.out.println("first 18");
+            System.out.println("first 19");
+            System.out.println("first 20");
+            System.out.println("first 21");
+        }
+        int tax = sum * taxRate;
+        while (tax > 100) {
+            tax = tax / 2;
+        }
+        System.out.println(tax);
+        System.out.println(sum);
+        System.out.println("done");
+        System.out.println("end");
+        return sum + tax;
+    }
+
+    int second(int[] xs) {
+        int total = 0;
+        for (int i = 0; i < xs.length; i++) {
+            total += xs[i];
+            System.out.println("second 0");
+            System.out.println("second 1");
+            System.out.println("second 2");
+            System.out.println("second 3");
+            System.out.println("second 4");
+            System.out.println("second 5");
+            System.out.println("second 6");
+            System.out.println("second 7");
+            System.out.println("second 8");
+            System.out.println("second 9");
+            System.out.println("second 10");
+            System.out.println("second 11");
+            System.out.println("second 12");
+            System.out.println("second 13");
+            System.out.println("second 14");
+            System.out.println("second 15");
+            System.out.println("second 16");
+            System.out.println("second 17");
+            System.out.println("second 18");
+            System.out.println("second 19");
+            System.out.println("second 20");
+            System.out.println("second 21");
+        }
+        int tax = total * taxRate;
+        while (tax > 100) {
+            tax = tax / 2;
+        }
+        System.out.println(tax);
+        System.out.println(total);
+        System.out.println("done");
+        System.out.println("end");
+        return total + tax;
+    }
+}
+"""
+
+
+def test_two_extractions_in_one_file_do_not_take_the_same_name(tmp_path: Path) -> None:
+    """Both rewrites read the original bytes, so both would pick `extracted`.
+
+    The first keeps it and the second must move to `extracted2`. Counting the
+    declarations is the assertion that matters: a file declaring the name twice
+    is what javac rejects, and it rejects the whole patch, not the one rewrite.
+    """
+    root = written(tmp_path, "Twice.java", TWICE)
+    result = plan(root, smells_in(root), javac=None)
+
+    assert len(result.patches) == 1
+    after = result.patches[0].after.decode()
+    assert after.count("private int extracted(") == 1
+    assert after.count("private int extracted2(") == 1
+
+
+@pytest.mark.skipif(not JAVAC, reason="javac not installed")
+def test_the_file_two_extractions_produce_compiles(tmp_path: Path) -> None:
+    """The end the naming exists to serve: verification passes, so the patch survives.
+
+    Before the reserved set this file came back as `Rejected` with javac's
+    "already defined", and `plan` dropped every rewrite in it.
+    """
+    root = written(tmp_path, "Twice.java", TWICE)
+    result = plan(root, smells_in(root), javac=JAVAC)
+
+    assert result.dropped == ()
+    assert len(result.patches) == 1

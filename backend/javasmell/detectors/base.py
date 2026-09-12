@@ -16,6 +16,7 @@ from enum import StrEnum
 from typing import Any
 
 from javasmell.detectors.thresholds import DEFAULT, Thresholds
+from javasmell.model.entities import posix
 
 
 class Severity(StrEnum):
@@ -133,7 +134,7 @@ class Smell:
     @property
     def location(self) -> str:
         target = f"{self.class_name}.{self.method}" if self.method else self.class_name
-        return f"{target} ({self.file_path}:{self.start_line})"
+        return f"{target} ({posix(self.file_path)}:{self.start_line})"
 
     @property
     def rationale(self) -> str:

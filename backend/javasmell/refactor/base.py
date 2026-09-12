@@ -80,6 +80,12 @@ class Outcome:
     edits: tuple[Edit, ...] = ()
     refusal: Refusal | None = None
     detail: str = ""
+    #: Declarations this rewrite adds to the file, by name. A transformation
+    #: that invents a name picks one that is free *in the source it was handed*,
+    #: and two rewrites of the same file are both handed the same source: each
+    #: would pick the same free name and the file would then declare it twice.
+    #: Reporting the name lets the caller reserve it for the next site.
+    introduced: tuple[str, ...] = ()
 
     @property
     def applied(self) -> bool:
@@ -87,11 +93,22 @@ class Outcome:
 
     @classmethod
     def rewrite(
-        cls, refactoring: str, file_path: str, target: str, edits: tuple[Edit, ...]
+        cls,
+        refactoring: str,
+        file_path: str,
+        target: str,
+        edits: tuple[Edit, ...],
+        introduced: tuple[str, ...] = (),
     ) -> Outcome:
         if not edits:
             raise ValueError(f"{refactoring} claimed to apply at {target} with no edits")
-        return cls(refactoring=refactoring, file_path=file_path, target=target, edits=edits)
+        return cls(
+            refactoring=refactoring,
+            file_path=file_path,
+            target=target,
+            edits=edits,
+            introduced=introduced,
+        )
 
     @classmethod
     def refuse(

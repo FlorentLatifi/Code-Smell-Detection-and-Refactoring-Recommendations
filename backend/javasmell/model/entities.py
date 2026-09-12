@@ -12,6 +12,18 @@ from dataclasses import dataclass, field
 ACCESSOR_PREFIXES = ("get", "set", "is", "has")
 
 
+def posix(file_path: str) -> str:
+    r"""A path spelt the one way, whatever walked it.
+
+    The walker hands back whatever the platform separates with, so on Windows a
+    single run emits ``tests/fixtures\Ledger.java`` -- forward slashes from the
+    argument, a backslash from the walk. That reaches the report, both CSV
+    exports and anything that reads them. The model keeps the path it was given,
+    because that is the path it must open; only what is shown is normalised.
+    """
+    return file_path.replace("\\", "/")
+
+
 @dataclass(frozen=True)
 class ParameterInfo:
     name: str
@@ -169,6 +181,19 @@ class ProjectModel:
     @property
     def classes(self) -> list[ClassInfo]:
         return [c for u in self.units for c in u.classes]
+
+    @property
+    def unparsed(self) -> list[CompilationUnit]:
+        """Files tree-sitter could not read cleanly.
+
+        Reported rather than counted silently. Tree-sitter recovers from an
+        error and returns a tree anyway, so such a file still contributes a
+        plausible but incomplete class list: a project where half the files fail
+        to parse otherwise shows fewer smells and reads as cleaner code. Every
+        surface that reports a count of files now reports this one beside it
+        (VD-91).
+        """
+        return [u for u in self.units if u.has_syntax_errors]
 
     def class_by_name(self, name: str) -> ClassInfo | None:
         """Look up by simple or qualified name.

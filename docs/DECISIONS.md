@@ -3328,3 +3328,95 @@ qenë i mbrojtshëm nga ana përmbajtësore, por jo me këtë raport kosto-fitim
 
 **Ku shkon.** Nënkapitulli 5.10 me tri tabelat e tij, dhe dy kufizime te 6.3, të
 dyja të lexuara nga `blob_recall.json` e jo të shtypura, për arsyen e VD-73.
+
+### VD-89: Dy nxjerrje në një skedar merrnin të njëjtin emër
+
+**Konteksti.** Gjatë përdorimit të mjetit mbi një projekt real u pa se patch-i
+hiqte 12 skedarë me arsyen `method extracted(int) is already defined`. Shkaku nuk
+ishte te zgjedhja e emrit por te momenti i saj. `_free_name` e lexon burimin
+origjinal dhe zgjedh emrin e parë të lirë; `plan_file` i llogarit të gjitha
+rishkrimet e një skedari kundrejt po atij burimi. Dy nxjerrje në të njëjtën klasë
+e shihnin `extracted` të lirë të dyja, e merrnin të dyja, dhe javac e refuzonte
+skedarin e bashkuar. Motori e kishte tashmë rojën kundër përplasjes me kodin
+ekzistues; nuk e kishte kundër vetvetes.
+
+**Ndryshimi.** `Outcome` mban tani `introduced`, emrat që rishkrimi i shton, dhe
+`plan_file` i grumbullon e ia kalon transformimit tjetër si `reserved`. Nënshkrimi
+i çdo transformimi e merr atë bashkësi, edhe pse vetëm Extract Method-i e lexon:
+një regjistër me dy tipa do të ishte më i rëndë se një parametër i papërdorur, dhe
+një transformim që nis të shpikë emra nuk mund ta harrojë pyetjen.
+
+**Rezerva është për skedar e jo për klasë.** Dy nxjerrje në klasa të ndryshme të
+një skedari nuk përplasen, ndaj rezerva e gjerë është pak konservative. Është
+zgjedhur ashtu sepse ndarja sipas klase kërkon një çelës të qëndrueshëm që vendi
+nuk e mban, dhe një emër unik mbi tërë skedarin është gjithnjë i vlefshëm.
+
+**Matur para dhe pas**, mbi `Esri__geometry-api-java`, 322 skedarë:
+
+| | Para | Pas |
+|---|---|---|
+| Skedarë me patch | 68 | 78 |
+| Ndryshime të aplikuara | 167 | 230 |
+| Skedarë të hequr nga verifikimi | 12 | 2 |
+
+Dy heqjet që mbeten kanë shkak tjetër dhe nuk u prekën.
+
+**Testet.** Tre te `test_extract_method.py` për zgjedhjen e emrit dhe raportimin e
+tij, dhe dy te `test_patch.py` për grumbullin: një që numëron deklarimet te
+skedari i bashkuar, dhe një që kërkon që javac-u ta pranojë. I dyti dështonte para
+ndryshimit, çka është arsyeja pse ekziston.
+
+### VD-90: Refuzimi e ka arsyen; tani e thotë
+
+**Konteksti.** `plan_file` bënte `declined += 1` dhe e hidhte `Outcome.refusal`.
+Mbi projektin e provuar kjo do të thoshte 714 vende të refuzuara dhe zero arsye,
+ndërsa vetë skeda e vlerësimit i tregon ato arsye me përqindje për korpusin. Pra
+fjalori ekzistonte, ishte i shkruar, dhe nuk ishte i lidhur me rrjedhën që e
+përdor përdoruesi.
+
+**Ndryshimi.** Një tip `Declined` mban vendin, erën, transformimin, arsyen e
+tipizuar dhe detajin. `Plan.declines` i mban të gjitha dhe `Plan.declined` mbetet
+numër, si veti e derivuar, që asnjë thirrës ekzistues të mos prishet. CLI-ja i
+grupon sipas arsyes me një shembull për secilën; API-ja i kthen një nga një.
+
+**Pse i grupuar te CLI-ja.** Një projekt real refuzon qindra vende. E para që
+lexuesi do të dijë është forma e refuzimeve, jo lista e tyre; lista e plotë rri
+te JSON-i.
+
+**Vendi që nuk u gjet dot** raportohet gjithashtu si refuzim, me `shape_not_matched`
+dhe detajin që e thotë. Nuk është refuzim i transformimit, por për përdoruesin
+është e njëjta pyetje dhe heshtja do të ishte e njëjta heshtje.
+
+### VD-91: Skedari që nuk parsohet nuk numërohet më si i rregullt
+
+**Konteksti.** Tree-sitter-i shërohet nga një gabim dhe e kthen pemën gjithsesi,
+ndaj `has_syntax_errors` ishte i vetmi tregues. Askush nuk e lexonte. Një provë me
+një skedar të prishur pranë një të rregullti dha «2 skedarë, 2 klasa, 0 erëra»: një
+projekt ku gjysma e skedarëve dështojnë lexohet si kod i pastër. Ky është i vetmi
+lloj gabimi që një detektor nuk guxon ta ketë, sepse e kthen mangësinë në lajm të
+mirë.
+
+**Ndryshimi.** `ProjectModel.unparsed` e emërton pyetjen; raporti i CLI-së shtyp
+një paralajmërim me deri në pesë emra dhe numrin e të tjerëve; përmbledhja e API-së
+mban `unparsed`. Pesë emra mjaftojnë të njihet një model i përsëritur, një paketë
+apo një gjenerator, pa i mbytur gjetjet.
+
+### VD-92: Kodi 3 për portën, dhe emrat e erërave validohen
+
+**Konteksti.** Dy gjëra që dolën nga përdorimi i vijës komanduese. `--smell Blob`
+jepte «No smells detected» dhe dalje 0, pra pikërisht pamjen e një projekti të
+pastër: një gabim shtypi lexohej si rezultat. Dhe nuk kishte mënyrë ta përdorje
+komandën si portë ndërtimi, sepse gjetja e erërave del gjithmonë 0.
+
+**Ndryshimi.** `--smell` merr `choices` nga `REFACTORINGS`, ndaj argparse e refuzon
+vlerën e panjohur dhe i liston të gjitha të vlefshmet te ndihma. `--fail-on`
+kthen 3 kur mbetet një gjetje në atë ashpërsi ose mbi të.
+
+**Pse 3 e jo 1.** Kodet 1 dhe 2 do të thonë se mjeti nuk punoi: shtegu ishte i
+keq, ose nuk kishte kod Java. Kodi 3 do të thotë se mjeti punoi dhe projekti nuk
+kaloi. Një portë ndërtimi duhet ta dallojë «mjeti u prish» nga «kodi është mbi
+kufi» pa lexuar asnjë rresht dalje.
+
+**Porta lexon atë që mbeti pas filtrave**, jo atë që u gjet. Ndryshe `--smell` dhe
+`--min-severity` do të vlenin për raportin e jo për vendimin, çka është pikërisht
+kurthi që e bën një portë të padobishme.

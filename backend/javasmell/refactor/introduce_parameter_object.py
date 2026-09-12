@@ -214,8 +214,15 @@ def _unpacking(parameters: list[Parameter], holder: str, indent: bytes, unit: by
     )
 
 
-def apply(site: Site) -> Outcome:
-    """Rewrite the site, or decline with the reason it does not fit."""
+def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
+    """Rewrite the site, or decline with the reason it does not fit.
+
+    ``reserved`` is accepted so that every transformation has one signature.
+    The parameter object is named after the method it serves and the
+    transformation refuses an overloaded name, so two rewrites of one file cannot
+    choose the same class name.
+    """
+    del reserved
     source = site.source
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"

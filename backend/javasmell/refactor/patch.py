@@ -35,6 +35,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from javasmell.detectors.base import Smell
+from javasmell.refactor.base import Refusal
 from javasmell.refactor.edits import Edit, EditConflict, apply_edits
 from javasmell.refactor.edits import check as check_edits
 from javasmell.refactor.locate import FileIndex
@@ -110,32 +111,37 @@ def plan_file(
     root: Path,
     smells: Sequence[Smell],
     javac: str | None,
-) -> tuple[FilePatch | Rejected | None, int]:
+) -> tuple[FilePatch | Rejected | None, list[Declined]]:
     """Everything the engine can safely change in one file, as a single rewrite.
 
-    Returns the plan and the number of sites the engine declined outright. A
+    Returns the plan and one record per site the engine declined outright. A
     ``None`` plan means there was nothing to offer -- no automated smell, no
     locatable site, or every transformation refused. That is the ordinary outcome
-    for most files and is not a failure, which is why the refusals come back as a
-    count rather than being dropped on the floor.
+    for most files and is not a failure, which is why the refusals come back
+    named rather than being dropped on the floor.
     """
     try:
         source = path.read_bytes()
     except OSError:
-        return None, 0
+        return None, []
 
     automated = [s for s in smells if for_smell(s.smell_type) is not None]
     if not automated:
-        return None, 0
+        return None, []
 
     # Fixed order, so two runs over one input produce one patch.
     automated.sort(key=lambda s: (s.start_line, s.smell_type, s.class_name))
 
     index = FileIndex(str(path), source)
     taken: list[Edit] = []
+    # Emrat qe rishkrimet e meparshme te ketij skedari i shtuan. Mbahen per
+    # skedar e jo per klase: nje emer unik mbi tere skedarin eshte gjithnje i
+    # vlefshem, dhe ndarja sipas klases do te kerkonte nje celes te qendrueshem
+    # qe vendi nuk e mban.
+    reserved: set[str] = set()
     applied: list[Change] = []
     deferred: list[Change] = []
-    declined = 0
+    declined: list[Declined] = []
 
     for smell in automated:
         found = for_smell(smell.smell_type)
@@ -143,13 +149,29 @@ def plan_file(
         refactoring, transform = found
         method = None if smell.method is None else smell.method.split("(")[0]
 
+        def record(reason: str, detail: str, smell: Smell = smell, name: str = refactoring) -> None:
+            declined.append(
+                Declined(
+                    file_path=_relative(path, root),
+                    class_name=smell.class_name,
+                    method=None if smell.method is None else smell.method.split("(")[0],
+                    start_line=smell.start_line,
+                    smell_type=smell.smell_type,
+                    refactoring=name,
+                    reason=reason,
+                    detail=detail,
+                )
+            )
+
         site = index.find(smell.class_name, smell.start_line, method)
         if site is None:
-            declined += 1
+            # Nuk eshte refuzim i transformimit: vendi nuk u gjet dot ne peme.
+            record(Refusal.SHAPE_NOT_MATCHED.value, "the entity was not found at that line")
             continue
-        outcome = transform(site)
+        outcome = transform(site, frozenset(reserved))
         if not outcome.applied:
-            declined += 1
+            assert outcome.refusal is not None
+            record(outcome.refusal.value, outcome.detail)
             continue
 
         change = Change(refactoring, smell.smell_type, smell.class_name, method, smell.start_line)
@@ -159,6 +181,7 @@ def plan_file(
             deferred.append(change)
             continue
         taken.extend(outcome.edits)
+        reserved.update(outcome.introduced)
         applied.append(change)
 
     if not applied:
@@ -182,6 +205,29 @@ def plan_file(
 
 
 @dataclass(frozen=True)
+class Declined:
+    """One site the engine would not rewrite, and the reason it gave.
+
+    The reason was always computed -- every transformation returns a typed
+    :class:`~javasmell.refactor.base.Refusal` -- and until now the planner threw
+    it away and kept only a count. A count answers "how many" and leaves the
+    question a user actually asks, which is "why not this one" (VD-89). The
+    corpus-wide table of refusal reasons in the Results chapter is built from
+    the same vocabulary, so a reader of the tool and a reader of the thesis now
+    see the same words.
+    """
+
+    file_path: str
+    class_name: str
+    method: str | None
+    start_line: int
+    smell_type: str
+    refactoring: str
+    reason: str
+    detail: str
+
+
+@dataclass(frozen=True)
 class Plan:
     """What a whole run would change, and everything it would not.
 
@@ -193,10 +239,15 @@ class Plan:
 
     patches: tuple[FilePatch, ...]
     dropped: tuple[Rejected, ...]
-    #: Sites where the transformation itself reported "not applicable".
-    declined: int
+    #: Sites where the transformation itself reported "not applicable", each
+    #: with the reason it reported.
+    declines: tuple[Declined, ...]
     #: Files the run never got to, because the time budget ran out first.
     unreached: int = 0
+
+    @property
+    def declined(self) -> int:
+        return len(self.declines)
 
     @property
     def changes(self) -> int:
@@ -232,19 +283,19 @@ def plan(
 
     patches: list[FilePatch] = []
     dropped: list[Rejected] = []
-    declined = 0
+    declined: list[Declined] = []
     unreached = 0
     for file_path in sorted(by_file):
         if deadline is not None and time.monotonic() >= deadline:
             unreached += 1
             continue
         planned, refused = plan_file(Path(file_path), root, by_file[file_path], javac)
-        declined += refused
+        declined.extend(refused)
         if isinstance(planned, FilePatch):
             patches.append(planned)
         elif isinstance(planned, Rejected):
             dropped.append(planned)
-    return Plan(tuple(patches), tuple(dropped), declined, unreached)
+    return Plan(tuple(patches), tuple(dropped), tuple(declined), unreached)
 
 
 def _mark_missing_newline(lines: list[str]) -> list[str]:

@@ -293,8 +293,14 @@ def _render(
     return call, definition
 
 
-def apply(site: Site) -> Outcome:
-    """Rewrite the site, or decline with the reason it does not fit."""
+def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
+    """Rewrite the site, or decline with the reason it does not fit.
+
+    ``reserved`` carries names an earlier rewrite of this same file already
+    introduced. Without it two extractions from one file both read the original
+    source, both find ``extracted`` free, and both take it: the file then
+    declares the method twice and javac rejects the whole patch (VD-89).
+    """
     source = site.source
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"
@@ -342,7 +348,7 @@ def apply(site: Site) -> Outcome:
         for child in method.children
     )
     indent = indent_at(source, method.start_byte)
-    name = _free_name(_existing_names(site.enclosing_type, source))
+    name = _free_name(_existing_names(site.enclosing_type, source) | set(reserved))
     call, definition = _render(
         planned, name, source, static, indent, _throws_clause(method, source)
     )
@@ -355,4 +361,5 @@ def apply(site: Site) -> Outcome:
             Edit(statement.start_byte, statement.end_byte, call),
             Edit(method.end_byte, method.end_byte, definition),
         ),
+        introduced=(name,),
     )

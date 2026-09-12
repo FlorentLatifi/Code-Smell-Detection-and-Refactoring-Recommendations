@@ -26,10 +26,16 @@ from javasmell.refactor.locate import find_site
 JAVAC = shutil.which("javac")
 
 
-def transform(source: bytes, line: int = 2, name: str = "m", type_name: str = "T"):
+def transform(
+    source: bytes,
+    line: int = 2,
+    name: str = "m",
+    type_name: str = "T",
+    reserved: frozenset[str] = frozenset(),
+):
     site = find_site("T.java", source, type_name, line, name)
     assert site is not None, "the fixture's line numbers have drifted"
-    return apply(site)
+    return apply(site, reserved)
 
 
 def compiles(source: bytes) -> tuple[bool, str]:
@@ -181,6 +187,88 @@ def test_the_name_avoids_one_that_is_taken():
     rewritten = apply_edits(source, outcome.edits).decode()
     assert "private void extracted2(int[] xs)" in rewritten
     assert "        extracted2(xs);" in rewritten
+
+
+def test_the_name_avoids_one_an_earlier_rewrite_reserved():
+    """Nothing in the source is called `extracted`, but the caller says it is.
+
+    This is the two-sites-one-file case. Both rewrites read the same original
+    bytes, so the source alone cannot tell the second that the first already
+    took the name. Reserving it is the only channel that can, and without it
+    javac rejects the merged file with "already defined" (VD-89).
+    """
+    source = b"""public class T {
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i]);
+            }
+        }
+        System.out.println("done");
+    }
+}
+"""
+    outcome = transform(source, line=2, reserved=frozenset({"extracted"}))
+    assert outcome.applied
+
+    rewritten = apply_edits(source, outcome.edits).decode()
+    assert "private void extracted2(int[] xs)" in rewritten
+
+
+def test_a_reserved_name_that_clashes_again_moves_further_along():
+    """`extracted` is declared and `extracted2` is reserved, so only 3 is free."""
+    source = b"""public class T {
+    void extracted() {
+    }
+
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i]);
+            }
+        }
+        System.out.println("done");
+    }
+}
+"""
+    outcome = transform(source, line=5, reserved=frozenset({"extracted2"}))
+
+    assert "private void extracted3(int[] xs)" in apply_edits(source, outcome.edits).decode()
+
+
+def test_the_chosen_name_is_reported_back():
+    """The caller cannot reserve what the outcome does not name."""
+    source = b"""public class T {
+    void m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                System.out.println(xs[i]);
+            }
+        }
+        System.out.println("done");
+    }
+}
+"""
+    assert transform(source).introduced == ("extracted",)
+
+
+def test_a_refusal_introduces_nothing():
+    """A declined site must not reserve a name; the next site would skip it."""
+    source = b"""public class T {
+    int m(int[] xs) {
+        for (int i = 0; i < xs.length; i++) {
+            if (xs[i] > 0) {
+                return xs[i];
+            }
+        }
+        return 0;
+    }
+}
+"""
+    outcome = transform(source)
+
+    assert not outcome.applied
+    assert outcome.introduced == ()
 
 
 def test_the_largest_block_is_the_one_chosen():

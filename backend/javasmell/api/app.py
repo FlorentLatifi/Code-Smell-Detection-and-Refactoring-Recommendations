@@ -144,6 +144,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         payload: dict[str, Any] = {
             "summary": {
                 "files": len(project.units),
+                # Sa prej tyre nuk u parsuan pastër. Pa këtë, një projekt ku
+                # gjysma e skedarëve dështojnë lexohet si kod i pastër (VD-91).
+                "unparsed": len(project.unparsed),
                 "classes": len(classes),
                 "methods": sum(len(c.methods) for c in classes),
                 "smells": len(smells),
@@ -247,7 +250,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if site is None:
             return error("not_found", "no such entity at that line", 404)
 
-        outcome = automated[1](site)
+        # Nje vend i vetem, ndaj asnje emer nuk eshte zene ende nga nje rishkrim
+        # i mepareshem: preview-ja kurre nuk i grumbullon dy mbi te njejtin skedar.
+        outcome = automated[1](site, frozenset())
         return _outcome_json(outcome, source)
 
     @app.post("/refactor/patch", response_model=None)
@@ -292,6 +297,21 @@ def _plan_json(result: Plan, javac: str | None) -> dict[str, Any]:
         "dropped": [
             {"file_path": d.relative, "verdict": d.verdict.value, "detail": d.detail}
             for d in result.dropped
+        ],
+        # Cila arsye e ndaloi secilin vend. Numri i vetem u ruajt te `declined`
+        # per thirresit e vjeter; ky eshte pergjigjja e pyetjes «pse jo ky».
+        "declines": [
+            {
+                "file_path": d.file_path,
+                "class_name": d.class_name,
+                "method": d.method,
+                "start_line": d.start_line,
+                "smell_type": d.smell_type,
+                "refactoring": d.refactoring,
+                "reason": d.reason,
+                "detail": d.detail,
+            }
+            for d in result.declines
         ],
         "applied": [
             {

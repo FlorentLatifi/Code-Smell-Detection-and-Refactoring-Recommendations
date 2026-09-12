@@ -24,7 +24,11 @@ from javasmell.refactor import extract_method, guard_clauses, introduce_paramete
 from javasmell.refactor.base import Outcome
 from javasmell.refactor.locate import Site
 
-Transformation = Callable[[Site], Outcome]
+#: Every transformation takes the site and the names an earlier rewrite of the
+#: same file already introduced. Only Extract Method reads the second argument;
+#: it is in the signature so the registry holds one type rather than two, and so
+#: a transformation that starts inventing names cannot forget to ask (VD-89).
+Transformation = Callable[[Site, frozenset[str]], Outcome]
 
 # Keyed by the smell_type a detector emits, valued by the refactoring name from
 # the REFACTORINGS contract and the function that performs it.
