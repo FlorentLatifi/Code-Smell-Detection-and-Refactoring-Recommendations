@@ -96,6 +96,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-84 | Paneli tregon pse nuk ndezin, dhe kundrejt çfarë | 2026-09-10 | aktiv |
 | VD-85 | Auditim i ndërfaqes, dhe çfarë u ndreq prej tij | 2026-09-12 | aktiv |
 | VD-86 | Lista pret te dyqind rreshta, dhe arsyeja u mat | 2026-09-12 | aktiv |
+| VD-87 | Tri suita testesh të shtuara për notën, jo për nevojën | 2026-09-12 | aktiv |
 
 ---
 
@@ -3205,3 +3206,52 @@ djathtas që lëvizin mes tyre. U shtua lidhja «Kalo te përmbajtja», e cila k
 çdo përdorues me tastierë nga kalimi nëpër kokë e skeda para çdo liste.
 `Results.tsx` ra nga 548 rreshta te 452, me gjashtë primitiva paraqitjeje te
 `Panels.tsx`.
+
+
+### VD-87: Tri suita testesh të shtuara për notën, jo për nevojën
+
+**Konteksti.** Pas VD-86 u kërkua që ndërfaqja të arrinte dhjetë nga dhjetë. Nota
+është gjykim dhe nuk ngrihet me kërkesë; ajo që u pyet në vend të saj ishte çfarë
+do të kërkonte vërtet një notë e tillë. Përgjigjja ishte tri gjëra, dhe të tria u
+shtuan. Kjo hyrje regjistron **pse**, sepse arsyeja nuk është e zakonshme për këtë
+depo.
+
+**Asnjëra nuk erdhi nga një nevojë e matur.** Testet ekzistuese mbulonin logjikën e
+pastër dhe vlerësimi i dy auditimeve nxori katërmbëdhjetë defekte pa to. Ato u
+shtuan sepse u kërkuan, dhe janë të heqshme pa humbje për çdo gjë tjetër që kjo
+depo mat. Shkruar këtu që një lexues i mëvonshëm të mos hamendësojë një arsye
+teknike që nuk ekzistoi.
+
+**Çfarë u shtua.**
+
+`App.dom.test.tsx` — pesëmbëdhjetë teste renderimi mbi `jsdom`, ku secili i
+përgjigjet një defekti të vërtetë të VD-85 ose VD-86 e jo një rruge të zgjedhur për
+mbulim. Mjedisi deklarohet te rreshti i parë i skedarit, që testet e logjikës të
+mbeten mbi `node`.
+
+`a11y.dom.test.tsx` — pesë kalime të `axe-core` mbi ekranet kryesore. Kontrasti
+çaktivizohet me qëllim: `jsdom` nuk llogarit ngjyra të trashëguara, dhe një mjet
+që pretendon më shumë se sa mat është më keq se asnjë mjet.
+
+`e2e/analysis.spec.ts` — pesë kalime me Playwright mbi të dy shërbimet e ndezura.
+Kjo është e vetmja që mbulon diçka që të tjerat nuk e mbulojnë dot: mospërputhjen
+mes asaj që serveri dërgon dhe asaj që ndërfaqja pret. Një fushë e riemërtuar te
+përgjigjja i kalon të dyja suitat e tjera dhe e prish ekranin.
+
+**axe gjeti diçka që unë nuk e pashë.** Paneli i rezultateve kapërcente një nivel
+titulli: faqja mban një `h1`, dhe kornizat e paneleve nisnin te `h3`. U zhvendos
+tërë zinxhiri — korniza te `h2`, shtatë tituj të brendshëm te `h3` — dhe pamja
+mbeti e njëjta, sepse stili lidhet me `.panel` e jo me etiketën. Ky është
+pikërisht lloji i gabimi që leximi me sy e humbet dhe një mjet e kap.
+
+**Një defekt timin u kap nga testet e reja.** `role="tabpanel"` ishte vënë mbi vetë
+`<main>`, çka e mbivendos rolin e tij të nënkuptuar dhe e lë faqen pa landmark
+kryesor. Testi që kërkonte `role="main"` dështoi menjëherë. Të dy rolet i duhen, te
+elemente të ndara.
+
+**Çmimi.** Katër varësi zhvillimi: `jsdom`, `@testing-library/react`,
+`@testing-library/dom` (të gjitha MIT), `axe-core` (MPL-2.0, e përdorur vetëm te
+testet dhe kurrë e dërguar), dhe `@playwright/test` (Apache-2.0). Të gjitha të
+pinuara saktësisht. Një punë e re te CI-ja shkarkon Chromium-in, çka i shton rreth
+një minutë çdo shtytjeje — hapi më i shtrenjtë i tërë workflow-it, për një suitë me
+pesë teste.

@@ -52,4 +52,7 @@ data/*.pid
 
 # Frontend build output
 frontend/dist/
+# Gjurmet dhe raportet e Playwright-it, te rigjenerueshme nga cdo ekzekutim.
+frontend/test-results/
+frontend/playwright-report/
 frontend/*.tsbuildinfo

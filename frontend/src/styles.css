@@ -802,12 +802,12 @@ select:hover {
   overflow-x: auto;
 }
 
-.panel h3 {
+.panel h2 {
   margin: 0 0 5px;
   font: 400 1.1rem/1.2 var(--serif);
 }
 
-.panel h4 {
+.panel h3 {
   margin: 20px 0 7px;
   color: var(--ink-faint);
   font: 600 0.7rem/1 var(--sans);
@@ -815,7 +815,7 @@ select:hover {
   text-transform: uppercase;
 }
 
-.panel h4:first-of-type {
+.panel h3:first-of-type {
   margin-top: 12px;
 }
 

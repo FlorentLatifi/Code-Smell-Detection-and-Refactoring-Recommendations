@@ -14,4 +14,9 @@ export default defineConfig({
     fs: { allow: [".."] },
     proxy: { "/api": { target: "http://127.0.0.1:8000", rewrite: (p) => p.replace(/^\/api/, "") } },
   },
+  test: {
+    // `e2e/` i përket Playwright-it dhe importon API-në e tij; vitest do të
+    // provonte ta mblidhte dhe do të dështonte pa e ekzekutuar asnjë test.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
+  },
 });

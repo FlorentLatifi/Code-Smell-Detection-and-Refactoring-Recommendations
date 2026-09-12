@@ -176,9 +176,9 @@ export function Results() {
               label="e vendeve"
             />
           </div>
-          <h4>Pse u refuzuan</h4>
+          <h3>Pse u refuzuan</h3>
           <Distribution counts={refactoring.refused_by_reason} labels={REFUSAL_SQ} total={refactoring.detected} />
-          <h4>Verifikimi i atyre që u aplikuan</h4>
+          <h3>Verifikimi i atyre që u aplikuan</h3>
           <Distribution counts={refactoring.verdicts} labels={VERDICT_SQ} total={refactoring.applied} />
         </Panel>
       </div>
@@ -203,12 +203,12 @@ export function Results() {
 
         <div className="split">
           <div>
-            <h4>Recall sipas ashpërsisë që caktuan rishikuesit</h4>
+            <h3>Recall sipas ashpërsisë që caktuan rishikuesit</h3>
             <SeverityRecalls smell={smell} />
             <Blockers smell={smell} />
-            <h4>Pajtimi mes dy qasjeve</h4>
+            <h3>Pajtimi mes dy qasjeve</h3>
             <AgreementBar smell={smell} />
-            <h4>Veçoritë që zgjodhi modeli</h4>
+            <h3>Veçoritë që zgjodhi modeli</h3>
             <p className="features">
               {ml.per_smell[smell].top_features.map((feature) => (
                 <code key={feature}>{feature}</code>
@@ -216,7 +216,7 @@ export function Results() {
             </p>
           </div>
           <div>
-            <h4>Sa lëviz MCC-ja kur zhvendoset një prag</h4>
+            <h3>Sa lëviz MCC-ja kur zhvendoset një prag</h3>
             <ThresholdSweep smell={smell} />
           </div>
         </div>
@@ -259,7 +259,7 @@ function Blockers({ smell }: { smell: string }) {
   const many = blocking.missed - blocking.blocked_by_one_clause;
   return (
     <>
-      <h4>Pse nuk ndezi</h4>
+      <h3>Pse nuk ndezi</h3>
       <p className="quiet">
         {blocking.missed.toLocaleString("sq")} raste që rishikuesit i quajtën të tilla dhe
         strategjia nuk i ndezi. Te {many.toLocaleString("sq")} prej tyre dështoi më shumë se

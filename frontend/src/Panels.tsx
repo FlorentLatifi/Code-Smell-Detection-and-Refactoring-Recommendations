@@ -87,7 +87,9 @@ export function Panel({
 }) {
   return (
     <section className="panel">
-      <h3>{title}</h3>
+      {/* `h2`, jo `h3`: faqja mban një `h1` te koka, dhe axe e kapi kapërcimin e
+          nivelit. Pamja nuk ndryshon — stili lidhet me `.panel`, jo me etiketën. */}
+      <h2>{title}</h2>
       {note && <p className="quiet">{note}</p>}
       {children}
     </section>

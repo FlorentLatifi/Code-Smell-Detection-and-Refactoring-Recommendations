@@ -313,7 +313,7 @@ export function App() {
             role="tab"
             id="tab-analysis"
             aria-selected={view === "analysis"}
-            aria-controls="content"
+            aria-controls="panel"
             tabIndex={view === "analysis" ? 0 : -1}
             className={view === "analysis" ? "tab on" : "tab"}
             onClick={() => show("analysis")}
@@ -325,7 +325,7 @@ export function App() {
             role="tab"
             id="tab-results"
             aria-selected={view === "results"}
-            aria-controls="content"
+            aria-controls="panel"
             tabIndex={view === "results" ? 0 : -1}
             className={view === "results" ? "tab on" : "tab"}
             onClick={() => show("results")}
@@ -336,11 +336,14 @@ export function App() {
         </nav>
       </header>
 
-      <main
-        id="content"
+      {/* `role="tabpanel"` mbi vetë `<main>` e mbivendos rolin e tij të nënkuptuar,
+          dhe faqja mbetet pa landmark kryesor. Të dy rolet i duhen: njëri i thotë
+          lexuesit ku nis përmbajtja, tjetri se cila skedë e drejton. */}
+      <main id="content" tabIndex={-1}>
+      <div
+        id="panel"
         role="tabpanel"
         aria-labelledby={view === "results" ? "tab-results" : "tab-analysis"}
-        tabIndex={-1}
       >
       {view === "results" && <Results />}
 
@@ -536,6 +539,7 @@ export function App() {
       )}
       </>
       )}
+      </div>
       </main>
     </div>
   );
