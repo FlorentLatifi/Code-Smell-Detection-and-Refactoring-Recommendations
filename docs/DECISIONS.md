@@ -95,6 +95,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-83 | Pika e kontrollit ruan çdo rishkrim, jo çdo skedar | 2026-09-10 | aktiv |
 | VD-84 | Paneli tregon pse nuk ndezin, dhe kundrejt çfarë | 2026-09-10 | aktiv |
 | VD-85 | Auditim i ndërfaqes, dhe çfarë u ndreq prej tij | 2026-09-12 | aktiv |
+| VD-86 | Lista pret te dyqind rreshta, dhe arsyeja u mat | 2026-09-12 | aktiv |
 
 ---
 
@@ -3165,3 +3166,42 @@ sipërfaqe e vdekur sepse frontend-i nuk e thërret. Ai është vendim i regjist
 **Ndarja e bundle-it u refuzua me qëllim.** 82 KB nga 219 janë JSON rezultatesh që
 i duhen vetëm skedës së dytë. Mjeti shërbehet nga localhost te një përdorues,
 ndaj kursimi nuk ka efekt real, dhe optimizimi pa ndikim është kohë e humbur.
+
+
+### VD-86: Lista pret te dyqind rreshta, dhe arsyeja u mat
+
+**Konteksti.** Auditimi i VD-85 u bë mbi fikstuarat, ku një projekt jep katër
+vende. Pyetja «a janë bërë të gjitha përmirësimet» e detyroi matjen mbi një
+projekt të vërtetë, dhe ajo nxori një defekt që auditimi i parë nuk e kishte parë.
+
+**Çfarë u mat.** Mbi `apache/ambari`, 3 306 skedarë Java: **5 848 erëra mbi 4 249
+vende**. Lista i jepte të gjithë te DOM-i — **53 821 nyje** — dhe çdo shkronjë e
+shkruar te kërkimi kushtonte **146 ms** bllokim. Mbi njëqind milisekonda shkrimi
+ndihet i ngecur, ndaj kjo nuk ishte shqetësim teorik.
+
+**Vendimi.** Dyqind rreshta hyjnë te DOM-i njëherësh, me një rresht poshtë që
+thotë sa mbeten dhe një buton që shton dyqind të tjera. Numërimi mbetet i plotë —
+«757 nga 4 249 vende» — ndaj asgjë nuk fshihet dhe emëruesi nuk ndryshon.
+
+**Pa virtualizim dhe pa bibliotekë.** Një dritare rrëshqitëse është kod dhe varësi
+për një problem që një kufi e zgjidh plotësisht, dhe §7 kërkon zgjidhjen më të
+thjeshtë që është e saktë. Numri nuk është kompromis teknik: lista renditet me të
+rëndën e para, ndaj dyqind janë shumë më tepër se sa lexon dikush para se të
+ngushtojë kërkimin.
+
+**Rezultati i matur pas ndryshimit.**
+
+| | Para | Pas |
+|---|---|---|
+| Nyje DOM | 53 821 | 2 811 |
+| Rreshta të renderuar | 4 249 | 200 |
+| Bllokim për shkronjë | 146 ms | nën kufirin e matjes |
+
+**Gjërat e tjera që dolën nga e njëjta pyetje.** Katër tranzicione CSS nuk
+respektonin `prefers-reduced-motion`, dhe tani e respektojnë. Skedat ishin butona
+me `aria-pressed`, çka i thotë lexuesit se butoni është i shtypur e jo se është
+skedë mes skedash; tani janë `tablist` me `aria-selected`, me shigjetat majtas e
+djathtas që lëvizin mes tyre. U shtua lidhja «Kalo te përmbajtja», e cila kursen
+çdo përdorues me tastierë nga kalimi nëpër kokë e skeda para çdo liste.
+`Results.tsx` ra nga 548 rreshta te 452, me gjashtë primitiva paraqitjeje te
+`Panels.tsx`.

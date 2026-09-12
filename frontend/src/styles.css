@@ -229,6 +229,44 @@ h1 {
   color: var(--ink-faint);
 }
 
+/* Lidhja e para te rendi i tabulimit, e padukshme derisa merr fokusin. Pa të, një
+   përdorues me tastierë kalon çdo herë nëpër kokë dhe nëpër skeda para se të
+   arrijë te lista. */
+.skip {
+  position: absolute;
+  left: -9999px;
+  z-index: 10;
+  padding: 10px var(--s-3);
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.skip:focus {
+  left: var(--s-3);
+  top: var(--s-3);
+}
+
+/* Rreshti nën listën e prerë: sa mbeten dhe si të shihen. */
+.more {
+  margin: var(--s-3) 0 0;
+  padding: 0 var(--s-3) var(--s-3);
+  font-size: var(--t-small);
+}
+
+/* Lëvizja është zbukurim këtu, kurrë informacion, ndaj hiqet pa humbje kur
+   sistemi e kërkon. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* E dukshme vetëm për lexuesit e ekranit. Distinktivët `✎` dhe `A∩B` e mbanin
    kuptimin te atributi `title`, i cili nuk arrihet as me tastierë as me prekje. */
 /* Buton që lexohet si lidhje: veprim brenda një fjalie, jo veprim i vetvetes. */

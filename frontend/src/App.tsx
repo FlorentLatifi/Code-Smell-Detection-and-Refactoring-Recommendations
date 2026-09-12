@@ -16,6 +16,21 @@ import type { Analysis, Severity, Smell } from "./types";
 const REMEMBERED_PATH = "javasmell.path";
 
 /**
+ * Sa rreshta hyjnë te DOM-i njëherësh.
+ *
+ * Lista i jepte të gjithë. Mbi `apache/ambari` kjo do të thoshte 4 249 rreshta dhe
+ * 53 821 nyje, dhe **146 ms bllokim për çdo shkronjë** të shkruar te kërkimi —
+ * mjaftueshëm sa shkrimi të ndihet i ngecur. Numri nuk është zgjedhur si kompromis
+ * teknik: lista renditet me të rëndën e para, ndaj dyqind rreshta janë shumë më
+ * tepër se sa lexon dikush para se të ngushtojë kërkimin.
+ *
+ * Pa virtualizim dhe pa bibliotekë. Një dritare rrëshqitëse do të ishte kod dhe
+ * varësi për një problem që një kufi me «shfaq më shumë» e zgjidh plotësisht, dhe
+ * §7 i `ENGINEERING.md` e kërkon zgjidhjen më të thjeshtë që është e saktë.
+ */
+const PAGE = 200;
+
+/**
  * Gjendja që i përket adresës, e jo vetëm kujtesës së komponentit.
  *
  * Pa këtë, rifreskimi e zbrazte gjithçka, butoni «prapa» e mbyllte faqen në vend
@@ -113,6 +128,7 @@ export function App() {
   const [askModel, setAskModel] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [selected, setSelected] = useState<Site | null>(null);
+  const [limit, setLimit] = useState(PAGE);
   // Cila erë e vendit të zgjedhur shfaqet djathtas. Rivendoset te më e rënda
   // sa herë zgjidhet një vend tjetër, sepse ajo është ajo që lexuesi kërkoi.
   const [shownSmell, setShownSmell] = useState<Smell | null>(null);
@@ -152,6 +168,11 @@ export function App() {
 
   // Adresa përditësohet pas çdo renderimi që e ndryshon atë që ajo mban.
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
+
+  // Një filtër i ri e kthen dritaren te fillimi: rreshtat e zgjeruar i përkisnin
+  // listës së mëparshme, dhe mbajtja e tyre do të hapte një dritare arbitrare mbi
+  // një listë tjetër.
+  useEffect(() => setLimit(PAGE), [severity, kind, query, agreed, order, screen]);
 
   const smells = screen.state === "ready" ? screen.analysis.smells : [];
   const model = useMemo(
@@ -201,6 +222,14 @@ export function App() {
   }, [allSites, matches, order]);
 
   /**
+   * Vetëm kreu i listës hyn te DOM-i; pjesa tjetër vjen me kërkesë.
+   *
+   * `shown` mbetet emëruesi i plotë — numërimi, filtrat dhe hotspot-et lexohen
+   * prej tij — ndaj kufiri prek vetëm sa nyje ndërton shfletuesi.
+   */
+  const visible = useMemo(() => shown.slice(0, limit), [shown, limit]);
+
+  /**
    * Up and down move through the findings.
    *
    * The list is the part a reader walks: a hundred rows read one after another
@@ -216,13 +245,13 @@ export function App() {
     // një rresht.
     if (!(event.target as HTMLElement).closest("button.row")) return;
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    if (shown.length === 0) return;
+    if (visible.length === 0) return;
     event.preventDefault();
 
-    const current = selected ? shown.indexOf(selected) : -1;
+    const current = selected ? visible.indexOf(selected) : -1;
     const step = event.key === "ArrowDown" ? 1 : -1;
-    const next = Math.min(Math.max(current + step, 0), shown.length - 1);
-    choose(shown[next]);
+    const next = Math.min(Math.max(current + step, 0), visible.length - 1);
+    choose(visible[next]);
     listRef.current?.querySelectorAll<HTMLButtonElement>("button.row")[next]?.focus();
   }
 
@@ -247,6 +276,21 @@ export function App() {
     setAgreed(false);
   }
 
+  /**
+   * Majtas dhe djathtas lëvizin mes skedave.
+   *
+   * Kjo është ajo që pret dikush që njeh modelin `tablist`: tabulimi hyn te grupi
+   * një herë, dhe shigjetat zgjedhin brenda tij. Pa të, `tabIndex={-1}` mbi skedën
+   * e pazgjedhur do ta bënte atë të paarritshme fare.
+   */
+  function moveTab(event: React.KeyboardEvent): void {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const next = view === "analysis" ? "results" : "analysis";
+    show(next);
+    requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
+  }
+
   function show(next: View): void {
     setView(next);
     // Pas renderimit, ndryshe fokusi shkon te përmbajtja e vjetër.
@@ -255,28 +299,49 @@ export function App() {
 
   return (
     <div className="page">
+      <a className="skip" href="#content">
+        Kalo te përmbajtja
+      </a>
       <header>
         <h1>JavaSmell</h1>
         <p className="tagline">Detektim i code smells dhe rekomandime refaktorimi</p>
-        <nav className="tabs">
+        {/* `aria-pressed` i thoshte lexuesit se butoni është i shtypur, jo se është
+            skedë mes skedash. `tablist` e thotë sa janë, cila është e zgjedhura, dhe
+            se ato drejtojnë një panel — çka është e vërteta e kësaj ndërfaqeje. */}
+        <nav className="tabs" role="tablist" aria-label="Pamjet">
           <button
+            role="tab"
+            id="tab-analysis"
+            aria-selected={view === "analysis"}
+            aria-controls="content"
+            tabIndex={view === "analysis" ? 0 : -1}
             className={view === "analysis" ? "tab on" : "tab"}
             onClick={() => show("analysis")}
-            aria-pressed={view === "analysis"}
+            onKeyDown={moveTab}
           >
             Analizo një projekt
           </button>
           <button
+            role="tab"
+            id="tab-results"
+            aria-selected={view === "results"}
+            aria-controls="content"
+            tabIndex={view === "results" ? 0 : -1}
             className={view === "results" ? "tab on" : "tab"}
             onClick={() => show("results")}
-            aria-pressed={view === "results"}
+            onKeyDown={moveTab}
           >
             Rezultatet e vlerësimit
           </button>
         </nav>
       </header>
 
-      <main id="content" tabIndex={-1}>
+      <main
+        id="content"
+        role="tabpanel"
+        aria-labelledby={view === "results" ? "tab-results" : "tab-analysis"}
+        tabIndex={-1}
+      >
       {view === "results" && <Results />}
 
       {view === "analysis" && (
@@ -373,7 +438,7 @@ export function App() {
                   </p>
                 )}
                 <ul>
-                  {shown.map((site) => (
+                  {visible.map((site) => (
                     <li key={site.key}>
                       <button
                         className={`row ${site.worst}${selected?.key === site.key ? " selected" : ""}`}
@@ -424,6 +489,16 @@ export function App() {
                     </li>
                   ))}
                 </ul>
+                {shown.length > visible.length && (
+                  <p className="more">
+                    <button className="link" onClick={() => setLimit((n) => n + PAGE)}>
+                      Shfaq {Math.min(PAGE, shown.length - visible.length)} të tjera
+                    </button>{" "}
+                    <span className="quiet">
+                      nga {shown.length - visible.length} që mbeten, të renditura më poshtë
+                    </span>
+                  </p>
+                )}
               </section>
 
               <section className="detail">
