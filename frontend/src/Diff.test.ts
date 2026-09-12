@@ -101,3 +101,76 @@ describe("withContext", () => {
     expect(rows).toEqual(["gap"]);
   });
 });
+
+// Prerja e prefiksit dhe e prapashtesës u shtua sepse `/refactor/preview` e kthen
+// tërë skedarin, dhe tabela LCS mbi të është kuadratike. Testet më poshtë e
+// mbajnë atë prerje të ndershme: rezultati duhet të mbetet i njëjti, dhe numrat e
+// rreshtave duhet të mbeten ata të skedarit të plotë e jo të segmentit.
+describe("prerja para tabelës", () => {
+  it("jep të njëjtin rezultat si diff-i mbi tërë skedarin", () => {
+    // Njëqind rreshta të njëjtë, një i ndryshuar në mes, njëqind të njëjtë.
+    const head = Array.from({ length: 100 }, (_, i) => `head${i}`);
+    const tail = Array.from({ length: 100 }, (_, i) => `tail${i}`);
+    const before = [...head, "old", ...tail].join("\n");
+    const after = [...head, "new", ...tail].join("\n");
+
+    const lines = diff(before, after);
+    const changed = lines.filter((l) => l.kind !== "same");
+
+    expect(changed.map((l) => l.text)).toEqual(["old", "new"]);
+    expect(lines.filter((l) => l.kind === "same")).toHaveLength(200);
+  });
+
+  it("mban numrat e rreshtave të skedarit, jo të segmentit", () => {
+    // Rreshti i ndryshuar është i 101-ti në të dyja anët. Po të numëroheshin
+    // brenda segmentit të prerë, ai do të dilte 1 — dhe lexuesi do ta kërkonte
+    // te rreshti i gabuar i burimit të vet.
+    const head = Array.from({ length: 100 }, (_, i) => `head${i}`);
+    const before = [...head, "old", "z"].join("\n");
+    const after = [...head, "new", "z"].join("\n");
+
+    const lines = diff(before, after);
+    const removed = lines.find((l) => l.kind === "removed");
+    const added = lines.find((l) => l.kind === "added");
+
+    expect(removed?.before).toBe(101);
+    expect(added?.after).toBe(101);
+  });
+
+  it("numëron saktë kur njëra anë shtohet vetëm në fund", () => {
+    // Extract Method e bën pikërisht këtë: blloku zëvendësohet dhe metoda e re
+    // shtohet në fund, ndaj prapashtesa e përbashkët është bosh.
+    const lines = diff("a\nb", "a\nb\nc\nd");
+
+    expect(shape(lines)).toBe("==++");
+    expect(lines[2].after).toBe(3);
+    expect(lines[3].after).toBe(4);
+  });
+
+  it("nuk ngec kur skedari është i madh dhe ndryshimi i vogël", () => {
+    // Pa prerje, kjo do të ishte një tabelë me 36 milionë qeliza. Me prerje, ajo
+    // që hyn te tabela është një rresht kundrejt një rreshti.
+    const filler = Array.from({ length: 6000 }, (_, i) => `line ${i}`);
+    const before = [...filler, "old"].join("\n");
+    const after = [...filler, "new"].join("\n");
+
+    const started = Date.now();
+    const lines = diff(before, after);
+
+    expect(Date.now() - started).toBeLessThan(500);
+    expect(lines.filter((l) => l.kind !== "same")).toHaveLength(2);
+  });
+
+  it("kthen bllok-hequr dhe bllok-shtuar kur edhe pas prerjes është tepër i madh", () => {
+    // Asnjë rresht i përbashkët, ndaj prerja nuk heq gjë dhe tabela do të kalonte
+    // kufirin. Dalja mbetet e saktë dhe e plotë; thjesht më pak e hollë.
+    const before = Array.from({ length: 1600 }, (_, i) => `L${i}`).join("\n");
+    const after = Array.from({ length: 1600 }, (_, i) => `R${i}`).join("\n");
+
+    const lines = diff(before, after);
+
+    expect(lines.filter((l) => l.kind === "removed")).toHaveLength(1600);
+    expect(lines.filter((l) => l.kind === "added")).toHaveLength(1600);
+    expect(lines.filter((l) => l.kind === "same")).toHaveLength(0);
+  });
+});

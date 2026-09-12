@@ -154,7 +154,9 @@ def test_a_path_outside_the_root_is_refused_over_http(client, path):
     response = client.post("/analyze", json={"path": path})
 
     assert response.status_code == 400
-    assert response.json()["error"]["code"] == "path_rejected"
+    # Emri i sakte, jo nje kod i vetem per shtate refuzime: nderfaqja duhet ta
+    # dalloje daljen jashte rrenjes nga nje shteg qe thjesht nuk ekziston.
+    assert response.json()["error"]["code"] == "path_outside_root"
 
 
 def test_an_error_carries_a_code_and_a_message_only(client):
@@ -363,7 +365,7 @@ def test_patch_refuses_a_path_outside_the_root(client):
     response = client.post("/refactor/patch", json={"path": "../secret"})
 
     assert response.status_code == 400
-    assert response.json()["error"]["code"] == "path_rejected"
+    assert response.json()["error"]["code"] == "path_outside_root"
 
 
 def test_a_spent_budget_yields_a_shorter_patch_not_an_error(tmp_path):

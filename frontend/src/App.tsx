@@ -150,6 +150,12 @@ export function App() {
    * missing is moving the focus with the selection.
    */
   function navigate(event: React.KeyboardEvent) {
+    // Filtrat rrinë brenda të njëjtës seksion, ndaj ngjarja e tyre fluturon lart
+    // deri këtu. Pa këtë kontroll, shigjetat mbi një `select` ose brenda kutisë
+    // së kërkimit anuloheshin dhe fokusi ikte te lista: filtri nuk ndryshohej dot
+    // fare me tastierë. Shigjetat u përkasin rreshtave vetëm kur fokusi është mbi
+    // një rresht.
+    if (!(event.target as HTMLElement).closest("button.row")) return;
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     if (shown.length === 0) return;
     event.preventDefault();

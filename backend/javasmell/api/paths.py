@@ -29,7 +29,17 @@ class PathRejected(Exception):
     The message is safe to show a caller: it never contains a resolved absolute
     path, because echoing one back tells an attacker where the root is and
     confirms what exists outside it.
+
+    ``code`` names *which* rejection this is. All seven used to arrive at the
+    caller under one code, which meant an interface could not tell "you typed
+    nothing" from "that tree is too large" without matching on English prose.
+    A caller that has to parse a message to know what happened does not have a
+    contract, it has a guess.
     """
+
+    def __init__(self, message: str, code: str = "path_rejected") -> None:
+        super().__init__(message)
+        self.code = code
 
 
 def _resolved(path: Path) -> Path:
@@ -46,11 +56,11 @@ def confine(candidate: str, root: Path) -> Path:
     see or reason about.
     """
     if not candidate or not candidate.strip():
-        raise PathRejected("the path is empty")
+        raise PathRejected("the path is empty", "path_empty")
 
     root_resolved = _resolved(root)
     if not root_resolved.is_dir():
-        raise PathRejected("the configured root is not a directory")
+        raise PathRejected("the configured root is not a directory", "root_missing")
 
     requested = Path(candidate)
     joined = requested if requested.is_absolute() else root_resolved / requested
@@ -59,10 +69,10 @@ def confine(candidate: str, root: Path) -> Path:
     # Resolution has already followed every symlink, so this single check covers
     # both `..` traversal and a link pointing out of the root.
     if target != root_resolved and root_resolved not in target.parents:
-        raise PathRejected("the path is outside the allowed directory")
+        raise PathRejected("the path is outside the allowed directory", "path_outside_root")
 
     if not target.exists():
-        raise PathRejected("the path does not exist")
+        raise PathRejected("the path does not exist", "path_not_found")
 
     return target
 
@@ -84,13 +94,16 @@ def java_files_under(target: Path, *, max_files: int, max_bytes: int) -> list[Pa
                 continue
             files.append(path)
             if len(files) > max_files:
-                raise PathRejected(f"more than {max_files} Java files; narrow the path")
+                raise PathRejected(
+                    f"more than {max_files} Java files; narrow the path", "too_many_files"
+                )
             total += path.stat().st_size
             if total > max_bytes:
                 raise PathRejected(
-                    f"more than {max_bytes // 1_000_000} MB of source; narrow the path"
+                    f"more than {max_bytes // 1_000_000} MB of source; narrow the path",
+                    "too_much_source",
                 )
 
     if not files:
-        raise PathRejected("no Java files found at that path")
+        raise PathRejected("no Java files found at that path", "no_java_files")
     return files

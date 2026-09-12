@@ -125,7 +125,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.exception_handler(PathRejected)
     async def _rejected(_: Request, exc: PathRejected) -> JSONResponse:
-        return error("path_rejected", str(exc), 400)
+        return error(exc.code, str(exc), 400)
 
     @app.get("/health")
     def health() -> dict[str, Any]:
