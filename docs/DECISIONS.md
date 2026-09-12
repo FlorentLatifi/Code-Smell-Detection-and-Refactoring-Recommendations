@@ -3807,3 +3807,38 @@ tani është rrjet 4, 8, 12, 16, 24, 32, 48, dhe çdo kontroll ka lartësi 34.
 vetëm në tonalitet, që kontrasti të mbetet mbi kufirin e WCAG AA. Tema e errët u
 përkthye me të njëjtat shenja. Asnjë përmbajtje, asnjë shifër dhe asnjë sjellje nuk
 u prek: ndryshoi vetëm gjuha vizuale.
+
+### VD-105: Një faqe dizajni me Tailwind, e ndarë nga aplikacioni
+
+**Konteksti.** Autori kërkoi një panel zhvilluesi në stilin e SonarQube-s ose të
+Vercel-it, me React, Tailwind, Recharts dhe ikona nga lucide, me të dhëna të
+rreme që pamja të gjykohet menjëherë. Kjo bie ndesh me dy vendime të shkruara:
+«një fletë stili, pa framework» te kreu i `styles.css`, dhe grafikët e shkruar me
+dorë si SVG pa bibliotekë (VD-102).
+
+**Zgjidhja: e ndarë, jo e zëvendësuar.** Faqja e re jeton te `design.html`, një
+hyrje e dytë e Vite-s, me komponentët e vet te `src/design/`. Aplikacioni që
+punon nuk e importon Tailwind-in, nuk e importon Recharts-in, dhe nuk ndryshoi
+me asnjë rresht. Pra pamja gjykohet pa vënë në rrezik një ndërfaqe të testuar,
+dhe nëse miratohet, komponentët lidhen me API-në dhe të dhënat e rreme hiqen.
+
+**Të dhënat e rreme thuhen në ekran.** Një shirit mbi panelin e deklaron që çdo
+shifër është e shpikur. Te një projekt ku çdo numër tjetër vjen nga një skedar i
+komituar, një panel që duket i vërtetë dhe nuk është do të ishte gjëja më e keqe
+që mund të ndërtohej.
+
+**Tri varësi të reja**, të gjitha MIT dhe të pinuara saktësisht: `tailwindcss`
+me shtojcën e vet për Vite, `lucide-react` për ikonat, `recharts` për unazën dhe
+shtyllat. Ato hyjnë në paketimin e `design.html` e jo te ai i aplikacionit; matur
+pas ndërtimit, paketa e aplikacionit mbeti 100 kB dhe ajo e faqes së dizajnit
+doli 443 kB.
+
+**Ç'u ndreq gjatë ndërtimit.** Një shtyllë `1fr` e ka `min-width: auto`, ndaj nuk
+tkurret nën min-content-in e fëmijës: kartat e shtynin rrjetin 177 piksela jashtë
+ekranit te 412 piksela gjerësi. `min-w-0` te çdo fëmijë rrjeti dhe mbështjellje te
+shiriti i kokës e zgjidhin. E njëjta gabim si te legjenda e unazës në VD-103, në
+një sistem tjetër stilesh.
+
+**Ç'mbetet e hapur.** Nëse kjo pamje miratohet, ka dy rrugë: ta migrojmë
+aplikacionin te Tailwind-i dhe ta heqim `styles.css`, ose ta mbajmë `styles.css`
+dhe të huazojmë vetëm formën. Vendimi nuk merret para se pamja të pëlqehet.
