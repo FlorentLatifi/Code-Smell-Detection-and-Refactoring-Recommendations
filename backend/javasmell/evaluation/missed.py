@@ -248,12 +248,13 @@ def recall_by_severity(
     """Recall split by the severity the reviewers assigned, at one aggregation.
 
     ``scoring.recall_by_severity`` reports this split for the default
-    aggregation only, and under MEAN there is barely a gradient left to see:
-    six reviewers of whom four say "none" average down to "minor" almost
-    regardless of what the other two said, so the severe end of the scale is
-    nearly empty. Under MAX the labels keep their spread, and whether recall
-    rises with severity is exactly the question of whether the strategy
-    disagrees with reviewers at random or only where they were least sure.
+    aggregation only, and under MEAN there is barely a gradient left to see.
+    Most MLCQ samples carry two reviews, so one "none" against one severe
+    verdict averages down a whole step, and the severe end of the scale empties
+    out: no blob sample survives MEAN as critical. Under MAX the labels keep
+    their spread, and whether recall rises with severity is exactly the question
+    of whether the strategy disagrees with reviewers at random or only where
+    they were least sure themselves.
     """
     return _recall_by_severity(replay(dataset_path, list(samples), thresholds), smell, variant, how)
 

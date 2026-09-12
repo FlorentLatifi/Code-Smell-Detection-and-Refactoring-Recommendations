@@ -1878,6 +1878,31 @@ def _blob_quartile_gap(data: dict) -> str:
     )
 
 
+def _blob_aggregation_flattens(data: dict) -> str:
+    """Sa e rrafshon mesatarja shkallën e ashpërsisë, lexuar nga vetë mbështetjet.
+
+    Ishte shkruar si ilustrim me gjashtë rishikues, çka është numri i pozitivëve
+    tipikë e jo i mostrave: mediana e rishikimeve për Blob-in është dy. Mekanizmi
+    qëndron, ilustrimi jo, ndaj tani e thotë vetë matja.
+    """
+    by_how = data["per_variant"]["strategy"]["recall_by_severity"]
+    counts = {
+        how: {label: int(entry[label]["support"]) for label in entry}
+        for how, entry in by_how.items()
+    }
+    shape = lambda how: ", ".join(  # noqa: E731
+        f"{label} {counts[how].get(label, 0)}" for label in SEVERITY_SCALE
+    )
+    return (
+        "Shumica e mostrave mbajnë vetëm dy rishikime, dhe një votë «asnjë» përballë "
+        "një vote të rëndë e ul mesataren për një shkallë të tërë; te mostrat me "
+        "gjashtë rishikime, ku «asnjë» është vota mediane, ulja është edhe më e madhe. "
+        f"Pasoja matet: nën mesatare shpërndarja e pozitivëve është {shape('mean')}, "
+        f"ndërsa nën MAX është {shape('max')}. Skaji i rëndë i shkallës zbrazet, ndaj "
+        "gradienti nuk shihet dot aty ku raportohet gjetiu ky punim."
+    )
+
+
 def _blob_agrees_with_the_model() -> list:
     """A i zgjedh Qasja B po ato metrika që kjo analizë i gjen më ndarëset?
 
@@ -2039,11 +2064,8 @@ def _blob_recall_section() -> list:
         ("table", "Recall-i sipas ashpërsisë që caktuan rishikuesit, agregim MAX",
          ["Varianti", "Ashpërsia", "Mbështetja", "Të kapura", "Recall"],
          _blob_severity_rows(data)),  # fmt: skip
-        "Agregimi këtu është MAX e jo mesatarja e përdorur gjetiu, dhe zgjedhja është "
-        "e qëllimshme. Gjashtë rishikues prej të cilëve katër thonë «asnjë» e tërheqin "
-        "mesataren te «minor» pothuajse pavarësisht se çfarë thanë dy të tjerët, ndaj "
-        "nën mesatare skaji i rëndë i shkallës mbetet bosh dhe gradienti nuk shihet dot. "
-        "Nën MAX etiketat e ruajnë shtrirjen.",
+        f"Agregimi këtu është MAX e jo mesatarja e përdorur gjetiu, dhe zgjedhja është "
+        f"e qëllimshme. {_blob_aggregation_flattens(data)}",
     ]
     gradient = _blob_gradient(data)
     if gradient:
