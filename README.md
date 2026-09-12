@@ -81,7 +81,16 @@ git apply --check fixes.patch
 
 Numri i ndryshimeve, i vendeve të refuzuara dhe i atyre të shtyra shkon te
 stderr, që stdout të mbetet vetëm patch dhe të mund të tubohet drejt e te
-`git apply`. Një vend i shtyrë ofrohet sërish në ekzekutimin pasardhës.
+`git apply`. Një vend i shtyrë ofrohet sërish në ekzekutimin pasardhës. Refuzimet
+grupohen sipas arsyes, me një shembull për secilën (VD-90).
+
+Si portë ndërtimi, komanda del me kod 3 kur mbetet një gjetje në ashpërsinë e
+kërkuar ose mbi të. Kodet 1 dhe 2 do të thonë se vetë mjeti nuk punoi, ndaj një
+portë i dallon dot të dyja pa lexuar asnjë rresht dalje (VD-92).
+
+```bash
+python -m javasmell path/to/project --fail-on major
+```
 
 I njëjti patch shërbehet nga `POST /refactor/patch` dhe nga ndërfaqja, nën
 `JAVASMELL_TIMEOUT_S`: verifikimi ekzekuton `javac` për çdo skedar të rishkruar,
