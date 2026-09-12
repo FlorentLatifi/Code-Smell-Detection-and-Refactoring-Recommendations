@@ -909,37 +909,37 @@ select:hover {
 }
 
 /* ---------- data tables ---------- */
-.grid {
+.data-grid {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.83rem;
 }
 
-.grid th {
+.data-grid th {
   padding: 5px 12px 5px 0;
   color: var(--ink-soft);
   font-weight: 600;
   text-align: left;
 }
 
-.grid thead th {
+.data-grid thead th {
   border-bottom: 1px solid var(--ink);
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.grid td {
+.data-grid td {
   padding: 5px 12px 5px 0;
   vertical-align: middle;
 }
 
-.grid tbody tr + tr th,
-.grid tbody tr + tr td {
+.data-grid tbody tr + tr th,
+.data-grid tbody tr + tr td {
   border-top: 1px solid var(--rule-soft);
 }
 
-.grid .figures {
+.data-grid .figures {
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
@@ -958,17 +958,17 @@ select:hover {
   font-weight: 600;
 }
 
-.grid .strong {
+.data-grid .strong {
   font-weight: 600;
 }
 
-.grid .variant th,
-.grid .variant td {
+.data-grid .variant th,
+.data-grid .variant td {
   color: var(--ink-faint);
   font-weight: 400;
 }
 
-.grid .published {
+.data-grid .published {
   background: var(--accent-wash);
 }
 

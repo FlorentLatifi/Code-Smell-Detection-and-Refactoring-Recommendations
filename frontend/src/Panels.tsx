@@ -30,7 +30,7 @@ export function Distribution({
     ? order.filter((key) => counts[key] !== undefined).map((key) => [key, counts[key]] as const)
     : Object.entries(counts).sort((a, b) => b[1] - a[1]);
   return (
-    <table className="grid">
+    <table className="data-grid">
       <tbody>
         {entries.map(([key, value]) => (
           <tr key={key}>

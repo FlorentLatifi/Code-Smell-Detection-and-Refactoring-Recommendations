@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { APPLY_REFUSAL_SQ, applyPatch, patch, treeState } from "./api";
+import { patch } from "./api";
 import { REFUSAL_SQ } from "./evaluation";
-import type { ApplyResult, DeclinedSite, PatchProgress, PatchResult, TreeState } from "./types";
+import type { DeclinedSite, PatchProgress, PatchResult } from "./types";
 
 /**
  * The last step the engine can take on its own: hand the author the change.
@@ -108,7 +108,7 @@ export function PatchTrigger({
 }
 
 /** Diff-i dhe llogaria e tij, poshtë rrjetit ku ka gjerësi për t'u lexuar. */
-export function PatchOutput({ session, path }: { session: PatchSession; path: string }) {
+export function PatchOutput({ session }: { session: PatchSession }) {
   if (!session.failure && !session.result) return null;
   return (
     <section className="patch">
@@ -118,12 +118,7 @@ export function PatchOutput({ session, path }: { session: PatchSession; path: st
         </p>
       )}
       {session.result && (
-        <Outcome
-          result={session.result}
-          path={path}
-          onCopy={session.copy}
-          copied={session.copied}
-        />
+        <Outcome result={session.result} onCopy={session.copy} copied={session.copied} />
       )}
     </section>
   );
@@ -160,12 +155,10 @@ function Working({ progress }: { progress: PatchProgress | null }) {
 
 function Outcome({
   result,
-  path,
   onCopy,
   copied,
 }: {
   result: PatchResult;
-  path: string;
   onCopy: (text: string) => void;
   copied: boolean;
 }) {
@@ -193,7 +186,6 @@ function Outcome({
         </div>
       </div>
 
-      <ApplyAction path={path} files={result.files} />
 
       <p className="caption">
         Ruaje si <code>fixes.patch</code> te rrënja e projektit dhe provoje pa e prekur asgjë:{" "}
@@ -219,108 +211,6 @@ function Outcome({
   );
 }
 
-
-/**
- * Shkrimi i vërtetë mbi skedarët, me hapat që e bëjnë të kthyeshëm.
- *
- * I vetmi veprim i tërë ndërfaqes që e ndryshon kodin e përdoruesit, ndaj është
- * i vetmi me dy hapa: klikimi i parë tregon çfarë do të ndodhë dhe komandën që e
- * kthen, i dyti e kryen. Një dialog `confirm()` do ta bënte të njëjtën punë dhe
- * do ta thoshte më keq — nuk do të mund të emërtonte as skedarët, as kthimin.
- *
- * Gjendja e pemës pyetet para se të shtypet butoni, sepse përgjigja «ky shteg
- * nuk është depo git» duhet dhënë tani e jo pasi dikush ka pritur dy minuta
- * (VD-100).
- */
-function ApplyAction({ path, files }: { path: string; files: number }) {
-  const [tree, setTree] = useState<TreeState | null>(null);
-  const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState<ApplyResult | null>(null);
-  const [failure, setFailure] = useState<string | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    setDone(null);
-    setFailure(null);
-    setConfirming(false);
-    void treeState(path)
-      .then((state) => live && setTree(state))
-      .catch(() => live && setTree(null));
-    return () => {
-      live = false;
-    };
-  }, [path]);
-
-  async function write() {
-    setBusy(true);
-    setFailure(null);
-    try {
-      setDone(await applyPatch(path));
-      setConfirming(false);
-    } catch (error) {
-      setFailure((error as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (done) {
-    return (
-      <div className="applied" role="status">
-        <p>
-          <b>
-            {done.written.length} {word(done.written.length, "skedar u shkrua", "skedarë u shkruan")}
-          </b>
-          . Për ta kthyer gjithçka: <code>{done.revert}</code>
-        </p>
-        <ul>
-          {done.written.map((file) => (
-            <li key={file}>{file}</li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-
-  if (tree && !tree.writable) {
-    return (
-      <p className="note apply-blocked">
-        {APPLY_REFUSAL_SQ[tree.reason ?? ""] ?? tree.detail}
-      </p>
-    );
-  }
-
-  return (
-    <div className="apply">
-      {failure && (
-        <p className="failure" role="alert">
-          {failure}
-        </p>
-      )}
-      {confirming ? (
-        <div className="confirm">
-          <p>
-            Kjo do të rishkruajë <b>{files}</b> {word(files, "skedar", "skedarë")} te disku. Pema e
-            punës është e pastër, ndaj <code>git restore .</code> e kthen gjithçka.
-          </p>
-          <div className="patch-actions">
-            <button className="primary" onClick={write} disabled={busy}>
-              {busy ? "Duke shkruar…" : "Po, shkruaji"}
-            </button>
-            <button onClick={() => setConfirming(false)} disabled={busy}>
-              Anulo
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button onClick={() => setConfirming(true)} disabled={tree === null}>
-          Apliko te skedarët
-        </button>
-      )}
-    </div>
-  );
-}
 
 /**
  * Hand the diff over as a file.

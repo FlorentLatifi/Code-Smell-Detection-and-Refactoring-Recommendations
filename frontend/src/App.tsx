@@ -6,19 +6,23 @@ import type { Order } from "./Filters";
 import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
 import { Landing } from "./Landing";
+import { ApplyControl } from "./design/ApplyControl";
+import { fileRowsOf, overviewOf, scoreRows, suggestionsOf } from "./design/adapt";
+import { DashboardLayout, StatusStrip } from "./design/DashboardLayout";
+import { OverviewMetrics } from "./design/OverviewMetrics";
+import { PerformanceCharts, SmellyFilesTable } from "./design/Panels";
+import { PatchActions, RefactoringActionList } from "./design/RefactoringActionList";
 import { Waiting } from "./Waiting";
-import { Context } from "./Context";
 import { PatchOutput, usePatch } from "./Patch";
-import { Dashboard } from "./Dashboard";
-import { Tools } from "./Tools";
 import { Results } from "./Results";
 import { ModelBar, Unparsed } from "./Summary";
 import { automatable, byFile, byScore, bySeverity, groupBySite } from "./sites";
 import type { Site } from "./sites";
-import type { Analysis, Severity, Smell, TreeState } from "./types";
+import type { Analysis, ApplyResult, Severity, Smell, TreeState } from "./types";
 
 
 const REMEMBERED_PATH = "javasmell.path";
+const REMEMBERED_THEME = "javasmell.theme";
 
 /**
  * Sa rreshta hyjnë te DOM-i njëherësh.
@@ -156,6 +160,12 @@ export function App() {
   const analysed = screen.state === "ready" ? screen.path : "";
   const patchSession = usePatch(analysed);
   const [tree, setTree] = useState<TreeState | null>(null);
+  // Tema mbahet te shfletuesi: është zgjedhje e lexuesit e jo e projektit.
+  const [dark, setDark] = useState(() => remembered(REMEMBERED_THEME) !== "light");
+  // Çfarë ka shkuar te disku në këtë seancë. Serveri nuk e mban: ai është pa
+  // gjendje me qëllim, dhe kjo listë i përket kësaj dritareje.
+  const [applied, setApplied] = useState<{ file: string; when: string }[]>([]);
+  const [revert, setRevert] = useState<string | null>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
@@ -193,6 +203,23 @@ export function App() {
     running.current?.abort();
   }
 
+  /** Hap vendin që karta emërton, me erën që ajo premtoi. */
+  function openSite(key: string): void {
+    const site = allSites.find((candidate) => candidate.key === key);
+    if (!site) return;
+    choose(site, site.smells.find((smell) => smell.automated));
+    requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth" }));
+  }
+
+  function onApplied(result: ApplyResult): void {
+    const when = new Date().toLocaleTimeString("sq", { hour: "2-digit", minute: "2-digit" });
+    setApplied(result.written.map((file) => ({ file, when })));
+    setRevert(result.revert);
+    // Pema nuk është më e pastër pasi u shkrua, ndaj lexohet sërish: butoni do
+    // të premtonte një shkrim të dytë që do të refuzohej.
+    void treeState(analysed).then(setTree).catch(() => setTree(null));
+  }
+
   /** I njëjti ekzekutim si forma, i thirrur nga një buton pa ngjarje. */
   async function rerun(): Promise<void> {
     await run({ preventDefault() {} } as React.FormEvent);
@@ -208,6 +235,11 @@ export function App() {
       live = false;
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    remember(REMEMBERED_THEME, dark ? "dark" : "light");
+  }, [dark]);
 
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
 
@@ -353,7 +385,10 @@ export function App() {
     event.preventDefault();
     const next = view === "analysis" ? "results" : "analysis";
     show(next);
-    requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
+    // Emrat e pamjeve te rreshti janë `overview` dhe `metrics`; ata te gjendja
+    // janë `analysis` dhe `results`. Përkthimi rri këtu e jo te korniza.
+    const id = next === "results" ? "metrics" : "overview";
+    requestAnimationFrame(() => document.getElementById(`tab-${id}`)?.focus());
   }
 
   function show(next: View): void {
@@ -362,99 +397,66 @@ export function App() {
     requestAnimationFrame(() => document.getElementById("content")?.focus());
   }
 
+  const overview =
+    screen.state === "ready" ? overviewOf(screen.analysis.summary, allSites, applied.length) : null;
+
   return (
-    <div className="page">
-      <a className="skip" href="#content">
-        Kalo te përmbajtja
-      </a>
-      <header>
-        <h1>JavaSmell</h1>
-        <p className="tagline">Detektim i code smells dhe rekomandime refaktorimi</p>
-      </header>
-
-      {/* Rreshti anësor. `aria-pressed` i thoshte lexuesit se butoni është i
-          shtypur, jo se është skedë mes skedash; `tablist` e thotë sa janë, cila
-          është e zgjedhura, dhe se ato drejtojnë një panel — çka është e vërteta
-          e kësaj ndërfaqeje. Orientimi deklarohet, ose lexuesi i ekranit do t'i
-          premtonte përdoruesit shigjetat e gabuara. */}
-      <nav className="rail" role="tablist" aria-orientation="vertical" aria-label="Pamjet">
-          <button
-            role="tab"
-            id="tab-analysis"
-            aria-selected={view === "analysis"}
-            aria-controls="panel"
-            tabIndex={view === "analysis" ? 0 : -1}
-            className={view === "analysis" ? "tab on" : "tab"}
-            title="Analizo një projekt"
-            onClick={() => show("analysis")}
-            onKeyDown={moveTab}
+    <DashboardLayout
+      view={view === "results" ? "metrics" : "overview"}
+      onView={(next) => show(next === "metrics" ? "results" : "analysis")}
+      dark={dark}
+      onTheme={() => setDark((was) => !was)}
+      busy={screen.state === "loading"}
+      onScan={() => void rerun()}
+      onStop={stop}
+      onTabKeyDown={moveTab}
+      canScan={path.trim().length > 0}
+      scanLabel={screen.state === "ready" ? "Skano sërish" : "Analizo"}
+      project={
+        <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={run}>
+          <input
+            value={path}
+            onChange={(e) => setPath(e.target.value)}
+            placeholder="Shtegu i projektit, brenda dosjes së lejuar"
+            aria-label="Shtegu i projektit"
+            className="h-9 min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-3 font-mono text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500/25 focus-visible:outline-none dark:border-ink-700 dark:bg-ink-950 dark:text-ink-100"
+          />
+          <label
+            className="flex shrink-0 items-center gap-1.5 text-xs text-ink-500 dark:text-ink-400"
+            title="Kërkon modele të trajnuara dhe matje mbi tërë projektin"
           >
-            <span className="glyph" aria-hidden="true">
-              ⌕
-            </span>
-            <span className="label">Analizo një projekt</span>
-          </button>
-          <button
-            role="tab"
-            id="tab-results"
-            aria-selected={view === "results"}
-            aria-controls="panel"
-            tabIndex={view === "results" ? 0 : -1}
-            className={view === "results" ? "tab on" : "tab"}
-            title="Rezultatet e vlerësimit"
-            onClick={() => show("results")}
-            onKeyDown={moveTab}
-          >
-            <span className="glyph" aria-hidden="true">
-              ▤
-            </span>
-            <span className="label">Rezultatet e vlerësimit</span>
-          </button>
-      </nav>
-
-      {/* `role="tabpanel"` mbi vetë `<main>` e mbivendos rolin e tij të nënkuptuar,
-          dhe faqja mbetet pa landmark kryesor. Të dy rolet i duhen: njëri i thotë
-          lexuesit ku nis përmbajtja, tjetri se cila skedë e drejton. */}
-      <main id="content" tabIndex={-1}>
-      <div
-        id="panel"
-        role="tabpanel"
-        aria-labelledby={view === "results" ? "tab-results" : "tab-analysis"}
-      >
+            <input
+              type="checkbox"
+              checked={askModel}
+              aria-label="Pyet edhe modelin"
+              onChange={(e) => setAskModel(e.target.checked)}
+              className="h-3.5 w-3.5 accent-brand-600"
+            />
+            <span className="hidden sm:inline">Pyet edhe modelin</span>
+          </label>
+        </form>
+      }
+      status={
+        screen.state === "ready" ? (
+          <StatusStrip
+            items={[
+              screen.analysis.summary.loc === undefined
+                ? null
+                : `${screen.analysis.summary.loc.toLocaleString("sq")} rreshta`,
+              `${screen.analysis.summary.files} skedarë`,
+              `${screen.seconds < 1 ? "nën 1" : Math.round(screen.seconds)} s`,
+              screen.askedModel ? "me modelin" : "vetëm rregullat",
+            ]}
+          />
+        ) : (
+          <StatusStrip items={[root ? `rrënja: ${root}` : null]} />
+        )
+      }
+    >
       {view === "results" && <Results />}
 
       {view === "analysis" && (
       <>
-      <form className="search" onSubmit={run}>
-        <input
-          value={path}
-          onChange={(e) => setPath(e.target.value)}
-          placeholder="Shtegu i projektit, brenda dosjes së lejuar"
-          aria-label="Shtegu i projektit"
-        />
-        <button
-          type="submit"
-          className="primary"
-          disabled={screen.state === "loading" || !path.trim()}
-        >
-          {screen.state === "loading" ? "Duke analizuar…" : "Analizo"}
-        </button>
-        {screen.state === "loading" && (
-          <button type="button" className="stop" onClick={stop}>
-            Ndalo
-          </button>
-        )}
-        <label className="ask" title="Kërkon modele të trajnuara dhe matje mbi tërë projektin">
-          <input
-            type="checkbox"
-            checked={askModel}
-            aria-label="Pyet edhe modelin"
-            onChange={(e) => setAskModel(e.target.checked)}
-          />
-          Pyet edhe modelin
-        </label>
-      </form>
-
       {screen.state === "idle" && <Landing root={root} />}
 
       {screen.state === "loading" && (
@@ -469,42 +471,44 @@ export function App() {
         </p>
       )}
 
-      {screen.state === "ready" && (
+      {screen.state === "ready" && overview && (
         <>
-          {/* Konteksti para totaleve: çfarë u lexua, pastaj çfarë u gjet aty.
-              E kundërta i jep lexuesit një numër para se t'i japë emëruesin. */}
-          <Context
-            path={screen.path}
-            analysis={screen.analysis}
-            seconds={screen.seconds}
-            askedModel={screen.askedModel}
-          />
           <Unparsed summary={screen.analysis.summary} />
           {screen.analysis.smells.length === 0 ? (
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
           ) : (
-            <>
-            <Dashboard
-              analysis={screen.analysis}
-              sites={allSites}
-              onPick={setQuery}
-              onChoose={choose}
-              tools={
-                <Tools
-                  session={patchSession}
+            <div className="space-y-4">
+            <OverviewMetrics data={overview} />
+            <RefactoringActionList
+              suggestions={suggestionsOf(allSites)}
+              onOpen={openSite}
+              applied={applied}
+              revert={revert}
+            >
+              <PatchActions
+                ready={automatable(allSites)}
+                total={allSites.length}
+                busy={patchSession.busy}
+                progress={patchSession.progress}
+                onPrepare={patchSession.ask}
+              >
+                <ApplyControl
                   path={screen.path}
-                  ready={automatable(allSites)}
-                  total={allSites.length}
                   tree={tree}
-                  askedModel={screen.askedModel}
-                  onReanalyse={() => void rerun()}
-                  onEvaluation={() => show("results")}
+                  ready={patchSession.result !== null}
+                  onApplied={onApplied}
                 />
-              }
-            />
+              </PatchActions>
+            </RefactoringActionList>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <PerformanceCharts scores={scoreRows()} />
+              <SmellyFilesTable rows={fileRowsOf(allSites)} onPick={setQuery} />
+            </div>
+
             {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
             <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
-            <PatchOutput session={patchSession} path={screen.path} />
+            <PatchOutput session={patchSession} />
             <div className="layout">
               <section
                 className="list"
@@ -634,14 +638,12 @@ export function App() {
                 )}
               </section>
             </div>
-            </>
+            </div>
           )}
         </>
       )}
       </>
       )}
-      </div>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

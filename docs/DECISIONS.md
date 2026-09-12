@@ -3842,3 +3842,57 @@ një sistem tjetër stilesh.
 **Ç'mbetet e hapur.** Nëse kjo pamje miratohet, ka dy rrugë: ta migrojmë
 aplikacionin te Tailwind-i dhe ta heqim `styles.css`, ose ta mbajmë `styles.css`
 dhe të huazojmë vetëm formën. Vendimi nuk merret para se pamja të pëlqehet.
+
+### VD-106: Paneli u lidh me të dhënat e vërteta, dhe çmimi i dy sistemeve të stilit
+
+**Konteksti.** VD-105 e la pyetjen e hapur: faqja e dizajnit u pëlqye, ndaj ose
+migrohet aplikacioni te Tailwind-i, ose huazohet vetëm forma. Autori zgjodhi të
+parën. Kjo do të thotë se `design.html`, `src/design/mock.ts` dhe `src/design/main.tsx`
+nuk kanë më arsye të ekzistojnë: një panel me shifra të shpikura ishte i
+justifikuar vetëm sa kohë që pamja gjykohej.
+
+**Komponentët nuk e njohin modelin.** `DashboardLayout`, `OverviewMetrics`,
+`RefactoringActionList` dhe `Panels` marrin forma të thjeshta dhe i vizatojnë:
+asnjëri nuk importon `Site`, `Smell` apo `api.ts`. Përkthimi rri i tëri te
+`src/design/adapt.ts`, në katër funksione. Kjo nuk është shtresë abstrakte e
+shtuar për hijeshi — ajo ishte kushti që i njëjti komponent të ushqehej me të
+dhëna të rreme dje dhe me ato të vërteta sot, dhe mbetet vendi i vetëm ku një
+riemërtim te përgjigjja e API-së do të prekte panelin.
+
+**Ashpërsia numërohet sipas vendit, jo sipas erës.** Një metodë e gjatë dhe e
+folezuar mban katër erëra; katër rreshta për të njëjtën metodë do të ishin katër
+herë e njëjta punë. Kutizat e sipërme, lista dhe tabela e skedarëve përdorin të
+gjitha «më e rënda që mban vendi», ndaj shuma e tri kutizave barazon numrin e
+vendeve dhe klikimi nga paneli te lista nuk ndryshon njësi në rrugë.
+
+**Tailwind pa preflight.** Migrimi nuk u bë me një commit. Që `styles.css` të
+vazhdonte të punonte ndërsa korniza e re merrte përsipër shiritin, rreshtin dhe
+kartat, `src/design/utilities.css` i importon shtresat e Tailwind-it pa
+`preflight`: rivendosja e tij do ta kishte fshirë tipografinë dhe kufijtë e
+fletës ekzistuese në të njëjtin çast.
+
+**Çmimi i dy sistemeve, i matur.** `styles.css` e kishte `.grid` si tabelë e
+vlerësimit: `width: 100%`, `border-collapse: collapse`. Tailwind-i e ka `grid`
+si `display: grid`. Çdo element me klasën e re e trashëgoi gjerësinë e vjetër:
+kutia e ikonës te kartat doli **275 piksela** në vend të 28, dhe logoja e kokës
+16. Asnjë test nuk e kapi, sepse jsdom-i nuk llogarit paraqitje; u gjet duke matur
+DOM-in e gjallë. Selektori u riemërua `.data-grid` te `styles.css`, `src/Panels.tsx`
+dhe `src/Results.tsx`. Kjo është përplasja e parë e emrave, jo e fundit e mundshme,
+dhe është arsyeja që heqja përfundimtare e `styles.css` mbetet punë e hapur.
+
+**Dy gjëra që u prishën dhe si.** Recharts-i e thërret `ResizeObserver` sapo
+montohet, të cilin jsdom-i nuk e ka: 36 teste ranë njëherësh derisa
+`src/test-setup.ts` shtoi një zëvendësues bosh. Dhe tri teste end-to-end pohonin
+mbi klasa që nuk ekzistojnë më (`.context`, `.donut`); ato tani pyesin për rolin
+dhe për tekstin, jo për klasën, që i njëjti pohim të mos thyhet nga rindërtimi i
+ardhshëm.
+
+**Negativja që duhet raportuar.** Recharts-i tani hyn te paketa e aplikacionit e
+jo te një hyrje e dytë. Paketa u rrit nga **100 kB** te **678 kB** (195 kB të
+gzip-uara). Mbi localhost kjo nuk matet, por është rritje reale dhe nuk fshihet
+këtu: çmimi i grafikëve të gatshëm ndaj SVG-ve të shkruara me dorë të VD-102.
+
+**Ç'mbetet te fleta e vjetër.** Lista, filtrat, paneli i detajit, diff-i,
+përmbledhja dhe e gjithë pamja e vlerësimit. Ato punojnë dhe janë të testuara;
+migrimi i tyre është kozmetikë me rrezik, ndaj bëhet kur të ketë arsye, jo për
+simetri.

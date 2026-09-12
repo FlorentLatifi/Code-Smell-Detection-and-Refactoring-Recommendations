@@ -55,7 +55,7 @@ export function Results() {
         note="MCC për çdo erë. Zero do të thotë 'sa hamendja'; një detektor që nuk ndez kurrë nuk
               merr dot pikë këtu, çka është arsyeja pse raportohet ky tregues e jo saktësia."
       >
-        <table className="grid">
+        <table className="data-grid">
           <thead>
             <tr>
               <th>Erë</th>
@@ -124,7 +124,7 @@ export function Results() {
             ))}
           </div>
           <p className="quiet">{AGGREGATION_SQ[aggregation]}</p>
-          <table className="grid">
+          <table className="data-grid">
             <thead>
               <tr>
                 <th>Erë</th>
@@ -265,7 +265,7 @@ function Blockers({ smell }: { smell: string }) {
         strategjia nuk i ndezi. Te {many.toLocaleString("sq")} prej tyre dështoi më shumë se
         një klauzolë, ndaj nuk janë raste kufitare.
       </p>
-      <table className="grid">
+      <table className="data-grid">
         <thead>
           <tr>
             <th scope="col">Klauzola e vetme që ndaloi</th>
@@ -354,7 +354,7 @@ function SeverityRecalls({ smell }: { smell: string }) {
     (level) => variant.recall_by_severity[level],
   );
   return (
-    <table className="grid">
+    <table className="data-grid">
       <tbody>
         {levels.map((level) => {
           const entry = variant.recall_by_severity[level];

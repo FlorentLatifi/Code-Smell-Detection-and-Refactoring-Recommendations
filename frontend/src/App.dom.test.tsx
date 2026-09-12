@@ -458,7 +458,7 @@ describe("progresi i patch-it", () => {
   });
 });
 
-describe("shpërndarja e gjetjeve", () => {
+describe("përmbledhja", () => {
   it("tregon llojet si unazë me legjendë të numëruar", async () => {
     // Ngjyra e vetme si çelës do të detyronte lexuesin të kalonte sytë mes dy
     // vendeve, dhe dikush që nuk i dallon ngjyrat nuk do ta lexonte fare.
@@ -471,31 +471,13 @@ describe("shpërndarja e gjetjeve", () => {
     render(<App />);
     await analyse();
 
-    const overview = screen.getByRole("region", { name: "Përmbledhja" });
-    const legend = within(overview).getByRole("list");
+    const card = screen.getByRole("region", { name: "Sipas llojit" });
+    const legend = within(card).getByRole("list");
 
     expect(within(legend).getByText("LongMethod")).toBeDefined();
     expect(within(legend).getByText("DeepNesting")).toBeDefined();
     // Unaza vetë është pamje, ndaj e përshkruan veten për një lexues ekrani.
-    expect(within(overview).getByRole("img").getAttribute("aria-label")).toContain("2 erëra");
-  });
-
-  it("rendit ashpërsitë nga më e rënda, jo nga më e shpeshta", async () => {
-    // Dy kritike duhet të rrinë majtas njëzet të lehtave.
-    const smells = [
-      smell({ method: "m0(int)", severity: "critical" }),
-      ...Array.from({ length: 3 }, (_, i) =>
-        smell({ method: `m${i + 1}(int)`, start_line: 200 + i * 50, severity: "minor" }),
-      ),
-    ];
-    serve(analysis(smells));
-    render(<App />);
-    await analyse();
-
-    const panel = screen.getByRole("region", { name: "Sipas ashpërsisë" });
-    const chart = within(panel).getByRole("img");
-
-    expect(chart.getAttribute("aria-label")).toBe("critical 1, major 0, minor 3");
+    expect(within(card).getByRole("img").getAttribute("aria-label")).toContain("2 erëra");
   });
 
   it("numëron vendet, jo erërat, që shuma të barazojë listën", async () => {
@@ -509,11 +491,11 @@ describe("shpërndarja e gjetjeve", () => {
     render(<App />);
     await analyse();
 
-    const panel = screen.getByRole("region", { name: "Sipas ashpërsisë" });
+    const heavy = screen.getByRole("region", { name: "E rëndë" });
+    const light = screen.getByRole("region", { name: "E lehtë" });
 
-    expect(within(panel).getByRole("img").getAttribute("aria-label")).toBe(
-      "critical 1, major 0, minor 0",
-    );
+    expect(within(heavy).getByText("1")).toBeDefined();
+    expect(within(light).getByText("0")).toBeDefined();
   });
 
   it("nuk shfaqet kur nuk u gjet asnjë erë", async () => {
@@ -523,7 +505,7 @@ describe("shpërndarja e gjetjeve", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
 
     expect(await screen.findByText(/Asnjë erë e detektuar/)).toBeDefined();
-    expect(screen.queryByRole("region", { name: "Përmbledhja" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Sipas llojit" })).toBeNull();
   });
 });
 
@@ -604,7 +586,7 @@ describe("aplikimi mbi skedarët", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
 
-    expect(screen.getByText(/do të rishkruajë/)).toBeDefined();
+    expect(screen.getByText(/rishkruan skedarët te disku/)).toBeDefined();
     expect(screen.getByRole("button", { name: "Po, shkruaji" })).toBeDefined();
   });
 
@@ -621,9 +603,12 @@ describe("aplikimi mbi skedarët", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
     fireEvent.click(screen.getByRole("button", { name: "Po, shkruaji" }));
 
-    expect(await screen.findByText(/2 skedarë u shkruan/)).toBeDefined();
-    expect(screen.getByText("git restore .")).toBeDefined();
-    expect(screen.getByText("A.java")).toBeDefined();
+    // Kronologjia e seancës i emërton skedarët dhe komandën që i kthen.
+    const timeline = await screen.findByRole("region", { name: "Aplikuar në këtë seancë" });
+
+    expect(within(timeline).getByText("A.java")).toBeDefined();
+    expect(within(timeline).getByText("B.java")).toBeDefined();
+    expect(within(timeline).getByText("git restore .")).toBeDefined();
   });
 
   it("e thotë shqip kur serveri e refuzon shkrimin", async () => {
@@ -640,8 +625,8 @@ describe("aplikimi mbi skedarët", () => {
   });
 });
 
-describe("konteksti dhe rekomandimet", () => {
-  it("thotë çfarë u lexua përpara se të thotë sa u gjet", async () => {
+describe("statusi dhe rekomandimet", () => {
+  it("thotë çfarë u lexua te shiriti i sipërm", async () => {
     // Dyzet erëra mbi treqind rreshta dhe dyzet mbi tridhjetë mijë janë dy
     // gjendje krejt të ndryshme, dhe emëruesi mungonte.
     const body = analysis([smell({ method: "m0(int)" })]);
@@ -649,13 +634,10 @@ describe("konteksti dhe rekomandimet", () => {
     render(<App />);
     await analyse();
 
-    const context = document.querySelector(".context");
+    const header = document.querySelector("header");
 
-    // Formatimi i numrit varet nga `Intl` e ambientit, ndaj kërkohet i njëjti
-    // që prodhon komponenti e jo një varg i shtypur me dorë.
-    expect(context?.textContent).toContain((1234).toLocaleString("sq"));
-    expect(context?.textContent).toContain("rreshta kodi");
-    expect(context?.textContent).toContain("vetëm rregullat");
+    expect(header?.textContent).toContain((1234).toLocaleString("sq"));
+    expect(header?.textContent).toContain("vetëm rregullat");
   });
 
   it("hesht për rreshtat kur serveri nuk i dërgon", async () => {
@@ -663,12 +645,12 @@ describe("konteksti dhe rekomandimet", () => {
     render(<App />);
     await analyse();
 
-    expect(document.querySelector(".context")?.textContent).not.toContain("rreshta kodi");
+    expect(document.querySelector("header")?.textContent).not.toContain("rreshta");
   });
 
-  it("i veçon rekomandimet që motori i rishkruan vetë", async () => {
-    // Dallimi mes «ja çfarë gjeta» dhe «ja çfarë mund të ndreq» rrinte si një
-    // distinktiv tetë pikësh mes pesëdhjetë rreshtash.
+  it("i ndan rishkrimet e gatshme nga propozimet", async () => {
+    // Vija më e rëndësishme e ekranit: e para ka diff që aplikohet tani, e dyta
+    // kërkon referenca që analiza nuk i provon dot.
     serve(
       analysis([
         smell({ method: "m0(int)", automated: true }),
@@ -678,18 +660,11 @@ describe("konteksti dhe rekomandimet", () => {
     render(<App />);
     await analyse();
 
-    const panel = screen.getByRole("region", { name: "Rekomandimet e refaktorimit" });
+    const ready = screen.getByRole("region", { name: "Rishkrime të gatshme (1)" });
+    const advisory = screen.getByRole("region", { name: "Propozime pa rishkrim (1)" });
 
-    expect(within(panel).getAllByRole("listitem")).toHaveLength(1);
-    expect(within(panel).getByText(/ExtractMethod/)).toBeDefined();
-  });
-
-  it("nuk shfaqet kur asgjë nuk rishkruhet vetë", async () => {
-    serve(analysis([smell({ method: "m0(int)", automated: false, refactorings: [] })]));
-    render(<App />);
-    await analyse();
-
-    expect(screen.queryByRole("region", { name: "Rekomandimet e refaktorimit" })).toBeNull();
+    expect(within(ready).getByText("ExtractMethod")).toBeDefined();
+    expect(within(advisory).getByText("vetëm propozim")).toBeDefined();
   });
 
   it("hap erën që ka rishkrim, e jo më të rëndën e vendit", async () => {
@@ -706,12 +681,10 @@ describe("konteksti dhe rekomandimet", () => {
     render(<App />);
     await analyse();
 
-    const panel = screen.getByRole("region", { name: "Rekomandimet e refaktorimit" });
-    fireEvent.click(within(panel).getByRole("button", { name: "Shfaq ndryshimin" }));
+    const ready = screen.getByRole("region", { name: "Rishkrime të gatshme (1)" });
+    fireEvent.click(within(ready).getByRole("button", { name: /Shfaq diff-in/ }));
 
-    const detail = document.querySelector(".detail");
-
-    expect(detail?.querySelector("h2")?.textContent).toBe("DeepNesting");
+    expect(document.querySelector(".detail")?.querySelector("h2")?.textContent).toBe("DeepNesting");
   });
 });
 

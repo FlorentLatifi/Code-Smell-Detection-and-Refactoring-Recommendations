@@ -1,73 +1,82 @@
 // Rreshti i parë: sa janë, sa rëndë, dhe si ndahen.
 //
-// Tri kutiza ashpërsie dhe një unazë. Numri i madh mban ngjyrën e vet dhe jo
-// vetëm etiketën: një rresht me tri numra gri kërkon lexim, ndërsa tre numra të
-// ngjyrosur lexohen me një shikim, dhe kjo është e vetmja gjë që ky rresht duhet
-// të bëjë.
+// Numri i madh mban ngjyrën e vet dhe jo vetëm etiketën: një rresht me tri numra
+// gri kërkon lexim, ndërsa tre të ngjyrosur lexohen me një shikim, dhe kjo është
+// e vetmja gjë që ky rresht duhet të bëjë.
+//
+// Ashpërsia numërohet **sipas vendit**, me të njëjtin rregull që përdor çdo
+// rresht i listës: më e rënda që mban vendi. Kështu shuma e tri kutizave barazon
+// numrin e vendeve, dhe klikimi nga paneli te lista nuk ndryshon njësi në rrugë.
 
 import { AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, TrendingDown } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card } from "./DashboardLayout";
-import { byType, totals } from "./mock";
 
-export function OverviewMetrics() {
+export interface Slice {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface Overview {
+  smells: number;
+  high: number;
+  medium: number;
+  low: number;
+  sites: number;
+  automated: number;
+  applied: number;
+  byType: Slice[];
+}
+
+/** Paleta e prerjeve, e njëjta si te figurat: tetë lloje janë maksimumi i mundshëm. */
+const SLICE_COLORS = [
+  "#6366f1",
+  "#22d3ee",
+  "#f59e0b",
+  "#f43f5e",
+  "#10b981",
+  "#a78bfa",
+  "#64748b",
+  "#94a3b8",
+];
+
+export function slicesOf(counts: Record<string, number>): Slice[] {
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, value], index) => ({ name, value, color: SLICE_COLORS[index % SLICE_COLORS.length] }));
+}
+
+export function OverviewMetrics({ data }: { data: Overview }) {
   return (
     <div className="grid gap-4 lg:grid-cols-4">
       <Metric
         icon={ShieldAlert}
         label="Erëra gjithsej"
-        value={totals.smells}
-        note="mbi 312 skedarë"
+        value={data.smells}
+        note={`${data.sites} vende`}
         tone="brand"
       />
-      <Metric
-        icon={AlertTriangle}
-        label="E rëndë"
-        value={totals.high}
-        note="kërkon vëmendje tani"
-        tone="high"
-      />
-      <Metric
-        icon={TrendingDown}
-        label="E mesme"
-        value={totals.medium}
-        note="planifikoje"
-        tone="medium"
-      />
-      <Metric icon={CheckCircle2} label="E lehtë" value={totals.low} note="kur të kesh kohë" tone="low" />
+      <Metric icon={AlertTriangle} label="E rëndë" value={data.high} note="vende" tone="high" />
+      <Metric icon={TrendingDown} label="E mesme" value={data.medium} note="vende" tone="medium" />
+      <Metric icon={CheckCircle2} label="E lehtë" value={data.low} note="vende" tone="low" />
 
       <Card title="Sipas llojit" className="lg:col-span-2">
-        <TypeDonut />
+        <TypeDonut slices={data.byType} total={data.smells} />
       </Card>
 
       <Card title="Sa mund të ndreqet vetë" className="lg:col-span-2">
-        <AutomationPanel />
+        <AutomationPanel data={data} />
       </Card>
     </div>
   );
 }
 
 const TONES = {
-  brand: {
-    ring: "ring-brand-500/20",
-    chip: "bg-brand-500/10 text-brand-500",
-    value: "text-ink-900 dark:text-white",
-  },
-  high: {
-    ring: "ring-high/20",
-    chip: "bg-high/10 text-high",
-    value: "text-high",
-  },
-  medium: {
-    ring: "ring-medium/20",
-    chip: "bg-medium/10 text-medium",
-    value: "text-medium",
-  },
-  low: {
-    ring: "ring-low/20",
-    chip: "bg-low/10 text-low",
-    value: "text-low",
-  },
+  brand: { ring: "ring-brand-500/20", chip: "bg-brand-500/10 text-brand-500", value: "text-ink-900 dark:text-white" },
+  high: { ring: "ring-high/20", chip: "bg-high/10 text-high", value: "text-high" },
+  medium: { ring: "ring-medium/20", chip: "bg-medium/10 text-medium", value: "text-medium" },
+  low: { ring: "ring-low/20", chip: "bg-low/10 text-low", value: "text-low" },
 } as const;
 
 function Metric({
@@ -85,40 +94,46 @@ function Metric({
 }) {
   const style = TONES[tone];
   return (
-    <div
+    <section
+      aria-label={label}
       className={`min-w-0 rounded-xl border border-ink-200 bg-white p-4 shadow-sm ring-1 ${style.ring} dark:border-ink-800 dark:bg-ink-900`}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <span className="text-[11px] font-semibold tracking-wider text-ink-500 uppercase dark:text-ink-400">
           {label}
         </span>
-        <span className={`grid h-7 w-7 place-items-center rounded-lg ${style.chip}`}>
-          <Icon className="h-4 w-4" />
+        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${style.chip}`}>
+          <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
       </div>
-      <p className={`mt-3 text-3xl font-semibold tabular-nums ${style.value}`}>{value}</p>
+      <p className={`mt-3 text-3xl font-semibold tabular-nums ${style.value}`}>
+        {value.toLocaleString("sq")}
+      </p>
       <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">{note}</p>
-    </div>
+    </section>
   );
 }
 
-function TypeDonut() {
-  const total = byType.reduce((sum, slice) => sum + slice.value, 0);
+function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
+  if (total <= 0 || slices.length === 0) return null;
+  const label = `${total} erëra gjithsej: ${slices.map((s) => `${s.name} ${s.value}`).join(", ")}`;
+
   return (
     <div className="flex flex-wrap items-center gap-4 p-4">
-      <div className="relative h-[150px] w-[150px] shrink-0">
+      <div className="relative h-[150px] w-[150px] shrink-0" role="img" aria-label={label}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={byType}
+              data={slices}
               dataKey="value"
               nameKey="name"
               innerRadius={48}
               outerRadius={70}
               paddingAngle={2}
               strokeWidth={0}
+              isAnimationActive={false}
             >
-              {byType.map((slice) => (
+              {slices.map((slice) => (
                 <Cell key={slice.name} fill={slice.color} />
               ))}
             </Pie>
@@ -136,27 +151,21 @@ function TypeDonut() {
         {/* Totali te vrima: numri që lexohet i pari, pa një etiketë të vetën. */}
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-center">
-            <p className="text-2xl font-semibold tabular-nums text-ink-900 dark:text-white">
-              {total}
-            </p>
-            <p className="text-[10px] tracking-wider text-ink-500 uppercase dark:text-ink-400">
-              erëra
-            </p>
+            <p className="text-2xl font-semibold tabular-nums text-ink-900 dark:text-white">{total}</p>
+            <p className="text-[10px] tracking-wider text-ink-500 uppercase dark:text-ink-400">erëra</p>
           </div>
         </div>
       </div>
 
       <ul className="min-w-0 flex-1 space-y-1.5">
-        {byType.map((slice) => (
-          <li key={slice.name} className="flex items-center gap-2 text-sm">
+        {slices.map((slice) => (
+          <li key={slice.name} className="flex min-w-0 items-center gap-2 text-sm">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
               style={{ background: slice.color }}
               aria-hidden="true"
             />
-            <span className="min-w-0 flex-1 truncate text-ink-600 dark:text-ink-300">
-              {slice.name}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-ink-600 dark:text-ink-300">{slice.name}</span>
             <span className="tabular-nums text-ink-500 dark:text-ink-400">{slice.value}</span>
             <span className="w-10 text-right text-xs tabular-nums text-ink-400 dark:text-ink-500">
               {Math.round((slice.value / total) * 100)}%
@@ -169,28 +178,27 @@ function TypeDonut() {
 }
 
 /**
- * Sa nga gjetjet i rishkruan motori vetë.
+ * Sa nga vendet i rishkruan motori vetë.
  *
- * Ndarë nga numri i përgjithshëm sepse është pyetje tjetër: «sa ka» dhe «sa mund
- * të hiqen sot pa u marrë vetë me to» nuk janë e njëjta gjë, dhe e dyta është ajo
- * që vendos se çfarë bëhet pas këtij ekrani.
+ * Pyetje tjetër nga «sa ka»: kjo është ajo që vendos se çfarë bëhet pas këtij
+ * ekrani. «Aplikuar» numëron vetëm atë që ka shkuar te disku në këtë seancë.
  */
-function AutomationPanel() {
-  const share = Math.round((totals.automated / totals.smells) * 100);
+function AutomationPanel({ data }: { data: Overview }) {
+  const share = data.sites ? Math.round((data.automated / data.sites) * 100) : 0;
   return (
     <div className="p-4">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="text-3xl font-semibold tabular-nums text-ink-900 dark:text-white">
-            {totals.automated}
+            {data.automated}
           </p>
           <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-            vende me rishkrim të verifikuar
+            vende me rishkrim që motori e provon
           </p>
         </div>
         <span className="flex items-center gap-1.5 rounded-full bg-low/10 px-2.5 py-1 text-xs font-semibold text-low">
-          <Sparkles className="h-3.5 w-3.5" />
-          {share}% e tërësisë
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+          {share}% e vendeve
         </span>
       </div>
 
@@ -201,12 +209,12 @@ function AutomationPanel() {
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
           <dt className="text-xs text-ink-500 dark:text-ink-400">Aplikuar</dt>
-          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-low">{totals.applied}</dd>
+          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-low">{data.applied}</dd>
         </div>
         <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
           <dt className="text-xs text-ink-500 dark:text-ink-400">Në pritje</dt>
           <dd className="mt-0.5 text-lg font-semibold tabular-nums text-ink-700 dark:text-ink-200">
-            {totals.automated - totals.applied}
+            {Math.max(0, data.automated - data.applied)}
           </dd>
         </div>
       </dl>
