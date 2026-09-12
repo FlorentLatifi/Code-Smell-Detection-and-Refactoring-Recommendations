@@ -3772,3 +3772,38 @@ kufizua te 1 100.
 dy rregulla CSS pa përdorues, secila e kontrolluar kundrejt burimit para se të
 hiqej. Një fletë stili që përshkruan ekrane që nuk ekzistojnë është e njëjta
 mangësi si dokumentacioni i vjetruar: lexohet si e vërtetë.
+
+### VD-104: Ndërfaqja pushon së dukuri si punim i shtypur
+
+**Kthim i qëllimshëm.** Komenti i parë i fletës së stilit e refuzonte shprehimisht
+pamjen e një produkti: pa karta, pa hije, pa qoshe të rrumbullakosura, me serif si
+te punimi, «sepse ato janë stili i shtëpisë i ndërfaqeve të gjeneruara». Arsyeja
+ishte e mirë dhe përfundimi i gabuar. Artefakti paraqitet si sistem, jo si
+kapitull: dikush që e hap pret software, dhe një ekran që lexohet si faqe libri i
+thotë se po shikon prototip. Autori e tha dy herë; herën e dytë me fjalët «nuk
+është dizajn i një sistemi të vërtetë».
+
+**Ç'ndryshoi, dhe pse secila.**
+
+*Një font i vetëm.* Serif-i doli nga ndërfaqja, nga titulli te shifrat. Ai bënte
+punën e hierarkisë me formë; tani e bën pesha, dhe një panel kontrolli me serif
+duket si provë shtypi. Punimi mbetet dokument dhe e mban serif-in e vet.
+
+*Sipërfaqe në vend të vijave.* Hairline-t u bënë karta me qoshe 8 pikselash dhe një
+hije të hollë mbi një sfond gri. Hierarkia vjen nga ngritja: te një rrjet me tri
+kolona, vijat e holla nuk arrijnë ta thonë se ku mbaron një bllok dhe ku nis tjetri.
+
+*Shell aplikacioni.* Faqja me margjina u bë dritare: shirit sipër me lartësi të
+fiksuar, rresht majtas me sipërfaqe të vetën, përmbajtja pjesën tjetër. Një panel
+kontrolli me letër rreth tij duket si dokument me tabela brenda.
+
+*Butoni dytësor si parazgjedhje.* Më parë çdo buton ishte blu, çka do të thoshte se
+asnjëri nuk ishte veprimi. Tani blu e merr vetëm veprimi kryesor.
+
+*Rrjet katërshesh.* Hapësira ishte shkallë vizuale me hapa 4, 8, 14, 22, 34, 52, 76;
+tani është rrjet 4, 8, 12, 16, 24, 32, 48, dhe çdo kontroll ka lartësi 34.
+
+**Ç'nuk ndryshoi.** Paleta e ashpërsisë mbetet e njëjta në kuptim dhe u zhvendos
+vetëm në tonalitet, që kontrasti të mbetet mbi kufirin e WCAG AA. Tema e errët u
+përkthye me të njëjtat shenja. Asnjë përmbajtje, asnjë shifër dhe asnjë sjellje nuk
+u prek: ndryshoi vetëm gjuha vizuale.

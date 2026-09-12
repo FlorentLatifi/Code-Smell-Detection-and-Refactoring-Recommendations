@@ -432,7 +432,11 @@ export function App() {
           placeholder="Shtegu i projektit, brenda dosjes së lejuar"
           aria-label="Shtegu i projektit"
         />
-        <button type="submit" disabled={screen.state === "loading" || !path.trim()}>
+        <button
+          type="submit"
+          className="primary"
+          disabled={screen.state === "loading" || !path.trim()}
+        >
           {screen.state === "loading" ? "Duke analizuar…" : "Analizo"}
         </button>
         {screen.state === "loading" && (

@@ -1,111 +1,123 @@
-/* One stylesheet, no framework. The interface has two views and a list; a design
-   system would be more code than the thing it dresses.
+/* One stylesheet, no framework.
 
-   The direction is an instrument, not a product page — and the refresh kept that
-   rather than replacing it. Cards, drop shadows, rounded corners and gradients
-   are the house style of generated interfaces, so reaching for them to look
-   "designed" moves towards that look, not away from it. What was actually weak
-   was measurable: the type scale was compressed, the summary was eight
-   undifferentiated numbers, and every section carried the same density, so the
-   eye had nowhere to rest.
+   **Ky është një kthim i qëllimshëm.** Versioni i mëparshëm e refuzonte
+   shprehimisht pamjen e një produkti: pa karta, pa hije, pa qoshe të rrumbullakosura,
+   me serif si te punimi, «sepse ato janë stili i shtëpisë i ndërfaqeve të
+   gjeneruara». Arsyeja ishte e mirë dhe përfundimi i gabuar. Artefakti paraqitet
+   si sistem, jo si kapitull: dikush që e hap pret software, dhe një ekran që
+   lexohet si faqe libri i thotë atij se po shikon një prototip. Punimi mbetet
+   dokument dhe e mban serif-in e vet; ekrani bëhet produkt (VD-104).
 
-   Four rules hold it:
+   Katër rregulla e mbajnë:
 
-   1. Typography carries the design. A real scale with visible steps, set in the
-      same serif the thesis uses for headings and headline numbers, so the tool
-      and the document read as one artefact. Identifiers and measurements are
-      always monospaced, because every one of them is a literal from the source
-      or a number to be compared.
-   2. Structure comes from rules, alignment and space, not from boxes. Panels
-      earn a surface and a hairline; nothing floats.
-   3. Space is a scale, not a guess. Sections breathe in proportion to their
-      weight, which is what makes a page look composed rather than filled.
-   4. The palette is the one `build_figures.py` draws the thesis figures in. A
-      screenshot of this screen and a figure from Chapter 5 sit on the same page
-      without clashing, which is the whole reason to have a palette at all.
+   1. **Një font i vetëm.** Sans kudo, nga titulli te shifrat, me monospace vetëm
+      aty ku teksti është literal nga burimi. Serif-i te një panel kontrolli e
+      bën atë të duket si prova shtypi.
+   2. **Sipërfaqe, jo vija.** Përmbajtja rri mbi karta të bardha me qoshe të buta
+      dhe një hije të hollë, mbi një sfond gri. Hierarkia vjen nga ngritja, e jo
+      nga hairline-t që mezi shihen.
+   3. **Hapësira është rrjet, jo shkallë vizuale.** Katërshe: 4, 8, 12, 16, 24, 32.
+      Çdo mbushje karte, çdo hendek dhe çdo lartësi kontrolli bie mbi të.
+   4. **Ngjyra ka kuptim.** Blu për veprimin dhe zgjedhjen, e kuqe/portokalli/gri
+      për ashpërsinë, jeshile për shtimin. Asgjë tjetër nuk ngjyroset.
 
-   Colour is reserved for meaning: severity, added and removed lines, and the one
-   accent that marks the current selection. Nothing else is coloured. */
+   Tema e errët mbahet dhe përkthehet me të njëjtat shenja. */
 
 :root {
-  /* Ink and paper. Cool greys rather than pure black on pure white: a screen
-     read for an hour is easier at slightly less than full contrast. */
-  --ink: #16191d;
-  --ink-soft: #4c5560;
-  /* 4.62:1 mbi letrën dhe 5.08:1 mbi sipërfaqen, pra mbi kufirin 4.5:1 që WCAG
-     AA kërkon për tekst normal. Ishte #7d8792, i cili jep 3.32:1 — nën kufirin —
-     dhe përdoret 29 herë, përfshirë te çdo fjali shpjeguese që mban kuptimin e
-     shifrave pranë saj. */
-  --ink-faint: #686f78;
-  --paper: #f5f4f2;
+  /* Grija e ndërfaqes. Teksti kryesor nuk është i zi: 4.5:1 e lart mbi të
+     bardhën, dhe një ekran i lexuar për një orë është më i lehtë pak nën
+     kontrastin e plotë. */
+  --ink: #111827;
+  --ink-soft: #4b5563;
+  /* 5.74:1 mbi të bardhën, pra mbi kufirin 4.5:1 të WCAG AA për tekst normal. */
+  --ink-faint: #6b7280;
+  --paper: #f6f7f9;
   --surface: #ffffff;
-  --sunken: #efeeeb;
-  --rule: #c9cbcd;
-  --rule-soft: #e4e3e0;
+  --sunken: #f1f3f5;
+  --rule: #d5d9e0;
+  --rule-soft: #e5e8ec;
 
-  /* Straight from the figure palette in scripts/build_figures.py. */
+  /* Blu-ja e maketit dhe e figurave të punimit, me dy hapa për gjendjet. */
   --accent: #1f4e79;
-  --accent-wash: #e7edf3;
+  --accent-hover: #1a4267;
+  --accent-wash: #eaf0f6;
   --accent-line: #4c7ba6;
 
-  --critical: #8c2f22;
-  --major: #8a5a12;
-  --minor: #5b636d;
+  --critical: #b42318;
+  --critical-wash: #fef3f2;
+  --major: #b54708;
+  --major-wash: #fffaeb;
+  --minor: #667085;
+  --minor-wash: #f2f4f7;
 
-  --added: #1d5c38;
-  --added-wash: #e8f1eb;
-  --removed: #8c2f22;
-  --removed-wash: #f6eae8;
+  --added: #067647;
+  --added-wash: #ecfdf3;
+  --removed: #b42318;
+  --removed-wash: #fef3f2;
 
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
-    Georgia, "Times New Roman", serif;
-  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Serif-i mbetet i deklaruar për dokumentin e punimit; ndërfaqja nuk e prek. */
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --mono: "SF Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
-  /* A type scale with steps you can see. The old one ran 0.70 to 1.60rem in
-     nine barely distinguishable increments, which is why the hierarchy read as
-     flat even though it was thought through. */
-  --t-micro: 0.7rem;
-  --t-small: 0.8rem;
-  --t-body: 0.94rem;
-  --t-lead: 1.06rem;
-  --t-title: 1.5rem;
-  --t-display: 2.1rem;
-  --t-masthead: 2.4rem;
+  --t-micro: 0.69rem;
+  --t-small: 0.8125rem;
+  --t-body: 0.875rem;
+  --t-lead: 1rem;
+  --t-title: 1.25rem;
+  --t-display: 1.75rem;
+  --t-masthead: 1.0625rem;
 
-  /* Space as a scale rather than a guess. */
+  /* Rrjet katërshesh. Çdo mbushje dhe çdo hendek bie mbi të. */
   --s-1: 4px;
   --s-2: 8px;
-  --s-3: 14px;
-  --s-4: 22px;
-  --s-5: 34px;
-  --s-6: 52px;
-  --s-7: 76px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+
+  --lift: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 4%);
+  --lift-lg: 0 4px 8px -2px rgb(16 24 40 / 8%), 0 2px 4px -2px rgb(16 24 40 / 4%);
+
+  --control: 34px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #e8e6e2;
-    --ink-soft: #a8adb4;
-    --ink-faint: #7c848d;
-    --paper: #101317;
-    --surface: #171b20;
-    --sunken: #0c0f12;
-    --rule: #363b42;
-    --rule-soft: #23272d;
+    --ink: #e6e8eb;
+    --ink-soft: #a3aab4;
+    --ink-faint: #8b929c;
+    --paper: #0f1216;
+    --surface: #171b21;
+    --sunken: #1d222a;
+    --rule: #333a44;
+    --rule-soft: #262c34;
 
-    --accent: #7ba7d1;
+    --accent: #5b96d2;
+    --accent-hover: #74a8dd;
+    --accent-wash: #17232f;
     --accent-line: #4d7ea8;
-    --accent-wash: #1c2733;
 
-    --critical: #d98276;
-    --major: #cfa257;
-    --minor: #a8adb4;
+    --critical: #f08a7e;
+    --critical-wash: #2a1614;
+    --major: #e0a960;
+    --major-wash: #2a2114;
+    --minor: #a3aab4;
+    --minor-wash: #20252c;
 
-    --added: #77bd92;
-    --added-wash: #16261c;
-    --removed: #d98276;
-    --removed-wash: #2b1a18;
+    --added: #6ec18f;
+    --added-wash: #13241a;
+    --removed: #f08a7e;
+    --removed-wash: #2a1614;
+
+    --lift: 0 1px 2px rgb(0 0 0 / 40%);
+    --lift-lg: 0 4px 10px -2px rgb(0 0 0 / 50%);
   }
 }
 
@@ -117,20 +129,60 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 15px/1.6 var(--sans);
+  font: var(--t-body) / 1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
+/* Aplikacioni zë dritaren: shirit sipër, rresht majtas, përmbajtja pjesën
+   tjetër. Nuk është faqe me margjina — një panel kontrolli me letër rreth tij
+   duket si dokument me tabela brenda. */
 .page {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: var(--s-6) var(--s-5) var(--s-7);
+  display: grid;
+  grid-template-areas:
+    "head head"
+    "rail body";
+  grid-template-columns: max-content 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  column-gap: 0;
+}
+
+/* ---------- shiriti i sipërm ---------- */
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  height: 56px;
+  padding: 0 var(--s-5);
+  border-bottom: 1px solid var(--rule-soft);
+  background: var(--surface);
+}
+
+h1 {
+  margin: 0;
+  font: 600 var(--t-masthead) / 1 var(--sans);
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 0;
+  padding-left: var(--s-4);
+  border-left: 1px solid var(--rule-soft);
+  color: var(--ink-faint);
+  font-size: var(--t-small);
 }
 
 @media (max-width: 700px) {
-  .page {
-    padding: var(--s-4) var(--s-3) var(--s-6);
+  header {
+    height: auto;
+    padding: var(--s-3) var(--s-4);
+  }
+
+  .tagline {
+    display: none;
   }
 
   /* Te ekranet e ngushta kutia e shtegut merr tërë rreshtin dhe butonat bien
@@ -140,52 +192,45 @@ body {
   }
 }
 
-/* ---------- masthead ---------- */
-/* A rule under the title, the weight a printed page would give it. */
-header {
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: var(--s-3);
-}
-
-h1 {
-  margin: 0;
-  font: 400 var(--t-masthead) / 1.05 var(--serif);
-  letter-spacing: -0.02em;
-}
-
-.tagline {
-  margin: var(--s-1) 0 0;
-  color: var(--ink-faint);
-  font-size: var(--t-body);
-}
-
 .tab {
-  padding: 0 0 5px;
+  padding: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
+  border-radius: var(--r-sm);
   background: none;
   color: var(--ink-faint);
-  font: 500 0.82rem/1 var(--sans);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font: 500 var(--t-body) / 1.2 var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .tab:hover {
+  background: var(--sunken);
   color: var(--ink);
 }
 
 .tab.on {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent);
 }
 
 /* ---------- search ---------- */
+/* Shiriti i veglave: rri ngjitur nën kokë, mbi një sipërfaqe të vetën, sepse
+   është kontroll i aplikacionit e jo pjesë e përmbajtjes që ndryshon nën të. */
 .search {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
-  margin: var(--s-5) 0 var(--s-4);
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .search input {
@@ -194,12 +239,22 @@ h1 {
      forma e shtynte faqen 503 px të gjerë brenda një ekrani 360 px. Kjo është
      shkaku i vërtetë i rrëshqitjes anash, jo mungesa e mbështjelljes. */
   min-width: 0;
-  padding: 11px var(--s-3);
+  height: var(--control);
+  padding: 0 var(--s-3);
   border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
   font: var(--t-body) var(--mono);
-  transition: border-color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.search input:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+  outline: none;
 }
 
 .search .stop {
@@ -290,26 +345,47 @@ h1 {
   outline-offset: 2px;
 }
 
+/* Parazgjedhja është butoni dytësor: i bardhë me kufi. Veprimi kryesor e merr
+   ngjyrën me `.primary`, dhe një ekran ku çdo buton është blu nuk thotë se cili
+   është veprimi. */
 button {
-  padding: 11px var(--s-4);
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #fff;
-  font: 600 var(--t-small) var(--sans);
-  letter-spacing: 0.02em;
+  height: var(--control);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 var(--t-body) / 1 var(--sans);
   cursor: pointer;
   transition:
     background-color 120ms ease,
-    border-color 120ms ease;
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 button:hover:not(:disabled) {
-  background: var(--accent-line);
-  border-color: var(--accent-line);
+  background: var(--sunken);
+  border-color: var(--rule);
+}
+
+button:active:not(:disabled) {
+  background: var(--rule-soft);
+}
+
+button.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 button:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: default;
 }
 
@@ -337,9 +413,12 @@ button:disabled {
 .summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  margin-bottom: var(--s-5);
+  margin-bottom: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
+  overflow: hidden;
 }
 
 /* A grid rather than a wrapping flex row. Flex left the last two figures on a
@@ -356,7 +435,8 @@ button:disabled {
 
 .figure b {
   display: block;
-  font: 400 var(--t-title) / 1.05 var(--serif);
+  font: 600 var(--t-title) / 1.1 var(--sans);
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -436,11 +516,13 @@ button:disabled {
 }
 
 select {
-  padding: 7px 9px;
+  height: var(--control);
+  padding: 0 var(--s-2);
   border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
-  font: var(--t-small) var(--sans);
+  font: var(--t-body) var(--sans);
   cursor: pointer;
   transition: border-color 120ms ease;
 }
@@ -462,7 +544,9 @@ select:hover {
    "these are the same kind of thing", and a card per row would say the opposite. */
 .list {
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .list ul {
@@ -563,12 +647,15 @@ select:hover {
   align-self: start;
   padding: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .detail h2 {
   margin: 0;
-  font: 400 1.25rem/1.2 var(--serif);
+  font: 600 1.0625rem/1.3 var(--sans);
+  letter-spacing: -0.01em;
 }
 
 .detail h3 {
@@ -769,7 +856,8 @@ select:hover {
 
 .panel h2 {
   margin: 0 0 5px;
-  font: 400 1.1rem/1.2 var(--serif);
+  font: 600 1rem/1.3 var(--sans);
+  letter-spacing: -0.01em;
 }
 
 .panel h3 {
@@ -1485,7 +1573,8 @@ select:hover {
 
 .landing .lead h2 {
   margin: 0 0 var(--s-3);
-  font: 400 var(--t-title) / 1.15 var(--serif);
+  font: 600 var(--t-display) / 1.2 var(--sans);
+  letter-spacing: -0.02em;
 }
 
 .landing .lead p {
@@ -1579,7 +1668,8 @@ select:hover {
 }
 
 .figures-row dt {
-  font: 400 var(--t-title) / 1.05 var(--serif);
+  font: 600 var(--t-title) / 1.1 var(--sans);
+  letter-spacing: -0.02em;
 }
 
 .figures-row dd {
@@ -1708,30 +1798,34 @@ select:hover {
 .page > main {
   grid-area: body;
   min-width: 0;
+  padding: var(--s-5);
+}
+
+@media (max-width: 700px) {
+  .page > main {
+    padding: var(--s-4);
+  }
 }
 
 .rail {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-top: var(--s-4);
-  width: 186px;
+  gap: var(--s-1);
+  padding: var(--s-3) var(--s-2);
+  width: 56px;
+  border-right: 1px solid var(--rule-soft);
+  background: var(--surface);
 }
 
 .rail .tab {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  display: grid;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-left: 2px solid transparent;
-  border-radius: 0;
+  border-radius: var(--r-sm);
   background: none;
   color: var(--ink-faint);
-  font: 500 var(--t-small) / 1.25 var(--sans);
-  letter-spacing: 0.01em;
-  text-align: left;
-  text-transform: none;
+  place-items: center;
   cursor: pointer;
 }
 
@@ -1741,9 +1835,8 @@ select:hover {
 }
 
 .rail .tab.on {
-  border-left-color: var(--accent);
-  background: var(--accent-wash);
-  color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .rail .glyph {
@@ -1788,7 +1881,9 @@ select:hover {
   margin-bottom: var(--s-4);
   padding: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .recommendations h2 {
@@ -1876,7 +1971,9 @@ select:hover {
   margin-bottom: var(--s-4);
   padding: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .patch .patch-bar {
@@ -1886,7 +1983,9 @@ select:hover {
 .model-only {
   padding: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 /* ======================================================================
@@ -1940,9 +2039,11 @@ select:hover {
 
 /* ---------- karta ---------- */
 .card {
-  padding: var(--s-3) var(--s-4) var(--s-4);
+  padding: var(--s-4);
   border: 1px solid var(--rule-soft);
+  border-radius: var(--r-md);
   background: var(--surface);
+  box-shadow: var(--lift);
 }
 
 .card h2 {
@@ -1971,7 +2072,8 @@ select:hover {
 
 .tally b {
   display: block;
-  font: 400 1.7rem/1 var(--serif);
+  font: 600 1.5rem/1 var(--sans);
+  letter-spacing: -0.02em;
 }
 
 .tally.accent b {
@@ -2014,7 +2116,7 @@ select:hover {
 
 .donut .middle {
   fill: var(--ink);
-  font: 400 22px/1 var(--serif);
+  font: 600 20px/1 var(--sans);
   text-anchor: middle;
 }
 
