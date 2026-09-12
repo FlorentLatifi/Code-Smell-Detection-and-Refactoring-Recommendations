@@ -3682,3 +3682,10 @@ premton.
 **Pesë karta e jo të gjitha.** Kjo është listë për të nisur punën e jo për ta
 inventarizuar: mbi një projekt real vendet e rishkrueshme shkojnë me qindra, dhe
 një listë e tillë do të ishte lista e plotë me një emër tjetër.
+
+**Dendësia, e kufizuar te pamja e analizës.** `.panel` u ndërtua për skedën e
+vlerësimit, e cila është dokument: një vijë sipër dhe asgjë tjetër, si një
+nënkapitull. Pamja e analizës është panel kontrolli dhe lexohet ndryshe, sepse
+lexuesi i shikon blloqet paralelisht e nuk i lexon me radhë. Kartat u dhanë vetëm
+aty. Shkrimi mbi vetë `.panel` do të kishte prishur një vendim të marrë me qëllim
+te skeda tjetër, e jo dendësuar këtë.

@@ -1999,3 +1999,54 @@ select:hover {
     gap: 8px;
   }
 }
+
+/* ----------------------------------------------------------------------
+   Dendësia e pamjes së analizës.
+
+   `.panel` u ndërtua për skedën e vlerësimit, e cila është dokument: një vijë
+   sipër dhe asgjë tjetër, si një nënkapitull. Pamja e analizës është panel
+   kontrolli dhe lexohet ndryshe — blloqet aty duhen parë si blloqe, sepse
+   lexuesi i shikon paralelisht e nuk i lexon me radhë.
+
+   Prandaj kufizuar me `.distributions`, e jo shkruar mbi `.panel`: skeda e
+   vlerësimit e mbajti me qëllim atë formë, dhe kthimi i saj në karta do të
+   ishte prishje e një vendimi e jo dendësim i një tjetri.
+   ---------------------------------------------------------------------- */
+.distributions .panel {
+  margin: 0;
+  padding: var(--s-4);
+  border: 1px solid var(--rule-soft);
+  border-top: 1px solid var(--rule-soft);
+  background: var(--surface);
+}
+
+.distributions .panel h2 {
+  margin: 0 0 4px;
+  font: 600 var(--t-body) / 1.2 var(--sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.distributions .panel .quiet {
+  margin-bottom: var(--s-3);
+  font-size: var(--t-small);
+}
+
+/* Shiriti i patch-it dhe gjithçka që del prej tij janë një bllok, ndaj një
+   kornizë e vetme rreth të gjithëve e jo një vijë mes tyre. */
+.patch {
+  margin-bottom: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+}
+
+.patch .patch-bar {
+  align-items: flex-start;
+}
+
+.model-only {
+  padding: var(--s-4);
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+}
