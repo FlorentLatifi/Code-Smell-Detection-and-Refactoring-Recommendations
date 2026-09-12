@@ -3255,3 +3255,76 @@ testet dhe kurrë e dërguar), dhe `@playwright/test` (Apache-2.0). Të gjitha t
 pinuara saktësisht. Një punë e re te CI-ja shkarkon Chromium-in, çka i shton rreth
 një minutë çdo shtytjeje — hapi më i shtrenjtë i tërë workflow-it, për një suitë me
 pesë teste.
+
+### VD-88: Çfarë mbetet pa u kapur te Blob-i, dhe pse nuk u ndreq
+
+**Konteksti.** VD-78 numëroi klauzolat bllokuese dhe gjeti se 254 nga 315
+mospërputhjet e Blob-it dështojnë te dy ose tri klauzola njëherësh. Ai numër e
+mbyll pyetjen e kalibrimit dhe e lë të hapur një më të vështirë: nëse
+mospërputhjet nuk janë raste kufitare, atëherë çfarë janë? Dy përgjigje ishin të
+mundshme dhe kërkonin punë të kundërt. Ose klasat e humbura u ngjajnë atyre të
+kapura në një përmasë që strategjia nuk e lexon, dhe atëherë asaj i mungon një
+klauzolë; ose u ngjajnë klasave të pastra në çdo përmasë të matur, dhe atëherë
+mospërputhja qëndron te e vërteta bazë.
+
+**Mënyra.** `scripts/blob_recall.py` e ndan tabelën e veçorive në katër qelizat e
+matricës së konfuzionit dhe mat tri gjëra për secilën: kuartilet e madhësisë,
+gjasën që një mospërputhje e rastësishme të renditet mbi një klasë të pastër të
+rastësishme (statistika e Mann-Whitney-t, e lexuar si sipërfaqe ROC), dhe recall-in
+sipas ashpërsisë. Verdiktet vijnë nga `replay` e jo nga një vlerësim i dytë, ndaj
+janë saktësisht qelizat që numëron `evaluate_rules`. Të dy variantet raportohen,
+strategjia e botuar dhe disjunksioni me madhësinë e VD-09, që përgjigjja të mos
+jetë artefakt i më të rreptit.
+
+**Rezultati: mospërputhjet janë klasa të vogla.** Mediana e një mospërputhjeje ka
+55 rreshta efektivë dhe 8 metoda; mediana e një kapjeje ka 285 dhe 25; mediana e
+një klase që rishikuesit e pastruan ka 21 dhe 3. Shtrirjet nuk mbivendosen fare te
+kuartilet: tre të katërtat e mospërputhjeve rrinë nën çerekun më të vogël të
+kapjeve, te secila prej tri metrikave të madhësisë dhe te të dy variantet.
+Gjashtëdhjetë e pesë nga 315 nuk janë më të mëdha se klasa mesatare e pastër. Më e
+vogla është një klasë me dy rreshta dhe një metodë, e votuar «critical» nga një
+prej gjashtë rishikuesve: agregimi me mesatare e rrumbullakim lart e ngre çdo votë
+pakice në pozitiv.
+
+**Asnjë përmasë e pamatur nuk e mbush boshllëkun.** Nga 17 metrikat e klasës, më e
+mira për të ndarë mospërputhjet nga klasat e pastra është NOF me 0.773, ku 0.50 do
+të thoshte asnjë informacion. Pra përgjigjja është e dyta: nuk mungon një klauzolë
+që ky sistem do të dinte ta shkruante.
+
+**Një provë e pavarur e së njëjtës gjë.** Nën agregimin MAX recall-i i strategjisë
+ngjitet nga 0.007 te rastet minore në 0.159 te ato kritike, rreth 23 herë. Nën
+mesatare gradienti nuk shihet, sepse gjashtë rishikues prej të cilëve katër thonë
+«asnjë» e tërheqin mesataren te «minor» pothuajse pavarësisht nga dy të tjerët.
+Strategjia nuk pajton me rishikuesit atje ku rishikuesit vetë ishin më pak të
+bindur, çka është pikërisht ajo që pret një shpjegim me bazë te etiketat.
+
+**Një pajtim që nuk u kërkua.** Renditja sipas ndarjes bie mbi të njëjtat metrika
+që modeli i Qasjes B kishte zgjedhur vetë shumë para kësaj analize: NOF, CLOC dhe
+NOAM janë te katërshja e parë e të dyja listave, ndërsa TCC-ja dhe WMC-ja nuk hyjnë
+te asnjëra. Një statistikë renditëse dhe një model i trajnuar nuk janë e njëjta
+llogari, ndaj kjo është provë e dytë për të njëjtin përfundim e jo përsëritje e së
+parës.
+
+**Përjashtimi i vetëm, dhe pse nuk u ndreq.** Nëntëmbëdhjetë mospërputhje e kalojnë
+klauzolën e kompleksitetit dhe ndalen vetëm te kohezioni, me TCC saktësisht 1.0.
+Kjo nuk është kohezion i matur: TCC-ja e Bieman & Kang-ut (1995) mat çifte metodash
+publike të instancës, dhe një klasë me nën dy të tilla nuk ka çift, ndaj roja e
+llogaritësit kthen 1.0. Çdo klauzolë e God Class-it e kërkon TCC-në nën një prag,
+ndaj ato klasa janë të paarritshme me çfarëdo pragu. Riparsimi i të 19-ave nga
+korpusi konfirmoi 17 me zero ose një metodë publike të instancës: `MetadataTableUtil`
+me 53 metoda dhe zero instance, `GenericsUtils` me 46 dhe zero, `Strings` me 33 dhe
+zero. Janë klasa ndihmëse statike, dhe pikërisht ato që një rishikues i quan blob pa
+hezitim.
+
+**Vendimi: raporto, mos ndrysho.** Tri rrugë u peshuan. Ta bëjmë TCC-në të
+papërcaktuar dhe klauzolën të pavlerësueshme; të shtojmë detektor të veçantë për
+klasat statike; ose ta raportojmë tavanin si kufizim. U zgjodh e treta. E para e
+shkëput përkufizimin nga burimi që e citon dhe detyron rigjenerimin e çdo numri të
+raportuar, për një fitim që nuk e kalon 0.054 te recall-i, sepse 19 nga 350 pozitivë
+është tavani i saj. E dyta zgjeron fushëveprimin katër muaj para dorëzimit për të
+njëjtin fitim. Ndreqja e një metrike sepse ajo e pengon një detektor të ndezë është
+saktësisht akordimi që `ENGINEERING.md` §3.2 e ndalon; ndryshimi këtu do të kishte
+qenë i mbrojtshëm nga ana përmbajtësore, por jo me këtë raport kosto-fitimi.
+
+**Ku shkon.** Nënkapitulli 5.10 me tri tabelat e tij, dhe dy kufizime te 6.3, të
+dyja të lexuara nga `blob_recall.json` e jo të shtypura, për arsyen e VD-73.

@@ -1,0 +1,20 @@
+sample_id,class_name,failed,CLOC,NOM,NOF,WMC,public_instance_methods,path
+7047868,FormatParser,TCC,968,22,19,529,0,java/sage/media/format/FormatParser.java
+4620157,GenericsUtils,TCC,540,46,5,220,0,src/main/java/org/codehaus/groovy/ast/tools/GenericsUtils.java
+4034686,PipelineOptionsFactory,TCC,1031,39,12,189,1,sdks/java/core/src/main/java/org/apache/beam/sdk/options/PipelineOptionsFactory.java
+9199423,BaseScriptEvalUtil,TCC,593,21,2,177,0,data/org.eclipse.birt.data/src/org/eclipse/birt/data/engine/api/script/BaseScriptEvalUtil.java
+3827535,MetadataTableUtil,TCC,668,52,5,167,0,server/base/src/main/java/org/apache/accumulo/server/util/MetadataTableUtil.java
+3702984,PhTypeUtil,TCC,452,35,12,142,0,client-adapter/hbase/src/main/java/com/alibaba/otter/canal/client/adapter/hbase/support/PhTypeUtil.java
+8119000,Strings,TCC ATFD,241,33,4,98,0,org.eclipse.xtext.util/src/org/eclipse/xtext/util/Strings.java
+4815345,TezClientUtils,TCC,470,16,2,93,0,tez-api/src/main/java/org/apache/tez/client/TezClientUtils.java
+4512195,WireAdminImpl,TCC,350,15,11,82,5,wireadmin/src/main/java/org/apache/felix/wireadmin/WireAdminImpl.java
+8025468,ImportsAwareClipboardAction,TCC,290,17,4,70,3,org.eclipse.xtext.xbase.ui/src/org/eclipse/xtext/xbase/ui/editor/actions/ImportsAwareClipboardAction.java
+8428144,OgnlHelper,TCC ATFD,114,9,1,67,0,core/camel-util/src/main/java/org/apache/camel/util/OgnlHelper.java
+5111458,CheckstyleViolationCheckMojo,TCC ATFD,297,13,44,66,1,src/main/java/org/apache/maven/plugins/checkstyle/CheckstyleViolationCheckMojo.java
+5141876,AbstractPmdReport,TCC ATFD,189,14,22,63,1,maven-pmd-plugin/src/main/java/org/apache/maven/plugins/pmd/AbstractPmdReport.java
+4199164,CayenneGeneratorMojo,TCC,149,7,28,61,1,maven-plugins/cayenne-maven-plugin/src/main/java/org/apache/cayenne/tools/CayenneGeneratorMojo.java
+4296219,ConstraintBasePanel,TCC ATFD,256,20,50,54,1,src/main/java/org/apache/directory/fortress/web/panel/ConstraintBasePanel.java
+5735198,MRBaseForCommonInstructions,TCC,157,7,7,54,1,src/main/java/org/apache/sysml/runtime/matrix/mapred/MRBaseForCommonInstructions.java
+7372240,EndpointDiscoverer,TCC,271,26,5,54,1,spring-boot-project/spring-boot-actuator/src/main/java/org/springframework/boot/actuate/endpoint/annotation/EndpointDiscoverer.java
+5470060,MemoryConsumptionTestClient,TCC,272,15,32,51,0,tools/src/main/java/org/apache/qpid/tools/MemoryConsumptionTestClient.java
+7148928,DockerRunDialog,TCC,211,14,27,48,1,PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.container/src/main/java/com/microsoft/azuretools/container/ui/DockerRunDialog.java

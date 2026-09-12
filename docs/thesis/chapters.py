@@ -673,6 +673,46 @@ def _context_conclusion() -> str:
     )
 
 
+def _blob_recall_limits() -> list:
+    """Dy kufizimet që dalin nga Nënkapitulli 5.10, të lexuara nga i njëjti skedar.
+
+    Të shtypura me dorë do të ishin dy pohime numerike brenda kapitullit të
+    fundit që lexon komisioni, dhe pikërisht ashtu rrëshqiti Kapitulli 6 një
+    herë (VD-73). Nëse analiza mungon, paragrafët nuk ekzistojnë fare.
+    """
+    data = _load_if_present("blob_recall.json")
+    if data is None:
+        return []
+
+    strategy = data["per_variant"]["strategy"]
+    missed = int(str(strategy["support"]["missed"]))
+    below = int(str(strategy["below_negative_median"]["CLOC"]))
+    best = max(float(value) for value in strategy["separation"].values())
+    saturated = data["saturated_cohesion"]
+
+    return [
+        "Recall-i i raportuar kundrejt MLCQ-së për Blob-in nuk mat atë që emri i tij "
+        f"sugjeron. Nga {missed} raste që rishikuesit i quajtën Blob dhe strategjia nuk "
+        f"i ndezi, {below} nuk janë më të mëdha se klasa mesatare që vetë rishikuesit e "
+        "quajtën të pastër, dhe shtrirja e mospërputhjeve nuk mbivendoset fare me atë "
+        "të kapjeve te asnjëra prej metrikave të madhësisë. Asnjë metrikë e vetme klase "
+        f"nuk i ndan dot mospërputhjet nga klasat e pastra: më e mira arrin {best:.3f} "
+        "aty ku 0.50 do të thoshte asnjë informacion. Pasoja është se shifra mat sa "
+        "shpesh një strategji e madhësisë dhe e kohezionit përputhet me një gjykim "
+        "njerëzor që, te shumica e rasteve të etiketuara, nuk është marrë mbi bazën e "
+        "madhësisë. Kjo nuk e përmirëson detektorin dhe nuk e fajëson rishikuesin; "
+        "e ndryshon atë që shifra provon.",
+        "Një tavan i dytë është i matjes dhe jo i etiketave, dhe u raportua në vend që "
+        "të riparohej. TCC-ja është e papërcaktuar për një klasë me më pak se dy metoda "
+        "publike të instancës, dhe llogaritësi e zgjidh boshllëkun me vlerën maksimale, "
+        "të cilën asnjë klauzolë e God Class-it nuk e pranon. Klasat ndihmëse krejt "
+        f"statike e mbartin atë vlerë nga vetë ndërtimi: {saturated['confirmed_undefined']} "
+        f"nga {saturated['count']} rastet e tilla u riparsuan dhe dolën pikërisht të asaj "
+        "forme. Ndreqja do të kërkonte shkëputjen e TCC-së nga përkufizimi i botuar që e "
+        "citon, ndaj u zgjodh raportimi.",
+    ]
+
+
 def _blocking_in_discussion() -> list:
     """Gjetja e tretë që tregon në të njëjtin drejtim si dy të parat.
 
@@ -799,6 +839,7 @@ def chapter_6() -> list:
                 "përkthimi, dhe kur krahasimi u bë, pajtimi doli pranë rastësisë për tri nga "
                 "katër erërat, me mbivlerësim sistematik. Pretendimi hiqet: ajo mbetet "
                 "renditje e brendshme e mjetit dhe jo riprodhim i gjykimit njerëzor.",
+                *_blob_recall_limits(),
                 "Vetë e vërteta bazë ka një tavan të ulët. Rishikuesit e MLCQ-së pajtohen "
                 "mes tyre me MCC nën 0.24 për çdo erë, çka do të thotë se një pjesë e "
                 "pareduktueshme e gabimit të çdo detektori i takon paqartësisë së "
@@ -1112,6 +1153,7 @@ def chapter_5() -> list:
         *_blocking_section(),
         *_severity_section(),
         *_confidence_section(),
+        *_blob_recall_section(),
     ]
 
 
@@ -1791,6 +1833,234 @@ def _blocking_section() -> list:
         "dhe ai vendim do të prodhonte një numër që varet nga vetë vendimi."
     )
     return [("5.7", "Pse nuk ndezin strategjitë", paragraphs)]
+
+
+def _blob_size_rows(data: dict) -> list:
+    """Kuartilet e madhësisë për secilën qelizë, variant pas varianti."""
+    rows = []
+    for variant, entry in data["per_variant"].items():
+        for metric in ("CLOC", "NOM", "WMC"):
+            cells = entry["quartiles"][metric]
+            rows.append(
+                [
+                    SMELL_VARIANT_SQ.get(f"blob/{variant}", variant),
+                    metric,
+                    *(
+                        "–".join(f"{value:g}" for value in cells[cell])
+                        for cell in ("caught", "missed", "negative")
+                    ),
+                ]
+            )
+    return rows
+
+
+def _blob_quartile_gap(data: dict) -> str:
+    """A rrinë tri të katërtat e mospërputhjeve nën çerekun më të vogël të kapjeve?
+
+    Pohimi shkruhet nga vetë kuartilet e jo me dorë, sepse është pohimi më i
+    fortë i nënkapitullit dhe një ndryshim i vogël te tabela e veçorive do ta
+    kthente në të pavërtetë pa e ndryshuar asnjë fjalë të tekstit.
+    """
+    gaps = [
+        entry["quartiles"][metric]["missed"][2] < entry["quartiles"][metric]["caught"][0]
+        for entry in data["per_variant"].values()
+        for metric in ("CLOC", "NOM", "WMC")
+    ]
+    if all(gaps):
+        return (
+            "Shtrirjet madje nuk mbivendosen fare te kuartilet: tre të katërtat e "
+            "mospërputhjeve rrinë nën çerekun më të vogël të klasave të kapura, te "
+            "secila prej tri metrikave dhe te të dy variantet."
+        )
+    return (
+        f"Te {sum(gaps)} nga {len(gaps)} palët metrikë–variant, tre të katërtat e "
+        "mospërputhjeve rrinë nën çerekun më të vogël të klasave të kapura."
+    )
+
+
+def _blob_agrees_with_the_model() -> list:
+    """A i zgjedh Qasja B po ato metrika që kjo analizë i gjen më ndarëset?
+
+    Dy matje të pavarura mbi të njëjtën tabelë veçorish: njëra rendit metrikat
+    sipas sa mirë e ndajnë një mospërputhje nga një klasë e pastër, tjetra sipas
+    sa peshë u dha një model i trajnuar. Nuk janë e njëjta llogari, ndaj
+    përputhja e tyre është provë dhe jo përsëritje.
+    """
+    recall = _load_if_present("blob_recall.json")
+    ml = _load_if_present("ml_evaluation.json")
+    if recall is None or ml is None:
+        return []
+    top = ml["per_smell"].get("blob", {}).get("top_features")
+    if not top:
+        return []
+
+    separation = recall["per_variant"]["strategy"]["separation"]
+    ranked = [name for name, _ in sorted(separation.items(), key=lambda pair: -pair[1])][:4]
+    chosen = [name.removeprefix("c_") for name in top[:4]]
+    shared = [name for name in ranked if name in chosen]
+    if len(shared) < 2:
+        return []
+    return [
+        "Kjo renditje përputhet me një matje krejt tjetër. Veçoritë që modeli i Qasjes "
+        "B zgjodhi vetë për Blob-in, të raportuara te Nënkapitulli 5.2, ndajnë "
+        f"{len(shared)} nga katër vendet e para me renditjen sipas ndarjes: "
+        f"{', '.join(shared)}. As TCC-ja dhe as WMC-ja, të dy kushtet mbi të cilat është "
+        "ndërtuar strategjia e botuar, nuk hyjnë te asnjëra prej dy listave. Një "
+        "statistikë renditëse dhe një model i trajnuar nuk janë e njëjta llogari, ndaj "
+        "pajtimi i tyre është provë më shumë se përsëritje.",
+    ]
+
+
+def _blob_severity_rows(data: dict) -> list:
+    """Recall-i sipas ashpërsisë nën agregimin MAX, ku shkalla ruan shtrirjen."""
+    rows = []
+    for variant, entry in data["per_variant"].items():
+        by_max = entry["recall_by_severity"]["max"]
+        for label in SEVERITY_SCALE:
+            bucket = by_max.get(label)
+            if bucket is None:
+                continue
+            rows.append(
+                [
+                    SMELL_VARIANT_SQ.get(f"blob/{variant}", variant),
+                    label,
+                    str(bucket["support"]),
+                    str(bucket["caught"]),
+                    f"{bucket['recall']:.3f}" if bucket["recall"] is not None else "—",
+                ]
+            )
+    return rows
+
+
+def _blob_gradient(data: dict) -> str:
+    """Sa herë më i lartë është recall-i te skaji i rëndë sesa te i lehti."""
+    by_max = data["per_variant"]["strategy"]["recall_by_severity"]["max"]
+    worst = by_max.get("critical", {}).get("recall")
+    lightest = by_max.get("minor", {}).get("recall")
+    if not worst or not lightest:
+        return ""
+    return (
+        f"Te strategjia e botuar recall-i ngjitet nga {lightest:.3f} te rastet që vetëm "
+        f"një rishikues i quajti të lehta, në {worst:.3f} te ato që dikush i quajti "
+        f"kritike, pra rreth {worst / lightest:.0f} herë më i lartë. Mospërputhja nuk "
+        "është e rastësishme: strategjia nuk pajton me rishikuesit pikërisht atje ku "
+        "rishikuesit vetë ishin më pak të bindur."
+    )
+
+
+def _blob_saturated(data: dict) -> list:
+    """Mospërputhjet që klauzola e kohezionit nuk i pranon dot me asnjë prag."""
+    entry = data["saturated_cohesion"]
+    if not entry["count"]:
+        return []
+    support = data["per_variant"]["strategy"]["support"]
+    missed, caught = support["missed"], support["caught"]
+
+    rows = [
+        [
+            item["class_name"],
+            f"{item['CLOC']:g}",
+            f"{item['NOM']:g}",
+            f"{item['WMC']:g}",
+            "—" if item["public_instance_methods"] is None else str(item["public_instance_methods"]),
+        ]
+        for item in entry["largest"]
+    ]
+    return [
+        "Një pjesë e vogël e mospërputhjeve ka shkak krejt tjetër, dhe është e vetmja "
+        "pjesë ku faji bie mbi matjen e jo mbi etiketat. TCC-ja e Bieman & Kang-ut "
+        "(1995) mat pjesën e çifteve të metodave publike të instancës që ndajnë një "
+        "fushë. Një klasë me më pak se dy metoda të tilla nuk ka çift fare, ndaj "
+        "metrika është e papërcaktuar dhe llogaritësi e zgjidh boshllëkun nga ana e "
+        "«plotësisht kohezive», domethënë 1.0. Çdo klauzolë e God Class-it e kërkon "
+        "TCC-në **nën** një prag, ndaj një klasë që mbart atë vlerë mbetet jashtë "
+        "mundësive të strategjisë sado të zhvendosen pragjet.",
+        ("table", "Klasat që klauzola e kohezionit nuk i arrin dot",
+         ["Klasa", "CLOC", "NOM", "WMC", "Metoda publike instance"], rows),  # fmt: skip
+        f"Janë {entry['count']} mospërputhje të tilla: klasa që e kalojnë klauzolën e "
+        f"kompleksitetit dhe ndalen vetëm te kohezioni. Prej tyre {entry['checked']} u "
+        f"riparsuan nga korpusi dhe {entry['confirmed_undefined']} dolën me më pak se "
+        "dy metoda publike të instancës, pra me TCC të papërcaktuar e jo me kohezion "
+        "të matur. Emrat e tregojnë vetë llojin: klasa ndihmëse krejt statike, ku "
+        "kolona e fundit është zero. Këto janë pikërisht klasat që një rishikues i "
+        "quan blob pa hezitim, dhe janë të paarritshme nga një strategji e ndërtuar "
+        "mbi kohezionin mes metodave të instancës.",
+        f"Numri mbetet i vogël përballë tërësisë, {entry['count']} nga {missed}, ndaj "
+        "nuk e shpjegon recall-in e ulët dhe nuk u trajtua si defekt për t'u riparuar. "
+        "Ndryshimi i TCC-së do të shkëpuste përkufizimin nga burimi i tij dhe do të "
+        "detyronte rigjenerimin e çdo numri të raportuar, për një fitim që nuk e kalon "
+        f"{entry['count'] / (missed + caught):.3f} te recall-i. Kufizimi raportohet i "
+        "tillë siç është te Nënkapitulli 6.3.",
+    ]
+
+
+def _blob_recall_section() -> list:
+    """Si duket klasa që rishikuesi e quan blob kur strategjia nuk pajtohet.
+
+    Nënkapitulli 5.7 thotë cila klauzolë e ndali secilën mospërputhje dhe aty
+    ndalet. Numri i klauzolave nuk dallon dot mes dy gjendjeve që kërkojnë punë
+    të kundërt: strategjia që mat përmasat e gabuara, dhe e vërteta bazë që
+    përmban raste të cilat asnjë prag nuk i arrin. Ky nënkapitull e dallon.
+    """
+    data = _load_if_present("blob_recall.json")
+    if data is None:
+        return []
+
+    strategy = data["per_variant"]["strategy"]
+    missed = strategy["support"]["missed"]
+    below = strategy["below_negative_median"]["CLOC"]
+    best_metric, best_value = max(strategy["separation"].items(), key=lambda pair: pair[1])
+
+    paragraphs: list = [
+        "Nënkapitulli 5.7 numëron klauzolat që ndalën secilën mospërputhje dhe e lë të "
+        "hapur pyetjen që vjen menjëherë pas saj: si duket klasa që rishikuesi e quajti "
+        "blob ndërsa strategjia nuk e quajti? Përgjigjja ka vetëm dy forma, dhe të dyja "
+        "kërkojnë punë të kundërt. Ose klasat e humbura u ngjajnë atyre të kapura në një "
+        "përmasë që strategjia nuk e lexon fare, dhe atëherë asaj i mungon një klauzolë; "
+        "ose u ngjajnë klasave që rishikuesit i quajtën të pastra në çdo përmasë të "
+        "matur, dhe atëherë asnjë prag e asnjë klauzolë nuk i arrin dot.",
+        ("table", "Madhësia e klasave në secilën qelizë, si kuartil i poshtëm–mesatare–i sipërm",
+         ["Varianti", "Metrika", "Të kapura", "Të humbura", "Të pastra"],
+         _blob_size_rows(data)),  # fmt: skip
+        "Tabela lexohet vetëm në një drejtim. Klasa mesatare e humbur është shumë më "
+        "afër një klase që rishikuesit e pastruan sesa një blob-i që strategjia e kapi. "
+        f"{_blob_quartile_gap(data)} "
+        f"Nga {missed} mospërputhje të strategjisë së botuar, {below} nuk "
+        "janë më të mëdha se klasa mesatare që vetë rishikuesit e quajtën të pastër.",
+        "Asnjë metrikë e vetme nuk e mban dot ndarjen. Për secilën metrikë klase u mat "
+        "gjasa që një mospërputhje e marrë rastësisht të renditet mbi një klasë të "
+        "pastër të marrë rastësisht, që është statistika e Mann-Whitney-t dhe lexohet "
+        "si sipërfaqja nën kurbën ROC: 0.50 do të thotë asnjë informacion, 1.00 renditje "
+        f"e përsosur. Më e mira nga {len(strategy['separation'])} metrikat e klasës "
+        f"është {best_metric} me {best_value:.3f}, e cila nuk mban dot as prag as "
+        "klauzolë. Pra përmasa që "
+        "mungon nuk gjendet mes atyre që ky sistem di të masë.",
+        *_blob_agrees_with_the_model(),
+        ("table", "Recall-i sipas ashpërsisë që caktuan rishikuesit, agregim MAX",
+         ["Varianti", "Ashpërsia", "Mbështetja", "Të kapura", "Recall"],
+         _blob_severity_rows(data)),  # fmt: skip
+        "Agregimi këtu është MAX e jo mesatarja e përdorur gjetiu, dhe zgjedhja është "
+        "e qëllimshme. Gjashtë rishikues prej të cilëve katër thonë «asnjë» e tërheqin "
+        "mesataren te «minor» pothuajse pavarësisht se çfarë thanë dy të tjerët, ndaj "
+        "nën mesatare skaji i rëndë i shkallës mbetet bosh dhe gradienti nuk shihet dot. "
+        "Nën MAX etiketat e ruajnë shtrirjen.",
+    ]
+    gradient = _blob_gradient(data)
+    if gradient:
+        paragraphs.append(gradient)
+    paragraphs.extend(_blob_saturated(data))
+    paragraphs.append(
+        "Përfundimi i këtij nënkapitulli është për të vërtetën bazë dhe jo për "
+        "detektorin, dhe pikërisht prandaj duhet lexuar me kujdes. Ai nuk thotë se "
+        "rishikuesit gabuan: një zhvillues që e njeh kodin mund ta quajë me plot të "
+        "drejtë problematike një klasë të vogël, për arsye që asnjë metrikë strukturore "
+        "nuk i mat. Thotë diçka më të ngushtë e më të dobishme, që recall-i i matur "
+        "kundrejt MLCQ-së nuk është i njëjti krahasim që një lexues supozon: ai mat sa "
+        "shpesh një strategji e madhësisë dhe e kohezionit përputhet me një gjykim "
+        "njerëzor që, në shumicën e rasteve të etiketuara, nuk është marrë mbi bazën e "
+        "madhësisë."
+    )
+    return [("5.10", "Çfarë mbetet pa u kapur te Blob-i", paragraphs)]
 
 
 def _severity_section() -> list:
@@ -2527,6 +2797,7 @@ REPRODUCTION = [
     ("18", "fetch_pmd.py", "mjeti i jashtëm i krahasimit, jashtë git-it", "minuta, një herë"),
     ("19", "compare_with_pmd.py", "krahasimi me PMD-në mbi të njëjtat mostra", "orë"),
     ("20", "blocking_conditions.py", "cila klauzolë e ndal secilën strategji", "sekonda"),
+    ("21", "blob_recall.py", "çfarë mbetet pa u kapur te Blob-i", "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"

@@ -1,0 +1,819 @@
+{
+  "aggregation": "mean",
+  "environment": {
+    "commit": "1b96a94105edd6210d9485948f0641254217c31b",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "per_variant": {
+    "strategy": {
+      "below_negative_median": {
+        "CLOC": 65,
+        "NOM": 74,
+        "WMC": 74
+      },
+      "quartiles": {
+        "AMW": {
+          "caught": [
+            2.94,
+            3.6429,
+            5.6667
+          ],
+          "missed": [
+            1.0,
+            1.4286,
+            2.4615
+          ],
+          "negative": [
+            1.0,
+            1.25,
+            2.0
+          ]
+        },
+        "ATFD": {
+          "caught": [
+            15.0,
+            26.0,
+            61.0
+          ],
+          "missed": [
+            0.0,
+            1.0,
+            6.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            2.0
+          ]
+        },
+        "CBO": {
+          "caught": [
+            15.0,
+            30.0,
+            52.0
+          ],
+          "missed": [
+            2.0,
+            6.0,
+            15.0
+          ],
+          "negative": [
+            2.0,
+            4.0,
+            8.0
+          ]
+        },
+        "CLOC": {
+          "caught": [
+            261.0,
+            285.0,
+            746.0
+          ],
+          "missed": [
+            24.0,
+            55.0,
+            123.0
+          ],
+          "negative": [
+            9.0,
+            21.0,
+            45.0
+          ]
+        },
+        "DIT": {
+          "caught": [
+            0.0,
+            1.0,
+            1.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "LCOM": {
+          "caught": [
+            64.0,
+            184.0,
+            573.0
+          ],
+          "missed": [
+            0.0,
+            10.0,
+            65.0
+          ],
+          "negative": [
+            0.0,
+            1.0,
+            6.0
+          ]
+        },
+        "LCOM3": {
+          "caught": [
+            0.8824,
+            0.9432,
+            0.9729
+          ],
+          "missed": [
+            0.5,
+            0.8438,
+            0.9516
+          ],
+          "negative": [
+            0.0,
+            -0.0,
+            0.8
+          ]
+        },
+        "MAXCC": {
+          "caught": [
+            10.0,
+            15.0,
+            30.0
+          ],
+          "missed": [
+            1.0,
+            3.0,
+            7.0
+          ],
+          "negative": [
+            1.0,
+            2.0,
+            4.0
+          ]
+        },
+        "NOAM": {
+          "caught": [
+            1.0,
+            3.0,
+            9.0
+          ],
+          "missed": [
+            0.0,
+            2.0,
+            6.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "NOC": {
+          "caught": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "NOF": {
+          "caught": [
+            6.0,
+            13.0,
+            24.0
+          ],
+          "missed": [
+            2.0,
+            4.0,
+            7.0
+          ],
+          "negative": [
+            0.0,
+            1.0,
+            3.0
+          ]
+        },
+        "NOM": {
+          "caught": [
+            17.0,
+            25.0,
+            46.0
+          ],
+          "missed": [
+            4.0,
+            8.0,
+            14.0
+          ],
+          "negative": [
+            1.0,
+            3.0,
+            6.0
+          ]
+        },
+        "NOPA": {
+          "caught": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "RFC": {
+          "caught": [
+            84.0,
+            115.0,
+            226.0
+          ],
+          "missed": [
+            10.0,
+            24.0,
+            51.0
+          ],
+          "negative": [
+            5.0,
+            10.0,
+            22.0
+          ]
+        },
+        "TCC": {
+          "caught": [
+            0.0473,
+            0.1579,
+            0.2667
+          ],
+          "missed": [
+            0.1404,
+            0.3788,
+            1.0
+          ],
+          "negative": [
+            0.1667,
+            1.0,
+            1.0
+          ]
+        },
+        "WMC": {
+          "caught": [
+            55.0,
+            81.0,
+            156.0
+          ],
+          "missed": [
+            7.0,
+            15.0,
+            29.0
+          ],
+          "negative": [
+            3.0,
+            6.0,
+            11.0
+          ]
+        },
+        "WOC": {
+          "caught": [
+            0.625,
+            0.8,
+            0.9167
+          ],
+          "missed": [
+            0.1429,
+            0.6111,
+            1.0
+          ],
+          "negative": [
+            0.6667,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "recall_by_severity": {
+        "max": {
+          "critical": {
+            "caught": 21,
+            "recall": 0.1591,
+            "support": 132
+          },
+          "major": {
+            "caught": 13,
+            "recall": 0.0714,
+            "support": 182
+          },
+          "minor": {
+            "caught": 1,
+            "recall": 0.007,
+            "support": 143
+          }
+        },
+        "mean": {
+          "major": {
+            "caught": 1,
+            "recall": 0.05,
+            "support": 20
+          },
+          "minor": {
+            "caught": 34,
+            "recall": 0.103,
+            "support": 330
+          }
+        }
+      },
+      "separation": {
+        "AMW": 0.5508,
+        "ATFD": 0.5783,
+        "CBO": 0.5619,
+        "CLOC": 0.7351,
+        "DIT": 0.454,
+        "LCOM": 0.6744,
+        "LCOM3": 0.701,
+        "MAXCC": 0.6036,
+        "NOAM": 0.7286,
+        "NOC": 0.5016,
+        "NOF": 0.7729,
+        "NOM": 0.7444,
+        "NOPA": 0.5052,
+        "RFC": 0.6799,
+        "TCC": 0.4086,
+        "WMC": 0.7247,
+        "WOC": 0.3223
+      },
+      "support": {
+        "caught": 35,
+        "missed": 315,
+        "negative": 1049,
+        "spurious": 8
+      }
+    },
+    "with_size": {
+      "below_negative_median": {
+        "CLOC": 58,
+        "NOM": 71,
+        "WMC": 63
+      },
+      "quartiles": {
+        "AMW": {
+          "caught": [
+            1.5357,
+            3.0556,
+            4.4412
+          ],
+          "missed": [
+            1.0,
+            1.3333,
+            2.2
+          ],
+          "negative": [
+            1.0,
+            1.25,
+            2.0
+          ]
+        },
+        "ATFD": {
+          "caught": [
+            3.0,
+            15.0,
+            36.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            5.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            2.0
+          ]
+        },
+        "CBO": {
+          "caught": [
+            13.0,
+            21.0,
+            39.0
+          ],
+          "missed": [
+            1.0,
+            4.0,
+            10.0
+          ],
+          "negative": [
+            2.0,
+            4.0,
+            8.0
+          ]
+        },
+        "CLOC": {
+          "caught": [
+            194.0,
+            276.0,
+            470.0
+          ],
+          "missed": [
+            22.0,
+            48.0,
+            81.0
+          ],
+          "negative": [
+            9.0,
+            19.0,
+            41.0
+          ]
+        },
+        "DIT": {
+          "caught": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "LCOM": {
+          "caught": [
+            54.0,
+            186.0,
+            516.0
+          ],
+          "missed": [
+            0.0,
+            4.0,
+            35.0
+          ],
+          "negative": [
+            0.0,
+            1.0,
+            6.0
+          ]
+        },
+        "LCOM3": {
+          "caught": [
+            0.8583,
+            0.9474,
+            0.9768
+          ],
+          "missed": [
+            0.4,
+            0.8,
+            0.9259
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            0.8
+          ]
+        },
+        "MAXCC": {
+          "caught": [
+            5.0,
+            10.0,
+            22.0
+          ],
+          "missed": [
+            1.0,
+            2.0,
+            6.0
+          ],
+          "negative": [
+            1.0,
+            2.0,
+            4.0
+          ]
+        },
+        "NOAM": {
+          "caught": [
+            1.0,
+            3.0,
+            9.0
+          ],
+          "missed": [
+            0.0,
+            2.0,
+            6.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "NOC": {
+          "caught": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "NOF": {
+          "caught": [
+            5.0,
+            11.0,
+            21.0
+          ],
+          "missed": [
+            2.0,
+            3.0,
+            6.0
+          ],
+          "negative": [
+            0.0,
+            1.0,
+            3.0
+          ]
+        },
+        "NOM": {
+          "caught": [
+            15.0,
+            25.0,
+            35.0
+          ],
+          "missed": [
+            3.0,
+            7.0,
+            12.0
+          ],
+          "negative": [
+            1.0,
+            3.0,
+            5.0
+          ]
+        },
+        "NOPA": {
+          "caught": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "missed": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "negative": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "RFC": {
+          "caught": [
+            62.0,
+            104.0,
+            174.0
+          ],
+          "missed": [
+            8.0,
+            18.0,
+            35.0
+          ],
+          "negative": [
+            4.0,
+            10.0,
+            21.0
+          ]
+        },
+        "TCC": {
+          "caught": [
+            0.0711,
+            0.2632,
+            0.8225
+          ],
+          "missed": [
+            0.1429,
+            0.359,
+            1.0
+          ],
+          "negative": [
+            0.1667,
+            1.0,
+            1.0
+          ]
+        },
+        "WMC": {
+          "caught": [
+            43.0,
+            62.0,
+            130.0
+          ],
+          "missed": [
+            6.0,
+            12.0,
+            21.0
+          ],
+          "negative": [
+            3.0,
+            5.0,
+            11.0
+          ]
+        },
+        "WOC": {
+          "caught": [
+            0.5758,
+            0.8571,
+            1.0
+          ],
+          "missed": [
+            0.1429,
+            0.5,
+            1.0
+          ],
+          "negative": [
+            0.6667,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "recall_by_severity": {
+        "max": {
+          "critical": {
+            "caught": 55,
+            "recall": 0.4167,
+            "support": 132
+          },
+          "major": {
+            "caught": 32,
+            "recall": 0.1758,
+            "support": 182
+          },
+          "minor": {
+            "caught": 5,
+            "recall": 0.035,
+            "support": 143
+          }
+        },
+        "mean": {
+          "major": {
+            "caught": 12,
+            "recall": 0.6,
+            "support": 20
+          },
+          "minor": {
+            "caught": 78,
+            "recall": 0.2364,
+            "support": 330
+          }
+        }
+      },
+      "separation": {
+        "AMW": 0.5194,
+        "ATFD": 0.5451,
+        "CBO": 0.505,
+        "CLOC": 0.6993,
+        "DIT": 0.4551,
+        "LCOM": 0.6403,
+        "LCOM3": 0.6812,
+        "MAXCC": 0.5656,
+        "NOAM": 0.7364,
+        "NOC": 0.4952,
+        "NOF": 0.7508,
+        "NOM": 0.7182,
+        "NOPA": 0.5074,
+        "RFC": 0.6375,
+        "TCC": 0.4017,
+        "WMC": 0.6933,
+        "WOC": 0.3054
+      },
+      "support": {
+        "caught": 90,
+        "missed": 260,
+        "negative": 1022,
+        "spurious": 35
+      }
+    }
+  },
+  "saturated_cohesion": {
+    "checked": 19,
+    "classes": [
+      "FormatParser",
+      "GenericsUtils",
+      "PipelineOptionsFactory",
+      "BaseScriptEvalUtil",
+      "MetadataTableUtil",
+      "PhTypeUtil",
+      "Strings",
+      "TezClientUtils",
+      "WireAdminImpl",
+      "ImportsAwareClipboardAction",
+      "OgnlHelper",
+      "CheckstyleViolationCheckMojo",
+      "AbstractPmdReport",
+      "CayenneGeneratorMojo",
+      "ConstraintBasePanel",
+      "MRBaseForCommonInstructions",
+      "EndpointDiscoverer",
+      "MemoryConsumptionTestClient",
+      "DockerRunDialog"
+    ],
+    "confirmed_undefined": 17,
+    "count": 19,
+    "largest": [
+      {
+        "CLOC": 968.0,
+        "NOF": 19.0,
+        "NOM": 22.0,
+        "WMC": 529.0,
+        "class_name": "FormatParser",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 540.0,
+        "NOF": 5.0,
+        "NOM": 46.0,
+        "WMC": 220.0,
+        "class_name": "GenericsUtils",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 1031.0,
+        "NOF": 12.0,
+        "NOM": 39.0,
+        "WMC": 189.0,
+        "class_name": "PipelineOptionsFactory",
+        "failed": "TCC",
+        "public_instance_methods": 1
+      },
+      {
+        "CLOC": 593.0,
+        "NOF": 2.0,
+        "NOM": 21.0,
+        "WMC": 177.0,
+        "class_name": "BaseScriptEvalUtil",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 668.0,
+        "NOF": 5.0,
+        "NOM": 52.0,
+        "WMC": 167.0,
+        "class_name": "MetadataTableUtil",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 452.0,
+        "NOF": 12.0,
+        "NOM": 35.0,
+        "WMC": 142.0,
+        "class_name": "PhTypeUtil",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 241.0,
+        "NOF": 4.0,
+        "NOM": 33.0,
+        "WMC": 98.0,
+        "class_name": "Strings",
+        "failed": "TCC ATFD",
+        "public_instance_methods": 0
+      },
+      {
+        "CLOC": 470.0,
+        "NOF": 2.0,
+        "NOM": 16.0,
+        "WMC": 93.0,
+        "class_name": "TezClientUtils",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      }
+    ]
+  },
+  "smell": "blob"
+}

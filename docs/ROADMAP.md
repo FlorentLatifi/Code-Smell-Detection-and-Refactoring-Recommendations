@@ -26,8 +26,9 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Krahasimi me mjet të jashtëm | ✅ e plotë | PMD 7.27.0 me pragjet e veta; intervale të çiftuara mbi riterheqje depoje (VD-76, VD-77) |
 | Cilësia e rishkrimeve | 🟡 aparati gati | mostër e mbjellë dhe rubrikë e fiksuar (VD-72, VD-74); gjykimi i autorit mbetet |
 | Pse nuk ndezin strategjitë | ✅ e plotë | klauzola bllokuese për çdo mospërputhje (VD-78); hipoteza e ATFD-së u përgënjeshtrua |
+| Çfarë mbetet pa u kapur te Blob-i | ✅ e plotë | mospërputhjet janë klasa të vogla, jo përmasë e pamatur (VD-88); tavani i TCC-së te klasat statike u raportua e nuk u ndryshua |
 | Figurat e punimit | ✅ 8 figura | `scripts/build_figures.py`, të gjeneruara nga `data/results/` |
-| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
+| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); 10 nënkapituj te Kapitulli 5; mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
 
 Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
 
