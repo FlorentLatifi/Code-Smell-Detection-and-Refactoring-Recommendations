@@ -2,9 +2,10 @@
  *
  * Preflight-i i Tailwind-it e rivendos çdo margjinë, çdo kufi butoni dhe çdo
  * madhësi titulli. I ngarkuar bashkë me fletën ekzistuese ai do ta prishte atë
- * në mes të migrimit, ndaj hyjnë vetëm shtresa e temës dhe utilitetet. Faqja e
- * dizajnit te `design.html` e mban Tailwind-in e plotë, sepse aty nuk ka asgjë
- * tjetër për të prishur (VD-106).
+ * në mes të migrimit, ndaj hyjnë vetëm shtresa e temës dhe utilitetet.
+ *
+ * Çmimi paguhet te komponentët: pa preflight, çdo `ul` e mban pikën dhe
+ * dyzetë pikselat e shfletuesit, ndaj ato e shkruajnë vetë `list-none` (VD-106).
  */
 @layer theme, base, components, utilities;
 

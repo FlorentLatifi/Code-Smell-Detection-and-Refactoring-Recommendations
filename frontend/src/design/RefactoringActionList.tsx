@@ -50,7 +50,7 @@ export function RefactoringActionList({
       <div className="space-y-4 xl:col-span-2">
         {automated.length > 0 && (
           <Card title={`Rishkrime të gatshme (${automated.length})`}>
-            <ul className="divide-y divide-ink-200 dark:divide-ink-800">
+            <ul className="m-0 list-none divide-y divide-ink-200 p-0 dark:divide-ink-800">
               {automated.slice(0, 6).map((item) => (
                 <Row key={item.key} item={item} onOpen={onOpen} />
               ))}
@@ -66,7 +66,7 @@ export function RefactoringActionList({
               Këto kërkojnë gjetjen e çdo reference në projekt, të cilën analiza nuk e provon dot.
               Mbeten propozim për autorin.
             </p>
-            <ul className="divide-y divide-ink-200 dark:divide-ink-800">
+            <ul className="m-0 list-none divide-y divide-ink-200 p-0 dark:divide-ink-800">
               {advisory.slice(0, 4).map((item) => (
                 <Row key={item.key} item={item} onOpen={onOpen} />
               ))}
@@ -161,7 +161,7 @@ function AppliedTimeline({
         </p>
       ) : (
         <>
-          <ol className="space-y-0 p-4 pt-3">
+          <ol className="m-0 list-none space-y-0 p-4 pt-3">
             {applied.map((entry, index) => (
               <li key={entry.file} className="relative flex gap-3 pb-4 last:pb-0">
                 {index < applied.length - 1 && (

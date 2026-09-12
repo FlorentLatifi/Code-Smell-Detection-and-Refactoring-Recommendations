@@ -157,7 +157,7 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
         </div>
       </div>
 
-      <ul className="min-w-0 flex-1 space-y-1.5">
+      <ul className="m-0 min-w-0 flex-1 list-none space-y-1.5 p-0">
         {slices.map((slice) => (
           <li key={slice.name} className="flex min-w-0 items-center gap-2 text-sm">
             <span

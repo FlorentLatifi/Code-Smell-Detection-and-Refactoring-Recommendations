@@ -3880,6 +3880,13 @@ DOM-in e gjallë. Selektori u riemërua `.data-grid` te `styles.css`, `src/Panel
 dhe `src/Results.tsx`. Kjo është përplasja e parë e emrave, jo e fundit e mundshme,
 dhe është arsyeja që heqja përfundimtare e `styles.css` mbetet punë e hapur.
 
+Kostoja e dytë erdhi nga ana tjetër: pa preflight, çdo `ul` e mban pikën dhe
+dyzetë pikselat e paracaktuar të shfletuesit, ndaj rreshtat e rekomandimeve
+dilnin me një pikë përpara dhe me kartat e zhvendosura. Klasa `list-none` shkruhet
+tani në secilin prej tre vendeve. Të dyja u gjetën duke matur faqen e gjallë, jo
+nga testet, sepse jsdom-i nuk llogarit paraqitje dhe një pamje e prishur kalon
+çdo pohim mbi DOM-in.
+
 **Dy gjëra që u prishën dhe si.** Recharts-i e thërret `ResizeObserver` sapo
 montohet, të cilin jsdom-i nuk e ka: 36 teste ranë njëherësh derisa
 `src/test-setup.ts` shtoi një zëvendësues bosh. Dhe tri teste end-to-end pohonin
