@@ -96,6 +96,12 @@ export interface Analysis {
   model?: ModelBlock;
 }
 
+/** Një shënim mbi një rishkrim: kodi, plus numrat që teksti i tij përdor. */
+export interface RewriteNote {
+  code: string;
+  [value: string]: string | number;
+}
+
 export interface Preview {
   applied: boolean;
   refactoring: string;
@@ -105,10 +111,13 @@ export interface Preview {
   /**
    * Gjëra të vërteta për një rishkrim që zbatohet, e jo arsye për ta refuzuar.
    *
+   * Kod dhe numra, jo fjali: serveri shkruan anglisht dhe ky ekran shqip, ndaj
+   * përkthimi lidhet me kodin, njësoj si te gabimet.
+   *
    * Opsionale për të njëjtën arsye si `Summary.unparsed`: një server i vjetër
    * nuk i dërgon, dhe mungesa nuk duhet lexuar si «nuk ka asgjë për të thënë».
    */
-  notes?: string[];
+  notes?: RewriteNote[];
   before?: string;
   after?: string;
 }

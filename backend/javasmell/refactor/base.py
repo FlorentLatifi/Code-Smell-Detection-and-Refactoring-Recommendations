@@ -14,6 +14,7 @@ to aggregate into a table, and free text does not aggregate.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -66,6 +67,21 @@ class Refusal(StrEnum):
 
 
 @dataclass(frozen=True)
+class Note:
+    """Something true about an applied rewrite, in a form a caller can translate.
+
+    A code and its numbers, never a sentence. The interface writes Albanian and
+    the package writes English, and this project has already paid once for
+    sending prose across that line: "the path does not exist" appeared in the
+    middle of an Albanian screen until the error codes were given a translation
+    table. A note is the same kind of text and takes the same shape (VD-97).
+    """
+
+    code: str
+    values: Mapping[str, float] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class Outcome:
     """One transformation's verdict at one site.
 
@@ -90,7 +106,7 @@ class Outcome:
     #: A note never blocks the change; it tells the author something they would
     #: want to know before taking it, which is the whole posture of an engine
     #: that proposes rather than applies (VD-97).
-    notes: tuple[str, ...] = ()
+    notes: tuple[Note, ...] = ()
 
     @property
     def applied(self) -> bool:
@@ -104,7 +120,7 @@ class Outcome:
         target: str,
         edits: tuple[Edit, ...],
         introduced: tuple[str, ...] = (),
-        notes: tuple[str, ...] = (),
+        notes: tuple[Note, ...] = (),
     ) -> Outcome:
         if not edits:
             raise ValueError(f"{refactoring} claimed to apply at {target} with no edits")

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { preview, source } from "./api";
+import { noteText, preview, source } from "./api";
 import { Diff } from "./Diff";
 import type { Prediction, Preview, Smell, Source } from "./types";
 
@@ -108,7 +108,7 @@ export function Detail({
       {result?.applied && result.notes?.length ? (
         <ul className="note rewrite-notes">
           {result.notes.map((note) => (
-            <li key={note}>{note}</li>
+            <li key={note.code}>{noteText(note)}</li>
           ))}
         </ul>
       ) : null}

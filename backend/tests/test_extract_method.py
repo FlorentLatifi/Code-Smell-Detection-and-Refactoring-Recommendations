@@ -20,7 +20,7 @@ import pytest
 
 from javasmell.refactor.base import Refusal
 from javasmell.refactor.edits import apply_edits
-from javasmell.refactor.extract_method import apply
+from javasmell.refactor.extract_method import WIDE_PARAMETERS, apply
 from javasmell.refactor.locate import find_site
 
 JAVAC = shutil.which("javac")
@@ -660,7 +660,9 @@ def test_a_wide_extraction_is_offered_with_a_note():
 
     assert outcome.applied
     assert len(outcome.notes) == 1
-    assert "8 parameters" in outcome.notes[0]
+    assert outcome.notes[0].code == WIDE_PARAMETERS
+    # A code and its numbers, never a sentence: the interface writes Albanian.
+    assert outcome.notes[0].values == {"parameters": 8.0, "threshold": 5}
 
 
 def test_a_narrow_extraction_carries_no_note():

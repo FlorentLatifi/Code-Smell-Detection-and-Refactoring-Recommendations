@@ -422,8 +422,9 @@ def _outcome_json(outcome: Outcome, source: bytes) -> dict[str, Any]:
         "target": outcome.target,
         "edits": len(outcome.edits),
         # Gjera te verteta per nje rishkrim qe zbatohet, e jo arsye per ta
-        # refuzuar. Autori e merr ndryshimin dhe e di se cfare merr (VD-97).
-        "notes": list(outcome.notes),
+        # refuzuar. Kodi dhe numrat, jo fjalia: nderfaqja shkruan shqip dhe
+        # perkthimi lidhet me kodin, si te gabimet (VD-97).
+        "notes": [{"code": n.code, **n.values} for n in outcome.notes],
         "before": source.decode("utf-8", errors="replace"),
         "after": apply_edits(source, outcome.edits).decode("utf-8", errors="replace"),
     }

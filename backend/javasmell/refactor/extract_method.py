@@ -52,7 +52,7 @@ from dataclasses import dataclass
 from tree_sitter import Node
 
 from javasmell.detectors.thresholds import DEFAULT, Thresholds
-from javasmell.refactor.base import Outcome, Refusal
+from javasmell.refactor.base import Note, Outcome, Refusal
 from javasmell.refactor.dataflow import (
     declarations_in,
     escaping_control_flow,
@@ -371,7 +371,12 @@ def apply(
     )
 
 
-def _notes(planned: Plan, thresholds: Thresholds) -> tuple[str, ...]:
+#: The one note this transformation can raise. Named so the interface can
+#: translate it and the CLI can spell it out, without either parsing a sentence.
+WIDE_PARAMETERS = "wide_parameter_list"
+
+
+def _notes(planned: Plan, thresholds: Thresholds) -> tuple[Note, ...]:
     """What the author should know about a rewrite that is otherwise correct.
 
     Every value the block reads becomes a parameter, so a block reading seven
@@ -389,7 +394,8 @@ def _notes(planned: Plan, thresholds: Thresholds) -> tuple[str, ...]:
     if count <= thresholds.long_parameter_list_np:
         return ()
     return (
-        f"the extracted method takes {count} parameters, which this tool would "
-        f"itself flag as Long Parameter List (above {thresholds.long_parameter_list_np:g}); "
-        "a block needing this many inputs is often the wrong slice to lift",
+        Note(
+            WIDE_PARAMETERS,
+            {"parameters": float(count), "threshold": thresholds.long_parameter_list_np},
+        ),
     )

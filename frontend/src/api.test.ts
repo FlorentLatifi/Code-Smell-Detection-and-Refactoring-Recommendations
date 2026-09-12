@@ -10,7 +10,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { ERROR_SQ } from "./api";
+import { ERROR_SQ, noteText } from "./api";
 
 /** Nga `api/paths.py` dhe nga thirrjet e `error(...)` te `api/app.py`. */
 const CODES_FROM_BACKEND = [
@@ -49,5 +49,20 @@ describe("mesazhet e gabimit", () => {
       expect(text.trim(), code).toBe(text);
       expect(text.endsWith(".") || text.endsWith("?"), code).toBe(true);
     }
+  });
+});
+
+describe("noteText", () => {
+  it("writes the wide-parameter note in Albanian with its own numbers", () => {
+    // Serveri dërgon kodin dhe numrat; fjalia ndërtohet këtu, si te gabimet.
+    const text = noteText({ code: "wide_parameter_list", parameters: 8, threshold: 5 });
+
+    expect(text).toContain("8 parametra");
+    expect(text).toContain("kufirin 5");
+  });
+
+  it("falls back to the code when a note has no translation yet", () => {
+    // I shëmtuar, por i sinqertë: më mirë kodi se një fjali e trilluar.
+    expect(noteText({ code: "something_new" })).toBe("something_new");
   });
 });

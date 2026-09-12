@@ -1,4 +1,12 @@
-import type { Analysis, ApiError, PatchResult, Preview, Smell, Source } from "./types";
+import type {
+  Analysis,
+  ApiError,
+  PatchResult,
+  Preview,
+  RewriteNote,
+  Smell,
+  Source,
+} from "./types";
 
 // The server answers a failure with { error: { code, message } } and never with
 // a stack trace, so the message is safe to put in front of a user unchanged.
@@ -158,4 +166,22 @@ export async function allowedRoot(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Çfarë thotë secili shënim i një rishkrimi, shqip.
+ *
+ * Lidhur me kodin e jo me fjalinë, për të njëjtën arsye si `ERROR_SQ`: kodi është
+ * pjesa e qëndrueshme e kontratës. Një shënim pa përkthim shfaqet si kodi i vet,
+ * çka është e shëmtuar por e sinqertë, dhe nuk e prish ekranin.
+ */
+export function noteText(note: RewriteNote): string {
+  if (note.code === "wide_parameter_list") {
+    return (
+      `Metoda e nxjerrë merr ${note.parameters} parametra, mbi kufirin ${note.threshold} ` +
+      "që ky mjet vetë e shënon si Long Parameter List. Një bllok që kërkon kaq hyrje " +
+      "shpesh është prerja e gabuar për t'u ngritur."
+    );
+  }
+  return note.code;
 }
