@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { analyse } from "./api";
+import { analyse, Cancelled } from "./api";
 import { Detail } from "./Detail";
 import { SMELL_SQ } from "./evaluation";
 import { agreementOn, indexModel } from "./model";
@@ -53,11 +53,20 @@ function remember(key: string, value: string): void {
   }
 }
 
+/**
+ * `path` udhëton bashkë me analizën, e nuk lexohet nga kutia.
+ *
+ * Kutia mban atë që po shkruan përdoruesi tani; analiza i përket shtegut që u
+ * dërgua vërtet. Kur të dyja ishin e njëjta ndryshore, redaktimi i kutisë pa
+ * ri-ekzekutuar e prishte panelin e detajit: gjetjet në ekran i përkisnin
+ * analizës së vjetër, ndërsa `/source` dhe `/refactor/preview` thirreshin me
+ * shtegun e ri dhe ktheheshin me gabim pa asnjë shpjegim.
+ */
 type Screen =
   | { state: "idle" }
   | { state: "loading" }
   | { state: "error"; message: string }
-  | { state: "ready"; analysis: Analysis };
+  | { state: "ready"; analysis: Analysis; path: string };
 
 // Dy pamje, pa router: një bibliotekë rrugëzimi për dy gjendje do të ishte më
 // shumë kod se vetë kalimi mes tyre.
@@ -80,18 +89,37 @@ export function App() {
   // sa herë zgjidhet një vend tjetër, sepse ajo është ajo që lexuesi kërkoi.
   const [shownSmell, setShownSmell] = useState<Smell | null>(null);
   const listRef = useRef<HTMLElement>(null);
+  // Mbahet te një ref e jo te gjendja: e ndryshon vetëm trajtuesi, dhe asgjë në
+  // ekran nuk varet prej saj përveç butonit që e përdor.
+  const running = useRef<AbortController | null>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
     setScreen({ state: "loading" });
     setSelected(null);
     setShownSmell(null);
+    const asked = path;
+    const controller = new AbortController();
+    running.current = controller;
     try {
-      setScreen({ state: "ready", analysis: await analyse(path, askModel) });
-      remember(REMEMBERED_PATH, path);
+      const analysis = await analyse(asked, askModel, controller.signal);
+      setScreen({ state: "ready", analysis, path: asked });
+      remember(REMEMBERED_PATH, asked);
     } catch (failure) {
-      setScreen({ state: "error", message: (failure as Error).message });
+      // Ndalimi nga vetë përdoruesi nuk është gabim: ekrani kthehet aty ku ishte,
+      // pa një banderolë të kuqe që i thotë se diçka shkoi keq.
+      setScreen(
+        failure instanceof Cancelled
+          ? { state: "idle" }
+          : { state: "error", message: (failure as Error).message },
+      );
+    } finally {
+      running.current = null;
     }
+  }
+
+  function stop(): void {
+    running.current?.abort();
   }
 
   const smells = screen.state === "ready" ? screen.analysis.smells : [];
@@ -210,6 +238,11 @@ export function App() {
         <button type="submit" disabled={screen.state === "loading" || !path.trim()}>
           {screen.state === "loading" ? "Duke analizuar…" : "Analizo"}
         </button>
+        {screen.state === "loading" && (
+          <button type="button" className="stop" onClick={stop}>
+            Ndalo
+          </button>
+        )}
         <label className="ask" title="Kërkon modele të trajnuara dhe matje mbi tërë projektin">
           <input
             type="checkbox"
@@ -245,7 +278,7 @@ export function App() {
             <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
           ) : (
             <>
-            <Patch path={path} ready={automatable(allSites)} total={allSites.length} />
+            <Patch path={screen.path} ready={automatable(allSites)} total={allSites.length} />
             <div className="layout">
               <section className="list" ref={listRef} onKeyDown={navigate}>
                 <Filters
@@ -338,7 +371,7 @@ export function App() {
                     )}
                     <Detail
                       smell={shownSmell}
-                      path={path}
+                      path={screen.path}
                       prediction={agreementOn(model, shownSmell)}
                       asked={model !== null}
                     />

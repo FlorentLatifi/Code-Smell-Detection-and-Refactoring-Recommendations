@@ -128,6 +128,12 @@ body {
   .page {
     padding: var(--s-4) var(--s-3) var(--s-6);
   }
+
+  /* Te ekranet e ngushta kutia e shtegut merr tërë rreshtin dhe butonat bien
+     poshtë saj. Të tretë në një rresht kërkonin 468 px brenda 332 px. */
+  .search input {
+    flex: 1 1 100%;
+  }
 }
 
 /* ---------- masthead ---------- */
@@ -181,18 +187,34 @@ h1 {
 /* ---------- search ---------- */
 .search {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--s-2);
   margin: var(--s-5) 0 var(--s-4);
 }
 
 .search input {
   flex: 1;
+  /* Pa këtë, artikulli flex nuk tkurret nën gjerësinë e vetë përmbajtjes, dhe
+     forma e shtynte faqen 503 px të gjerë brenda një ekrani 360 px. Kjo është
+     shkaku i vërtetë i rrëshqitjes anash, jo mungesa e mbështjelljes. */
+  min-width: 0;
   padding: 11px var(--s-3);
   border: 1px solid var(--rule);
   background: var(--surface);
   color: var(--ink);
   font: var(--t-body) var(--mono);
   transition: border-color 120ms ease;
+}
+
+.search .stop {
+  background: var(--surface);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+}
+
+.search .stop:hover {
+  border-color: var(--ink-faint);
+  color: var(--ink);
 }
 
 .search input:hover {

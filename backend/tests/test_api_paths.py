@@ -121,3 +121,53 @@ def test_too_much_source_is_refused(root):
 
     with pytest.raises(PathRejected, match="MB of source"):
         java_files_under(confine("project", root), max_files=100, max_bytes=1000)
+
+
+# Kodet e refuzimit jane kontrate: nderfaqja i perkthen ne shqip nje nga nje, dhe
+# nje kod i ri qe hyn pa u perkthyer do te dilte anglisht mes tekstit shqip.
+# Testi nuk e ndalon shtimin; e ndalon shtimin e heshtur.
+REJECTION_CODES = {
+    "path_empty",
+    "root_missing",
+    "path_outside_root",
+    "path_not_found",
+    "too_many_files",
+    "too_much_source",
+    "no_java_files",
+}
+
+
+def test_every_rejection_names_which_rejection_it_is(tmp_path):
+    """Shtate arsye te ndryshme arrinin te thirresi nen nje kod te vetem.
+
+    Nje thirres qe duhet te analizoje mesazhin per te ditur cfare ndodhi nuk ka
+    kontrate, ka hamendje. Ky test i mbledh kodet qe prodhohen vertet dhe kerkon
+    qe secili te jete i njohur dhe i vecante.
+    """
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / "empty").mkdir()
+
+    seen = set()
+    for candidate in ("", "   ", "../jashte", "nuk_ekziston"):
+        try:
+            confine(candidate, root)
+        except PathRejected as rejected:
+            seen.add(rejected.code)
+
+    try:
+        java_files_under(root / "empty", max_files=10, max_bytes=1000)
+    except PathRejected as rejected:
+        seen.add(rejected.code)
+
+    assert seen, "asnje refuzim nuk u prodhua; testi nuk po mat gje"
+    assert seen <= REJECTION_CODES, f"kod i panjohur: {sorted(seen - REJECTION_CODES)}"
+    assert "path_empty" in seen
+    assert "path_outside_root" in seen
+    assert "path_not_found" in seen
+    assert "no_java_files" in seen
+
+
+def test_a_rejection_without_a_code_still_names_one():
+    """Parazgjedhja mbetet, qe nje `raise` i ri te mos dale pa kod fare."""
+    assert PathRejected("dicka").code == "path_rejected"
