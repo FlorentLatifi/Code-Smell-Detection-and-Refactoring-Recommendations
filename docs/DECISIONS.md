@@ -4056,3 +4056,51 @@ rrumbullakim do ta shkruante 999 nga 1 000 si «100%» te shiriti i automatizimi
 Një numër jozero shkruhet tani «<1%», dhe një pjesë e paplotë «>99%». Gjerësia e
 shiritit mbetet e saktë, sepse ajo nuk lexohet si shifër.
 
+### VD-111: Shkrimi refuzohet mbi skedarë që git nuk i gjurmon
+
+**Konteksti.** Një kalim mbi rrugët që auditimet e mëparshme nuk i kishin ecur deri
+në fund: patch-i mbi një projekt të vërtetë, ekrani nën 640 piksela, dhe pritja e
+një analize të madhe. E para është defekt sigurie i motorit, jo i ndërfaqes.
+
+**Pema e pastër nuk mjaftonte.** Patch-i mbi `Esri/geometry-api-java` mbaroi, dhe
+paneli ofroi «Apliko te skedarët» me premtimin se `git restore .` e kthen
+gjithçka. Projekti rri te `data/corpus/`, e cila është e injoruar nga git brenda
+një depoje të pastër. Matur: `git ls-files` nuk e njihte `Bufferer.java`,
+`git check-ignore` e gjente te `.gitignore:14`, dhe `working_tree_state` kthente
+«e pastër». Por `git restore .` rikthen vetëm skedarë të gjurmuar, ndaj shkrimi
+do të ishte i pakthyeshëm dhe premtimi i rremë. I njëjti defekt vlen për çdo
+skedar që autori nuk e ka shtuar ende te git. Butoni nuk u shtyp gjatë auditimit.
+
+Arsyetimi i VD-100 për skedarët e paregjistruar ishte i saktë për pemën, por i
+paplotë për objektivin: ata nuk bllokojnë shkrimin gjetkë, sepse kthimi nuk i
+prek, dhe pikërisht për të njëjtën arsye nuk guxojnë të jenë vetë objektivi.
+Refuzimi i ri `not_tracked` hyn në dy vende. `working_tree_state` e refuzon një
+shteg të injoruar para planifikimit, që paneli ta thotë para dy minutave pritje.
+`apply_patches` kontrollon çdo skedar që do të shkruhet kundrejt `git ls-files`,
+një listim i vetëm dhe jo një argument për skedar, sepse një plan i madh do ta
+kalonte kufirin e gjatësisë së komandës. Tre teste të derivuara me dorë e mbajnë:
+një skedar i pagjurmuar refuzohet, një dosje e injoruar refuzohet, dhe një skedar i
+gjurmuar nën një nëndosje shkruhet ende, që kontrolli i ri të mos refuzojë rastin
+e zakonshëm bashkë me atë të rrezikshëm.
+
+**Kutia e shtegut ishte 26 piksela te 375.** Forma e kokës tkurrej në vend që të
+mbështillej. Nën 640 piksela ajo zë tani rreshtin e vet, 314 piksela e gjerë.
+
+**Faqja rrëshqiste anash në çdo ekran nën 640 piksela, por vetëm mbi projekte me
+shtigje të gjata.** Mbi fikstuarat dhe mbi `Esri` nuk shfaqej, ndaj auditimi i
+VD-108 e raportoi me të drejtë si të pastër. Mbi `apache/ambari` faqja ishte 851
+piksela. Dy shkaqe: kolonat e listës së veprimeve nuk kishin `min-w-0`, ndaj një
+shteg i prerë me `truncate` i shtynte në 718 piksela, dhe shtegu te rreshti i
+listës së vjetër është një fjalë e vetme 550 piksela pa hapësira. Të dyja u
+ndreqën, dhe faqja mat 375 mbi 375 edhe me një gjetje të hapur. Nuk ka test që e
+mban: jsdom nuk llogarit paraqitje, dhe fikstuarat e Playwright-it nuk kanë
+shtigje aq të gjata. Shtimi i një fikstuare Java do të ndryshonte pritjet e
+testeve të backend-it, ndaj nuk u bë.
+
+**Pritja nuk dukej si pritje.** Mbi `apache/ambari` analiza zgjat rreth njëzet
+sekonda, dhe ekrani ishte një rresht teksti mbi një faqe bosh. Tani është skica e
+panelit dhe numri i sekondave të kaluara. Nuk ka shirit përparimi, sepse
+`/analyze` nuk raporton përparim dhe një përqindje e shpikur do të ishte pohim i
+rremë. Vetëm teksti i palëvizshëm është `status`: sekondat janë të fshehura nga
+lexuesi i ekranit, që të mos lexohen një nga një.
+

@@ -118,6 +118,76 @@ def test_an_untracked_file_does_not_block_the_write(tmp_path: Path) -> None:
     assert working_tree_state(root) is None
 
 
+def test_an_untracked_file_is_not_written(tmp_path: Path) -> None:
+    """The tree is clean, but `git restore .` restores tracked files only.
+
+    Writing a file git has never seen would leave nothing to undo it with, and
+    the revert command handed back with the write would be a false promise.
+    """
+    root = repository(tmp_path)
+    (root / "New.java").write_bytes(BEFORE)
+    patch = FilePatch(
+        path=root / "New.java",
+        relative="New.java",
+        before=BEFORE,
+        after=AFTER,
+        applied=(),
+        deferred=(),
+        verdict=Verdict.COMPILES,
+    )
+
+    result = apply_patches((patch,), root, requested=True)
+
+    assert isinstance(result, Refusal)
+    assert result.reason is Refused.NOT_TRACKED
+    assert "New.java" in result.detail
+    assert (root / "New.java").read_bytes() == BEFORE
+
+
+def test_an_ignored_directory_is_refused_before_anything_is_planned(tmp_path: Path) -> None:
+    """How the defect was found: a corpus project in a gitignored folder of a clean tree."""
+    root = repository(tmp_path)
+    (root / ".gitignore").write_text("vendor/\n", encoding="utf-8")
+    for command in (["add", ".gitignore"], ["commit", "-q", "-m", "ignore"]):
+        subprocess.run([str(GIT), "-C", str(root), *command], check=True, capture_output=True)
+    vendor = root / "vendor"
+    vendor.mkdir()
+    (vendor / "T.java").write_bytes(BEFORE)
+
+    state = working_tree_state(vendor)
+
+    assert isinstance(state, Refusal)
+    assert state.reason is Refused.NOT_TRACKED
+
+
+def test_a_tracked_file_under_a_subdirectory_target_is_written(tmp_path: Path) -> None:
+    """The analysed path is usually a folder inside the repository, not its root.
+
+    Tracked paths are compared relative to that folder, so this pins that the
+    new check does not refuse the ordinary case along with the unsafe one.
+    """
+    root = repository(tmp_path)
+    source = root / "src"
+    source.mkdir()
+    (source / "S.java").write_bytes(BEFORE)
+    for command in (["add", "."], ["commit", "-q", "-m", "src"]):
+        subprocess.run([str(GIT), "-C", str(root), *command], check=True, capture_output=True)
+    patch = FilePatch(
+        path=source / "S.java",
+        relative="S.java",
+        before=BEFORE,
+        after=AFTER,
+        applied=(),
+        deferred=(),
+        verdict=Verdict.COMPILES,
+    )
+
+    result = apply_patches((patch,), source, requested=True)
+
+    assert isinstance(result, Applied)
+    assert (source / "S.java").read_bytes() == AFTER
+
+
 # ----------------------------------------------------------------------
 # The bytes
 # ----------------------------------------------------------------------

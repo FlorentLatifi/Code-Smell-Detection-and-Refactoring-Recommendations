@@ -293,6 +293,9 @@ export const APPLY_REFUSAL_SQ: Record<string, string> = {
   tree_not_clean:
     "Pema e punës ka ndryshime të paruajtura. Komito ose hidhi ato së pari, që kthimi të prekë " +
     "vetëm atë që shkruan mjeti.",
+  not_tracked:
+    "Skedarët këtu nuk gjurmohen nga git: janë të injoruar ose nuk janë shtuar kurrë. " +
+    "«git restore .» kthen vetëm skedarët e gjurmuar, ndaj një shkrim këtu nuk do të kishte kthim.",
   nothing_to_write: "Asnjë rishkrim i verifikuar për t'u shkruar.",
   file_changed:
     "Një skedar ka ndryshuar që kur u mat. Ri-ekzekuto analizën, që rishkrimi të llogaritet mbi " +
