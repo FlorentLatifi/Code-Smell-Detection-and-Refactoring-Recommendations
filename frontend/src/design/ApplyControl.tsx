@@ -26,8 +26,9 @@ export function ApplyControl({
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
-  if (!ready) return null;
-
+  // Para `ready`, jo pas tij. Komenti më lart e premtonte këtë që nga VD-100, por
+  // kontrolli rrinte pas kthimit të hershëm: refuzimi shfaqej vetëm pasi patch-i
+  // ishte përgatitur, mbi `Esri` pas dy minutash e gjysmë pritje (VD-111).
   if (tree && !tree.writable) {
     return (
       <p className="flex items-start gap-2 rounded-lg bg-medium/10 px-3 py-2 text-xs text-medium-ink">
@@ -36,6 +37,8 @@ export function ApplyControl({
       </p>
     );
   }
+
+  if (!ready) return null;
 
   async function write() {
     setBusy(true);

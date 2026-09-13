@@ -579,6 +579,17 @@ describe("aplikimi mbi skedarët", () => {
     expect(screen.queryByRole("button", { name: "Apliko te skedarët" })).toBeNull();
   });
 
+  it("e thotë refuzimin menjëherë pas analizës, pa pritur patch-in", async () => {
+    // VD-111: refuzimi shfaqej vetëm pasi patch-i ishte gati. Asnjë klikim mbi
+    // «Përgatit patch-in» këtu: mesazhi duhet të jetë aty që pas analizës.
+    serveApply({ writable: false, reason: "not_tracked", detail: "the path is ignored by git" });
+    render(<App />);
+    await analyse();
+
+    expect(await screen.findByText(/nuk gjurmohen nga git/)).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Apliko te skedarët" })).toBeNull();
+  });
+
   it("kërkon një hap të dytë para se të shkruajë", async () => {
     // Veprimi i vetëm që e ndryshon kodin është i vetmi me dy hapa.
     serveApply({ writable: true, reason: null, detail: "" });

@@ -4083,6 +4083,12 @@ një skedar i pagjurmuar refuzohet, një dosje e injoruar refuzohet, dhe një sk
 gjurmuar nën një nëndosje shkruhet ende, që kontrolli i ri të mos refuzojë rastin
 e zakonshëm bashkë me atë të rrezikshëm.
 
+Ndërfaqja nuk e mbante premtimin e VD-100 as për refuzimet e vjetra. Kontrolli i
+aplikimit kthehej bosh derisa patch-i të ishte gati, dhe vetëm pas kësaj pyeste nëse
+pema lejon shkrim. Pyetja i bëhej serverit që pas analizës, por përgjigjja
+shfaqej pas dy minutash e gjysmë. Renditja u këmbye, dhe një test i ri e mban:
+refuzimi duket pa u shtypur «Përgatit patch-in».
+
 **Kutia e shtegut ishte 26 piksela te 375.** Forma e kokës tkurrej në vend që të
 mbështillej. Nën 640 piksela ajo zë tani rreshtin e vet, 314 piksela e gjerë.
 
