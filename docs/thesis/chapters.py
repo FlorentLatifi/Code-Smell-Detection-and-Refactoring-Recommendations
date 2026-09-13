@@ -122,14 +122,11 @@ def abstract() -> list[str]:
     samples = f"{dataset['rows']:,}".replace(",", " ")
 
     paragraphs = [
-        "Cilësia e brendshme e kodit burimor përcakton sa lehtë një sistem softuerik "
-        "mund të kuptohet, të ndryshohet dhe të zgjerohet gjatë gjithë jetës së tij. "
-        "Code smells janë simptoma të strukturës së dobët të dizajnit që nuk shkaktojnë "
-        "gabime të drejtpërdrejta, por e rrisin ndjeshëm koston e ndryshimeve të "
-        "ardhshme. Identifikimi manual i tyre nuk është i realizueshëm në sisteme të "
-        "mëdha, ndërsa mjetet ekzistuese të analizës statike mbështeten kryesisht në "
-        "pragje fikse mbi metrika të veçuara, çka prodhon numër të konsiderueshëm "
-        "alarmesh të rreme dhe ndalet te identifikimi i problemit pa propozuar zgjidhje.",
+        "Code smells janë simptoma të dizajnit të dobët që nuk shkaktojnë gabime, por e "
+        "rrisin koston e çdo ndryshimi të ardhshëm. Identifikimi manual i tyre nuk "
+        "shkallëzohet në sisteme të mëdha, ndërsa mjetet ekzistuese të analizës statike "
+        "mbështeten kryesisht në pragje fikse mbi metrika të veçuara dhe ndalen te "
+        "njoftimi, pa propozuar zgjidhje.",
         f"Ky punim ndërton një sistem që i zbulon code smells në dy mënyra të pavarura "
         f"dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
         f"e publikuara të detektimit mbi {metrics} metrika; e dyta trajnon klasifikues "
@@ -141,12 +138,9 @@ def abstract() -> list[str]:
         f"të tria.",
         f"Strategjitë e publikuara dolën të sakta por të kursyera: precizion "
         f"{band([m['precision'] for m in primary])} me recall "
-        f"{band([m['recall'] for m in primary])}. Të ndara sipas ashpërsisë, ato "
-        f"degradojnë me hijeshi, duke i kapur rastet e rënda shumë më mirë se ato të "
-        f"lehtat. Klasifikuesit i tejkaluan qartë, me MCC "
-        f"{band([m['mcc'] for m in best])} kundrejt "
-        f"{band([m['mcc'] for m in primary])}, dhe i rizbuluan pjesërisht metrikat që "
-        f"përdorin vetë strategjitë. Intervalet e besimit me bootstrap sipas depos "
+        f"{band([m['recall'] for m in primary])}. Klasifikuesit i tejkaluan qartë, me "
+        f"MCC {band([m['mcc'] for m in best])} kundrejt "
+        f"{band([m['mcc'] for m in primary])}. Intervalet e besimit me bootstrap sipas depos "
         f"tregojnë se ajo përparësi e kalon zeron te të katër erërat.",
     ]
 
@@ -167,9 +161,8 @@ def abstract() -> list[str]:
         share = refactoring["applied"] / refactoring["detected"]
         third += (
             f"Motori i refaktorimit automatizon {automated} transformime dhe transformoi "
-            f"{share:.1%} të vendeve të detektuara, ku shumica e refuzimeve vjen nga "
-            f"forma e kodit dhe nga rrjedha e kontrollit; refuzimi trajtohet si rezultat "
-            f"i saktë dhe numërohet. "
+            f"{share:.1%} të vendeve të detektuara; refuzimi trajtohet si rezultat i "
+            f"saktë dhe numërohet. "
         )
     third += (
         "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
@@ -323,6 +316,20 @@ CHAPTER_3 = [
         None,
         "",
         [
+            "**Situata ideale.** Për çdo pjesë të kodit, një ekip zhvillimi do të duhej "
+            "të dinte nëse ajo mban një problem dizajni, sa i rëndë është ai, dhe cili "
+            "transformim e heq pa ndryshuar sjelljen. Ky gjykim do të duhej të ishte i "
+            "përsëritshëm dhe i matur kundrejt vlerësimit të zhvilluesve me përvojë.",
+            "**Realiteti.** Identifikimi manual nuk shkallëzohet dhe varet nga shqyrtuesi "
+            "(Nënkapitulli 1.2). Mjetet ekzistuese mbështeten në pragje fikse mbi metrika "
+            "të veçuara dhe ndalen te njoftimi. Qasjet me rregulla dhe ato me mësim "
+            "makine rrallë vlerësohen mbi të njëjtën të vërtetë bazë, dhe pyetja nëse një "
+            "erë e detektuar mund edhe të ndreqet automatikisht mbetet pa përgjigje "
+            "empirike (Nënkapitulli 2.6).",
+            "**Fokusi i punës.** Ky punim i krahason dy qasjet e detektimit mbi të njëjtin "
+            "korpus të etiketuar nga profesionistë, me ndarje sipas depos dhe me të njëjtin "
+            "kod pikëzimi, dhe mat sa nga vendet e detektuara mund të rishkruhen "
+            "automatikisht pa sjellë gabime të reja kompilimi.",
             "Kapitulli 1 i shtroi tri pyetjet kërkimore. Ky kapitull i bën ato të "
             "matshme: përcakton çfarë do të thotë një përgjigje, cilat janë kriteret "
             "që e vendosin, dhe cilat kufizime të vetëdijshme e formësojnë atë që mund "
@@ -636,6 +643,25 @@ CHAPTER_4 = [
             "hyjnë në atë kalim, ndaj analiza e ndjeshmërisë rirendit detektorët mbi "
             "rreshtat e ruajtur në sekonda. Pa këtë ndarje, një fshirje me njëzet "
             "konfigurime do të kushtonte mbi tridhjetë orë dhe nuk do të bëhej.",
+        ],
+    ),
+    (
+        "4.8",
+        "Konsideratat etike",
+        [
+            "Punimi nuk mbledh të dhëna nga njerëz. Të gjitha të dhënat që përdor janë "
+            "publike: gjykimet e dataset-it MLCQ, të mbledhura dhe të publikuara nga "
+            "autorët e tij (Madeyski & Lewowski, 2020), dhe kodi i depove Java me burim "
+            "të hapur të cilave u referohen mostrat.",
+            "Kodi i këtyre depove përdoret vetëm si objekt matjeje. Ai nuk ekzekutohet "
+            "kurrë: analiza e lexon si tekst, dhe verifikimi e kompilon me javac pa e "
+            "nisur. Korpusi nuk shpërndahet bashkë me punimin, sepse mbahet jashtë depos "
+            "së kodit; kush do t'i riprodhojë rezultatet e shkarkon nga burimet origjinale "
+            "me skriptin e parë të Shtojcës 8.5.",
+            "Rezultatet negative raportohen njësoj si ato pozitive, dhe asnjë prag, "
+            "metrikë apo detektor nuk është rregulluar që një rezultat të dalë më mirë. "
+            "Ky është kushti që numrat e Kapitullit 5 të lexohen si matje dhe jo si "
+            "argument.",
         ],
     ),
 ]

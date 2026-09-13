@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 from docx import Document
 from docx.enum.section import WD_SECTION
+from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -56,6 +57,11 @@ from chapters import (  # noqa: E402
 from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
+
+# Stili i titujve të ballinës që shablloni i do jashtë përmbajtjes: «Abstrakti dhe
+# mirënjohja nuk paraqiten në përmbajtje». Duket si kreu i kapitullit, por nuk ka
+# nivel skicimi, ndaj fusha TOC nuk e mbledh (VD-112).
+FRONT_TITLE = "Titull ballinë"
 LOGO = os.path.join(os.path.dirname(__file__), "assets", "ubt_logo.jpg")
 
 # Anything the author still has to supply is marked so it cannot be missed
@@ -108,6 +114,36 @@ def _field(paragraph, instruction: str, placeholder: str = "") -> None:
     for element in (begin, instr, separate, text, end):
         run._r.append(element)
     _set_font(run)
+
+
+# Elementet që skema e `w:settings` i vendos pas `w:updateFields`. Word e refuzon
+# një dokument ku radha e tyre prishet, ndaj flamuri futet para të parit prej tyre.
+_AFTER_UPDATE_FIELDS = (
+    "hdrShapeDefaults", "footnotePr", "endnotePr", "compat", "docVars", "rsids",
+    "mathPr", "attachedSchema", "themeFontLang", "clrSchemeMapping",
+    "doNotIncludeSubdocsInStats", "doNotAutoCompressPictures", "forceUpgrade",
+    "captions", "readModeInkLockDown", "smartTagType", "schemaLibrary",
+    "shapeDefaults", "doNotEmbedSmartTags", "decimalSymbol", "listSeparator",
+)
+
+
+def _update_fields_on_open(doc: Document) -> None:
+    """Kërkon nga Word-i t'i rillogarisë fushat sapo hapet dokumenti.
+
+    python-docx nuk di të numërojë faqe, ndaj fusha TOC shkruhet me një tekst zëvendësues.
+    Pa këtë flamur ai tekst mbetej në dokument: eksporti në PDF më 13 shtator e tregoi
+    përmbajtjen si një rresht «Kliko me të djathtën…» në vend të kapitujve (VD-112).
+    """
+    settings = doc.settings.element
+    if settings.find(qn("w:updateFields")) is not None:
+        return
+    flag = OxmlElement("w:updateFields")
+    flag.set(qn("w:val"), "true")
+    for child in settings:
+        if child.tag.split("}")[-1] in _AFTER_UPDATE_FIELDS:
+            child.addprevious(flag)
+            return
+    settings.append(flag)
 
 
 def _page_geometry(section) -> None:
@@ -185,6 +221,19 @@ def configure_styles(doc: Document) -> None:
         style.paragraph_format.space_after = Pt(6)
         style.paragraph_format.keep_with_next = True
 
+    front = doc.styles.add_style(FRONT_TITLE, WD_STYLE_TYPE.PARAGRAPH)
+    front.base_style = normal
+    front.font.name = FONT
+    front.font.size = TITLE_SIZE
+    front.font.bold = True
+    front.font.all_caps = True
+    front.element.rPr.rFonts.set(qn("w:eastAsia"), FONT)
+    front.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    front.paragraph_format.line_spacing = LINE_SPACING
+    front.paragraph_format.space_before = Pt(12)
+    front.paragraph_format.space_after = Pt(6)
+    front.paragraph_format.keep_with_next = True
+
 
 def centered(doc: Document, text: str, *, size=BODY_SIZE, bold=False, caps=False, space_after=0):
     paragraph = doc.add_paragraph()
@@ -224,15 +273,31 @@ def body(doc: Document, text: str) -> None:
             _set_font(paragraph.add_run(piece), bold=index % 2 == 1)
 
 
-def unnumbered_heading(doc: Document, text: str) -> None:
+def unnumbered_heading(doc: Document, text: str, *, new_page: bool = True) -> None:
     """A front-matter heading: same look as a chapter title, but no number.
 
     Level 1 is used so the heading is still picked up by the table of contents,
     which the template requires for the figure, table and glossary lists.
+
+    `new_page` exists for one heading. The template says the list of tables «vjen
+    menjëherë pas listës së figurave (nuk fillon në faqe të re)», and the build put
+    it on a page of its own like every other title until VD-112.
     """
     heading = doc.add_heading(level=1)
-    heading.paragraph_format.page_break_before = True
+    heading.paragraph_format.page_break_before = new_page
     _set_font(heading.add_run(text), size=TITLE_SIZE, bold=True, caps=True)
+
+
+def front_title(doc: Document, text: str) -> None:
+    """Abstract, acknowledgements and contents: a title's look, outside the contents.
+
+    The template keeps the first two out of the table of contents in so many words,
+    and a contents page that lists itself is the same mistake. Heading 1 cannot
+    carry them, because the TOC field collects every Heading 1 (VD-112).
+    """
+    paragraph = doc.add_paragraph(style=FRONT_TITLE)
+    paragraph.paragraph_format.page_break_before = True
+    _set_font(paragraph.add_run(text), size=TITLE_SIZE, bold=True, caps=True)
 
 
 def chapter(doc: Document, number: int, text: str) -> None:
@@ -359,16 +424,16 @@ def build_inner_page(doc: Document) -> None:
 
 
 def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> None:
-    unnumbered_heading(doc, "Abstrakt")
+    front_title(doc, "Abstrakt")
     for paragraph in abstract():
         body(doc, paragraph)
     blank(doc)
     body(doc, f"Fjalë kyçe: {KEYWORDS}")
 
-    unnumbered_heading(doc, "Mirënjohje")
+    front_title(doc, "Mirënjohje")
     body(doc, ACKNOWLEDGEMENTS)
 
-    unnumbered_heading(doc, "Përmbajtja")
+    front_title(doc, "Përmbajtja")
     toc = doc.add_paragraph()
     toc.paragraph_format.line_spacing = LINE_SPACING
     _field(
@@ -376,12 +441,13 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
         ' TOC \\o "1-3" \\h \\z \\u ',
         "Kliko me të djathtën këtu dhe zgjidh 'Update Field' për ta gjeneruar përmbajtjen.",
     )
+    _update_fields_on_open(doc)
 
     unnumbered_heading(doc, "Lista e figurave")
     for entry in figures:
         body(doc, entry)
 
-    unnumbered_heading(doc, "Lista e tabelave")
+    unnumbered_heading(doc, "Lista e tabelave", new_page=False)
     for entry in tables:
         body(doc, entry)
 
@@ -523,7 +589,7 @@ def build() -> str:
 TITLE_SQ = "Detektimi i code smells dhe rekomandimet për refaktorim"
 AUTHOR = "Florent Latifi"
 SUPERVISOR = "Altina Salihu"
-ACADEMIC_YEAR = "2025 - 2026"
+ACADEMIC_YEAR = "2025 – 2026"
 SUBMISSION_DATE = "Nëntor / 2026"
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "

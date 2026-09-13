@@ -40,7 +40,7 @@ import re
 import sys
 from pathlib import Path
 
-from build_thesis import OUTPUT
+from build_thesis import FRONT_TITLE, OUTPUT
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
@@ -105,6 +105,15 @@ def _check_styles(doc: Document) -> list[str]:
             problems.append(f"stili {name} me all_caps={style.font.all_caps}, pritej {caps}")
         if style.paragraph_format.alignment != WD_ALIGN_PARAGRAPH.LEFT:
             problems.append(f"stili {name} nuk është i rreshtuar majtas")
+
+    front = doc.styles[FRONT_TITLE]
+    if front.font.name != FONT or front.font.size != TITLE_SIZE:
+        problems.append(f"stili {FRONT_TITLE} nuk është {FONT} {TITLE_SIZE.pt:g}pt")
+    if not front.font.bold or not front.font.all_caps:
+        problems.append(f"stili {FRONT_TITLE} nuk është bold me shkronja kapitale")
+    ppr = front.element.pPr
+    if ppr is not None and ppr.find(qn("w:outlineLvl")) is not None:
+        problems.append(f"stili {FRONT_TITLE} ka nivel skicimi, ndaj hyn në përmbajtje")
     return problems
 
 
@@ -300,15 +309,75 @@ def _check_geometry(doc: Document) -> list[str]:
     return problems
 
 
+# Shablloni: «LISTA E TABELAVE ... Vjen menjeherë pas listës së figurave (nuk fillon
+# në faqe të re)». Çdo titull tjetër fillon në faqe të re.
+SAME_PAGE_TITLE = "Lista e tabelave"
+
+
 def _check_page_breaks(doc: Document) -> list[str]:
-    """Çdo kapitull fillon në faqe të re, siç e kërkon shablloni."""
+    """Çdo titull fillon në faqe të re, përveç listës së tabelave."""
     problems = []
     for paragraph in doc.paragraphs:
-        if paragraph.style.name != "Heading 1":
+        if paragraph.style.name not in ("Heading 1", FRONT_TITLE):
             continue
-        if not paragraph.paragraph_format.page_break_before:
+        breaks = bool(paragraph.paragraph_format.page_break_before)
+        if paragraph.text.strip() == SAME_PAGE_TITLE:
+            if breaks:
+                problems.append(f"«{SAME_PAGE_TITLE}» fillon në faqe të re, shablloni nuk e do")
+        elif not breaks:
             problems.append(f"kreu pa ndarje faqeje: «{paragraph.text[:40]}»")
     return problems
+
+
+# Shablloni: «Abstrakti dhe mirënjohja nuk paraqiten në përmbajtje», ndërsa listat
+# dhe fjalori «duhet të paraqiten në përmbajtje». Përmbajtja nuk e liston veten.
+OUTSIDE_TOC = ("Abstrakt", "Mirënjohje", "Përmbajtja")
+INSIDE_TOC = ("Lista e figurave", "Lista e tabelave", "Fjalori i termave")
+
+# Rregulli është «një faqe», dhe faqja nuk matet dot pa e renderuar dokumentin.
+# Kufiri është matja e renderimit në Word më 13 shtator 2026: 430 fjalë zunë dy
+# faqe, dhe versioni i shkurtuar hyn në një me hapësirë të mbetur (VD-112).
+ABSTRACT_MAX_WORDS = 360
+
+
+def _check_front_titles(doc: Document) -> list[str]:
+    """Cilët tituj hyjnë në përmbajtje dhe cilët jo, sipas stilit që mbajnë."""
+    styles = {
+        paragraph.text.strip(): paragraph.style.name
+        for paragraph in doc.paragraphs
+        if paragraph.text.strip() in OUTSIDE_TOC + INSIDE_TOC
+    }
+    problems = []
+    for title in OUTSIDE_TOC:
+        if styles.get(title) != FRONT_TITLE:
+            problems.append(f"«{title}» duhet të jetë jashtë përmbajtjes (stili {FRONT_TITLE})")
+    for title in INSIDE_TOC:
+        if styles.get(title) != "Heading 1":
+            problems.append(f"«{title}» duhet të hyjë në përmbajtje (stili Heading 1)")
+    return problems
+
+
+def _check_update_fields(doc: Document) -> list[str]:
+    """Word e plotëson përmbajtjen kur hapet, e nuk e lë tekstin zëvendësues."""
+    flag = doc.settings.element.find(qn("w:updateFields"))
+    if flag is None or flag.get(qn("w:val")) not in ("true", "1"):
+        return ["dokumenti nuk i kërkon Word-it t'i përditësojë fushat, ndaj përmbajtja mbetet bosh"]
+    return []
+
+
+def _check_abstract_length(doc: Document) -> list[str]:
+    words, inside = 0, False
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name in (FRONT_TITLE, "Heading 1"):
+            if inside:
+                break
+            inside = paragraph.text.strip() == "Abstrakt"
+            continue
+        if inside:
+            words += len(re.findall(r"\w+", paragraph.text))
+    if words > ABSTRACT_MAX_WORDS:
+        return [f"abstrakti ka {words} fjalë, më shumë se {ABSTRACT_MAX_WORDS} që hyjnë në një faqe"]
+    return []
 
 
 def _check_numbering_of_sections(doc: Document) -> list[str]:
@@ -403,6 +472,9 @@ def report(path: Path) -> list[str]:
         _check_sections,
         _check_geometry,
         _check_page_breaks,
+        _check_front_titles,
+        _check_update_fields,
+        _check_abstract_length,
     ):
         problems += [f"  {line}" for line in check(doc)]
     return problems

@@ -4110,3 +4110,52 @@ panelit dhe numri i sekondave të kaluara. Nuk ka shirit përparimi, sepse
 rremë. Vetëm teksti i palëvizshëm është `status`: sekondat janë të fshehura nga
 lexuesi i ekranit, që të mos lexohen një nga një.
 
+
+### VD-112: Punimi kundrejt dy dokumenteve të UBT-së, jo kundrejt kontrollit të vet
+
+**Konteksti.** Autori dha dy dokumentet zyrtare: udhëzimet e formatimit (`UBT
+Instruksione per teme_v2`) dhe udhëzuesin e përmbajtjes (`Tema e diplomes_ana
+permbajtesore`). `check_format.py` kalonte, por kontrollonte vetëm rregullat që i
+ishin shkruar. Punimi u eksportua në PDF me Word dhe u lexua faqe për faqe kundrejt
+të dy dokumenteve.
+
+**Katër shkelje formatimi, asnjëra e dukshme për kontrollin.**
+
+- Përmbajtja ishte bosh. python-docx nuk numëron faqe, ndaj fusha TOC shkruhej me
+  tekst zëvendësues dhe asgjë nuk i kërkonte Word-it ta plotësonte: PDF-ja tregonte
+  vetëm «Kliko me të djathtën… Update Field». Dokumenti mban tani `w:updateFields`,
+  dhe Word-i e plotëson kur hapet.
+- Përmbajtja do të kishte listuar Abstraktin, Mirënjohjen dhe vetveten, sepse të
+  tre mbanin stilin Heading 1. Shablloni thotë «Abstrakti dhe mirënjohja nuk
+  paraqiten në përmbajtje». Ata tituj mbajnë tani stilin «Titull ballinë», i njëjti
+  në pamje por pa nivel skicimi.
+- Abstrakti zinte dy faqe me 430 fjalë, ndërsa shablloni kërkon një. U shkurtua në
+  345 fjalë, dhe renditja në Word e vendos të tërin në faqen I bashkë me fjalët
+  kyçe. Dy pohime u hoqën: që strategjitë «i kapin rastet e rënda shumë më mirë se
+  të lehtat», i cili nuk vlen për Blob-in (recall 5.0% te major kundrejt 10.3% te
+  minor), dhe prejardhja e refuzimeve, e cila mbetet te Kapitulli 5.
+- Lista e tabelave fillonte në faqe të re; shablloni e do menjëherë pas listës së
+  figurave.
+
+**Dy mungesa përmbajtjeje sipas udhëzuesit.**
+
+- Deklarimi i problemit nuk i emërtonte tre elementet që udhëzuesi i quan kryesore:
+  situata ideale, realiteti, fokusi i punës. Kapitulli 3 hapet tani me to, të
+  nxjerra nga ajo që punimi thoshte tashmë te 1.2 dhe 2.6.
+- Metodologjia nuk kishte konsiderata etike, të cilat udhëzuesi i liston mes
+  përbërësve kryesorë. U shtua 4.8: të dhëna publike, asnjë e dhënë e mbledhur nga
+  njerëz, kodi i analizuar nuk ekzekutohet, korpusi nuk shpërndahet, dhe asnjë prag
+  nuk rregullohet për rezultatin.
+
+**Kontrolli.** `check_format.py` i verifikon tani titujt brenda dhe jashtë
+përmbajtjes, faqen e listës së tabelave, flamurin e fushave, dhe një kufi prej 360
+fjalësh për abstraktin. Kufiri është përafrim, sepse faqja matet vetëm me renderim:
+vlera vjen nga renderimi i 13 shtatorit, dhe kontrolli e thotë këtë hapur. Viti
+akademik përdor vizën e shabllonit, «2025 – 2026».
+
+**Çfarë i mbetet autorit.** Titulli akademik i mentores te faqja e brendshme, sepse
+shablloni kërkon «Mentori: Titulli. Emri dhe Mbiemri» dhe titulli nuk dihet nga
+depoja. Dy vendet [PLOTËSO]. Tri pyetje kërkimore, ndërsa udhëzuesi thotë se 1 ose 2
+«zakonisht janë të mjaftueshme». Dhe nënkapitujt 5.7, 5.9 dhe 5.10, të cilët
+shpjegojnë arsye dhe mund të lexohen si interpretim në një kapitull që udhëzuesi e do
+pa interpretim.
