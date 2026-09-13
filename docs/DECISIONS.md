@@ -4036,3 +4036,23 @@ matur mbi ndërtimin e zhvillimit:
 Diferenca është e vogël dhe matja ka zhurmë. Pjesa kryesore e kostos mbetet
 filtrimi i vetë listës, i cili duhet të ndodhë. Kjo raportohet si e tillë dhe jo
 si zgjidhje e ngadalësisë.
+
+### VD-110: Dy shifra që i thoshin lexuesit diçka të rreme
+
+**Konteksti.** Të dyja u panë mbi `Esri/geometry-api-java`, jo mbi fikstuarat, sepse
+me katër vende asnjëra nuk shfaqet.
+
+**Tabela e skedarëve renditej sipas një kolone që nuk shihej.** `hotspots` i
+rendit skedarët sipas numrit të vendeve, me qëllim: vendet janë puna që duhet
+bërë, dhe një skedar me dhjetë vende kërkon më shumë se një metodë me dhjetë
+erëra. Por tabela tregonte vetëm erërat, ndaj `TestRelation` me 53 dilte mbi
+`RelationalOperations` me 117, dhe renditja dukej e gabuar. Renditja nuk
+ndryshoi, sepse vendimi dhe testi i saj qëndrojnë. U shtua kolona «Vende», e
+para nga numrat dhe e theksuar, që çelësi i renditjes të jetë ai që lexohet.
+
+**Përqindjet rrumbullakoheshin në pohime të rreme.** Unaza e shkruante DataClass
+me 4 erëra nga 1 450 si «0%», njësoj si një lloj që nuk u gjet. I njëjti
+rrumbullakim do ta shkruante 999 nga 1 000 si «100%» te shiriti i automatizimit.
+Një numër jozero shkruhet tani «<1%», dhe një pjesë e paplotë «>99%». Gjerësia e
+shiritit mbetet e saktë, sepse ajo nuk lexohet si shifër.
+

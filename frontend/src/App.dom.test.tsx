@@ -777,3 +777,63 @@ describe("skedarët më të ndotur", () => {
     );
   });
 });
+
+describe("shifrat që nuk gënjejnë", () => {
+  // VD-110: renditja e tabelës dhe rrumbullakimi i përqindjeve.
+
+  it("e rendit sipas vendeve dhe e tregon kolonën që rendit", async () => {
+    // Ledger.java: dy vende me një erë secili, pra 2 vende dhe 2 erëra.
+    // Big.java: një vend me tri erëra, pra 1 vend dhe 3 erëra.
+    // Sipas vendeve Ledger del i pari, ndonëse ka më pak erëra.
+    serve(
+      analysis([
+        smell({ method: "m0(int)" }),
+        smell({ method: "m1(int)", start_line: 200 }),
+        ...["LongMethod", "DeepNesting", "LongParameterList"].map((smell_type) =>
+          smell({
+            smell_type,
+            class_name: "Big",
+            method: "run(int)",
+            file_path: "com/acme/Big.java",
+          }),
+        ),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+
+    const card = screen.getByRole("region", { name: "Skedarët më të ndotur" });
+    const [header, first, second] = within(card).getAllByRole("row");
+    const cells = (row: HTMLElement) =>
+      within(row)
+        .getAllByRole("cell")
+        .map((cell) => cell.textContent);
+
+    expect(within(header).getByRole("columnheader", { name: "Vende" })).toBeDefined();
+    // Klasa, shtegu, vende, erëra, ashpërsia.
+    expect(cells(first).slice(0, 4)).toEqual(["Ledger", "com/acme/Ledger.java", "2", "2"]);
+    expect(cells(second).slice(0, 4)).toEqual(["Big", "com/acme/Big.java", "1", "3"]);
+  });
+
+  it("nuk e shkruan një lloj të pranishëm si 0% dhe as një shumicë si 100%", async () => {
+    // 200 LongMethod dhe 1 DeepNesting, 201 gjithsej.
+    // 1 / 201 = 0.50%, rrumbullakohet në 0: pohim i rremë, shkruhet «<1%».
+    // 200 / 201 = 99.50%, rrumbullakohet në 100: pohim i rremë, shkruhet «>99%».
+    serve(
+      analysis([
+        ...Array.from({ length: 200 }, (_, i) =>
+          smell({ method: `m${i}(int)`, start_line: 10 + i * 100 }),
+        ),
+        smell({ method: "m0(int)", smell_type: "DeepNesting" }),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+
+    const legend = within(screen.getByRole("region", { name: "Sipas llojit" })).getByRole("list");
+    const row = (name: string) => within(legend).getByText(name).closest("li") as HTMLElement;
+
+    expect(within(row("DeepNesting")).getByText("<1%")).toBeDefined();
+    expect(within(row("LongMethod")).getByText(">99%")).toBeDefined();
+  });
+});

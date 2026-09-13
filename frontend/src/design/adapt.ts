@@ -81,6 +81,7 @@ export function fileRowsOf(sites: Site[]): FileRow[] {
     cls: stem(spot.file),
     path: spot.file,
     file: spot.file,
+    sites: spot.sites,
     smells: spot.smells,
     severity: severest.get(spot.file) ?? "minor",
   }));

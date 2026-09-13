@@ -81,6 +81,8 @@ export interface FileRow {
   cls: string;
   path: string;
   file: string;
+  /** Çelësi i renditjes: sa vende për t'u ndrequr, jo sa erëra (`hotspots`). */
+  sites: number;
   smells: number;
   severity: Severity;
 }
@@ -107,6 +109,10 @@ function SmellyFilesTableView({
             <tr className="border-b border-ink-200 text-left dark:border-ink-800">
               <Th>Klasa</Th>
               <Th>Shtegu</Th>
+              {/* Renditja është sipas vendeve, ndaj kolona e tyre shfaqet e para.
+                  Pa të, `TestRelation` me 53 erëra dilte mbi `RelationalOperations`
+                  me 117, dhe asgjë e dukshme nuk e shpjegonte (VD-110). */}
+              <Th align="right">Vende</Th>
               <Th align="right">Erëra</Th>
               <Th>Ashpërsia</Th>
             </tr>
@@ -133,7 +139,10 @@ function SmellyFilesTableView({
                 >
                   {row.path}
                 </td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-ink-700 dark:text-ink-200">
+                <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-ink-900 dark:text-white">
+                  {row.sites}
+                </td>
+                <td className="px-4 py-2.5 text-right tabular-nums text-ink-600 dark:text-ink-300">
                   {row.smells}
                 </td>
                 <td className="px-4 py-2.5">

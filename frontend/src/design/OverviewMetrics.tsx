@@ -42,6 +42,22 @@ const SLICE_COLORS = [
   "#94a3b8",
 ];
 
+/**
+ * Pjesa si tekst, pa e rrumbullakosur një numër jozero në zero.
+ *
+ * `Math.round` e shkruante DataClass me 4 erëra nga 1 450 si «0%», njësoj si një
+ * lloj që nuk u gjet fare, dhe 999 nga 1 000 si «100%», njësoj si të gjitha. Të
+ * dy skajet janë pohime të rreme për një lexues që e merr shifrën për të mirë
+ * (VD-110).
+ */
+export function share(value: number, total: number): string {
+  if (total <= 0) return "0%";
+  const rounded = Math.round((value / total) * 100);
+  if (value > 0 && rounded === 0) return "<1%";
+  if (value < total && rounded === 100) return ">99%";
+  return `${rounded}%`;
+}
+
 export function slicesOf(counts: Record<string, number>): Slice[] {
   return Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
@@ -179,7 +195,7 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
             <span className="min-w-0 flex-1 truncate text-ink-600 dark:text-ink-300">{slice.name}</span>
             <span className="tabular-nums text-ink-500 dark:text-ink-400">{slice.value}</span>
             <span className="w-10 text-right text-xs tabular-nums text-ink-500 dark:text-ink-400">
-              {Math.round((slice.value / total) * 100)}%
+              {share(slice.value, total)}
             </span>
           </li>
         ))}
@@ -195,7 +211,7 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
  * ekrani. «Aplikuar» numëron vetëm atë që ka shkuar te disku në këtë seancë.
  */
 function AutomationPanel({ data }: { data: Overview }) {
-  const share = data.sites ? Math.round((data.automated / data.sites) * 100) : 0;
+  const width = data.sites ? (data.automated / data.sites) * 100 : 0;
   return (
     <div className="p-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
@@ -209,12 +225,12 @@ function AutomationPanel({ data }: { data: Overview }) {
         </div>
         <span className="flex items-center gap-1.5 rounded-full bg-low/10 px-2.5 py-1 text-xs font-semibold text-low-ink">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-          {share}% e vendeve
+          {share(data.automated, data.sites)} e vendeve
         </span>
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
-        <div className="h-full rounded-full bg-brand-500" style={{ width: `${share}%` }} />
+        <div className="h-full rounded-full bg-brand-500" style={{ width: `${width}%` }} />
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
