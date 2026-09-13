@@ -4278,3 +4278,50 @@ kapitujt 1–6 duhet rimatur me Word.
 
 **Çfarë nuk u verifikua.** U lexuan të renderuar vetëm paragrafët e ndryshuar, jo
 rrjedha e plotë e çdo kapitulli pas shkurtimit.
+
+### VD-116: Pohimet e Kapitujve 1 dhe 2 u krahasuan me burimet
+
+**Konteksti.** Autori pyeti nëse dy kapitujt e parë janë të saktë. Çdo pohim për një
+burim u krahasua me abstraktin ose tekstin e vetë burimit, aty ku ishte i arritshëm.
+
+**Gabime faktike, të ndrequra.**
+
+- Fowler (2018) përshkruan **njëzet e katër** smells. Njëzet e dy ishin te botimi i
+  parë, dhe punimi citon të dytin. Po aty, popullarizimi i termit i atribuohej
+  botimit të 2018-s.
+- Di Nucci et al. (2018) nuk flasin për procedurën e ndarjes. Kritika e tyre është se
+  në studimin origjinal çdo dataset mbante raste të një lloji të vetëm smell-i; me
+  disa lloje bashkë, modelet shfaqën kufizime kritike. Nënkapitulli 2.6 e përsëriste
+  atribuimin e gabuar. Ndarja sipas depos mbetet zgjedhje e punimit, e argumentuar
+  me rrjedhjen e të dhënave mes mostrave të një depoje, jo me Di Nucci-n.
+- Azeem et al. (2019): «mungesa e dataset-eve të përbashkëta si pengesa kryesore»
+  nuk gjendet në abstrakt. Abstrakti thotë se nga mbi dy mijë punime vetëm
+  pesëmbëdhjetë përdorin mësim makine, dhe se ka ende hapësirë për përmirësim.
+- Tsantalis & Chatzigeorgiou (2009): pohimi se identifikimi dhe aplikimi i Move
+  Method-it janë «probleme të ndara me vështirësi të ndryshme» nuk ishte i tyre.
+  Tani përshkruhet metoda ashtu si e jep abstrakti: distanca mes entiteteve dhe
+  klasave, parakushte që ruajnë sjelljen, vendimi i fundit te projektuesi.
+- Murphy-Hill et al. (2012): «shumica e refaktorimeve bëhen me dorë» nuk u gjet dot
+  në asnjë burim të arritshëm (abstrakti i revistës dhe i konferencës). U zëvendësua
+  me dy gjetjet e abstraktit.
+
+**Përgjithësime që i kundërshtonte vetë punimi.** Nënkapitulli 1.2, abstrakti dhe
+«Realiteti» te Kapitulli 3 thoshin se mjetet mbështeten «në një metrikë të vetme» dhe
+«ndalen te njoftimi». PMD-ja, me të cilën punimi krahasohet te Shtojca 8.7, zbaton
+strategji me disa metrika, dhe metoda e Tsantalis-it propozon refaktorime.
+Nënkapitulli 2.2 thoshte se te Lanza & Marinescu «çdo smell» është konjunksion,
+ndërsa Shtojca 8.8 tregon se Data Class-i përmban disjunksion.
+
+**Të verifikuara, me saktësim të vogël.** Pragjet e Lanza & Marinescu nga 45 sisteme
+Java; Arcelli Fontana et al. (2016): 16 algoritme, katër smells, performancë e lartë
+në validim të kryqëzuar, J48 dhe Random Forest më të mirët; Sharma & Spinellis
+(2018): përkufizime dhe rezultate detektimi jokonsistente; Mäntylä & Lassenius
+(2006): studim empirik, perceptime kontradiktore mes vlerësuesve.
+
+**Çfarë nuk u verifikua kundrejt burimit.** Lehman, Cunningham, Chidamber & Kemerer,
+Henderson-Sellers, Bieman & Kang, Marinescu (2004), Moha et al., Palomba et al.,
+Madeyski & Lewowski, Opdyke dhe Silva et al. Pohimet për ta janë përshkrime të
+zakonshme të këtyre punimeve, por në këtë hyrje nuk u krahasuan me tekstin.
+
+**Matja me Word.** Kapitujt 1–6: 8 705 fjalë me tabela, 8 235 pa tabela; tërë
+dokumenti 15 298 fjalë, 70 faqe.

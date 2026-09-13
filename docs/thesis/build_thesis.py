@@ -733,13 +733,14 @@ INTRODUCTION = [
         "1.1",
         "Konteksti",
         [
-            "Termi code smell u prezantua nga Kent Beck dhe u popullarizua nga "
-            "Fowler (2018) në veprën Refactoring. Një code smell nuk është gabim: "
-            "programi kompilohet, testet kalojnë dhe funksionaliteti është i saktë. "
-            "Ai është një simptomë sipërfaqësore që zakonisht tregon një problem më "
-            "të thellë të dizajnit. Një klasë që mban shumë përgjegjësi të palidhura "
-            "mes tyre, një metodë që zgjatet për qindra rreshta, ose një klasë që "
-            "mban vetëm të dhëna pa asnjë sjellje, janë shembuj tipikë.",
+            "Termi code smell u prezantua nga Kent Beck dhe u popullarizua nga libri "
+            "Refactoring i Martin Fowler-it, botimi i dytë i të cilit (Fowler, 2018) "
+            "përdoret në këtë punim. Një code smell nuk është gabim: programi "
+            "kompilohet, testet kalojnë dhe funksionaliteti është i saktë. Ai është "
+            "një simptomë sipërfaqësore që zakonisht tregon një problem më të thellë "
+            "të dizajnit. Një klasë që mban shumë përgjegjësi të palidhura mes tyre, "
+            "një metodë që zgjatet për qindra rreshta, ose një klasë që mban vetëm të "
+            "dhëna pa asnjë sjellje, janë shembuj tipikë.",
             "Rëndësia e tyre qëndron në efektin kumulativ. Cunningham (1992) e "
             "përshkroi këtë fenomen me metaforën e borxhit teknik: çdo kompromis i "
             "vogël në strukturë krijon një detyrim që paguhet me interes në çdo "
@@ -761,14 +762,17 @@ INTRODUCTION = [
             "nga një zhvillues është praktikisht i pamundur dhe, për më tepër, i "
             "varur nga përvoja subjektive e shqyrtuesit.",
             "Mjetet ekzistuese të analizës statike e automatizojnë pjesërisht këtë "
-            "punë, por vuajnë nga tri kufizime të dukshme. Së pari, shumica e tyre "
-            "mbështeten në pragje fikse mbi një metrikë të vetme, prandaj një metodë "
-            "e gjatë por koherente shënohet njësoj si një metodë e shkurtër që "
-            "përzien disa përgjegjësi. Së dyti, ato fokusohen kryesisht në probleme "
-            "të nivelit të rreshtit dhe të stilit, ndërsa problemet strukturore të "
-            "nivelit të dizajnit mbulohen dobët. Së treti, dhe më e rëndësishmja, "
-            "ato ndalen te njoftimi: i tregojnë zhvilluesit se çfarë është e "
-            "gabuar, por jo se çfarë duhet bërë konkretisht.",
+            "punë, por kanë tri kufizime. Së pari, shumë prej tyre mbështeten në "
+            "pragje fikse të kalibruara mbi korpuse të tjera; edhe strategjitë që "
+            "kombinojnë disa metrika, si ato të Lanza & Marinescu (2006), i përdorin "
+            "këto pragje pa i verifikuar mbi projektin që analizojnë. Së dyti, shumë "
+            "mjete të përhapura fokusohen kryesisht në probleme të nivelit të rreshtit "
+            "dhe të stilit, ndërsa problemet strukturore të nivelit të dizajnit "
+            "mbulohen dobët. Së treti, dhe më e rëndësishmja, shumica ndalen te "
+            "njoftimi: i tregojnë zhvilluesit se çfarë është e gabuar, por jo se çfarë "
+            "duhet bërë konkretisht. Qasjet që propozojnë edhe refaktorimin, si ajo e "
+            "Tsantalis & Chatzigeorgiou (2009) për Move Method, janë më të rralla dhe "
+            "mbulojnë vetëm disa smells.",
             "Kjo hapësirë mes identifikimit dhe veprimit është motivimi kryesor i "
             "këtij punimi.",
         ],

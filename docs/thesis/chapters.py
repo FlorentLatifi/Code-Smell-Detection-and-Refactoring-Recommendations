@@ -125,8 +125,8 @@ def abstract() -> list[str]:
         "Code smells janë simptoma të dizajnit të dobët që nuk shkaktojnë gabime, por e "
         "rrisin koston e çdo ndryshimi të ardhshëm. Identifikimi manual i tyre nuk "
         "shkallëzohet në sisteme të mëdha, ndërsa mjetet ekzistuese të analizës statike "
-        "mbështeten kryesisht në pragje fikse mbi metrika të veçuara dhe ndalen te "
-        "njoftimi, pa propozuar zgjidhje.",
+        "mbështeten kryesisht në pragje fikse të kalibruara gjetiu dhe rrallë "
+        "propozojnë zgjidhje.",
         f"Ky punim ndërton një sistem që i zbulon code smells në dy mënyra të pavarura "
         f"dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
         f"e publikuara të detektimit mbi {metrics} metrika; e dyta trajnon klasifikues "
@@ -192,20 +192,21 @@ CHAPTER_2 = [
         "2.1",
         "Përkufizimi dhe matja",
         [
-            "Termi u prezantua nga Kent Beck dhe u sistemua nga Fowler (2018), i cili "
-            "përshkroi njëzet e dy smells bashkë me refaktorimet që i adresojnë. "
-            "Përkufizimi mbetet qëllimisht cilësor: një smell është simptomë, jo "
-            "gabim, dhe gjykimi nëse diçka është problem varet nga konteksti.",
+            "Katalogun kanonik e jep Fowler (2018), botimi i dytë i të cilit përshkruan "
+            "njëzet e katër smells bashkë me refaktorimet që i adresojnë. Përkufizimi "
+            "mbetet qëllimisht cilësor: një smell është simptomë, jo gabim, dhe "
+            "gjykimi nëse diçka është problem varet nga konteksti.",
             "Matja sasiore u mundësua nga suita e metrikave e Chidamber & Kemerer "
             "(1994), e cila propozoi gjashtë metrika për sistemet e orientuara nga "
-            "objektet, mes tyre WMC, DIT, NOC, CBO, RFC dhe LCOM. Henderson-Sellers "
+            "objektet: WMC, DIT, NOC, CBO, RFC dhe LCOM. Henderson-Sellers "
             "(1996) e rishikoi LCOM-in duke propozuar një variant të normalizuar, "
             "ndërsa Bieman & Kang (1995) prezantuan TCC-në, e cila e mat kohezionin "
             "përmes çifteve të metodave që ndajnë të paktën një fushë. Këto metrika "
             "janë baza mbi të cilën ndërtohet çdo detektim sasior i mëvonshëm.",
             "Sharma & Spinellis (2018) ofrojnë një shqyrtim sistematik të fushës dhe "
-            "vërejnë se literatura nuk ka një përkufizim të vetëm operacional për "
-            "shumicën e smells, çka e bën krahasimin mes mjeteve të vështirë.",
+            "vërejnë se literatura ka prodhuar përkufizime jokonsistente për smells, "
+            "dhe se metodat e detektimit japin rezultate po aq jokonsistente, çka e "
+            "bën krahasimin mes mjeteve të vështirë.",
         ],
     ),
     (
@@ -215,9 +216,9 @@ CHAPTER_2 = [
             "Marinescu (2004) prezantoi konceptin e strategjive të detektimit: "
             "rregulla që kombinojnë disa metrika me pragje, në vend që të mbështeten "
             "në një metrikë të vetme. Ideja u zhvillua në një katalog të plotë nga "
-            "Lanza & Marinescu (2006), ku çdo smell shprehet si konjunksion kushtesh "
-            "mbi metrika, me pragje të nxjerra statistikisht nga një korpus prej "
-            "dyzet e pesë sistemesh.",
+            "Lanza & Marinescu (2006), ku çdo smell shprehet si kombinim logjik "
+            "kushtesh mbi metrika, zakonisht si konjunksion, me pragje të nxjerra "
+            "statistikisht nga një korpus prej dyzet e pesë sistemesh Java.",
             "Moha et al. (2010) propozuan DECOR-in, një metodë me gjuhë të "
             "specifikimit për smells, e cila i gjeneron detektorët nga përshkrimet. "
             "Përparësia e këtyre qasjeve është transparenca: kur një detektor ndez, "
@@ -234,25 +235,27 @@ CHAPTER_2 = [
         "2.3",
         "Detektimi me mësim të makinës",
         [
-            "Arcelli Fontana et al. (2016) krahasuan disa teknika të mësimit të "
-            "makinës për detektimin e smells dhe raportuan performancë shumë të "
-            "lartë, në disa raste mbi 95% saktësi. Ky punim u bë referenca kryesore e "
-            "fushës dhe motivoi një varg studimesh pasuese.",
-            "Megjithatë, Di Nucci et al. (2018) e riekzaminuan atë rezultat dhe "
-            "treguan se ai varej fuqishëm nga mënyra si ishte ndërtuar dataset-i. Kur "
-            "bashkësia e testimit u ndërtua në mënyrë më realiste, performanca ra "
-            "ndjeshëm. Përfundimi i tyre është se rezultatet e raportuara në "
-            "literaturë duhen lexuar me kujdes ndaj procedurës së ndarjes së të "
-            "dhënave, jo vetëm ndaj algoritmit.",
-            "Ky vëzhgim ka pasojë të drejtpërdrejtë metodologjike për këtë punim dhe "
-            "përcakton njërën nga zgjedhjet e tij qendrore: ndarja mes trajnimit dhe "
-            "testimit bëhet e grupuar sipas depos, kurrë e rastësishme sipas "
-            "rreshtave. Mostrat e së njëjtës depo ndajnë autorë, konvencione dhe "
-            "shpesh kod të kopjuar; një ndarje e rastësishme i vendos ato në të dyja "
-            "anët dhe e fryn çdo shifër.",
-            "Azeem et al. (2019) ofrojnë një shqyrtim sistematik dhe meta-analizë të "
-            "kësaj nënfushe, duke identifikuar mungesën e dataset-eve të përbashkëta "
-            "si pengesën kryesore për krahasueshmëri.",
+            "Arcelli Fontana et al. (2016) krahasuan gjashtëmbëdhjetë algoritme të "
+            "mësimit të makinës mbi katër smells dhe raportuan performancë të lartë "
+            "për të gjitha në validimin e kryqëzuar, me J48 dhe Random Forest si më "
+            "të mirat. Ky punim u bë referenca kryesore e fushës dhe motivoi një varg "
+            "studimesh pasuese.",
+            "Megjithatë, Di Nucci et al. (2018) vunë re se në atë studim çdo dataset "
+            "përmbante raste të një lloji të vetëm smell-i. E përsëritën eksperimentin "
+            "me dataset-e ku bashkëjetojnë disa lloje smells, dhe në këtë konfigurim "
+            "më realist teknikat e mësimit të makinës shfaqën kufizime kritike. "
+            "Rrjedhimisht, një rezultat i raportuar varet nga mënyra si ndërtohet "
+            "bashkësia e vlerësimit, jo vetëm nga algoritmi.",
+            "I njëjti kujdes ndaj ndërtimit të të dhënave përcakton njërën nga "
+            "zgjedhjet qendrore të këtij punimi: ndarja mes trajnimit dhe testimit "
+            "bëhet e grupuar sipas depos, kurrë e rastësishme sipas rreshtave. "
+            "Mostrat e së njëjtës depo ndajnë autorë, konvencione dhe shpesh kod të "
+            "kopjuar; një ndarje e rastësishme i vendos ato në të dyja anët dhe e "
+            "fryn çdo shifër.",
+            "Azeem et al. (2019), në një shqyrtim sistematik dhe meta-analizë, gjetën "
+            "vetëm pesëmbëdhjetë studime që përdorin mësimin e makinës për detektimin "
+            "e smells, nga një bashkësi fillestare prej më shumë se dy mijë punimesh, "
+            "dhe përfundojnë se në këtë nënfushë ka ende hapësirë për përmirësim.",
         ],
     ),
     (
@@ -260,8 +263,8 @@ CHAPTER_2 = [
         "E vërteta bazë dhe subjektiviteti",
         [
             "Çdo vlerësim i detektimit kërkon një të vërtetë bazë, dhe këtu literatura "
-            "has një problem themelor. Mäntylä & Lassenius (2006) treguan "
-            "eksperimentalisht se vlerësimi i zhvilluesve për praninë e një smell "
+            "has një problem themelor. Mäntylä & Lassenius (2006) treguan në një "
+            "studim empirik se vlerësimi i zhvilluesve për praninë e një smell "
             "është subjektiv dhe se mospajtimi mes tyre është i konsiderueshëm.",
             "Madeyski & Lewowski (2020) e adresuan mungesën e dataset-eve me MLCQ-në, "
             "një bashkësi mostrash Java të etiketuara nga zhvillues profesionistë për "
@@ -279,11 +282,14 @@ CHAPTER_2 = [
             "vetëm nëse kushte të caktuara vërtetohen para aplikimit. Ky nocion "
             "mbetet themeli i çdo motori refaktorimi që pretendon ruajtjen e sjelljes.",
             "Tsantalis & Chatzigeorgiou (2009) propozuan një metodë për identifikimin "
-            "e mundësive të Move Method, duke treguar se identifikimi i mundësisë dhe "
-            "aplikimi i saj janë probleme të ndara me vështirësi të ndryshme.",
-            "Murphy-Hill et al. (2012) matën si i përdorin zhvilluesit mjetet e "
-            "refaktorimit dhe gjetën se shumica e refaktorimeve bëhen me dorë, edhe "
-            "kur mjeti i automatizuar është i disponueshëm. Silva et al. (2016) "
+            "e mundësive të Move Method si zgjidhje për Feature Envy: një algoritëm i "
+            "bazuar te distanca mes entiteteve dhe klasave nxjerr refaktorime që "
+            "ruajnë sjelljen pas kontrollit të një bashkësie parakushtesh, ndërsa "
+            "vendimi përfundimtar i mbetet projektuesit.",
+            "Murphy-Hill et al. (2012), mbi të dhëna nga më shumë se trembëdhjetë mijë "
+            "zhvillues, gjetën se refaktorimi ndërthuret shpesh me ndryshime të tjera "
+            "dhe rrallë shënohet në mesazhet e commit-eve, çka e vështirëson matjen e "
+            "tij nga historiku. Silva et al. (2016) "
             "pyetën zhvilluesit pse refaktorojnë dhe gjetën se motivet janë kryesisht "
             "praktike, të lidhura me një ndryshim konkret që duhet bërë.",
         ],
@@ -296,7 +302,8 @@ CHAPTER_2 = [
             "mësim makine rrallë vlerësohen mbi të njëjtën të vërtetë bazë me të "
             "njëjtat metrika, çka e bën krahasimin e drejtpërdrejtë të vështirë. E "
             "dyta: rezultatet e raportuara për mësimin e makinës janë të ndjeshme "
-            "ndaj procedurës së ndarjes, dhe jo çdo punim e deklaron atë qartë. E "
+            "ndaj mënyrës si ndërtohen dhe ndahen të dhënat e vlerësimit, dhe jo çdo "
+            "punim e deklaron atë qartë. E "
             "treta: detektimi dhe refaktorimi trajtohen zakonisht si probleme të "
             "ndara, ndaj pyetja nëse një smell i detektuar mund edhe të rregullohet "
             "automatikisht mbetet pa përgjigje empirike.",
@@ -321,8 +328,9 @@ CHAPTER_3 = [
             "transformim e heq pa ndryshuar sjelljen. Ky gjykim do të duhej të ishte i "
             "përsëritshëm dhe i matur kundrejt vlerësimit të zhvilluesve me përvojë.",
             "**Realiteti.** Identifikimi manual nuk shkallëzohet dhe varet nga shqyrtuesi "
-            "(Nënkapitulli 1.2). Mjetet ekzistuese mbështeten në pragje fikse mbi metrika "
-            "të veçuara dhe ndalen te njoftimi. Qasjet me rregulla dhe ato me mësim "
+            "(Nënkapitulli 1.2). Mjetet ekzistuese mbështeten kryesisht në pragje fikse "
+            "të kalibruara gjetiu dhe rrallë shkojnë përtej njoftimit. Qasjet me "
+            "rregulla dhe ato me mësim "
             "makine rrallë vlerësohen mbi të njëjtën të vërtetë bazë, dhe pyetja nëse një "
             "erë e detektuar mund edhe të ndreqet automatikisht mbetet pa përgjigje "
             "empirike (Nënkapitulli 2.6).",
