@@ -47,7 +47,11 @@ export function RefactoringActionList({
 
   return (
     <div className="grid gap-4 xl:grid-cols-3">
-      <div className="space-y-4 xl:col-span-2">
+      {/* `min-w-0` te të dy kolonat: një element rrjeti nuk tkurret nën gjerësinë
+          e tekstit të tij më të gjatë pa të. Mbi `apache/ambari` një shteg i
+          prerë me `truncate` e shtynte kartën në 718 piksela brenda një ekrani
+          375-pikselësh (VD-111). */}
+      <div className="min-w-0 space-y-4 xl:col-span-2">
         {automated.length > 0 && (
           <Card title={`Rishkrime të gatshme (${automated.length})`}>
             <ul className="m-0 list-none divide-y divide-ink-200 p-0 dark:divide-ink-800">
@@ -76,7 +80,7 @@ export function RefactoringActionList({
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         {children}
         <AppliedTimeline applied={applied} revert={revert} />
       </div>
@@ -101,7 +105,7 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
       <div className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm font-medium text-ink-900 dark:text-white">
+            <span className="min-w-0 font-mono text-sm font-medium [overflow-wrap:anywhere] text-ink-900 dark:text-white">
               {item.entity}
             </span>
             <span

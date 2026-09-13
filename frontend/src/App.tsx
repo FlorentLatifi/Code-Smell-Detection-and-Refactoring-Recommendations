@@ -9,6 +9,7 @@ import { Landing } from "./Landing";
 import { ApplyControl } from "./design/ApplyControl";
 import { fileRowsOf, overviewOf, scoreRows, suggestionsOf } from "./design/adapt";
 import { DashboardLayout, StatusStrip } from "./design/DashboardLayout";
+import { Loading } from "./design/Loading";
 import { OverviewMetrics } from "./design/OverviewMetrics";
 import { PerformanceCharts, SmellyFilesTable } from "./design/Panels";
 import { PatchActions, RefactoringActionList } from "./design/RefactoringActionList";
@@ -439,7 +440,13 @@ export function App() {
       canScan={path.trim().length > 0}
       scanLabel={screen.state === "ready" ? "Skano sërish" : "Analizo"}
       project={
-        <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={run}>
+        // Nën 640 piksela forma zë rreshtin e vet. Pa këtë ajo tkurrej në vend që
+        // të mbështillej, dhe te 375 piksela kutia e shtegut mbetej 26 piksela e
+        // gjerë: nuk shihej çfarë shkruhej (VD-111).
+        <form
+          className="order-last flex min-w-0 flex-1 basis-full items-center gap-2 sm:order-none sm:basis-auto"
+          onSubmit={run}
+        >
           <input
             value={path}
             onChange={(e) => setPath(e.target.value)}
@@ -485,11 +492,7 @@ export function App() {
       <>
       {screen.state === "idle" && <Landing root={root} />}
 
-      {screen.state === "loading" && (
-        <p className="empty" role="status">
-          Duke matur skedarët…
-        </p>
-      )}
+      {screen.state === "loading" && <Loading />}
 
       {screen.state === "error" && (
         <p className="failure" role="alert">
