@@ -4325,3 +4325,21 @@ zakonshme të këtyre punimeve, por në këtë hyrje nuk u krahasuan me tekstin.
 
 **Matja me Word.** Kapitujt 1–6: 8 705 fjalë me tabela, 8 235 pa tabela; tërë
 dokumenti 15 298 fjalë, 70 faqe.
+
+### VD-117: Dy pohime të tjera që nuk i mbanin as burimi, as të dhënat
+
+**Nënkapitulli 4.4** thoshte se ndarja sipas depos bëhet «siç e kërkon vërejtja e Di
+Nucci et al. (2018)». Është i njëjti atribuim i gabuar që VD-116 e ndreqi te 2.3:
+Di Nucci et al. kritikojnë përbërjen e dataset-eve, jo ndarjen. Fjalia thotë tani
+arsyen e vetë punimit, që mostrat e një projekti të mos jenë njëherësh në trajnim
+dhe në testim.
+
+**Nënkapitulli 5.1** mbyllej me «Detektorët degradojnë me hijeshi: i kapin rastet e
+rënda dukshëm më mirë se ato të lehtat». Te Blob-i recall-i është 5.0% te major dhe
+10.3% te minor, pra e kundërta. VD-113 e kishte ndrequr këtë pohim te 6.1, por kopja
+te 5.1 mbeti. Fjalia shkruhet tani nga të dhënat dhe emërton përjashtimin. Po aty,
+«precizion i lartë» u bë «precizioni është shumë mbi recall-in», sepse precizioni i
+Feature Envy-t është 0.520.
+
+Të dyja u gjetën gjatë përgatitjes së udhëzuesit me të cilin autori i rishkruan
+Kapitujt 1 dhe 2 me fjalët e veta.

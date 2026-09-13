@@ -508,8 +508,9 @@ CHAPTER_4 = [
             "shumica e etiketave janë negative, një F1 mbresëlënës mund të arrihet pa "
             "mësuar asgjë, dhe i vetmi mjet që e dallon këtë është të parit se sa merr "
             "parashikimi i klasës shumicë mbi po atë ndarje.",
-            "Ndarja bëhet me GroupKFold sipas depos, siç e kërkon vërejtja e Di Nucci "
-            "et al. (2018). Parashikimet janë jashtë fold-it: çdo mostër parashikohet "
+            "Ndarja bëhet me GroupKFold sipas depos, që mostrat e një projekti të mos "
+            "jenë njëherësh në trajnim dhe në testim (Nënkapitulli 2.3). Parashikimet "
+            "janë jashtë fold-it: çdo mostër parashikohet "
             "saktësisht një herë, nga një model që nuk e ka parë kurrë projektin e "
             "saj. Kjo jep të njëjtën formë që prodhojnë detektorët, ndaj dy qasjet "
             "krahasohen mostër për mostër.",
@@ -1089,8 +1090,8 @@ def _results_sections() -> list:
                 "ndez kurrë merr zero këtu.",
                 ("table", "Qasja A kundrejt gjykimit të rishikuesve",
                  ["Erë", "P", "R", "F1", "MCC", "Pozitivë"], rules_rows),
-                "Modeli është i njëjtë kudo: precizion i lartë dhe recall i ulët. Kur "
-                "strategjitë ndezin kanë kryesisht të drejtë, por i humbin shumicën e "
+                "Te çdo erë precizioni është shumë mbi recall-in: kur strategjitë "
+                "ndezin, kanë më shpesh të drejtë sesa gabim, por i humbin shumicën e "
                 "rasteve.",
                 "Ky lexim ndryshon kur recall-i ndahet sipas ashpërsisë që caktuan "
                 "vetë rishikuesit.",
@@ -1098,8 +1099,7 @@ def _results_sections() -> list:
                  ["Erë", "Recall te major", "Recall te minor"], severity_rows),
                 ("figure", str(FIGURES / "recall_sipas_ashpersise.png"),
                  "Recall-i sipas ashpërsisë së caktuar nga rishikuesit"),
-                "Detektorët degradojnë me hijeshi: i kapin rastet e rënda dukshëm më "
-                "mirë se ato të lehtat. Kjo është shifra që një F1 i vetëm e fsheh.",
+                _severity_direction(rules, smells),
             ],
         ),
         (
@@ -2378,6 +2378,32 @@ def _rewrite_quality_paragraphs() -> list:
         "mundur mbi një rast konkret."
     )
     return paragraphs
+
+
+def _severity_direction(rules: dict, smells: list) -> str:
+    """Në cilin drejtim ndryshon recall-i i strategjive mes rasteve major dhe minor.
+
+    Lexohet nga të dhënat. Fjalia e shkruar me dorë që qëndronte këtu thoshte se
+    detektorët i kapin rastet e rënda më mirë se të lehtat, ndërsa te Blob-i recall-i
+    te major është gjysma e atij te minor (VD-117).
+    """
+    higher, reverse = 0, []
+    for smell in smells:
+        by_severity = rules["per_smell"][smell].get("strategy", {}).get("recall_by_severity") or {}
+        if "major" not in by_severity or "minor" not in by_severity:
+            continue
+        major, minor = by_severity["major"], by_severity["minor"]
+        if major["caught"] / major["support"] > minor["caught"] / minor["support"]:
+            higher += 1
+        else:
+            reverse.append(SMELL_SQ[smell])
+    text = (
+        f"Te {higher} nga {higher + len(reverse)} erërat, strategjia e botuar i kap "
+        "rastet major më shpesh se ato minor"
+    )
+    if reverse:
+        text += f"; për {', '.join(reverse)} ndodh e kundërta"
+    return text + ". Një F1 i vetëm e fsheh këtë ndarje."
 
 
 def _overturned(regressions: int, total: int) -> str:
