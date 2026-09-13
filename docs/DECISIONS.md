@@ -4233,3 +4233,48 @@ Kufizimet. Numrat mbeten te 5.4. Fjalitë e tjera me «prandaj» atje shpjegojn�
 një matje, jo çfarë do të thotë ajo, ndaj mbeten.
 
 Kapitujt 1–6 kanë tani 9 860 fjalë bashkë me tabelat.
+
+### VD-115: Punimi u shkurtua me rreth 1 800 fjalë, pa hequr asnjë rezultat
+
+**Konteksti.** Pas VD-113 kapitujt 1–6 ishin brenda kufirit 8–10 mijë, por Word-i
+numëronte 16 971 fjalë për tërë dokumentin. Autori e pa atë shifër, i dukej shumë, dhe
+kërkoi që totali të zbritej.
+
+**Çfarë u hoq.** Vetëm përsëritje dhe histori procesi. Asnjë numër, tabelë, figurë ose
+citim nuk u hoq; të 31 referencat mbeten të cituara.
+
+- Kufizimet thuheshin katër herë: te 1.5, te 4.5, te 6.4 dhe te Shtojca 8.11. Te 6.4
+  mbeten tani pohimet, secili me referencë te vendi ku matet.
+- Te 4.5 rubrika, mostra dhe intervalet përshkruhen shkurt, e po ashtu metoda e
+  krahasimit me PMD-në te 4.6.
+- Te 5.4 u shkurtuan paragrafët e kontekstit të projektit, të paradoksit të Simpson-it
+  dhe të arsyeve të refuzimit. Fjalia që e lidhte Extract Method-in me paradoksin e
+  Encapsulate Field-it ishte interpretim, ndaj kaloi te 6.2.
+- Te shtojcat: rrëfimi i riprodhimit (8.5), katalogët e mjeteve për Feature Envy
+  (8.7), shpjegimet e ashpërsisë (8.9, 8.10) dhe analiza e Blob-it (8.11).
+
+**Tri pasaktësi që dolën gjatë shkurtimit.**
+
+- Te 5.4 ashpërsia i referohej «seksionit të mëparshëm», i cili me VD-113 kishte
+  kaluar te Shtojca 8.9, pas kapitullit. Tani fjalia e emërton shtojcën.
+- Te 8.7 shkruhej me dorë «513 depo», ndërsa paragrafi i parë i së njëjtës shtojcë,
+  i lexuar nga të dhënat, thotë 512. Numri i shtypur u hoq.
+- Te 8.5 numërimi nuk mbyllej: hapi i tabelës së veçorive, «dymbëdhjetë hapa të tjerë»
+  identikë dhe hapi 12 si përjashtim bëjnë katërmbëdhjetë, nga trembëdhjetë hapa të
+  ri-ekzekutuar. Tani thuhet «të gjithë, me një përjashtim».
+
+**Matja, me Word COM** (`Range.ComputeStatistics`, pas përditësimit të përmbajtjes):
+
+- tërë dokumenti: 16 971 → **15 191** fjalë, 72 → 69 faqe;
+- kapitujt 1–6: **8 594** me tabela, **8 124** pa tabela;
+- shtojcat: **4 454**, prej tyre 1 326 në tabela.
+
+Marzhi pa tabela, 124 fjalë mbi 8 000, është i ngushtë: çdo shkurtim tjetër te
+kapitujt 1–6 duhet rimatur me Word.
+
+**Dy ndryshime të tjera.** Mentorja shkruhet «MSc. Altina Salihu», sipas shabllonit
+«Mentori: Titulli. Emri dhe Mbiemri»; titullin e dha autori. Dokumenti mbante
+`compatibilityMode` 14 dhe Word-i e hapte në «Compatibility Mode»; tani mban 15.
+
+**Çfarë nuk u verifikua.** U lexuan të renderuar vetëm paragrafët e ndryshuar, jo
+rrjedha e plotë e çdo kapitulli pas shkurtimit.

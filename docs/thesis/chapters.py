@@ -544,38 +544,23 @@ CHAPTER_4 = [
             "emërtuar për asgjë, me shtatë parametra. Prandaj gjysma e dytë matet "
             "veçmas, dhe në të vetmen mënyrë që mundet pa një motor të dytë: një njeri "
             "lexon një mostër diff-esh dhe i gjykon sipas një rubrike të fiksuar.",
-            "Rubrika ka tri përmasa, secila me tri vlera. **Sjellja**: e ruajtur, e "
-            "paqartë, e ndryshuar — «e paqartë» është përgjigje reale, sepse një "
-            "rishikues që s'e dallon dot nuk do ta pranonte. **Përfitimi**: përmirëson, "
-            "asnjanës, përkeqëson — «asnjanës» është pikërisht rasti që çdo kontroll "
-            "automatik e numëron si sukses. **Pranueshmëria**: ashtu si është, pas një "
-            "ndreqjeje, e refuzuar — mesi ndahet veç sepse emërtimi është pjesa që një "
-            "motor deterministik nuk e bën dhe që njeriu e ndreq për një minutë.",
-            "Mostra është e mbjellë me farë dhe e shtresuar sipas transformimit, jo "
-            "proporcionale: ExtractMethod përbën 93% të vendeve të rishkruara, ndaj një "
-            "mostër proporcionale do të mbante dy ose tre raste nga secili "
-            "transformim tjetër dhe nuk do të thoshte asgjë për to. Secili "
-            "transformim merret në të njëjtën thellësi dhe raportohet veç; shifra e "
-            "bashkuar ripeshohet me madhësitë reale të shtresave, sepse vetë mostra "
-            "është qëllimisht jopërfaqësuese e popullatës nga e cila u nxor.",
-            "Fleta që plotësohet nuk mban asnjë verdikt të kompilatorit. Bashkimi me "
-            "verdiktet bëhet vetëm në pikëzim, sepse një rishikues që sheh se rishkrimi "
-            "kompiloi e ka marrë gjysmën e përgjigjes para se ta jepte, dhe tabela e "
-            "kryqëzuar mes dy verdikteve është ndër gjërat më të dobishme që kjo matje "
-            "prodhon: ajo thotë nëse kontrolli automatik është zëvendësues i pranimit "
-            "apo thjesht i korreluar me të.",
-            "Intervalet janë Wilson (1927) e jo përafrimi normal. Me njëzet vëzhgime "
-            "dhe një përpjesë pranë skajit, përafrimi normal jep kufij jashtë "
-            "intervalit [0, 1] dhe mbulim dukshëm nën 95% — rasti për të cilin Brown "
-            "et al. (2001) e këshillojnë kundër tij, dhe pikërisht rasti këtu.",
-            "Vlerësuesi është autori i punimit, dhe kjo është kufizim e jo veçori. Një "
-            "rishikues i vetëm, njëkohësisht autor i motorit që po gjykon, është forma "
-            "më e dobët që kjo matje mund të marrë; është forma e disponueshme. Punimi "
-            "e raporton si gjykim të një rishikuesi, me rubrikën e fiksuar para se të "
-            "shihej qoftë edhe një diff dhe me fletën e komituar, që lexuesi të mund "
-            "të mos pajtohet me një rresht të emërtuar e jo me një numër. Pajtimi mes "
-            "rishikuesve, që Nënkapitulli 5 e mat për etiketat e MLCQ-së, këtu nuk "
-            "mund të matet fare.",
+            "Rubrika ka tri përmasa me nga tri vlera: **sjellja** (e ruajtur, e paqartë, "
+            "e ndryshuar), **përfitimi** (përmirëson, asnjanës, përkeqëson) dhe "
+            "**pranueshmëria** (ashtu si është, pas një ndreqjeje, e refuzuar). Vlera "
+            "«asnjanës» është pikërisht rasti që çdo kontroll automatik e numëron si "
+            "sukses.",
+            "Mostra është e mbjellë me farë dhe e shtresuar sipas transformimit, sepse "
+            "ExtractMethod përbën 93% të vendeve të rishkruara dhe një mostër "
+            "proporcionale nuk do të thoshte asgjë për transformimet e tjera; shifra e "
+            "bashkuar ripeshohet me madhësitë reale të shtresave. Fleta nuk mban "
+            "verdiktin e kompilatorit, që ai të mos e ndikojë gjykimin; bashkimi me të "
+            "bëhet vetëm në pikëzim.",
+            "Intervalet janë Wilson (1927) e jo përafrimi normal, i cili me njëzet "
+            "vëzhgime dhe një përpjesë pranë skajit jep kufij jashtë [0, 1] — rasti për "
+            "të cilin Brown et al. (2001) e këshillojnë kundër tij.",
+            "Vlerësuesi është autori i punimit, dhe kjo është kufizim: rubrika u fiksua "
+            "para se të shihej ndonjë diff dhe fleta është e komituar, por pajtimi mes "
+            "rishikuesve këtu nuk mund të matet (Nënkapitulli 6.4).",
         ],
     ),
     (
@@ -623,22 +608,14 @@ CHAPTER_4 = [
             "mbishkruar. Përshtatja e tyre ndaj MLCQ-së do të maste një mjet që askush "
             "nuk e përdor, dhe do të ishte i njëjti gabim me akordimin e pragjeve tona "
             "për ta kaluar një test.",
-            "Krahasimi bëhet mbi të njëjtat mostra, me të njëjtin kod pikëzimi dhe të "
-            "njëjtin agregim, dhe të dyja kolonat rillogariten nga i njëjti skedar në "
-            "të njëjtin ekzekutim, që të mos rrëshqasin nga njëra-tjetra. Përputhja mes "
-            "një shkeljeje të PMD-së dhe një entiteti të MLCQ-së bëhet me emrin e "
-            "klasës dhe të metodës që raporti i PMD-së i mban vetë, e jo me numra "
-            "rreshtash: numri i rreshtit do të kërkonte të merrej me mend nëse një mjet "
-            "e numëron anotimin ose Javadoc-un pjesë të deklarimit.",
-            "Dy kufizime deklarohen para se të shihet ndonjë shifër. PMD analizon një "
-            "njësi kompilimi në një kohë dhe nuk merr classpath të kompiluar, sepse "
-            "korpusi nuk mban skedarë ndërtimi; ATFD-ja e GodClass-it, e përkufizuar "
-            "kundrejt tipave të tjerë të projektit, i llogaritet pra nga sa duket brenda "
-            "një skedari, ndërsa detektorët e këtij punimi e marrin projektin e plotë. "
-            "Handikapi është real dhe e favorizon këtë punim. Së dyti, PMD nuk ka fare "
-            "rregull për Feature Envy-n; rregulli i tij më i afërt, LawOfDemeter, mat "
-            "zinxhirë mesazhesh e jo qasje në të dhëna të huaja, ndaj raportohet nën "
-            "emrin e vet dhe kurrë si detektor i Feature Envy-së.",
+            "Krahasimi bëhet mbi të njëjtat mostra, me të njëjtin kod pikëzimi dhe "
+            "agregim. Një shkelje e PMD-së përputhet me një entitet të MLCQ-së sipas "
+            "emrit të klasës dhe të metodës, jo sipas numrave të rreshtave.",
+            "Dy kufizime deklarohen paraprakisht. PMD analizon një skedar në një kohë, "
+            "pa classpath të kompiluar, ndaj ATFD-në e GodClass-it e llogarit vetëm "
+            "brenda skedarit — handikap që e favorizon këtë punim. Po ashtu, PMD nuk ka "
+            "rregull për Feature Envy-n; më i afërti, LawOfDemeter, mat zinxhirë "
+            "mesazhesh dhe raportohet vetëm nën emrin e vet.",
         ],
     ),
     (
@@ -730,25 +707,18 @@ def _blob_recall_limits() -> list:
     saturated = data["saturated_cohesion"]
 
     return [
-        "Recall-i i raportuar kundrejt MLCQ-së për Blob-in nuk mat atë që emri i tij "
-        f"sugjeron. Nga {missed} raste që rishikuesit i quajtën Blob dhe strategjia nuk "
-        f"i ndezi, {below} nuk janë më të mëdha se klasa mesatare që vetë rishikuesit e "
-        "quajtën të pastër, dhe shtrirja e mospërputhjeve nuk mbivendoset fare me atë "
-        "të kapjeve te asnjëra prej metrikave të madhësisë. Asnjë metrikë e vetme klase "
-        f"nuk i ndan dot mospërputhjet nga klasat e pastra: më e mira arrin {best:.3f} "
-        "aty ku 0.50 do të thoshte asnjë informacion. Pasoja është se shifra mat sa "
-        "shpesh një strategji e madhësisë dhe e kohezionit përputhet me një gjykim "
-        "njerëzor që, te shumica e rasteve të etiketuara, nuk është marrë mbi bazën e "
-        "madhësisë. Kjo nuk e përmirëson detektorin dhe nuk e fajëson rishikuesin; "
-        "e ndryshon atë që shifra provon.",
-        "Një tavan i dytë është i matjes dhe jo i etiketave, dhe u raportua në vend që "
-        "të riparohej. TCC-ja është e papërcaktuar për një klasë me më pak se dy metoda "
-        "publike të instancës, dhe llogaritësi e zgjidh boshllëkun me vlerën maksimale, "
-        "të cilën asnjë klauzolë e God Class-it nuk e pranon. Klasat ndihmëse krejt "
-        f"statike e mbartin atë vlerë nga vetë ndërtimi: {saturated['confirmed_undefined']} "
-        f"nga {saturated['count']} rastet e tilla u riparsuan dhe dolën pikërisht të asaj "
-        "forme. Ndreqja do të kërkonte shkëputjen e TCC-së nga përkufizimi i botuar që e "
-        "citon, ndaj u zgjodh raportimi.",
+        "Recall-i i Blob-it kundrejt MLCQ-së nuk mat atë që emri i tij sugjeron. Nga "
+        f"{missed} raste që strategjia i humbi, {below} nuk janë më të mëdha se klasa "
+        "mesatare e pastër, dhe asnjë metrikë e vetme klase nuk i ndan nga klasat e "
+        f"pastra: më e mira arrin {best:.3f}, ku 0.50 do të thotë asnjë informacion. "
+        "Shifra mat pra pajtimin e një strategjie të madhësisë dhe të kohezionit me një "
+        "gjykim njerëzor që shpesh nuk mbështetet te madhësia (Shtojca 8.11).",
+        "Një tavan i dytë i përket matjes. TCC-ja është e papërcaktuar për klasat me "
+        "më pak se dy metoda publike të instancës, dhe llogaritësi i jep vlerën "
+        "maksimale, të cilën asnjë klauzolë e God Class-it nuk e pranon. Nga "
+        f"{saturated['count']} mospërputhje që ndalen vetëm te kohezioni, "
+        f"{saturated['confirmed_undefined']} kanë TCC të papërcaktuar. Ndreqja do ta "
+        "shkëpuste TCC-në nga përkufizimi i botuar, ndaj u zgjodh raportimi.",
     ]
 
 
@@ -842,7 +812,9 @@ def chapter_6() -> list:
                 "akses-metoda publike, dhe të dyja kushtet e strategjisë e numërojnë këtë "
                 "si përkeqësim. Fowler-i e trajton atë transformim si hap përgatitor, jo "
                 "si ilaç; një mjet që aplikon vetëm hapin e parë ecën në drejtim të "
-                "gabuar.",
+                "gabuar. E njëjta formë del te Extract Method: rishkrimi i saktë sjell "
+                "shpesh një Long Parameter List të re (Nënkapitulli 5.4), pra e zhvendos "
+                "problemin në vend që ta heqë.",
             ],
         ),
         (
@@ -874,37 +846,23 @@ def chapter_6() -> list:
                 "Mospajtimi mes rishikuesve është i konsiderueshëm. Për këtë arsye çdo "
                 "strategji agregimi raportohet veç, dhe mostrat që një strategji nuk i "
                 "etiketon dot hidhen në vend që të lexohen si negative.",
-                "Verifikimi i refaktorimeve është më i dobët se sa do të dëshirohej. "
-                "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
-                "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Kompilimi i "
-                "të njëjtave rishkrime brenda projektit të tyre (Nënkapitulli 5.4) tregon "
-                "se shumica e këtyre rasteve i detyrohen izolimit të kompilimit dhe jo "
-                "rishkrimit. Verifikimi me suitat e testeve të vetë projekteve mbetet punë "
-                "e ardhshme.",
-                "Arsyeja pse ai verifikim nuk u bë është vetë ndërtimi i korpusit, jo "
-                "mungesa e kohës. Shkarkuesi ruan me qëllim vetëm skedarët me prapashtesë "
-                "«.java», sepse kjo është gjithçka që i duhet analizës dhe e mban korpusin "
-                "të vogël. Pasoja është se korpusi nuk mban asnjë përkufizim ndërtimi dhe "
-                "asnjë varësi: skedarët e testeve janë aty, por pa «pom.xml» ose "
-                "«build.gradle» dhe pa bibliotekat e treta ata as kompilohen dhe as "
-                "ekzekutohen. Ekzekutimi i tyre do të kërkonte rimarrjen e plotë të të "
-                "gjitha arkivave dhe ndërtimin e secilës depo në commit-in e vet historik, "
-                "ku ndërtimet e sotme dështojnë rëndom për shtojca të vjetruara.",
-                "Cilësia e rishkrimeve u vlerësua nga një rishikues i vetëm, i cili "
-                "është autori i motorit. Rubrika u fiksua para se të shihej qoftë edhe "
-                "një diff dhe fleta është e komituar rresht për rresht, por asnjëra prej "
-                "të dyjave nuk e zëvendëson pavarësinë. Pajtimi mes rishikuesve, që për "
-                "etiketat e MLCQ-së matet dhe raportohet, për këtë matje nuk mund të "
-                "matet fare, ndaj ajo është e vetmja shifër e Kapitullit 5 pa tavan të "
-                "njohur mbi të.",
+                "Verifikimi i refaktorimeve është më i dobët se sa do të dëshirohej. Për "
+                "shumicën e skedarëve pretendimi kufizohet te «nuk shton lloj të ri "
+                "gabimi», dhe kompilimi brenda projektit (Nënkapitulli 5.4) tregon se "
+                "shumica e këtyre rasteve i detyrohen izolimit dhe jo rishkrimit. Testet e "
+                "projekteve nuk u ekzekutuan, sepse korpusi mban vetëm skedarë «.java», pa "
+                "«pom.xml», «build.gradle» dhe biblioteka të treta; ky verifikim mbetet "
+                "punë e ardhshme.",
+                "Cilësia e rishkrimeve u vlerësua nga një rishikues i vetëm, autori i "
+                "motorit. Rubrika e fiksuar paraprakisht dhe fleta e komituar nuk e "
+                "zëvendësojnë pavarësinë, dhe pajtimi mes rishikuesve për këtë matje nuk "
+                "mund të matet.",
                 "Analizuesi nuk zgjidh simbole, ndaj dy nga pesë transformimet e "
                 "planifikuara nuk automatizohen. Kjo nuk është mangësi implementimi por "
                 "pasojë e drejtpërdrejtë e një zgjedhjeje arkitekturore të deklaruar.",
-                "Ashpërsia që sistemi e derivon nuk e riprodhon gjykimin e rishikuesve. Ajo "
-                "u ndërtua në shkallën e MLCQ-së pikërisht që të krahasohej me ta pa hap "
-                "përkthimi, dhe kur krahasimi u bë, pajtimi doli pranë rastësisë për tri nga "
-                "katër erërat, me mbivlerësim sistematik. Pretendimi hiqet: ajo mbetet "
-                "renditje e brendshme e mjetit dhe jo riprodhim i gjykimit njerëzor.",
+                "Ashpërsia që sistemi e derivon nuk e riprodhon gjykimin e rishikuesve: "
+                "pajtimi doli pranë rastësisë për tri nga katër erërat, me mbivlerësim "
+                "sistematik (Shtojca 8.9). Ajo mbetet renditje e brendshme e mjetit.",
                 *_blob_recall_limits(),
                 "Vetë e vërteta bazë ka një tavan të ulët. Rishikuesit e MLCQ-së pajtohen "
                 "mes tyre me MCC nën 0.24 për çdo erë, çka do të thotë se një pjesë e "
@@ -1182,14 +1140,9 @@ def _results_sections() -> list:
                 "detektuara, sa prej tyre u transformuan, dhe shpërndarja e arsyeve të "
                 "refuzimit. Refuzimi është rezultat i saktë dhe numërohet si i tillë.",
                 *_refactoring_section(),
-                "Verifikimi tregoi vlerën e vet menjëherë. Mbi ekzekutimet e para u "
-                "shënuan si prishëse dhjetëra rishkrime, dhe hetimi i tyre nxori tri "
-                "defekte të vërteta në motor: deklarimet brenda një cikli të mëparshëm "
-                "numëroheshin si të dukshme, kllapat e stilit C pas emrit nuk hynin në "
-                "tip, dhe një variabël e pacaktuar kalohej si parametër. Të treja "
-                "prodhonin kod që nuk kompilon.",
-                "Asnjëri prej tyre nuk ishte kapur nga njëzet e një testet e shkruara me "
-                "dorë për këtë transformim. I kapi korpusi.",
+                "Verifikimi nxori edhe tri defekte të vërteta në motor, që prodhonin kod "
+                "që nuk kompilon dhe që asnjëri nga njëzet e një testet e shkruara me "
+                "dorë nuk i kishte kapur; i kapi korpusi.",
             ],
         ),
         (
@@ -1219,12 +1172,10 @@ def _results_sections() -> list:
                 "pozitivë të vërtetë pa hequr të rremë nuk po e ndan sinjalin nga "
                 "zhurma; pra ajo klauzolë, të paktën mbi këtë korpus, nuk e bën punën "
                 "për të cilën është vendosur.",
-                "Këto vlera nuk adoptohen. Zgjedhja e një pragu sepse jep shifrën më të "
-                "mirë mbi bashkësinë e vlerësimit është përshtatje ndaj të dhënave të "
-                "testimit, dhe numri që do të raportohej pas saj do të matte sa mirë u "
-                "zgjodh pragu, jo sa mirë funksionon detektimi. Kalibrimi do të kërkonte "
-                "një bashkësi të ndarë dhe një bashkësi tjetër të paprekur për vlerësim; "
-                "kjo është pikërisht ajo që bëhet më poshtë.",
+                "Këto vlera nuk adoptohen: një prag i zgjedhur sepse jep shifrën më të mirë "
+                "mbi bashkësinë e vlerësimit do të matte sa mirë u zgjodh pragu, jo sa mirë "
+                "funksionon detektimi. Kalibrimi i ndershëm kërkon bashkësi të ndara, dhe "
+                "kjo bëhet më poshtë.",
                 *_calibration_paragraphs(),
             ],
         ),
@@ -1388,32 +1339,18 @@ def _pmd_comparison_paragraphs() -> list:
         ("table", "Detektorët e këtij punimi kundrejt PMD-së, mbi të njëjtat mostra",
          ["Era", "Mostra", "MCC i PMD-së", "MCC ynë", "Ndryshimi, IB 95%"], rows),  # fmt: skip
         _pmd_balance(data),
-        "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të. "
-        "LawOfDemeter është më i afërti dhe mat zinxhirë mesazhesh e jo qasje në të "
-        "dhëna të huaja; shifra e tij raportohet për ta pasur të matur e jo të "
-        "supozuar, dhe nuk është matje e Feature Envy-së. Mbulimi i pjesshëm i një "
-        "mjeti të përhapur është vetë gjetje: tri nga katër erërat e MLCQ-së kanë një "
-        "rregull të gatshme, e katërta jo.",
-        "Mungesa nuk është veti vetëm e PMD-së, dhe u kërkua një mjet i dytë para se "
-        "të pranohej. Katalogu i rregullave të PMD-së për Java u numërua nga vetë "
-        "shpërndarja e tij dhe nuk përmban asnjë rregull për Feature Envy. "
-        "DesigniteJava, mjeti tjetër i lirë me përhapje krahasuese, dokumenton "
-        "shtatëmbëdhjetë design smells dhe dhjetë implementation smells, dhe Feature "
-        "Envy nuk është ndër to. Mjeti që e zbulon vërtet është JDeodorant, i cili "
-        "ndërtohet mbi pikërisht identifikimin e mundësive për Move Method (Tsantalis "
-        "& Chatzigeorgiou, 2009), por ai është shtojcë e mjedisit të zhvillimit dhe "
-        "varianti i tij në rresht komande nuk mban licencë, çka e përjashton nga "
-        "kufizimi i varësive që ky punim ndjek.",
-        "Prandaj erës që literatura e trajton më shpesh si objektiv refaktorimi i "
-        "mungon mbështetja në mjetet që një zhvillues i instalon lehtë. Kjo raportohet "
-        "si gjendje e verifikuar e jo si supozim: dy katalogë u numëruan, dhe i treti "
-        "u përjashtua për arsye licence e jo për mungesë aftësie.",
-        "Krahasimi e favorizon këtë punim në një drejtim të deklaruar që në "
-        "Nënkapitullin 4.6: PMD analizon një skedar në një kohë dhe pa classpath të "
-        "kompiluar, ndaj ATFD-në e llogarit nga sa duket brenda një skedari, ndërsa "
-        "detektorët e këtij punimi e marrin projektin e plotë. Heqja e këtij handikapi "
-        "do të kërkonte ndërtimin e 513 depove në commit-et e tyre historike, çka "
-        "korpusi nuk e lejon (Nënkapitulli 6.4).",
+        "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të; "
+        "LawOfDemeter, më i afërti, mat zinxhirë mesazhesh dhe nuk është matje e "
+        "Feature Envy-së. Mungesa nuk është vetëm e PMD-së: as DesigniteJava nuk e "
+        "përfshin mes erërave që dokumenton. JDeodorant e zbulon, sepse ndërtohet mbi "
+        "identifikimin e mundësive për Move Method (Tsantalis & Chatzigeorgiou, 2009), "
+        "por është shtojcë e mjedisit të zhvillimit dhe varianti i tij në rresht "
+        "komande nuk mban licencë. Pra erës që literatura e trajton më shpesh si "
+        "objektiv refaktorimi i mungon mbështetja në mjetet e lira të përhapura.",
+        "Krahasimi e favorizon këtë punim në drejtimin e deklaruar te Nënkapitulli 4.6, "
+        "sepse PMD e llogarit ATFD-në vetëm brenda një skedari. Heqja e handikapit do "
+        "të kërkonte ndërtimin e çdo depoje në commit-in e vet historik, çka korpusi "
+        "nuk e lejon (Nënkapitulli 6.4).",
     ]
 
     if unreadable or failed:
@@ -1586,15 +1523,11 @@ def _confidence_section() -> list:
         ("table", "Sa pajtohen rishikuesit me njëri-tjetrin",
          ["Erë", "MCC mes rishikuesve", "Saktësia", "Çifte"], ceiling_rows),
         f"Asnjë erë nuk e kalon {best:.3f}. Kjo nuk do të thotë se sistemi i tejkalon "
-        f"njerëzit: shifrat e kapitullit maten kundrejt etiketës së agreguar, ndërsa "
-        f"kjo mat marrëveshjen mes dy individëve, dhe agregimi e heq një pjesë të "
-        f"zhurmës që një individ i vetëm e mbart. Të dy numrat nuk janë i njëjti "
-        f"tregues dhe nuk duhen vendosur në një renditje.",
-        "Ajo që tregon është sa e ashpër është vetë detyra. Kur dy zhvillues "
-        "profesionistë që shohin të njëjtin kod pajtohen kaq pak, një pjesë e "
-        "pareduktueshme e gabimit të çdo detektori nuk i takon detektorit por "
-        "përkufizimit. Çdo shifër e Kapitullit 5 duhet lexuar mbi këtë sfond, dhe "
-        "po ashtu çdo shifër e literaturës që raportohet pa të.",
+        "njerëzit: shifrat e kapitullit maten kundrejt etiketës së agreguar, e cila e "
+        "heq një pjesë të zhurmës së një individi, ndaj të dy numrat nuk vendosen në "
+        "një renditje. Ajo që tregon është sa e vështirë është vetë detyra: një pjesë e "
+        "pareduktueshme e gabimit të çdo detektori i takon përkufizimit, dhe çdo shifër "
+        "e Kapitullit 5 duhet lexuar mbi këtë sfond.",
     ]
 
     return [("5.9", "Sa peshë mban një shifër e vetme", paragraphs)]
@@ -1915,11 +1848,9 @@ def _blocking_section() -> list:
 
     paragraphs.extend(_blocking_predicts_calibration())
     paragraphs.append(
-        "Kjo analizë kufizohet te dy strategjitë që janë konjunksione të pastra. Long "
-        "Method-i ka një klauzolë të vetme, ndaj pyetja ka një përgjigje të vetme dhe "
-        "të parashikueshme; Data Class-i përzien konjunksion me disjunksion, ku "
-        "«klauzola bllokuese» nuk përcaktohet pa vendosur se cila degë ishte më afër, "
-        "dhe ai vendim do të prodhonte një numër që varet nga vetë vendimi."
+        "Analiza kufizohet te dy strategjitë që janë konjunksione të pastra: Long "
+        "Method-i ka një klauzolë të vetme, ndërsa Data Class-i përzien konjunksion me "
+        "disjunksion, ku «klauzola bllokuese» nuk përcaktohet pa një vendim arbitrar."
     )
     return [("5.7", "Pse nuk ndezin strategjitë", paragraphs)]
 
@@ -1984,11 +1915,9 @@ def _blob_aggregation_flattens(data: dict) -> str:
     )
     return (
         "Shumica e mostrave mbajnë vetëm dy rishikime, dhe një votë «asnjë» përballë "
-        "një vote të rëndë e ul mesataren për një shkallë të tërë; te mostrat me "
-        "gjashtë rishikime, ku «asnjë» është vota mediane, ulja është edhe më e madhe. "
-        f"Pasoja matet: nën mesatare shpërndarja e pozitivëve është {shape('mean')}, "
-        f"ndërsa nën MAX është {shape('max')}. Skaji i rëndë i shkallës zbrazet, ndaj "
-        "gradienti nuk shihet dot aty ku raportohet gjetiu ky punim."
+        "një vote të rëndë e ul mesataren për një shkallë të tërë. Nën mesatare "
+        f"pozitivët ndahen {shape('mean')}, ndërsa nën MAX {shape('max')}: mesatarja e "
+        "zbraz skajin e rëndë të shkallës, ndaj gradienti nuk shihet nën të."
     )
 
 
@@ -2015,13 +1944,10 @@ def _blob_agrees_with_the_model() -> list:
     if len(shared) < 2:
         return []
     return [
-        "Kjo renditje përputhet me një matje krejt tjetër. Veçoritë që modeli i Qasjes "
-        "B zgjodhi vetë për Blob-in, të raportuara te Nënkapitulli 5.2, ndajnë "
-        f"{len(shared)} nga katër vendet e para me renditjen sipas ndarjes: "
-        f"{', '.join(shared)}. As TCC-ja dhe as WMC-ja, të dy kushtet mbi të cilat është "
-        "ndërtuar strategjia e botuar, nuk hyjnë te asnjëra prej dy listave. Një "
-        "statistikë renditëse dhe një model i trajnuar nuk janë e njëjta llogari, ndaj "
-        "pajtimi i tyre është provë më shumë se përsëritje.",
+        "Kjo renditje përputhet me një matje të pavarur: veçoritë që modeli i Qasjes B "
+        f"zgjodhi për Blob-in (Nënkapitulli 5.2) ndajnë {len(shared)} nga katër vendet e "
+        f"para me të: {', '.join(shared)}. As TCC-ja dhe as WMC-ja, kushtet e "
+        "strategjisë së botuar, nuk hyjnë te asnjëra listë.",
     ]
 
 
@@ -2081,30 +2007,21 @@ def _blob_saturated(data: dict) -> list:
         for item in entry["largest"]
     ]
     return [
-        "Një pjesë e vogël e mospërputhjeve ka shkak krejt tjetër, dhe është e vetmja "
-        "pjesë ku faji bie mbi matjen e jo mbi etiketat. TCC-ja e Bieman & Kang-ut "
-        "(1995) mat pjesën e çifteve të metodave publike të instancës që ndajnë një "
-        "fushë. Një klasë me më pak se dy metoda të tilla nuk ka çift fare, ndaj "
-        "metrika është e papërcaktuar dhe llogaritësi e zgjidh boshllëkun nga ana e "
-        "«plotësisht kohezive», domethënë 1.0. Çdo klauzolë e God Class-it e kërkon "
-        "TCC-në **nën** një prag, ndaj një klasë që mbart atë vlerë mbetet jashtë "
-        "mundësive të strategjisë sado të zhvendosen pragjet.",
+        "Një pjesë e vogël e mospërputhjeve i detyrohet matjes e jo etiketave. TCC-ja "
+        "e Bieman & Kang-ut (1995) mat pjesën e çifteve të metodave publike të "
+        "instancës që ndajnë një fushë. Një klasë me më pak se dy metoda të tilla nuk "
+        "ka çift, ndaj llogaritësi i jep vlerën 1.0; dhe çdo klauzolë e God Class-it e "
+        "kërkon TCC-në **nën** një prag, pra kjo klasë nuk kapet me asnjë prag.",
         ("table", "Klasat që klauzola e kohezionit nuk i arrin dot",
          ["Klasa", "CLOC", "NOM", "WMC", "Metoda publike instance"], rows),  # fmt: skip
-        f"Janë {entry['count']} mospërputhje të tilla: klasa që e kalojnë klauzolën e "
-        f"kompleksitetit dhe ndalen vetëm te kohezioni. Prej tyre {entry['checked']} u "
-        f"riparsuan nga korpusi dhe {entry['confirmed_undefined']} dolën me më pak se "
-        "dy metoda publike të instancës, pra me TCC të papërcaktuar e jo me kohezion "
-        "të matur. Emrat e tregojnë vetë llojin: klasa ndihmëse krejt statike, ku "
-        "kolona e fundit është zero. Këto janë pikërisht klasat që një rishikues i "
-        "quan blob pa hezitim, dhe janë të paarritshme nga një strategji e ndërtuar "
-        "mbi kohezionin mes metodave të instancës.",
-        f"Numri mbetet i vogël përballë tërësisë, {entry['count']} nga {missed}, ndaj "
-        "nuk e shpjegon recall-in e ulët dhe nuk u trajtua si defekt për t'u riparuar. "
-        "Ndryshimi i TCC-së do të shkëpuste përkufizimin nga burimi i tij dhe do të "
-        "detyronte rigjenerimin e çdo numri të raportuar, për një fitim që nuk e kalon "
-        f"{entry['count'] / (missed + caught):.3f} te recall-i. Kufizimi raportohet i "
-        "tillë siç është te Nënkapitulli 6.4.",
+        f"Janë {entry['count']} mospërputhje të tilla, që e kalojnë klauzolën e "
+        f"kompleksitetit dhe ndalen vetëm te kohezioni; {entry['checked']} u riparsuan "
+        f"dhe {entry['confirmed_undefined']} dolën me TCC të papërcaktuar. Emrat "
+        "tregojnë klasa ndihmëse krejt statike, ku kolona e fundit është zero.",
+        f"Numri është i vogël, {entry['count']} nga {missed}, ndaj nuk e shpjegon "
+        "recall-in e ulët. Ndryshimi i TCC-së do ta shkëpuste përkufizimin nga burimi, "
+        f"për një fitim jo më të madh se {entry['count'] / (missed + caught):.3f} te "
+        "recall-i (Nënkapitulli 6.4).",
     ]
 
 
@@ -2126,13 +2043,11 @@ def _blob_recall_section() -> list:
     best_metric, best_value = max(strategy["separation"].items(), key=lambda pair: pair[1])
 
     paragraphs: list = [
-        "Shtojca 8.8 numëron klauzolat që ndalën secilën mospërputhje dhe e lë të "
-        "hapur pyetjen që vjen menjëherë pas saj: si duket klasa që rishikuesi e quajti "
-        "blob ndërsa strategjia nuk e quajti? Përgjigjja ka vetëm dy forma, dhe të dyja "
-        "kërkojnë punë të kundërt. Ose klasat e humbura u ngjajnë atyre të kapura në një "
-        "përmasë që strategjia nuk e lexon fare, dhe atëherë asaj i mungon një klauzolë; "
-        "ose u ngjajnë klasave që rishikuesit i quajtën të pastra në çdo përmasë të "
-        "matur, dhe atëherë asnjë prag e asnjë klauzolë nuk i arrin dot.",
+        "Shtojca 8.8 numëron klauzolat që ndalën secilën mospërputhje, por nuk thotë si "
+        "duket klasa që rishikuesi e quajti blob ndërsa strategjia jo. Ose klasat e "
+        "humbura u ngjajnë atyre të kapura në një përmasë që strategjia nuk e lexon, dhe "
+        "asaj i mungon një klauzolë; ose u ngjajnë klasave të pastra në çdo përmasë të "
+        "matur, dhe atëherë asnjë prag nuk i arrin.",
         ("table", "Madhësia e klasave në secilën qelizë, si kuartil i poshtëm–mesatare–i sipërm",
          ["Varianti", "Metrika", "Të kapura", "Të humbura", "Të pastra"],
          _blob_size_rows(data)),  # fmt: skip
@@ -2142,34 +2057,26 @@ def _blob_recall_section() -> list:
         f"Nga {missed} mospërputhje të strategjisë së botuar, {below} nuk "
         "janë më të mëdha se klasa mesatare që vetë rishikuesit e quajtën të pastër.",
         "Asnjë metrikë e vetme nuk e mban dot ndarjen. Për secilën metrikë klase u mat "
-        "gjasa që një mospërputhje e marrë rastësisht të renditet mbi një klasë të "
-        "pastër të marrë rastësisht, që është statistika e Mann-Whitney-t dhe lexohet "
-        "si sipërfaqja nën kurbën ROC: 0.50 do të thotë asnjë informacion, 1.00 renditje "
-        f"e përsosur. Më e mira nga {len(strategy['separation'])} metrikat e klasës "
-        f"është {best_metric} me {best_value:.3f}, e cila nuk mban dot as prag as "
-        "klauzolë. Pra përmasa që "
-        "mungon nuk gjendet mes atyre që ky sistem di të masë.",
+        "statistika e Mann-Whitney-t, e lexuar si sipërfaqe nën kurbën ROC: 0.50 do të "
+        "thotë asnjë informacion, 1.00 renditje e përsosur. Më e mira nga "
+        f"{len(strategy['separation'])} metrikat është {best_metric} me {best_value:.3f}, "
+        "pra përmasa që mungon nuk gjendet mes atyre që ky sistem di të masë.",
         *_blob_agrees_with_the_model(),
         ("table", "Recall-i sipas ashpërsisë që caktuan rishikuesit, agregim MAX",
          ["Varianti", "Ashpërsia", "Mbështetja", "Të kapura", "Recall"],
          _blob_severity_rows(data)),  # fmt: skip
-        f"Agregimi këtu është MAX e jo mesatarja e përdorur gjetiu, dhe zgjedhja është "
-        f"e qëllimshme. {_blob_aggregation_flattens(data)}",
+        "Agregimi këtu është qëllimisht MAX e jo mesatarja e përdorur gjetiu. "
+        f"{_blob_aggregation_flattens(data)}",
     ]
     gradient = _blob_gradient(data)
     if gradient:
         paragraphs.append(gradient)
     paragraphs.extend(_blob_saturated(data))
     paragraphs.append(
-        "Përfundimi i këtij nënkapitulli është për të vërtetën bazë dhe jo për "
-        "detektorin, dhe pikërisht prandaj duhet lexuar me kujdes. Ai nuk thotë se "
-        "rishikuesit gabuan: një zhvillues që e njeh kodin mund ta quajë me plot të "
-        "drejtë problematike një klasë të vogël, për arsye që asnjë metrikë strukturore "
-        "nuk i mat. Thotë diçka më të ngushtë e më të dobishme, që recall-i i matur "
-        "kundrejt MLCQ-së nuk është i njëjti krahasim që një lexues supozon: ai mat sa "
-        "shpesh një strategji e madhësisë dhe e kohezionit përputhet me një gjykim "
-        "njerëzor që, në shumicën e rasteve të etiketuara, nuk është marrë mbi bazën e "
-        "madhësisë."
+        "Përfundimi është për të vërtetën bazë, jo për detektorin. Ai nuk thotë se "
+        "rishikuesit gabuan, por që recall-i kundrejt MLCQ-së mat sa shpesh një "
+        "strategji e madhësisë dhe e kohezionit përputhet me një gjykim njerëzor që "
+        "shpesh nuk mbështetet te madhësia."
     )
     return [("5.10", "Çfarë mbetet pa u kapur te Blob-i", paragraphs)]
 
@@ -2242,23 +2149,16 @@ def _severity_section() -> list:
                 f"nuk gabon rastësisht: ai e mbivlerëson ashpërsinë.",
                 ("figure", str(FIGURES / "ashpersia_kundrejt_rishikuesve.png"),
                  "Ashpërsia e derivuar kundrejt asaj që caktuan rishikuesit"),
-                "Shpjegimi qëndron te vetë ndërtimi i pikës. Për Long Method teprica matet "
-                "mbi një metrikë të vetme, ku dyfishi i pragut ka kuptim të drejtpërdrejtë. "
-                "Për strategjitë me disa kushte, pika është mesatarja e tepricave mbi "
-                "metrika heterogjene — një raport WMC-je, një raport kohezioni, një raport "
-                "qasjesh të huaja — dhe asgjë nuk garanton se mesatarja e tyre përkon me "
+                "Shpjegimi qëndron te ndërtimi i pikës. Për Long Method teprica matet mbi "
+                "një metrikë të vetme; për strategjitë me disa kushte pika është mesatare e "
+                "tepricave mbi metrika heterogjene, dhe asgjë nuk garanton se ajo përkon me "
                 "atë që një zhvillues e quan problem të rëndë.",
-                f"Nuk është çështje kalibrimi. Fshirja e të dy pragjeve të ashpërsisë mbi "
-                f"të njëjtin brez si pragjet e detektimit e ngre kappa-n më së shumti deri "
-                f"në {best:.3f}, pra edhe konfigurimi më i favorshëm i provuar mbetet "
-                f"pajtim i dobët. Zhvendosja e kufijve e ndryshon shpërndarjen e "
-                f"etiketave, jo aftësinë e pikës për t'i renditur rastet.",
-                "Pasoja për punimin është e drejtpërdrejtë: ashpërsia e derivuar është e "
-                "përdorshme si renditje brenda vetë mjetit — cili rast të shihet i pari — "
-                "por nuk pretendon të riprodhojë gjykimin e një zhvilluesi për rëndësinë. "
-                "Ky pretendim hiqet, dhe ndarja e recall-it sipas ashpërsisë së "
-                "rishikuesve mbetet mënyra e vetme e vlefshme në të cilën ashpërsia hyn "
-                "në rezultatet e këtij punimi.",
+                "Nuk është çështje kalibrimi: fshirja e pragjeve të ashpërsisë e ngre "
+                f"kappa-n më së shumti deri në {best:.3f}, pra pajtimi mbetet i dobët.",
+                "Ashpërsia e derivuar mbetet renditje brenda mjetit — cili rast të shihet "
+                "i pari — dhe jo riprodhim i gjykimit të zhvilluesit. Ajo hyn në rezultatet "
+                "e punimit vetëm përmes ndarjes së recall-it sipas ashpërsisë së "
+                "rishikuesve.",
             ],
         ),
     ]
@@ -2490,13 +2390,10 @@ def _overturned(regressions: int, total: int) -> str:
             "ku kompilimi i plotë nuk arrihet."
         )
     return (
-        f"Përmbysjet nuk janë zero. {regressions} nga {total} rishkrime e ndryshojnë "
-        "verdiktin në drejtimin e keq: të izoluara nuk shtonin lloj të ri gabimi, "
-        "brenda projektit të vet shtojnë. Numri është i vogël dhe pjesa dërrmuese e "
-        "rishkrimeve nuk sillet kështu, por ekzistenca e tij e kufizon pretendimin që "
-        "mund të bëhet. Toleranca «pa lloj të ri gabimi» mbetet dëshmi e përdorshme "
-        "atje ku kompilimi i plotë nuk arrihet; ajo nuk është garanci se kompilimi me "
-        "kontekstin e projektit do të pajtohej me të."
+        f"Përmbysjet nuk janë zero: {regressions} nga {total} rishkrime nuk shtonin lloj "
+        "të ri gabimi të izoluara, por shtojnë brenda projektit të vet. Toleranca «pa "
+        "lloj të ri gabimi» mbetet dëshmi e përdorshme ku kompilimi i plotë nuk arrihet, "
+        "por jo garanci se kompilimi brenda projektit do të pajtohej me të."
         + _overturned_case()
     )
 
@@ -2521,15 +2418,11 @@ def _overturned_case() -> str:
     case = overturned[0]
     where = f"{case['class_name']}.{case['method']}"
     return (
-        f" Rasti u veçua. Është një Extract Method mbi {where} te "
-        "«AlertSummaryRenderer.java» e projektit Ambari, dhe të tria gabimet që shton "
-        "janë të të njëjtit lloj: paketa të palëve të treta që nuk ekzistojnë. "
-        "Shkaku nuk është transformimi por korpusi. Nxjerrja e bllokut e kalon një "
-        "tip nga trupi i metodës te nënshkrimi i saj, dhe një tip te nënshkrimi duhet "
-        "zgjidhur i plotë, bashkë me anotacionet e veta; ato anotacione vijnë nga një "
-        "bibliotekë që korpusi nuk e mban, sepse ai ruan vetëm skedarë «.java» dhe "
-        "asnjë jar (Nënkapitulli 6.4). Në një projekt me varësitë e veta i njëjti "
-        "rishkrim nuk do të kishte çfarë të shtonte."
+        f" Rasti është një Extract Method mbi {where} te «AlertSummaryRenderer.java» "
+        "e projektit Ambari. Të tria gabimet që shton janë paketa të palëve të treta "
+        "që mungojnë: tipi që kalon te nënshkrimi i metodës së nxjerrë mban anotacione "
+        "nga një bibliotekë që korpusi nuk e ka, sepse ai ruan vetëm skedarë «.java» "
+        "(Nënkapitulli 6.4)."
     )
 
 
@@ -2579,15 +2472,10 @@ def _project_context_paragraphs() -> list:
             else ""
         ),
         "Mostra është e vogël dhe e mbjellë me farë, sepse kompilimi në kontekst është "
-        "i shtrenjtë: çdo rishkrim detyron kompilimin e tërë mbylljes së varësive të "
-        f"skedarit, dhe seanca e fundit e kësaj matjeje zgjati rreth "
-        f"{data['seconds'] / 3600:.0f} orë. Kohëzgjatja e regjistruar mbulon vetëm atë "
-        "seancë e jo tërë matjen, sepse ekzekutimi është i rifillueshëm. Kostoja nuk "
-        "ndahet baraz mbi skedarët: ajo paguhet një herë për çdo rishkrim, dhe skedarët "
-        "janë tepër të pabarabartë — njëri në këtë mostër mban 118 rishkrime, ndërsa "
-        "shumica mbajnë disa. Verdiktet e raportuara më lart mbi tërë korpusin mbeten "
-        "ato të izoluara; kjo matje nuk i zëvendëson, por tregon në ç'drejtim do të "
-        "lëviznin.",
+        "i shtrenjtë: çdo rishkrim kompilon tërë mbylljen e varësive të skedarit, dhe "
+        f"seanca e fundit zgjati rreth {data['seconds'] / 3600:.0f} orë. Verdiktet mbi "
+        "tërë korpusin mbeten ato të izoluara; kjo matje tregon vetëm në ç'drejtim do "
+        "të lëviznin.",
     ]
 
 
@@ -2641,10 +2529,8 @@ def _refusal_severity_paragraphs() -> list:
         "dhe Long Method niveli i mesëm rri mbi atë të butin.",
         *_pooling_warning(data),
         *_refusal_reason_shift(data),
-        "Ashpërsia e përdorur këtu është ajo e derivuar nga teprica mbi pragje, të "
-        "cilën seksioni i mëparshëm e tregoi se nuk e riprodhon gjykimin e rishikuesve. "
-        "Prandaj ky rezultat flet për motorin kundrejt renditjes së vetë mjetit, dhe jo "
-        "kundrejt asaj se sa i rëndë është kodi në gjykimin e një zhvilluesi.",
+        "Ashpërsia këtu është ajo që derivon sistemi, e cila nuk e riprodhon gjykimin "
+        "e rishikuesve (Shtojca 8.9).",
     ]
 
 
@@ -2684,13 +2570,11 @@ def _pooling_warning(data: dict) -> list:
 
     return [
         f"Kjo tabelë nuk bashkohet mbi erërat. E bashkuar, niveli kritik del me "
-        f"{crit[0] / crit[1]:.1%} kundrejt {rest[0] / rest[1]:.1%} të niveleve të tjera "
-        "— pra e kundërta e asaj që shohin erërat veç e veç. Është paradoks i "
-        "Simpson-it, dhe shkaku është përbërja: "
-        f"{high[0]} ka normë {high[1]:.1%} dhe {high[2]:.1%} të vendeve të veta kritike, "
-        f"ndërsa {low[0]} ka {low[1]:.1%} dhe vetëm {low[2]:.1%}. Bashkimi i jep nivelit "
-        "kritik peshë nga erërat që rishkruhen lehtë dhe e përmbys shenjën, ndaj shifra "
-        "e bashkuar nuk raportohet askund në këtë punim.",
+        f"{crit[0] / crit[1]:.1%} kundrejt {rest[0] / rest[1]:.1%} të niveleve të tjera, "
+        "e kundërta e asaj që shohin erërat veç e veç (paradoksi i Simpson-it): "
+        f"{high[0]} ka normë {high[1]:.1%} dhe {high[2]:.1%} vende kritike, ndërsa "
+        f"{low[0]} ka {low[1]:.1%} dhe {low[2]:.1%}. Prandaj shifra e bashkuar nuk "
+        "raportohet.",
     ]
 
 
@@ -2730,11 +2614,9 @@ def _refusal_reason_shift(data: dict) -> list:
         ("table", "Përbërja e arsyeve të refuzimit brenda çdo niveli",
          ["Arsyeja", *order], rows),
         "Sa më e rëndë metoda, aq më rrallë refuzimi vjen nga forma e kodit dhe aq më "
-        "shpesh nga rrjedha e kontrollit. Shpjegimi është mekanik: një metodë e gjatë "
-        "ose e ndërfutur thellë mban më shumë return, break e continue brenda bllokut, "
-        "dhe Extract Method nuk e ngre dot një bllok nga i cili rrjedha del. Motori "
-        "nuk refuzon më shpesh te rastet e rënda; refuzon për një arsye tjetër, dhe "
-        "ajo arsye është ajo që zgjidhet më vështirë.",
+        "shpesh nga rrjedha e kontrollit: një metodë e gjatë ose e ndërfutur thellë "
+        "mban më shumë return, break e continue, dhe Extract Method nuk e ngre dot një "
+        "bllok nga i cili rrjedha del.",
     ]
 
 
@@ -2827,10 +2709,6 @@ def _introduced_paragraphs(data: dict) -> list:
         "Method ia kalon metodës së nxjerrë çdo vlerë që blloku lexonte, ndaj një bllok "
         "me gjashtë hyrje prodhon një metodë me gjashtë parametra — një mbi pragun. "
         "Transformimi është i saktë dhe kompilon; thjesht e zhvendos problemin.",
-        "Kjo është e njëjta formë me paradoksin e Encapsulate Field-it të Nënkapitullit "
-        "6.2: një refaktorim i rekomanduar gjerësisht që, i matur me vetë metrikat mbi "
-        "të cilat ndërtohet detektimi, nuk përmirëson domosdo atë që mat detektori. "
-        "Motori nuk e fsheh: numri raportohet krahas atyre të shëruara.",
     ]
 
 
@@ -3064,11 +2942,8 @@ def chapter_8() -> list:
                 "Çdo skript shkruan rezultatin si CSV ose JSON në data/results/, bashkë me "
                 "commit-in, versionin e Python-it dhe platformën që e prodhuan. Interpretuesi "
                 f"dhe platforma janë të njëjtët për të gjithë: Python {python_version}, "
-                f"{platform}. Commit-i jo. Eksperimentet u ekzekutuan sipas radhës në të "
-                "cilën u shkruan, ndaj secili skedar mban commit-in e vet, dhe ai është "
-                "commit-i që duhet përdorur nëse dikush do të riprodhojë pikërisht atë "
-                "skedar. Një commit i vetëm i deklaruar për të gjithë punimin do të lexohej "
-                "më mirë dhe do të ishte i pasaktë për të gjithë skedarët veç njërit.",
+                f"{platform}. Commit-i jo: eksperimentet u ekzekutuan njëri pas tjetrit, ndaj "
+                "secili skedar mban commit-in e vet, dhe ai duhet përdorur për ta riprodhuar.",
                 (
                     "table",
                     "Commit-i që prodhoi çdo skedar rezultati",
@@ -3078,30 +2953,19 @@ def chapter_8() -> list:
                 "Kapitulli 5 dhe kjo shtojcë ndërtohen nga ata skedarë, ndaj rigjenerimi i "
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",
-                "Ky premtim u vu në provë më 3 shtator 2026. Trembëdhjetë nga të "
-                "pesëmbëdhjetë hapat u ri-ekzekutuan mbi të njëjtat hyrje, përfshirë "
-                "hapin që ndërton vetë tabelën e veçorive nga korpusi — ankora prej së "
-                "cilës rrjedhin të gjithë numrat e mëpasshëm. Ai skedar CSV, 4.534 "
-                "rreshta, doli bajt për bajt identik me atë të komituarin. Dymbëdhjetë "
-                "hapa të tjerë dhanë po ashtu skedarë identikë me ata të komituarit, "
-                "përveç commit-it dhe kohëzgjatjes që secili regjistron; të katër "
-                "modelet e stërvitura dolën identike bajt për bajt; dhe asnjëra prej "
-                "figurave nuk ndryshoi.",
-                "Hapi i dymbëdhjetë nuk dha skedar identik, dhe arsyeja i përket vetë "
-                "matjes. Numrat që mbajnë pretendimin u riprodhuan saktësisht — po aq "
-                "rishkrime, po aq verdikte «kompilon», asnjë përmbysje — por pesë "
-                "kompilime që në ekzekutimin e parë e kishin kaluar kufirin kohor të "
-                "kompilatorit, në të dytin përfunduan brenda tij dhe morën verdikt. Ky "
-                "hap, pra, varet nga ngarkesa e makinës: verdiktet e tij janë të "
-                "qëndrueshme, ndërsa ndarja mes «i kontrolluar» dhe «i pakontrolluar» "
-                "nuk është. Edhe kohëzgjatja e tij ndryshoi katërfish mes dy "
-                "ekzekutimeve, prej të njëjtës arsye.",
-                "Riprodhimi i mësipërm i përket matjes ashtu si ishte atëherë: mostra e "
-                "saj prej 30 skedarësh, ku asnjë verdikt nuk ishte përmbysur. Tri ditë "
-                "më vonë ajo mostër u dyfishua, dhe pikërisht dyfishimi nxori përmbysjen "
-                "e vetme që raporton Kapitulli 5. Skedari i komituar sot është ai i dytë. "
-                "Pra fjalia e mësipërme thotë se hapi riprodhohet, jo se rezultati i tij "
-                "nuk ndryshoi kurrë — dallim që do të humbte po të mos shkruhej këtu.",
+                "Ky premtim u vu në provë më 3 shtator 2026. Trembëdhjetë nga pesëmbëdhjetë "
+                "hapat u ri-ekzekutuan mbi të njëjtat hyrje, dhe të gjithë, me një "
+                "përjashtim, dhanë skedarë identikë me të komituarit, veç commit-it dhe "
+                "kohëzgjatjes që regjistrojnë. Tabela e veçorive, 4.534 rreshta, doli bajt "
+                "për bajt identike; po ashtu të katër modelet e stërvitura, dhe asnjë figurë "
+                "nuk ndryshoi.",
+                "Përjashtimi është hapi i dymbëdhjetë. Ai riprodhoi numrat që mbajnë "
+                "pretendimin — po aq rishkrime, po aq verdikte «kompilon», asnjë përmbysje — "
+                "por pesë kompilime që herën e parë e kaluan kufirin kohor, herën e dytë "
+                "morën verdikt: ndarja mes «i kontrolluar» dhe «i pakontrolluar» varet nga "
+                "ngarkesa e makinës. Ai riprodhim i përket mostrës së atëhershme prej 30 "
+                "skedarësh; mostra u dyfishua më vonë, dhe dyfishimi nxori përmbysjen e "
+                "vetme që raporton Kapitulli 5.",
                 "Hapat 1 dhe 7 mbeten të pariekzekutuar: i pari kërkon rishkarkimin e "
                 "korpusit të plotë, i dyti disa orë ekzekutimi mbi të. Për ta riprodhimi "
                 "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",

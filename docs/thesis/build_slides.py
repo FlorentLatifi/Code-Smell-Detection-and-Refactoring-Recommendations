@@ -163,7 +163,7 @@ def _table(slide, headers, rows, top=Inches(2.0), size=Pt(16)):
 # Përmbajtja. Çdo shifër lexohet; asnjë nuk shtypet.
 # ======================================================================
 AUTHOR = "Florent Latifi"
-SUPERVISOR = "Altina Salihu"
+SUPERVISOR = "MSc. Altina Salihu"
 TITLE_SQ = "Detektimi i code smells dhe rekomandimet për refaktorim"
 PROGRAM = "Shkenca Kompjuterike dhe Inxhinieri · UBT"
 

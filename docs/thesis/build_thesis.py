@@ -127,6 +127,22 @@ _AFTER_UPDATE_FIELDS = (
 )
 
 
+def _current_word_layout(doc: Document) -> None:
+    """Heq «Compatibility Mode» nga shiriti i titullit të Word-it.
+
+    Shablloni i python-docx e shënon dokumentin si Word 2010 (`compatibilityMode` 14),
+    dhe Word-i i ri e hap me atë etiketë në titull dhe me disa veçori të fikura. Për
+    lexuesin duket si dokument i vjetër ose i konvertuar. 15 është vlera e çdo Word-i
+    nga 2013 e këtej (VD-115).
+    """
+    compat = doc.settings.element.find(qn("w:compat"))
+    if compat is None:
+        return
+    for setting in compat.findall(qn("w:compatSetting")):
+        if setting.get(qn("w:name")) == "compatibilityMode":
+            setting.set(qn("w:val"), "15")
+
+
 def _update_fields_on_open(doc: Document) -> None:
     """Kërkon nga Word-i t'i rillogarisë fushat sapo hapet dokumenti.
 
@@ -606,6 +622,7 @@ def build() -> str:
     numbering = Numbering()
 
     doc = Document()
+    _current_word_layout(doc)
     _set_properties(doc)
     configure_styles(doc)
 
@@ -641,7 +658,8 @@ def build() -> str:
 # ======================================================================
 TITLE_SQ = "Detektimi i code smells dhe rekomandimet për refaktorim"
 AUTHOR = "Florent Latifi"
-SUPERVISOR = "Altina Salihu"
+# Shablloni: «Mentori: Titulli. Emri dhe Mbiemri». Titulli u dha nga autori (VD-115).
+SUPERVISOR = "MSc. Altina Salihu"
 ACADEMIC_YEAR = "2025 – 2026"
 SUBMISSION_DATE = "Nëntor / 2026"
 KEYWORDS = (
@@ -813,21 +831,13 @@ INTRODUCTION = [
             "Grupi i code smells të mbuluara është i kufizuar te ata për të cilët "
             "ekzistojnë strategji detektimi të publikuara dhe të dhëna të "
             "etiketuara, çka mundëson vlerësim empirik të besueshëm.",
-            "Korpusi mbi të cilin matet gjithçka ndërtohet duke shkarkuar depot që "
-            "përmend MLCQ-ja dhe duke ruajtur prej tyre vetëm skedarët me prapashtesë "
-            "«.java». Rrjedhimisht ai nuk përmban as skedarë ndërtimi, as varësi: asnjë "
-            "projekt në të nuk kompilohet si i tërë dhe asnjë suitë testesh e tij nuk "
-            "ekzekutohet dot pa u rishkarkuar çdo arkiv i plotë. Një pjesë e depove nuk "
-            "ishte më e arritshme në kohën e shkarkimit, ndaj mbulimi i mostrave të "
-            "MLCQ-së nuk është i plotë; shifra e saktë jepet te Kapitulli 5.",
-            "Nga ky kufizim rrjedh drejtpërdrejt fusha e pretendimit për refaktorimet. "
-            "Çdo rishkrim kontrollohet me kompilator, por kontrolli mund të thotë vetëm "
-            "nëse skedari kompilon apo nëse nuk shton një lloj të ri gabimi — jo nëse "
-            "programi vazhdon të sillet si më parë. Ruajtja e sjelljes, që përmendet te "
-            "pyetja e tretë kërkimore, **nuk verifikohet empirikisht në këtë punim** dhe "
-            "mbetet e tillë me vetëdije: ajo kërkon ekzekutimin e testeve të vetë "
-            "projektit para dhe pas ndryshimit, çka korpusi i përshkruar më sipër nuk e "
-            "lejon. Kapitulli 6 e rimerr këtë dallim kur i përgjigjet asaj pyetjeje.",
+            "Korpusi ndërtohet duke ruajtur nga depot që përmend MLCQ-ja vetëm skedarët "
+            "«.java», pa skedarë ndërtimi dhe pa varësi. Disa depo nuk ishin më të "
+            "arritshme, ndaj mbulimi i MLCQ-së nuk është i plotë (Kapitulli 5).",
+            "Prandaj çdo rishkrim kontrollohet vetëm me kompilator: nëse kompilon, ose "
+            "nëse nuk shton lloj të ri gabimi. Ruajtja e sjelljes, që përmend pyetja e "
+            "tretë kërkimore, **nuk verifikohet empirikisht në këtë punim**, sepse kërkon "
+            "ekzekutimin e testeve të projekteve, çka korpusi nuk e lejon (Kapitulli 6).",
         ],
     ),
     (
