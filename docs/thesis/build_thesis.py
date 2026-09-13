@@ -385,41 +385,47 @@ def build_logo(doc: Document) -> None:
 
 
 def build_cover(doc: Document) -> None:
-    """Page 1 of the template: logo, programme, title, degree, author, date."""
+    """Page 1 of the template: logo, programme, title, degree, author, date.
+
+    Every line on this page and the next is 14pt, not only the title: UBT's rule is
+    «I gjithë teksti në këto 2 faqe: Times New Roman 14». The build had the title at
+    14 and the rest at body size until VD-113.
+    """
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
     blank(doc, 8)
     centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
     blank(doc, 2)
-    centered(doc, "Shkalla Bachelor", bold=True)
+    centered(doc, "Shkalla Bachelor", size=TITLE_SIZE, bold=True)
     blank(doc, 8)
-    centered(doc, AUTHOR, bold=True)
+    centered(doc, AUTHOR, size=TITLE_SIZE, bold=True)
     blank(doc, 6)
-    centered(doc, SUBMISSION_DATE)
-    centered(doc, "Prishtinë")
+    centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
+    centered(doc, "Prishtinë", size=TITLE_SIZE)
 
 
 def build_inner_page(doc: Document) -> None:
     """Page 2: adds the academic year, the supervisor and the degree statement."""
     doc.add_page_break()
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
     blank(doc, 2)
-    centered(doc, "Punim Diplome", bold=True)
-    centered(doc, f"Viti akademik {ACADEMIC_YEAR}")
+    centered(doc, "Punim Diplome", size=TITLE_SIZE, bold=True)
+    centered(doc, f"Viti akademik {ACADEMIC_YEAR}", size=TITLE_SIZE)
     blank(doc, 4)
-    centered(doc, AUTHOR, bold=True)
+    centered(doc, AUTHOR, size=TITLE_SIZE, bold=True)
     blank(doc, 2)
     centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
     blank(doc, 3)
-    centered(doc, f"Mentore: {SUPERVISOR}", bold=True)
+    centered(doc, f"Mentore: {SUPERVISOR}", size=TITLE_SIZE, bold=True)
     blank(doc, 5)
-    centered(doc, SUBMISSION_DATE)
+    centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
     blank(doc, 3)
     centered(
         doc,
         "Ky punim është përpiluar dhe dorëzuar në përmbushjen e kërkesave "
         "të pjesshme për Shkallën Bachelor",
+        size=TITLE_SIZE,
     )
 
 
@@ -456,14 +462,57 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
         bullet(doc, term)
 
 
+def _element_mentions(paragraphs: list, numbering: Numbering) -> dict[int, list[str]]:
+    """Ku përmendet në tekst çdo figurë dhe tabelë e një nënkapitulli.
+
+    Rregulli i UBT-së e do çdo figurë dhe tabelë «të titulluar dhe të referuar në
+    tekst». Deri te VD-113 asnjëra nga 42 nuk përmendej: përshkrimi ishte i vetmi vend
+    ku dilte numri. Numrat nuk shkruhen me dorë te kapitujt, sepse caktohen gjatë
+    renderimit dhe ndryshojnë sa herë lëviz një element. Prandaj përmendja lidhet këtu
+    me paragrafin më të afërt para elementit, ose me të parin pas tij kur elementi e
+    hap nënkapitullin.
+    """
+    figures, tables = numbering.figure, numbering.table
+    bodies = [index for index, item in enumerate(paragraphs) if not isinstance(item, tuple)]
+    mentions: dict[int, list[str]] = {}
+    for index, item in enumerate(paragraphs):
+        if not isinstance(item, tuple) or item[0] not in ("figure", "table"):
+            continue
+        if item[0] == "figure":
+            figures += 1
+            label = f"Figura {figures}"
+        else:
+            tables += 1
+            label = f"Tabela {tables}"
+        before = [i for i in bodies if i < index]
+        after = [i for i in bodies if i > index]
+        if not before and not after:
+            raise ValueError(f"{label} nuk ka asnjë paragraf ku të përmendet")
+        target = before[-1] if before else after[0]
+        mentions.setdefault(target, []).append(label)
+    return mentions
+
+
+def _with_mentions(text: str, labels: list[str]) -> str:
+    """Shton «(Tabela N)» para pikësimit në fund të paragrafit."""
+    if not labels:
+        return text
+    mention = " (" + "; ".join(labels) + ")"
+    stripped = text.rstrip()
+    if stripped and stripped[-1] in ".:;":
+        return stripped[:-1] + mention + stripped[-1]
+    return stripped + mention
+
+
 def render_sections(doc: Document, sections: list, numbering: Numbering) -> None:
     """Një kapitull, çfarëdo qofshin llojet e elementeve brenda tij."""
     for number, title, paragraphs in sections:
         if number:
             section_heading(doc, number, title)
-        for item in paragraphs:
+        mentions = _element_mentions(paragraphs, numbering)
+        for index, item in enumerate(paragraphs):
             if not isinstance(item, tuple):
-                body(doc, item)
+                body(doc, _with_mentions(item, mentions.get(index, [])))
             elif item[0] == "bullet":
                 bullet(doc, item[1])
             elif item[0] == "figure":
@@ -783,9 +832,10 @@ INTRODUCTION = [
             "metrikat e cilësisë, strategjitë e detektimit dhe mjetet ekzistuese. "
             "Kapitulli 3 formulon problemin që adresohet. Kapitulli 4 përshkruan "
             "metodologjinë, arkitekturën e sistemit dhe vendimet e projektimit. "
-            "Kapitulli 5 paraqet rezultatet e vlerësimit empirik. Kapitulli 6 "
-            "diskuton gjetjet, kufizimet dhe drejtimet e punës së ardhshme. "
-            "Kapitulli 7 përmban referencat dhe kapitulli 8 shtojcat.",
+            "Kapitulli 5 paraqet rezultatet që u përgjigjen pyetjeve kërkimore. "
+            "Kapitulli 6 diskuton gjetjet, implikimet, kufizimet dhe drejtimet e punës "
+            "së ardhshme. Kapitulli 7 përmban referencat dhe kapitulli 8 shtojcat, "
+            "bashkë me analizat dytësore të rezultateve.",
         ],
     ),
 ]

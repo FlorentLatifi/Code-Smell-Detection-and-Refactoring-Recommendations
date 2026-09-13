@@ -357,6 +357,45 @@ def _check_front_titles(doc: Document) -> list[str]:
     return problems
 
 
+def _check_cover_font(doc: Document) -> list[str]:
+    """Shablloni: «I gjithë teksti në këto 2 faqe: Times New Roman 14» (VD-113)."""
+    problems = []
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name == FRONT_TITLE:
+            break
+        for run in paragraph.runs:
+            if not run.text.strip():
+                continue
+            if run.font.size != TITLE_SIZE or (run.font.name or FONT) != FONT:
+                problems.append(
+                    f"kopertina: «{paragraph.text.strip()[:40]}» nuk është {FONT} {TITLE_SIZE.pt:g}pt"
+                )
+                break
+    return problems
+
+
+def _check_mentioned_in_text(doc: Document) -> list[str]:
+    """Çdo figurë dhe tabelë përmendet në tekst, jo vetëm në përshkrimin e vet.
+
+    Shablloni e do secilën «të titulluar dhe të referuar në tekst». Pas «Tabela 1»
+    nuk guxon të vijë shifër, që «Tabela 13» të mos numërohet si përmendje e saj.
+    """
+    _, chapters = _split_at_first_chapter(doc)
+    captions, texts = [], []
+    for paragraph in chapters:
+        match = CAPTION.match(paragraph.text.strip())
+        if match:
+            captions.append((match.group(1), match.group(2)))
+        else:
+            texts.append(paragraph.text)
+    joined = chr(10).join(texts)
+    return [
+        f"{kind} {number} nuk përmendet në tekst"
+        for kind, number in captions
+        if not re.search(f"{kind} {number}(?![0-9])", joined)
+    ]
+
+
 def _check_update_fields(doc: Document) -> list[str]:
     """Word e plotëson përmbajtjen kur hapet, e nuk e lë tekstin zëvendësues."""
     flag = doc.settings.element.find(qn("w:updateFields"))
@@ -473,6 +512,8 @@ def report(path: Path) -> list[str]:
         _check_geometry,
         _check_page_breaks,
         _check_front_titles,
+        _check_cover_font,
+        _check_mentioned_in_text,
         _check_update_fields,
         _check_abstract_length,
     ):

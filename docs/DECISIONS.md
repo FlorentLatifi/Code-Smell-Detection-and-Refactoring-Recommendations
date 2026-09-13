@@ -4159,3 +4159,59 @@ depoja. Dy vendet [PLOTËSO]. Tri pyetje kërkimore, ndërsa udhëzuesi thotë s
 «zakonisht janë të mjaftueshme». Dhe nënkapitujt 5.7, 5.9 dhe 5.10, të cilët
 shpjegojnë arsye dhe mund të lexohen si interpretim në një kapitull që udhëzuesi e do
 pa interpretim.
+
+### VD-113: Kufiri i fjalëve, kopertina, dhe figurat e përmendura në tekst
+
+**Konteksti.** Autori dha listën e plotë të rregullave të UBT-së për temën e
+diplomës. Secili rregull u kontrollua kundrejt dokumentit të ndërtuar dhe të
+eksportuar në PDF me Word.
+
+**Kufiri i fjalëve u kalonte.** Rregulli është 8 deri 10 mijë fjalë pa shtojca.
+Kapitujt 1–6 kishin 13 499 fjalë, nga të cilat 12 156 tekst, dhe vetëm Kapitulli 5
+mbante 5 553. Gjashtë analizat që nuk i përgjigjen drejtpërdrejt një pyetjeje
+kërkimore u zhvendosën të plota te shtojcat: ndjeshmëria ndaj pragjeve, krahasimi
+me PMD-në, klauzolat bllokuese, ashpërsia, intervalet e besimit dhe rastet e humbura
+të Blob-it, tani 8.6 deri 8.11. Asnjë fjali nuk u shkurtua. Kapitulli 5 mban 5.1
+deri 5.4, që u përgjigjen pyetjeve sipas radhës, dhe e thotë këtë në hyrje.
+Referencat e kryqëzuara u ndoqën, dhe dy fraza që thoshin «shifra e mësipërme» u
+bënë «shifra e Kapitullit 5», sepse nga shtojca nuk tregojnë më atë. Tani kapitujt
+1–6 kanë 9 264 fjalë tekst dhe 9 847 bashkë me tabelat. Hapësira deri te kufiri
+është nën 200 fjalë.
+
+**Kopertina ishte 12pt.** Rregulli: «I gjithë teksti në këto 2 faqe: Times New Roman
+14». Vetëm titulli ishte 14. Tani çdo rresht është, dhe të dy faqet mbeten nga një
+faqe secila.
+
+**Asnjë figurë dhe asnjë tabelë nuk përmendej në tekst.** Rregulli e do secilën «të
+titulluar dhe të referuar në tekst»; nga 42 elemente, zero. Përmendja gjenerohet tani
+nga i njëjti numërim që jep përshkrimet, te paragrafi më i afërt para elementit, ose
+te i pari pas tij kur elementi e hap nënkapitullin. E shkruar me dorë, ajo do të
+prishej sa herë lëviz një tabelë.
+
+**Tri pjesë që rregullat i emërtojnë dhe punimi nuk i emërtonte.** Metodologjia e
+thotë tani qasjen: sasiore dhe eksperimentale, me një pjesë të vetme cilësore, gjykimin
+me rubrikë të rishkrimeve. I emërton edhe kufizimet e veta metodologjike, me referencë
+te 3.3 dhe 6.4, dhe konsideratat etike e thonë pse pëlqimi i informuar dhe
+konfidencialiteti nuk zbatohen. Diskutimi ka 6.3, «Implikimet teorike dhe praktike»,
+dhe nënkapitujt pas tij u rinumëruan.
+
+**Një pohim i pasaktë në diskutim.** Nënkapitulli 6.1 thoshte se detektorët i kapin
+rastet e rënda shumë më mirë se të lehtat. Kjo vlen për tri erëra, jo për Blob-in, ku
+recall-i është 5.0% te major dhe 10.3% te minor. Fjalia e thotë tani saktësisht,
+njësoj si abstrakti te VD-112.
+
+**Kontrolli.** `check_format.py` i verifikon tani madhësinë 14 në dy faqet e para dhe
+përmendjen në tekst të çdo figure e tabele.
+
+**Çfarë plotësohej tashmë:** 31 referenca, formati i citimit të një teze doktorature,
+edicioni, vendi dhe botuesi i librave, fontet, hapësira, drejtimi, numërimi i faqeve,
+përshkrimet nën figura dhe titujt mbi tabela. Punimi nuk ka ekuacione.
+
+**Çfarë nuk u ndryshua, dhe pse.** Tri pyetje kërkimore mbeten: lista thotë se 1–2
+«mjaftojnë», jo se më shumë ndalohen. Lista e tabelave mbetet në faqen e listës së
+figurave, sepse `.doc`-u zyrtar thotë «nuk fillon në faqe të re», ndërsa lista e
+autorit thotë të kundërtën; mospërputhja iu raportua autorit. Referencat e vendosin
+vitin pas autorit, si shembulli i vetë shablloni dhe APA-ja, ndërsa rregulli për librat
+e liston vitin në fund. Logoja futet e pandryshuar nga skedari i shtuar më 31 gusht,
+por nuk u krahasua piksel për piksel me atë të shabllonit. Titulli akademik i mentores
+dhe dy vendet [PLOTËSO] mbeten për autorin.

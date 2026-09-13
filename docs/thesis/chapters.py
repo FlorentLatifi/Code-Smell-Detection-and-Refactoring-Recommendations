@@ -421,6 +421,17 @@ CHAPTER_4 = [
             "mësim makine, dhe refaktorimi. Çdo hap prodhohet nga një skript i "
             "vetëm dhe çdo rezultat shkruhet me commit-in, versionin e Python-it dhe "
             "platformën që e prodhuan.",
+            "**Qasja e kërkimit.** Kërkimi është sasior dhe eksperimental, me një pjesë "
+            "të vetme cilësore. Të tria pyetjet kërkimore pyesin «sa» dhe «a e "
+            "përmirëson», dhe përgjigjja e tyre është matje e përsëritshme mbi të "
+            "njëjtin korpus: metrikat e kodit, etiketat e rishikuesve të MLCQ-së dhe "
+            "verdiktet e kompilatorit. Pjesa cilësore është gjykimi me rubrikë i një "
+            "mostre rishkrimesh (Nënkapitulli 4.5), sepse vlera e një rishkrimi për "
+            "zhvilluesin nuk matet dot vetëm me kompilim.",
+            "**Kufizimet metodologjike.** Tri prej tyre e formësojnë gjithë kapitullin: "
+            "analizuesi nuk zgjidh simbole, verifikimi nuk ekzekuton testet e "
+            "projekteve, dhe e vërteta bazë vjen nga një dataset i vetëm. Ato "
+            "deklarohen te Nënkapitulli 3.3 dhe diskutohen te Nënkapitulli 6.4.",
         ],
     ),
     (
@@ -649,7 +660,9 @@ CHAPTER_4 = [
         "4.8",
         "Konsideratat etike",
         [
-            "Punimi nuk mbledh të dhëna nga njerëz. Të gjitha të dhënat që përdor janë "
+            "Punimi nuk mbledh të dhëna nga njerëz, ndaj pëlqimi i informuar dhe "
+            "konfidencialiteti, që kërkohen kur mblidhen të tilla, nuk zbatohen këtu. "
+            "Të gjitha të dhënat që përdor janë "
             "publike: gjykimet e dataset-it MLCQ, të mbledhura dhe të publikuara nga "
             "autorët e tij (Madeyski & Lewowski, 2020), dhe kodi i depove Java me burim "
             "të hapur të cilave u referohen mostrat.",
@@ -700,7 +713,7 @@ def _context_conclusion() -> str:
 
 
 def _blob_recall_limits() -> list:
-    """Dy kufizimet që dalin nga Nënkapitulli 5.10, të lexuara nga i njëjti skedar.
+    """Dy kufizimet që dalin nga Shtojca 8.11, të lexuara nga i njëjti skedar.
 
     Të shtypura me dorë do të ishin dy pohime numerike brenda kapitullit të
     fundit që lexon komisioni, dhe pikërisht ashtu rrëshqiti Kapitulli 6 një
@@ -786,8 +799,9 @@ def chapter_6() -> list:
                 "i shënojnë. Për një mjet praktik kjo nuk është domosdoshmërisht e keqe: "
                 "një sinjal i rrallë por i besueshëm konsumohet më lehtë se një listë e "
                 "gjatë me alarme false.",
-                "Ndarja sipas ashpërsisë e ndryshon leximin. Detektorët degradojnë me "
-                "hijeshi: i kapin rastet e rënda shumë më mirë se ato të lehtat. Një F1 i "
+                "Ndarja sipas ashpërsisë e ndryshon leximin. Te tri nga katër erërat, "
+                "detektorët i kapin rastet e rënda shumë më mirë se të lehtat; te Blob-i "
+                "ndodh e kundërta. Një F1 i "
                 "vetëm e fsheh krejt këtë, dhe pikërisht për këtë arsye recall-i "
                 "raportohet i ndarë sipas etiketës që caktuan rishikuesit.",
                 "Modelet e mësimit të makinës e tejkalojnë qartë qasjen me rregulla në çdo "
@@ -829,6 +843,25 @@ def chapter_6() -> list:
         ),
         (
             "6.3",
+            "Implikimet teorike dhe praktike",
+            [
+                "**Implikime teorike.** Strategjitë e Lanza & Marinescu-t, me pragjet e "
+                "tyre të publikuara, dolën të sakta por me recall të ulët mbi MLCQ, ndërsa "
+                "modelet e mësuara mbi të njëjtat metrika i tejkaluan te të katër erërat. "
+                "Informacioni ndodhet pra te metrikat; pragjet fikse janë ajo që e humbin. "
+                "Pajtimi i ulët mes vetë rishikuesve shton se një pjesë e gabimit i takon "
+                "përkufizimit të erës dhe jo detektorit, ndaj krahasimet në këtë fushë "
+                "duhen lexuar kundrejt atij tavani.",
+                "**Implikime praktike.** Për një mjet në përdorim të përditshëm, rregullat "
+                "japin sinjal të rrallë por të besueshëm, të përshtatshëm si paralajmërim "
+                "me pak zhurmë; aty ku mbulimi ka më shumë rëndësi, modeli është zgjedhja "
+                "më e mirë. Refaktorimi i automatizuar është i realizueshëm me siguri vetëm "
+                "për një pjesë të vendeve, rreth një në pesë, dhe vlera e tij varet "
+                "pikërisht nga refuzimi i atyre që nuk i provon.",
+            ],
+        ),
+        (
+            "6.4",
             "Kufizimet",
             [
                 "Mbulimi i korpusit nuk është i plotë: disa depo të MLCQ-së janë fshirë "
@@ -874,7 +907,7 @@ def chapter_6() -> list:
             ],
         ),
         (
-            "6.4",
+            "6.5",
             "Puna e ardhshme",
             [
                 (
@@ -894,7 +927,7 @@ def chapter_6() -> list:
                 (
                     "bullet",
                     "Adoptimi i pragjeve të kalibruara si të parazgjedhura. Kalibrimi "
-                    "jashtë-fold-it është bërë dhe raportohet te Nënkapitulli 5.5; ajo që "
+                    "jashtë-fold-it është bërë dhe raportohet te Shtojca 8.6; ajo që "
                     "mbetet është vendimi nëse një vlerë e zgjedhur mbi këtë korpus "
                     f"përgjithësohet, dhe {_folds_disagree()}, çka është arsye për të "
                     "mos e marrë ende.",
@@ -908,7 +941,7 @@ def chapter_6() -> list:
             ],
         ),
         (
-            "6.5",
+            "6.6",
             "Përfundim",
             [
                 "Punimi ndërtoi një sistem që i zbulon code smells në dy mënyra të "
@@ -930,7 +963,7 @@ def chapter_6() -> list:
                 "mat**: ajo do të kërkonte ekzekutimin e suitave të testeve të vetë "
                 "depove, të cilat korpusi nuk i mban. Prandaj përgjigjja ndaj asaj "
                 "pyetjeje është e plotë për gjysmën e parë dhe e hapur për të dytën, dhe "
-                "kjo deklarohet këtu me po aq qartësi sa te Nënkapitulli 6.3.",
+                "kjo deklarohet këtu me po aq qartësi sa te Nënkapitulli 6.4.",
                 "Dy rezultate negative i shoqërojnë ato dhe nuk duhen lexuar veç: ashpërsia "
                 "e derivuar nuk e riprodhon gjykimin e rishikuesve, dhe vetë rishikuesit "
                 "pajtohen mes tyre aq pak sa çdo shifër e kësaj fushe duhet lexuar mbi një "
@@ -946,8 +979,30 @@ def chapter_6() -> list:
 # ======================================================================
 # Kapitulli 5: teksti rreth numrave, numrat nga data/results
 # ======================================================================
+# Analizat që nuk i përgjigjen drejtpërdrejt një pyetjeje kërkimore. Rregulli i UBT-së
+# e kufizon punimin në 8 deri 10 mijë fjalë pa shtojca, dhe vetëm Kapitulli 5 kishte
+# 5 553 fjalë tekst me to brenda. Zhvendosen te shtojcat të plota, pa u shkurtuar
+# asnjë fjali (VD-113).
+SECONDARY_RESULTS = ("5.5", "5.6", "5.7", "5.8", "5.9", "5.10")
+FIRST_APPENDIX_FOR_RESULTS = 6
+
+
 def chapter_5() -> list:
-    """Rezultatet, të ndërtuara nga skedarët e komituar."""
+    """Rezultatet që u përgjigjen pyetjeve kërkimore, 5.1 deri 5.4."""
+    return [section for section in _results_sections() if section[0] not in SECONDARY_RESULTS]
+
+
+def secondary_results() -> list:
+    """Analizat dytësore të rezultateve, të rinumëruara si Shtojcat 8.6 deri 8.11."""
+    moved = [section for section in _results_sections() if section[0] in SECONDARY_RESULTS]
+    return [
+        (f"8.{FIRST_APPENDIX_FOR_RESULTS + offset}", title, paragraphs)
+        for offset, (_, title, paragraphs) in enumerate(moved)
+    ]
+
+
+def _results_sections() -> list:
+    """Të gjitha seksionet e rezultateve, të ndërtuara nga skedarët e komituar."""
     rules = _load("rules_evaluation.json")
     ml = _load("ml_evaluation.json")
     dataset = _load("mlcq_dataset.json")
@@ -1046,6 +1101,9 @@ def chapter_5() -> list:
                 "aty ku thuhet ndryshe.",
                 ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
                  "Shpërndarja e mostrave sipas erës"),
+                "Nënkapitujt 5.1 deri 5.4 u përgjigjen pyetjeve kërkimore sipas radhës së "
+                "tyre. Analizat dytësore, që u japin kontekst këtyre përgjigjeve pa iu "
+                "përgjigjur vetë ndonjë pyetjeje, janë te Shtojcat 8.6 deri 8.11.",
             ],
         ),
         (
@@ -1169,7 +1227,7 @@ def chapter_5() -> list:
             "5.6",
             "Krahasimi me një mjet ekzistues",
             [
-                "Nënkapitujt e mësipërm i vënë dy qasjet e këtij punimi përballë "
+                "Kapitulli 5 i vë dy qasjet e këtij punimi përballë "
                 "njëra-tjetrës. Ky i vë përballë një mjeti që zhvilluesi e instalon "
                 "sot, sepse pyetja nuk është vetëm cila prej të dyjave është më e "
                 "mirë, por a ia vlen ndonjëra.",
@@ -1350,7 +1408,7 @@ def _pmd_comparison_paragraphs() -> list:
         "kompiluar, ndaj ATFD-në e llogarit nga sa duket brenda një skedari, ndërsa "
         "detektorët e këtij punimi e marrin projektin e plotë. Heqja e këtij handikapi "
         "do të kërkonte ndërtimin e 513 depove në commit-et e tyre historike, çka "
-        "korpusi nuk e lejon (Nënkapitulli 6.3).",
+        "korpusi nuk e lejon (Nënkapitulli 6.4).",
     ]
 
     if unreadable or failed:
@@ -1472,7 +1530,7 @@ def _confidence_section() -> list:
         ])
 
     paragraphs: list = [
-        f"Çdo shifër e mësipërme është një vlerësim i vetëm mbi një korpus të "
+        f"Çdo shifër e Kapitullit 5 është një vlerësim i vetëm mbi një korpus të "
         f"caktuar. Për të matur sa varet ajo nga korpusi, çdo tregues u riprodhua me "
         f"bootstrap mbi {intervals['resamples']} rimostrime, duke rimostruar "
         f"**depo** e jo rreshta: mostrat e së njëjtës depo ndajnë autorë dhe "
@@ -1488,7 +1546,7 @@ def _confidence_section() -> list:
         "erërave mes tyre nuk qëndron: dallimi mes Data Class-it dhe Blob-it, për "
         "shembull, humbet brenda tyre.",
         "Krahasimi ndryshon kur Qasjes A i jepet pragu i saj më i mirë nga fshirja e "
-        "Nënkapitullit 5.5, çka është krahasimi më bujar që mund t'i bëhet:",
+        "Shtojcës 8.6, çka është krahasimi më bujar që mund t'i bëhet:",
         ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
          ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
          swept_rows),
@@ -1530,7 +1588,7 @@ def _confidence_section() -> list:
         "Ajo që tregon është sa e ashpër është vetë detyra. Kur dy zhvillues "
         "profesionistë që shohin të njëjtin kod pajtohen kaq pak, një pjesë e "
         "pareduktueshme e gabimit të çdo detektori nuk i takon detektorit por "
-        "përkufizimit. Çdo shifër e këtij kapitulli duhet lexuar mbi këtë sfond, dhe "
+        "përkufizimit. Çdo shifër e Kapitullit 5 duhet lexuar mbi këtë sfond, dhe "
         "po ashtu çdo shifër e literaturës që raportohet pa të.",
     ]
 
@@ -1794,7 +1852,7 @@ def _blocking_predicts_calibration() -> list:
         f"pavarur. Te {SMELL_SQ.get(far[0], far[0])}-i mospërputhjet janë larg pragjeve "
         f"(mediana mesatare {far[1]:.2f}), ndaj kalibrimi nuk duhet të ndihmojë shumë; "
         f"te {SMELL_SQ.get(near[0], near[0])} janë afër ({near[1]:.2f}), ndaj duhet. "
-        f"Kalibrimi jashtë-fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
+        f"Kalibrimi jashtë-fold-it i Shtojcës 8.6, i matur veç dhe pa e parë këtë "
         f"analizë, jep {far[2]:+.3f} MCC për të parin dhe {near[2]:+.3f} për të dytin. "
         "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
         "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
@@ -2041,14 +2099,14 @@ def _blob_saturated(data: dict) -> list:
         "Ndryshimi i TCC-së do të shkëpuste përkufizimin nga burimi i tij dhe do të "
         "detyronte rigjenerimin e çdo numri të raportuar, për një fitim që nuk e kalon "
         f"{entry['count'] / (missed + caught):.3f} te recall-i. Kufizimi raportohet i "
-        "tillë siç është te Nënkapitulli 6.3.",
+        "tillë siç është te Nënkapitulli 6.4.",
     ]
 
 
 def _blob_recall_section() -> list:
     """Si duket klasa që rishikuesi e quan blob kur strategjia nuk pajtohet.
 
-    Nënkapitulli 5.7 thotë cila klauzolë e ndali secilën mospërputhje dhe aty
+    Shtojca 8.8 thotë cila klauzolë e ndali secilën mospërputhje dhe aty
     ndalet. Numri i klauzolave nuk dallon dot mes dy gjendjeve që kërkojnë punë
     të kundërt: strategjia që mat përmasat e gabuara, dhe e vërteta bazë që
     përmban raste të cilat asnjë prag nuk i arrin. Ky nënkapitull e dallon.
@@ -2063,7 +2121,7 @@ def _blob_recall_section() -> list:
     best_metric, best_value = max(strategy["separation"].items(), key=lambda pair: pair[1])
 
     paragraphs: list = [
-        "Nënkapitulli 5.7 numëron klauzolat që ndalën secilën mospërputhje dhe e lë të "
+        "Shtojca 8.8 numëron klauzolat që ndalën secilën mospërputhje dhe e lë të "
         "hapur pyetjen që vjen menjëherë pas saj: si duket klasa që rishikuesi e quajti "
         "blob ndërsa strategjia nuk e quajti? Përgjigjja ka vetëm dy forma, dhe të dyja "
         "kërkojnë punë të kundërt. Ose klasat e humbura u ngjajnë atyre të kapura në një "
@@ -2465,7 +2523,7 @@ def _overturned_case() -> str:
         "tip nga trupi i metodës te nënshkrimi i saj, dhe një tip te nënshkrimi duhet "
         "zgjidhur i plotë, bashkë me anotacionet e veta; ato anotacione vijnë nga një "
         "bibliotekë që korpusi nuk e mban, sepse ai ruan vetëm skedarë «.java» dhe "
-        "asnjë jar (Nënkapitulli 6.3). Në një projekt me varësitë e veta i njëjti "
+        "asnjë jar (Nënkapitulli 6.4). Në një projekt me varësitë e veta i njëjti "
         "rishkrim nuk do të kishte çfarë të shtonte."
     )
 
@@ -3047,4 +3105,4 @@ def chapter_8() -> list:
                 "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",
             ],
         ),
-    ]
+    ] + secondary_results()
