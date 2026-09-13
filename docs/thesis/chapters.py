@@ -131,7 +131,7 @@ def abstract() -> list[str]:
         f"dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
         f"e publikuara të detektimit mbi {metrics} metrika; e dyta trajnon klasifikues "
         f"mbi po ato metrika. Të dyja vlerësohen mbi {samples} mostra nga "
-        f"{dataset['repositories']} depo Java, të etiketuara nga zhvillues "
+        f"{_repositories_in_dataset()} depo Java, të etiketuara nga zhvillues "
         f"profesionistë, me ndarje të grupuar sipas depos dhe me të njëjtin kod "
         f"pikëzimi. Sistemi përfshin edhe një motor refaktorimi që rishkruan kod vetëm "
         f"kur i provon parakushtet e veta nga pema sintaksore, dhe një ndërfaqe web mbi "
@@ -419,6 +419,60 @@ CHAPTER_3 = [
 # ======================================================================
 # Kapitulli 4
 # ======================================================================
+def _repositories_in_dataset() -> int:
+    """Depot nga të cilat vijnë mostrat e vlerësuara.
+
+    `mlcq_dataset.json` ruan 522, numrin e depove që përmend MLCQ-ja. Dhjetë prej
+    tyre nuk ishin më të arritshme, ndaj mostrat vijnë nga më pak depo; abstrakti
+    dhe Kapitulli 5 e shkruanin 522 si burim të mostrave (VD-118).
+    """
+    with (RESULTS / "mlcq_dataset.csv").open(encoding="utf-8") as handle:
+        return len({row["repository"] for row in csv.DictReader(handle)})
+
+
+def _negative_share() -> str:
+    """Pjesa e mostrave negative nën agregimin parësor, e lexuar nga tabela e veçorive.
+
+    Ishte shtypur «78%», shifër e një versioni më të hershëm të tabelës (VD-118).
+    """
+    path = RESULTS / "mlcq_dataset.csv"
+    if not path.exists():
+        return "shumica"
+    with path.open(encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    positives = sum(1 for row in rows if row["smelly_mean"] == "1")
+    return f"{1 - positives / len(rows):.0%}"
+
+
+def _isolated_compiles() -> str:
+    """Sa rishkrime kompiluan plotësisht të izoluara.
+
+    Zëvendëson «8% e skedarëve kompilojnë të vetëm», një matje e hershme që nuk e
+    riprodhon asnjë skript (VD-32, VD-118).
+    """
+    data = _load_if_present("refactoring_evaluation.json")
+    if data is None:
+        return "shumica e skedarëve nuk kompilojnë të vetëm"
+    compiles = data["verdicts"].get("compiles", 0)
+    return f"nga {data['applied']} rishkrime të aplikuara, vetëm {compiles} kompiluan plotësisht të izoluara"
+
+
+def _coverage_sentence() -> str:
+    """Sa nga MLCQ-ja hyri në vlerësim. Nënkapitujt 1.5 dhe 6.4 i referohen këtij numri."""
+    dataset = _load("mlcq_dataset.json")
+    coverage = _load("mlcq_matching.json")["corpus_coverage"]
+    missing = dataset["samples_considered"] - dataset["rows"]
+    no_file = dataset["unreached"].get("no_file", 0)
+    unreachable = coverage["repositories_total"] - coverage["repositories_available"]
+    return (
+        f"MLCQ-ja përmend {dataset['samples_considered']} mostra në "
+        f"{coverage['repositories_total']} depo, nga të cilat {unreachable} nuk ishin më të "
+        f"arritshme. Jashtë vlerësimit mbetën {missing} mostra: {no_file} sepse skedari nuk "
+        f"ishte në korpus, dhe {missing - no_file} sepse entiteti nuk u përputh ose "
+        "skedari kishte gabim sintakse."
+    )
+
+
 CHAPTER_4 = [
     (
         None,
@@ -471,8 +525,9 @@ CHAPTER_4 = [
             "LCOM-it i Henderson-Sellers-it (1996), TCC-ja e Bieman & Kang-ut (1995) "
             "dhe kompleksiteti ciklomatik (McCabe, 1976), i matur si numri i pikave "
             "të vendimit në trupin e metodës plus një.",
-            "Rreshtat e kodit numërohen sipas kornizës së Park (1992): rreshtat bosh, "
-            "komentet dhe rreshtat që përmbajnë vetëm një kllapë nuk janë pohime dhe "
+            "Rreshtat e kodit numërohen si rreshta logjikë, sipas dallimit që bën Park "
+            "(1992) mes rreshtave fizikë dhe logjikë: rreshtat bosh, komentet dhe "
+            "rreshtat me vetëm shenja ndarëse, si «}» ose «});», nuk janë pohime dhe "
             "nuk numërohen. Ky përkufizim ka një implementim të vetëm në kod, sepse "
             "dy implementime devijuan në heshtje njëherë dhe defekti u zbulua vetëm "
             "kur u krahasuan.",
@@ -536,13 +591,12 @@ CHAPTER_4 = [
             "Rishkrimi bëhet mbi rangje bajtash dhe aplikohet nga fundi para, që "
             "offset-et e çdo editimi të mbeten të vlefshme kundrejt tekstit ku u "
             "matën. Dy editime që mbivendosen refuzohen, sepse nuk kanë rezultat të "
-            "përcaktuar. Puna bëhet mbi bajta e jo mbi karaktere, sepse Java-ja është "
-            "UTF-8 dhe prerja sipas indeksit të karakterit e pret një sekuencë "
-            "shumë-bajtëshe në mes.",
-            "Verifikimi bëhet në tri nivele. U mat se vetëm 8% e skedarëve të korpusit "
-            "kompilojnë të vetëm, sepse pjesa tjetër importon fqinjët e vet; "
-            "këmbëngulja te një kompilim i pastër do të linte 92% të korpusit të "
-            "paverifikueshëm. Prandaj kontrollohet së pari nëse skedari i rishkruar "
+            "përcaktuar. Puna bëhet mbi bajta e jo mbi karaktere, sepse tree-sitter i "
+            "jep pozicionet në bajta të tekstit UTF-8, dhe prerja sipas indeksit të "
+            "karakterit do ta priste në mes një shkronjë si «ë», që zë dy bajta.",
+            "Verifikimi bëhet në tri nivele, sepse një skedar i një depoje reale "
+            "importon fqinjët e vet dhe rrallë kompilon i vetëm: "
+            f"{_isolated_compiles()}. Prandaj kontrollohet së pari nëse skedari i rishkruar "
             "parsohet, pastaj nëse shton lloj të ri gabimi kompilimi, dhe së fundi — "
             "ku është e mundur — nëse kompilon.",
             "Të tria nivelet i përgjigjen pyetjes së kompilatorit. Fowler (2018) e "
@@ -593,7 +647,7 @@ CHAPTER_4 = [
             "nuk është i njëjti mjet me një tjetër që i lëshon të dyja, por një recall "
             "i vetëm i mesatarizuar i paraqet njësoj.",
             "Pajtimi mes dy qasjeve matet me koeficientin kappa (Cohen, 1960) dhe jo "
-            "me pajtimin e papërpunuar. Kur 78% e etiketave janë negative, dy "
+            f"me pajtimin e papërpunuar. Kur {_negative_share()} e etiketave janë negative, dy "
             "detektorë që të dy ndezin rrallë pajtohen mbi nëntë të dhjetat e "
             "bashkësisë pa mësuar asgjë nga njëri-tjetri; kappa e heq atë pajtim që "
             "pritet nga rastësia. Krahas saj raportohen të katër qelizat, sepse pyetja "
@@ -635,11 +689,12 @@ CHAPTER_4 = [
             "shkruhet si CSV ose JSON që komitohet. Farat e rastësisë janë të "
             "fiksuara, versionet e varësive të pinuara, dhe mjedisi i regjistruar në "
             "çdo skedar rezultati.",
-            "Kalimi i shtrenjtë mbi korpusin — rreth 95 minuta për 690 mijë skedarë — "
-            "bëhet një herë dhe prodhon një tabelë veçorish që komitohet. Pragjet nuk "
-            "hyjnë në atë kalim, ndaj analiza e ndjeshmërisë rirendit detektorët mbi "
-            "rreshtat e ruajtur në sekonda. Pa këtë ndarje, një fshirje me njëzet "
-            "konfigurime do të kushtonte mbi tridhjetë orë dhe nuk do të bëhej.",
+            "Kalimi i shtrenjtë mbi korpusin, 56 minuta për 690 mijë skedarë në matjen "
+            "e fundit, bëhet një herë dhe prodhon një tabelë veçorish që komitohet. "
+            "Pragjet nuk hyjnë në atë kalim, ndaj analiza e ndjeshmërisë rirendit "
+            "detektorët mbi rreshtat e ruajtur në sekonda. Pa këtë ndarje, një fshirje "
+            "me njëzet konfigurime do të kushtonte mbi tetëmbëdhjetë orë dhe nuk do të "
+            "bëhej.",
         ],
     ),
     (
@@ -772,10 +827,10 @@ def chapter_6() -> list:
             "6.1",
             "Interpretimi i rezultateve",
             [
-                "Gjetja më e qëndrueshme e këtij punimi është se strategjitë e publikuara "
-                "të detektimit kanë precizion të lartë dhe recall të ulët. Kur ato ndezin, "
-                "kanë kryesisht të drejtë; por i humbin shumicën e rasteve që rishikuesit "
-                "i shënojnë. Për një mjet praktik kjo nuk është domosdoshmërisht e keqe: "
+                "Gjetja më e qëndrueshme e këtij punimi është se te strategjitë e publikuara "
+                "precizioni është shumë mbi recall-in. Kur ndezin, kanë më shpesh të drejtë "
+                "sesa gabim, por i humbin shumicën e rasteve që rishikuesit i shënojnë. Për "
+                "një mjet praktik kjo nuk është domosdoshmërisht e keqe: "
                 "një sinjal i rrallë por i besueshëm konsumohet më lehtë se një listë e "
                 "gjatë me alarme false.",
                 "Ndarja sipas ashpërsisë e ndryshon leximin. Te tri nga katër erërat, "
@@ -784,10 +839,9 @@ def chapter_6() -> list:
                 "vetëm e fsheh krejt këtë, dhe pikërisht për këtë arsye recall-i "
                 "raportohet i ndarë sipas etiketës që caktuan rishikuesit.",
                 "Modelet e mësimit të makinës e tejkalojnë qartë qasjen me rregulla në çdo "
-                "erë. Por krahasimi qelizë për qelizë tregon se ato nuk e zëvendësojnë "
-                "atë plotësisht: te Feature Envy rregulli kap raste që modeli i humb, dhe "
-                "kjo është e vetmja erë ku bashkimi i dy qasjeve do të kishte kuptim "
-                "praktik.",
+                "erë. Te Feature Envy rregulli kap raste që modeli i humb, por bashkimi i "
+                "dy qasjeve nuk e ngre MCC-në as atje (Nënkapitulli 5.3). Vlerë praktike ka "
+                "prerja: kur të dyja pajtohen, precizioni del mbi secilën qasje veç.",
                 "Përparësia qëndron edhe kur matet me interval besimi, por jo pa kusht. Kur "
                 "rregullit i jepet pragu i tij më i mirë nga fshirja — krahasimi më bujar që "
                 "mund t'i bëhet — dallimi te Long Method e përfshin zeron. Pra pretendimi "
@@ -1070,9 +1124,10 @@ def _results_sections() -> list:
             "",
             [
                 f"Të gjitha shifrat e këtij kapitulli janë prodhuar mbi {scored} mostra "
-                f"nga {dataset['repositories']} depo, dhe rigjenerohen me një komandë. "
+                f"nga {_repositories_in_dataset()} depo, dhe rigjenerohen me një komandë. "
                 "Agregimi i etiketave është mesatarja e rrumbullakosur lart, përveç "
                 "aty ku thuhet ndryshe.",
+                _coverage_sentence(),
                 ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
                  "Shpërndarja e mostrave sipas erës"),
                 "Nënkapitujt 5.1 deri 5.4 u përgjigjen pyetjeve kërkimore sipas radhës së "

@@ -26,6 +26,7 @@ import os
 from chapters import (
     SMELL_SQ,
     _load,
+    _repositories_in_dataset,
 )
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -267,7 +268,7 @@ def build() -> str:
         slide,
         [
             (f"{dataset['rows']:,}".replace(",", " "), "mostra të matura"),
-            (f"{dataset['repositories']}", "depo Java"),
+            (f"{_repositories_in_dataset()}", "depo Java"),
             (f"{len(smells)}", "erëra"),
         ],
     )

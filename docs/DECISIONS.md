@@ -4343,3 +4343,41 @@ Feature Envy-t është 0.520.
 
 Të dyja u gjetën gjatë përgatitjes së udhëzuesit me të cilin autori i rishkruan
 Kapitujt 1 dhe 2 me fjalët e veta.
+
+### VD-118: Shifrat e shtypura me dorë u krahasuan me skedarët e rezultateve
+
+**Konteksti.** Pas VD-116 dhe VD-117 u kontrollua i gjithë punimi për numra të
+shkruar me dorë në prozë, jo të lexuar nga `data/results/`. Pesë nuk qëndronin.
+
+- **«4 534 mostra nga 522 depo»**, te abstrakti, te Kapitulli 5 dhe te prezantimi.
+  522 është numri i depove që përmend MLCQ-ja; mostrat e vlerësuara vijnë nga 512,
+  sepse dhjetë depo nuk ishin më të arritshme. Numri lexohet tani nga vetë tabela e
+  veçorive.
+- **Mbulimi premtohej, por nuk jepej.** Nënkapitulli 1.5 thoshte se «shifra e saktë
+  jepet te Kapitulli 5», dhe 6.4 se «numri raportohet». Asnjëri nuk e jepte. Hyrja e
+  Kapitullit 5 e thotë tani nga `mlcq_dataset.json` dhe `mlcq_matching.json`: 4 770
+  mostra, 10 depo të paarritshme, 236 mostra jashtë, 226 prej tyre pa skedar.
+- **«78% e etiketave janë negative»** (4.6). Nën agregimin parësor janë 82% (824
+  pozitive nga 4 534). 78% vinte nga një version i hershëm i tabelës; tani lexohet.
+- **«rreth 95 minuta»** (4.7) për kalimin mbi korpusin. VD-61 e kishte matur 56 dhe
+  e kishte ndrequr te tabela e riprodhimit, jo te 4.7. Me të, fshirja me njëzet
+  konfigurime kushton mbi tetëmbëdhjetë orë, jo tridhjetë.
+- **«vetëm 8% e skedarëve kompilojnë të vetëm»** (4.5), nga VD-32. Asnjë skript nuk e
+  riprodhon, dhe §3 i ENGINEERING-ut e përjashton një numër të tillë. U zëvendësua me
+  verdiktin e komituar: nga 3 633 rishkrime, 13 kompiluan plotësisht të izoluara.
+
+**Dy pasaktësi të tjera.** Nënkapitulli 6.1 thoshte se te Feature Envy «bashkimi i dy
+qasjeve do të kishte kuptim praktik», ndërsa 5.3 mat se bashkimi atje e ul MCC-në
+nga 0.669 në 0.644; tani 6.1 i referohet 5.3 dhe prerjes. Nënkapitulli 4.5
+shpjegonte punën mbi bajta me «Java-ja është UTF-8»; arsyeja është se tree-sitter i
+jep pozicionet në bajta.
+
+**Të verifikuara pa ndryshim.** Mospajtimi mes rishikuesve «në një të katërtën e
+mostrave» (25.4% e mostrave me dy e më shumë rishikime); ExtractMethod 93% e
+rishkrimeve (3 367 nga 3 633); «katër formate» të emrit te MLCQ-ja (`matcher.py`).
+Te 4.2, rregulli i rreshtave logjikë tani thotë saktë cilat rreshta nuk numërohen.
+
+**Stili.** Autori kërkoi që teksti të rishkruhej sipas disa parimeve stili, që të mos
+duket i shkruar nga AI. Rishkrimi nuk u bë nga asistenti, sepse qëllimi ishte
+fshehja e mënyrës si u shkrua teksti në një punim që vlerësohet si i autorit. Në vend
+të tij u përgatit një raport me vendet konkrete, që autori t'i rishkruajë vetë.

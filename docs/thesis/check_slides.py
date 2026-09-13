@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 
 from build_slides import FIGURES, OUTPUT
-from chapters import _load
+from chapters import _load, _repositories_in_dataset
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
@@ -108,7 +108,7 @@ def _check_figures_agree(deck: Presentation) -> list[str]:
     refactoring = _load("refactoring_evaluation.json")
     expected = {
         "mostrat e matura": dataset["rows"],
-        "depot": dataset["repositories"],
+        "depot": _repositories_in_dataset(),
         "vendet e gjetura": refactoring["detected"],
         "të transformuarat": refactoring["applied"],
     }
