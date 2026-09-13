@@ -4215,3 +4215,21 @@ vitin pas autorit, si shembulli i vetë shablloni dhe APA-ja, ndërsa rregulli p
 e liston vitin në fund. Logoja futet e pandryshuar nga skedari i shtuar më 31 gusht,
 por nuk u krahasua piksel për piksel me atë të shabllonit. Titulli akademik i mentores
 dhe dy vendet [PLOTËSO] mbeten për autorin.
+
+### VD-114: Fjalori, titulli i Kapitullit 2, dhe interpretimi që kishte mbetur te rezultatet
+
+**Fjalori nuk ishte i renditur dhe i mungonin dy terma.** Lista u rrit në dy valë dhe
+dilte me AMW pas WOC. Tani renditet alfabetikisht kur renderohet, me vizën e gjatë të
+shembullit të shabllonit («HHI – Herfindahl-Hirschman Index»). DECOR dhe PMD, që teksti
+i përdor, u shtuan.
+
+**Titulli i Kapitullit 2.** Të dy dokumentet zyrtare e shkruajnë «SHQYRTIMI I
+LITERATURËS (HISTORIKU)»; punimi e kishte pa pjesën në kllapa. Tani përputhet.
+
+**Dy fjali interpretimi te Nënkapitulli 5.4.** Rregulli e do kapitullin e rezultateve pa
+interpretim. «Kjo është arsyeja pse verifikimi empirik nuk zëvendësohet dot me teste
+njësie» kaloi te 6.1, dhe kuptimi i matjes brenda kontekstit të projektit kaloi te 6.4,
+Kufizimet. Numrat mbeten te 5.4. Fjalitë e tjera me «prandaj» atje shpjegojnë pse u bë
+një matje, jo çfarë do të thotë ajo, ndaj mbeten.
+
+Kapitujt 1–6 kanë tani 9 860 fjalë bashkë me tabelat.

@@ -458,7 +458,11 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
         body(doc, entry)
 
     unnumbered_heading(doc, "Fjalori i termave")
-    for term in GLOSSARY:
+    # Renditur alfabetikisht kur renderohet, jo kur shkruhet: lista u rrit në dy
+    # valë dhe dilte me AMW pas WOC. Viza e gjatë është ajo e shembullit të shabllonit,
+    # «HHI – Herfindahl-Hirschman Index» (VD-114).
+    for term in sorted(GLOSSARY, key=str.lower):
+        term = term.replace(" - ", " – ", 1)
         bullet(doc, term)
 
 
@@ -685,6 +689,8 @@ GLOSSARY = [
     "NOPA - Number of Public Attributes, numri i atributeve publike",
     "NP - Number of Parameters, numri i parametrave",
     "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
+    "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al.",
+    "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
 ]
 
 INTRODUCTION = [
@@ -841,7 +847,7 @@ INTRODUCTION = [
 ]
 
 REMAINING_CHAPTERS = [
-    (2, "Shqyrtimi i literaturës"),
+    (2, "Shqyrtimi i literaturës (historiku)"),
     (3, "Deklarimi i problemit"),
     (4, "Metodologjia"),
     (5, "Rezultatet"),

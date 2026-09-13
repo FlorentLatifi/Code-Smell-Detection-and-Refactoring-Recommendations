@@ -814,6 +814,10 @@ def chapter_6() -> list:
                 "mund t'i bëhet — dallimi te Long Method e përfshin zeron. Pra pretendimi "
                 "vlen përgjithësisht, dhe jo pikërisht te era ku rregulli tashmë punonte më "
                 "mirë. Ky është kufizim i krahasimit, jo i njërës qasje.",
+                "Rishkrimet prishëse që i kapi korpusi, ndërsa testet e shkruara me dorë "
+                "për të njëjtin transformim nuk i kapën (Nënkapitulli 5.4), tregojnë se "
+                "verifikimi empirik mbi kod real nuk zëvendësohet dot me teste njësie, "
+                "sado të kujdesshme. Kjo është vetë një gjetje e këtij punimi.",
             ],
         ),
         (
@@ -872,8 +876,11 @@ def chapter_6() -> list:
                 "etiketon dot hidhen në vend që të lexohen si negative.",
                 "Verifikimi i refaktorimeve është më i dobët se sa do të dëshirohej. "
                 "Kompilimi i izoluar nuk është i mundur për shumicën e skedarëve, ndaj "
-                "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Verifikimi "
-                "me suitat e testeve të vetë projekteve mbetet punë e ardhshme.",
+                "për ta pretendimi kufizohet te «nuk shton lloj të ri gabimi». Kompilimi i "
+                "të njëjtave rishkrime brenda projektit të tyre (Nënkapitulli 5.4) tregon "
+                "se shumica e këtyre rasteve i detyrohen izolimit të kompilimit dhe jo "
+                "rishkrimit. Verifikimi me suitat e testeve të vetë projekteve mbetet punë "
+                "e ardhshme.",
                 "Arsyeja pse ai verifikim nuk u bë është vetë ndërtimi i korpusit, jo "
                 "mungesa e kohës. Shkarkuesi ruan me qëllim vetëm skedarët me prapashtesë "
                 "«.java», sepse kjo është gjithçka që i duhet analizës dhe e mban korpusin "
@@ -1182,9 +1189,7 @@ def _results_sections() -> list:
                 "tip, dhe një variabël e pacaktuar kalohej si parametër. Të treja "
                 "prodhonin kod që nuk kompilon.",
                 "Asnjëri prej tyre nuk ishte kapur nga njëzet e një testet e shkruara me "
-                "dorë për këtë transformim. I kapi korpusi. Kjo është arsyeja pse "
-                "verifikimi empirik nuk zëvendësohet dot me teste njësie, sado të "
-                "kujdesshme, dhe është vetë një gjetje e këtij punimi.",
+                "dorë për këtë transformim. I kapi korpusi.",
             ],
         ),
         (
@@ -2565,10 +2570,7 @@ def _project_context_paragraphs() -> list:
          ["Verdikti", "I izoluar", "Brenda projektit"], rows),  # fmt: skip
         f"Verdikti më i fortë kalon nga {compiles_alone} te {compiles_context} nga "
         f"{total} rishkrime, pra nga {compiles_alone / total:.1%} në "
-        f"{compiles_context / total:.1%}. Kjo do të thotë se pjesa dërrmuese e "
-        "rasteve ku sistemi thotë vetëm «nuk shtova gabim» janë raste ku ai nuk mund "
-        "të thoshte më shumë për shkak të mënyrës së kompilimit, jo për shkak të "
-        "rishkrimit.",
+        f"{compiles_context / total:.1%}.",
         _overturned(regressions, total)
         + (
             f" {unchecked} kompilime e kaluan kufirin kohor dhe numërohen si të "
