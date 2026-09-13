@@ -26,6 +26,16 @@ const FIXTURES = "backend/tests/fixtures";
 
 /** Vetëm shkeljet, me nyjën e parë si provë se cila është. */
 async function violations(page: Page): Promise<string[]> {
+  // Kontrasti matet mbi ngjyrat e qetësuara. Butonat kanë `transition`, dhe pas
+  // ndërrimit të temës axe e lexonte ngjyrën në mes të kalimit: katër butone
+  // «Shfaq» dilnin 1.61:1 në çastin e parë dhe mbi kufirin pas tij. Pritet mbarimi
+  // i çdo animacioni që po ecën, jo një kohë e zgjedhur (VD-109).
+  //
+  // `catch`: një kalim që zëvendësohet nga një tjetër anulohet, dhe `finished` i
+  // tij refuzohet me `AbortError`. Për këtë pritje, i anuluari ka mbaruar.
+  await page.evaluate(() =>
+    Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))),
+  );
   await page.evaluate(axe.source);
   return page.evaluate(async () => {
     const result = await window.axe.run(document, { resultTypes: ["violations"] });

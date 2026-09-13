@@ -302,7 +302,7 @@ function ExternalTool() {
       title="Kundrejt një mjeti të gatshëm"
       note={`PMD ${pmd.pmd_version} mbi të njëjtat depo, me pragjet e veta, i pikëzuar me të njëjtin kod. Intervali është i çiftuar mbi riterheqje depoje: kur e përmban zeron, dy anët nuk dallohen.`}
     >
-      <table className="grid wide">
+      <table className="data-grid wide">
         <thead>
           <tr>
             <th scope="col">Era</th>
@@ -418,7 +418,7 @@ function AgreementBar({ smell }: { smell: string }) {
 function ThresholdSweep({ smell }: { smell: string }) {
   const swept = sweep.per_smell[smell];
   return (
-    <table className="grid sweep">
+    <table className="data-grid sweep">
       <thead>
         <tr>
           <th>Pragu</th>

@@ -26,3 +26,10 @@ if (!("ResizeObserver" in globalThis)) {
 if (typeof window !== "undefined") {
   window.scrollTo = () => {};
 }
+
+// `scrollIntoView` nuk ekziston fare te jsdom. Aplikacioni e thërret kur hap një
+// vend nga paneli ose një skedar nga tabela, dhe pa këtë thirrja do të hidhte një
+// përjashtim brenda `requestAnimationFrame`, larg testit që e shkaktoi.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}

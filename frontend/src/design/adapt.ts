@@ -60,24 +60,34 @@ function label(site: Site): string {
   return `${site.class_name}${method}`;
 }
 
-/** Skedarët me më shumë vende, me ashpërsinë më të rëndë të secilit. */
+/**
+ * Skedarët me më shumë vende, me ashpërsinë më të rëndë të secilit.
+ *
+ * Rreshti emërtohet sipas skedarit, jo sipas klasës së parë që ndodh brenda tij.
+ * Java e emërton skedarin sipas klasës së tij publike, ndaj rrënja është klasa
+ * që numri i përket. Versioni i mëparshëm merrte klasën e vendit të parë, e cila
+ * shpesh ishte një klasë ndihmëse: `OrderManager.java` dilte si «Customer» me pesë
+ * erëra, ndërsa `Customer` mban vetëm një prej tyre (VD-109).
+ */
 export function fileRowsOf(sites: Site[]): FileRow[] {
   const severest = new Map<string, Severity>();
-  const className = new Map<string, string>();
   for (const site of sites) {
     const held = severest.get(site.file_path);
     const worst = site.worst as Severity;
     if (!held || ORDER.indexOf(worst) < ORDER.indexOf(held)) severest.set(site.file_path, worst);
-    if (!className.has(site.file_path)) className.set(site.file_path, site.class_name);
   }
 
   return hotspots(sites).map((spot) => ({
-    cls: className.get(spot.file) ?? (spot.file.split("/").pop() ?? spot.file),
+    cls: stem(spot.file),
     path: spot.file,
     file: spot.file,
     smells: spot.smells,
     severity: severest.get(spot.file) ?? "minor",
   }));
+}
+
+function stem(file: string): string {
+  return (file.split("/").pop() ?? file).replace(/\.java$/, "");
 }
 
 /**

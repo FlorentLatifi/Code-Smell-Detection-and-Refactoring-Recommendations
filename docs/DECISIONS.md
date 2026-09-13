@@ -3975,3 +3975,64 @@ e tij, dhe dy blloqe që rrëshqasin horizontalisht pa qenë të arritshme me ta
 pikselash. Matja e parë tregoi 487 piksela te 375, por ajo ishte artefakt i
 matjes menjëherë pas ndryshimit të dritares, para se kontejneri i Recharts-it të
 rillogaritej. E matur pas qetësimit, faqja nuk rrëshqet anash askund.
+
+### VD-109: Fleta e vjetër në një shtresë nën Tailwind-in, dhe çfarë fshihte
+
+**Konteksti.** Një kalim i ri mbi ndërfaqen, këtë herë duke krahasuar stilin e
+llogaritur të çdo butoni me klasat që i shkruan komponenti. Asnjë nga gjetjet nuk
+kapet nga një test që lexon DOM-in, dhe e para shpjegon pjesën më të madhe të
+ankesës se paneli «nuk duket si maketi».
+
+**Butonat nuk ishin ata që thoshte kodi.** `styles.css` ngarkohej jashtë çdo
+shtrese kaskade, ndërsa utilitetet e Tailwind-it rrinë në shtresën `utilities`.
+Rregulli është i prerë: CSS-ja jashtë shtresave fiton mbi çdo shtresë, pavarësisht
+specifikimit. Kështu rregulli i përgjithshëm `button` i fletës së vjetër fitonte
+mbi çdo klasë. Butoni «Skano sërish» dhe «Përgatit patch-in» nuk ishin vjollcë por
+gri me kufi, skeda e zgjedhur e rreshtit anësor nuk dallohej fare, dhe çdo buton
+kishte 34 piksela lartësi dhe qoshe 6-pikselëshe. Matur: sfondi i butonit kryesor
+ishte `rgb(29, 34, 42)` në vend të `#4f46e5`.
+
+Fleta e vjetër importohet tani nga `utilities.css` me `layer(legacy)`, në një
+shtresë para `utilities`. Një veti që e vendos një utilitet fiton gjithmonë; ajo që
+nuk e vendos asnjë utilitet vjen ende nga fleta e vjetër, ndaj komponentët e
+pamigruar nuk ndryshojnë. Çmimi është i kundërt me atë të VD-106: vetitë që
+rregulli `button` i jep pa u kërkuar (kufiri, mbushja, sfondi) rrjedhin te butonat
+e rinj që nuk i shkruajnë vetë, ndaj ata shkruajnë tani `border-0`, `p-0` ose
+`bg-transparent` aty ku duhet.
+
+**Dy tabela kishin mbetur me emrin e vjetër.** Riemërtimi `.grid` → `.data-grid`
+kishte kapur katër tabela nga gjashtë. Tabela krahasuese me PMD-në dhe tabela e
+lëvizjes së pragjeve mbanin ende `grid`, i cili nën Tailwind-in do të thotë
+`display: grid` mbi një `<table>`. Të tetë tabelat e pamjes së vlerësimit maten
+tani `display: table`.
+
+**Tabela e skedarëve emërtonte klasën e gabuar.** Rreshti merrte klasën e vendit
+të parë brenda skedarit: `OrderManager.java` dilte si «Customer» me pesë erëra,
+ndërsa `Customer` mban vetëm një. Rreshti emërtohet tani sipas skedarit, rrënja e
+të cilit në Java është klasa publike. Rreshti ishte gjithashtu `<tr onClick>`, i
+cili nuk merr fokus, ndaj tabela nuk përdorej me tastierë. Emri është tani buton,
+dhe klikimi e ngushton listën te ai skedar dhe e sjell në pamje.
+
+**Hover-i i butonit kryesor binte nën kufirin.** E bardha mbi `brand-500` jep
+4.46:1. Hover-i shkon tani më i errët, te `brand-700`, ku jep 7.9:1. Testi me axe e
+kapi sepse klikimi i «Përgatit patch-in» e lë mouse-in mbi buton.
+
+**Testi me axe lexonte ngjyra në mes të kalimit.** Pas ndërrimit të temës, katër
+butone dilnin 1.61:1 në çastin e parë dhe mbi kufirin pas 150 ms. Kjo nuk ishte
+defekt i ngjyrës por i matjes. Ndihmësi pret tani mbarimin e çdo animacioni që po
+ecën, jo një kohë të zgjedhur. Një kalim që zëvendësohet nga një tjetër refuzon
+premtimin e vet me `AbortError`, dhe për këtë pritje ai llogaritet i mbaruar.
+
+**Shpejtësia e shkrimit, një përmirësim i vogël.** Mbi `apache/ambari`, me 4 249
+vende, çdo shkronjë e kërkimit rivizatonte edhe panelet sipër listës, të cilat nuk
+varen nga filtrat, bashkë me dy grafikët e Recharts-it. Me `useMemo` dhe `memo`,
+matur mbi ndërtimin e zhvillimit:
+
+| | Para | Pas |
+|---|---|---|
+| `keydown`, pesë shkronja (ms) | 88, 56, 72, 48, 48 | 72, 48, 56, 32, 24 |
+| Detyra të gjata mbi 50 ms | 2 | 0 |
+
+Diferenca është e vogël dhe matja ka zhurmë. Pjesa kryesore e kostos mbetet
+filtrimi i vetë listës, i cili duhet të ndodhë. Kjo raportohet si e tillë dhe jo
+si zgjidhje e ngadalësisë.

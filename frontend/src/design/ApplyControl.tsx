@@ -68,14 +68,14 @@ export function ApplyControl({
             <button
               onClick={write}
               disabled={busy}
-              className="h-8 flex-1 rounded-lg bg-brand-600 text-xs font-semibold text-white transition hover:bg-brand-500 disabled:opacity-50"
+              className="h-8 flex-1 rounded-lg border-0 bg-brand-600 text-xs font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
             >
               {busy ? "Duke shkruar…" : "Po, shkruaji"}
             </button>
             <button
               onClick={() => setConfirming(false)}
               disabled={busy}
-              className="h-8 rounded-lg border border-ink-200 px-3 text-xs font-medium text-ink-600 transition hover:bg-ink-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
+              className="h-8 rounded-lg border border-ink-200 bg-transparent px-3 text-xs font-medium text-ink-600 transition hover:bg-ink-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
             >
               Anulo
             </button>
@@ -85,7 +85,7 @@ export function ApplyControl({
         <button
           onClick={() => setConfirming(true)}
           disabled={tree === null}
-          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-ink-200 text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-ink-200 bg-transparent text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
         >
           <HardDriveDownload className="h-4 w-4" aria-hidden="true" />
           Apliko te skedarët

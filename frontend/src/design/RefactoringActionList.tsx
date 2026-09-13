@@ -130,7 +130,7 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
 
         <button
           onClick={() => onOpen(item.key)}
-          className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ink-200 px-2.5 text-xs font-medium text-ink-600 transition hover:bg-white dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-ink-200 bg-transparent px-2.5 text-xs font-medium text-ink-600 transition hover:bg-white dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
         >
           <Eye className="h-3.5 w-3.5" aria-hidden="true" />
           {item.automated ? "Shfaq diff-in" : "Shfaq arsyen"}
@@ -220,7 +220,7 @@ export function PatchActions({
         <button
           onClick={onPrepare}
           disabled={busy || ready === 0}
-          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-brand-600 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:opacity-50"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border-0 bg-brand-600 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           <GitPullRequestArrow className="h-4 w-4" aria-hidden="true" />
           {busy ? "Duke përgatitur…" : "Përgatit patch-in"}

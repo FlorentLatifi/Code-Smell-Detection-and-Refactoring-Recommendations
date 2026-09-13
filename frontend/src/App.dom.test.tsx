@@ -731,3 +731,49 @@ describe("paneli i djathtë para zgjedhjes", () => {
     expect(screen.queryByText(/Verdikti i modelit/)).toBeNull();
   });
 });
+
+describe("skedarët më të ndotur", () => {
+  // Defekti i VD-109: rreshti merrte emrin e klasës së vendit të parë, dhe një
+  // klasë ndihmëse me një erë dilte si pronarja e tri erërave të skedarit.
+  function helperFirst(): Analysis {
+    return analysis([
+      smell({
+        class_name: "Helper",
+        method: null,
+        scope: "class",
+        smell_type: "DataClass",
+        severity: "minor",
+        start_line: 300,
+      }),
+      smell({ method: "m0(int)" }),
+      smell({ method: "m1(int)", start_line: 200 }),
+    ]);
+  }
+
+  it("e emërton rreshtin sipas skedarit, jo sipas klasës së parë brenda tij", async () => {
+    serve(helperFirst());
+    render(<App />);
+    await analyse();
+
+    const card = screen.getByRole("region", { name: "Skedarët më të ndotur" });
+
+    // Skedari `com/acme/Ledger.java` ka rrënjën `Ledger`.
+    expect(within(card).getByRole("button", { name: "Ledger" })).toBeDefined();
+    expect(within(card).queryByRole("button", { name: "Helper" })).toBeNull();
+  });
+
+  it("e hap skedarin me një buton, që tabela të përdoret me tastierë", async () => {
+    serve(helperFirst());
+    render(<App />);
+    await analyse();
+
+    const card = screen.getByRole("region", { name: "Skedarët më të ndotur" });
+    fireEvent.click(within(card).getByRole("button", { name: "Ledger" }));
+
+    // Kërkimi merr shtegun e plotë, i cili përputhet me çdo vend të skedarit.
+    expect(screen.getByPlaceholderText(/klasë, metodë/)).toHaveProperty(
+      "value",
+      "com/acme/Ledger.java",
+    );
+  });
+});

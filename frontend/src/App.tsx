@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { allowedRoot, analyse, Cancelled, treeState } from "./api";
 import { Detail } from "./Detail";
 import { Filters } from "./Filters";
@@ -360,13 +360,6 @@ export function App() {
     setShownSmell(smell ?? site.smells[0]);
   }
 
-  /**
-   * Ndërro pamjen dhe çoje fokusin te përmbajtja e re.
-   *
-   * Pa këtë, një përdorues me tastierë shtyp skedën dhe fokusi mbetet mbi butonin:
-   * ekrani ndryshon tërësisht poshtë tij dhe asgjë nuk e thotë. Tabulimi i radhës
-   * nis nga koka, jo nga ajo që sapo u hap.
-   */
   /** Kthen listën te gjendja e saj e plotë, pa e prekur analizën. */
   function clearFilters(): void {
     setSeverity("all");
@@ -397,6 +390,13 @@ export function App() {
     requestAnimationFrame(() => document.getElementById(`tab-${id}`)?.focus());
   }
 
+  /**
+   * Ndërro pamjen dhe çoje fokusin te përmbajtja e re.
+   *
+   * Pa këtë, një përdorues me tastierë shtyp skedën dhe fokusi mbetet mbi butonin:
+   * ekrani ndryshon tërësisht poshtë tij dhe asgjë nuk e thotë. Tabulimi i radhës
+   * nis nga koka, jo nga ajo që sapo u hap.
+   */
   function show(next: View): void {
     setView(next);
     // Pas renderimit, ndryshe fokusi shkon te përmbajtja e vjetër.
@@ -408,8 +408,23 @@ export function App() {
     );
   }
 
-  const overview =
-    screen.state === "ready" ? overviewOf(screen.analysis.summary, allSites, applied.length) : null;
+  // Panelet sipër listës nuk varen nga filtrat. Pa `useMemo`, çdo shkronjë e
+  // kërkimit i rillogariste mbi çdo vend dhe i rivizatonte bashkë me dy grafikët:
+  // mbi `apache/ambari` (4 249 vende) kjo ishte 48–88 ms për shkronjë (VD-109).
+  const overview = useMemo(
+    () =>
+      screen.state === "ready" ? overviewOf(screen.analysis.summary, allSites, applied.length) : null,
+    [screen, allSites, applied.length],
+  );
+  const suggestions = useMemo(() => suggestionsOf(allSites), [allSites]);
+  const fileRows = useMemo(() => fileRowsOf(allSites), [allSites]);
+  const scores = useMemo(() => scoreRows(), []);
+
+  /** Nga tabela e skedarëve te lista, e ngushtuar te ai skedar dhe e dukshme. */
+  const openFile = useCallback((file: string) => {
+    setQuery(file);
+    requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth" }));
+  }, []);
 
   return (
     <DashboardLayout
@@ -491,7 +506,7 @@ export function App() {
             <div className="space-y-4">
             <OverviewMetrics data={overview} />
             <RefactoringActionList
-              suggestions={suggestionsOf(allSites)}
+              suggestions={suggestions}
               onOpen={openSite}
               applied={applied}
               revert={revert}
@@ -513,8 +528,8 @@ export function App() {
             </RefactoringActionList>
 
             <div className="grid gap-4 xl:grid-cols-2">
-              <PerformanceCharts scores={scoreRows()} />
-              <SmellyFilesTable rows={fileRowsOf(allSites)} onPick={setQuery} />
+              <PerformanceCharts scores={scores} />
+              <SmellyFilesTable rows={fileRows} onPick={openFile} />
             </div>
 
             {screen.analysis.model && <ModelBar block={screen.analysis.model} />}

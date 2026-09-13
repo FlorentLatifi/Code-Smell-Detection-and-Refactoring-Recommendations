@@ -54,7 +54,7 @@ export function DashboardLayout({
       >
         Kalo te përmbajtja
       </a>
-      <header className="sticky top-0 z-20 flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 border-b border-ink-200 bg-white/85 px-4 py-2 backdrop-blur sm:flex-nowrap sm:py-0 dark:border-ink-800 dark:bg-ink-900/85">
+      <header className="sticky top-0 z-20 flex h-auto min-h-14 flex-wrap items-center gap-x-4 gap-y-2 border-b border-ink-200 bg-white/85 px-4 py-2 backdrop-blur sm:flex-nowrap sm:py-0 dark:border-ink-800 dark:bg-ink-900/85">
         <div className="flex shrink-0 items-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
             <Boxes className="h-4 w-4" />
@@ -73,7 +73,7 @@ export function DashboardLayout({
           {busy && onStop ? (
             <button
               onClick={onStop}
-              className="flex h-9 items-center gap-2 rounded-lg border border-ink-300 px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+              className="flex h-9 items-center gap-2 rounded-lg border border-ink-300 bg-transparent px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-100 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
             >
               <Square className="h-3.5 w-3.5" />
               Ndalo
@@ -82,7 +82,7 @@ export function DashboardLayout({
             <button
               onClick={onScan}
               disabled={busy || !canScan}
-              className="flex h-9 items-center gap-2 rounded-lg bg-brand-600 px-3.5 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+              className="flex h-9 items-center gap-2 rounded-lg border-0 bg-brand-600 px-3.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             >
               <Play className="h-4 w-4" />
               {busy ? "Duke skanuar…" : scanLabel}
@@ -91,7 +91,7 @@ export function DashboardLayout({
           <button
             onClick={onTheme}
             aria-label={dark ? "Kalo te tema e çelët" : "Kalo te tema e errët"}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-ink-200 text-ink-500 transition hover:bg-ink-100 dark:border-ink-800 dark:hover:bg-ink-800"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-ink-200 bg-transparent p-0 text-ink-500 transition hover:bg-ink-100 dark:border-ink-800 dark:hover:bg-ink-800"
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
@@ -150,7 +150,7 @@ function Rail({
           title={item.label}
           aria-selected={view === item.id}
           tabIndex={view === item.id ? 0 : -1}
-          className={`grid h-10 w-10 place-items-center rounded-lg transition ${
+          className={`grid h-10 w-10 place-items-center rounded-lg border-0 p-0 transition ${
             view === item.id
               ? "bg-brand-600 text-white"
               : "text-ink-500 hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-ink-800 dark:hover:text-ink-100"

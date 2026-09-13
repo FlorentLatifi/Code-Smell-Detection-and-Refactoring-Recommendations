@@ -9,6 +9,7 @@
 // numrin e vendeve, dhe klikimi nga paneli te lista nuk ndryshon njësi në rrugë.
 
 import { AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, TrendingDown } from "lucide-react";
+import { memo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card } from "./DashboardLayout";
 
@@ -47,7 +48,8 @@ export function slicesOf(counts: Record<string, number>): Slice[] {
     .map(([name, value], index) => ({ name, value, color: SLICE_COLORS[index % SLICE_COLORS.length] }));
 }
 
-export function OverviewMetrics({ data }: { data: Overview }) {
+/** Nuk varet nga filtrat; `memo` e mban unazën jashtë çdo shkronje të kërkimit. */
+export const OverviewMetrics = memo(function OverviewMetrics({ data }: { data: Overview }) {
   return (
     <div className="grid gap-4 lg:grid-cols-4">
       <Metric
@@ -70,7 +72,7 @@ export function OverviewMetrics({ data }: { data: Overview }) {
       </Card>
     </div>
   );
-}
+});
 
 const TONES = {
   brand: { ring: "ring-brand-500/20", chip: "bg-brand-500/10 text-brand-ink", value: "text-ink-900 dark:text-white" },

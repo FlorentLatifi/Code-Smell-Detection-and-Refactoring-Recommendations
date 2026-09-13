@@ -1,6 +1,7 @@
 // Dy panelet e mbetura: krahasimi i dy qasjeve, dhe skedarët më të ndotur.
 
 import { FileCode2 } from "lucide-react";
+import { memo } from "react";
 import {
   Bar,
   BarChart,
@@ -35,7 +36,7 @@ export interface ScoreRow {
  * te 1 sepse ai është maksimumi, dhe një bosht që rritet me të dhënat i bën 0.27
  * e 0.29 të duken larg njëra-tjetrës.
  */
-export function PerformanceCharts({ scores }: { scores: ScoreRow[] }) {
+function PerformanceChartsView({ scores }: { scores: ScoreRow[] }) {
   const label = scores
     .map((row) => `${row.smell}: rregullat ${row.rules ?? "—"}, modeli ${row.model ?? "—"}`)
     .join("; ");
@@ -90,7 +91,7 @@ const PILL: Record<Severity, string> = {
   minor: "bg-low/10 text-low-ink ring-low/20",
 };
 
-export function SmellyFilesTable({
+function SmellyFilesTableView({
   rows,
   onPick,
 }: {
@@ -112,16 +113,19 @@ export function SmellyFilesTable({
           </thead>
           <tbody className="divide-y divide-ink-200 dark:divide-ink-800">
             {rows.map((row) => (
-              <tr
-                key={row.file}
-                onClick={() => onPick(row.file)}
-                className="cursor-pointer transition hover:bg-ink-50 dark:hover:bg-ink-800/40"
-              >
+              <tr key={row.file} className="transition hover:bg-ink-50 dark:hover:bg-ink-800/40">
                 <td className="px-4 py-2.5">
-                  <span className="flex items-center gap-2 font-medium text-ink-900 dark:text-white">
+                  {/* Buton e jo `onClick` mbi rreshtin: një `tr` nuk merr fokus, ndaj
+                      tabela nuk përdorej dot fare me tastierë. */}
+                  <button
+                    type="button"
+                    onClick={() => onPick(row.file)}
+                    title="Shfaq vendet e këtij skedari te lista"
+                    className="flex h-auto max-w-full items-center gap-2 rounded border-0 bg-transparent p-0 text-left font-medium text-ink-900 hover:underline dark:text-white"
+                  >
                     <FileCode2 className="h-3.5 w-3.5 shrink-0 text-ink-500" aria-hidden="true" />
                     <span className="truncate">{row.cls}</span>
-                  </span>
+                  </button>
                 </td>
                 <td
                   className="max-w-[220px] truncate px-4 py-2.5 font-mono text-xs text-ink-500 dark:text-ink-400"
@@ -160,3 +164,8 @@ function Th({ children, align = "left" }: { children: React.ReactNode; align?: "
     </th>
   );
 }
+
+// Asnjëri nuk varet nga filtrat, ndaj nuk kanë pse rivizatohen me çdo shkronjë të
+// kërkimit. Grafiku i Recharts-it është pjesa më e shtrenjtë e një rivizatimi.
+export const PerformanceCharts = memo(PerformanceChartsView);
+export const SmellyFilesTable = memo(SmellyFilesTableView);

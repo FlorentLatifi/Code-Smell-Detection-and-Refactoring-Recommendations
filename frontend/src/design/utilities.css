@@ -7,9 +7,19 @@
  * Çmimi paguhet te komponentët: pa preflight, çdo `ul` e mban pikën dhe
  * dyzetë pikselat e shfletuesit, ndaj ato e shkruajnë vetë `list-none` (VD-106).
  */
-@layer theme, base, components, utilities;
+@layer theme, base, legacy, components, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);
+/* Fleta e vjetër hyn në një shtresë nën utilitetet, jo jashtë çdo shtrese.
+ *
+ * CSS-ja jashtë shtresave fiton mbi çdo shtresë, pavarësisht specifikimit. Kur
+ * `styles.css` ngarkohej më vete, rregulli i saj i përgjithshëm `button` fitonte
+ * mbi çdo klasë Tailwind-i: butoni kryesor nuk ishte vjollcë, skeda e zgjedhur
+ * nuk dallohej, dhe çdo buton kishte 34 piksela lartësi e 6 qoshe, çfarëdo që
+ * thoshte komponenti (VD-109). Me këtë renditje, një veti që e vendos një
+ * utilitet fiton gjithmonë; ajo që nuk e vendos asnjë utilitet vjen ende nga
+ * fleta e vjetër, ndaj komponentët e pamigruar nuk ndryshojnë. */
+@import "../styles.css" layer(legacy);
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
@@ -28,6 +38,9 @@
   --color-brand-400: #818cf8;
   --color-brand-500: #6366f1;
   --color-brand-600: #4f46e5;
+  /* Hover-i i butonit kryesor shkon më i errët, jo më i çelët: e bardha mbi
+     brand-500 jep 4.46:1, nën kufirin, ndërsa mbi këtë jep 7.9:1 (VD-109). */
+  --color-brand-700: #4338ca;
 
   --color-high: #f43f5e;
   --color-medium: #f59e0b;
