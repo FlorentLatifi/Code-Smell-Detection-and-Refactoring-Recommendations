@@ -16,6 +16,19 @@ import pmdJson from "../../data/results/pmd_comparison.json";
 import refactoringJson from "../../data/results/refactoring_evaluation.json";
 import rulesJson from "../../data/results/rules_evaluation.json";
 import sweepJson from "../../data/results/threshold_sweep.json";
+import matchingJson from "../../data/results/mlcq_matching.json";
+
+/**
+ * Depot nga të cilat vijnë mostrat e vlerësuara.
+ *
+ * `mlcq_dataset.json` mban 522, numrin e depove që përmend MLCQ-ja. Dhjetë prej
+ * tyre nuk ishin më të arritshme, ndaj mostrat vijnë nga 512. Ekrani i parë dhe
+ * pamja e vlerësimit shkruanin 522 si burim të mostrave, i njëjti gabim që u
+ * ndreq te punimi (VD-118).
+ */
+export const corpusRepositories = (
+  matchingJson as unknown as { corpus_coverage: { repositories_available: number } }
+).corpus_coverage.repositories_available;
 
 export type Aggregation = "mean" | "max" | "min" | "unanimous";
 

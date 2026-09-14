@@ -27,19 +27,19 @@
   /* Grija e ndërfaqes. Teksti kryesor nuk është i zi: 4.5:1 e lart mbi të
      bardhën, dhe një ekran i lexuar për një orë është më i lehtë pak nën
      kontrastin e plotë. */
-  --ink: #111827;
-  --ink-soft: #4b5563;
-  /* 6.07:1 mbi të bardhën dhe 5.29:1 mbi tintën më të çelët ku ulet
-     (`--accent-wash`), pra mbi kufirin 4.5:1 të WCAG 2.1 AA për tekst normal.
+  --ink: #17212b;
+  --ink-soft: #46505c;
+  /* 5.85:1 mbi të bardhën dhe 5.16:1 mbi letrën (`--paper`), pra mbi kufirin
+     4.5:1 të WCAG 2.1 AA për tekst normal.
      Vlera e mëparshme #6b7280 e mbante kufirin vetëm mbi të bardhën e pastër
      (4.83:1) dhe binte te 4.21:1 mbi tintat — matur me axe mbi faqen e gjallë,
      jo mbi sfondin që supozohej (VD-108). */
-  --ink-faint: #5c636d;
-  --paper: #f6f7f9;
+  --ink-faint: #5b6672;
+  --paper: #eef1f4;
   --surface: #ffffff;
-  --sunken: #f1f3f5;
-  --rule: #d5d9e0;
-  --rule-soft: #e5e8ec;
+  --sunken: #f6f8fa;
+  --rule: #d5dbe2;
+  --rule-soft: #e4e8ed;
 
   /* Blu-ja e maketit dhe e figurave të punimit, me dy hapa për gjendjet. */
   --accent: #1f4e79;
@@ -54,9 +54,9 @@
 
   --critical: #b42318;
   --critical-wash: #fef3f2;
-  --major: #b54708;
+  --major: #8a4b04;
   --major-wash: #fffaeb;
-  --minor: #667085;
+  --minor: #5b6672;
   --minor-wash: #f2f4f7;
 
   --added: #067647;
@@ -66,9 +66,8 @@
 
   /* Serif-i mbetet i deklaruar për dokumentin e punimit; ndërfaqja nuk e prek. */
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --mono: "SF Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --sans: "Instrument Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono Variable", "Cascadia Mono", Consolas, monospace;
 
   --t-micro: 0.69rem;
   --t-small: 0.8125rem;
@@ -91,7 +90,7 @@
   --r-md: 8px;
   --r-lg: 10px;
 
-  --lift: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 4%);
+  --lift: 0 1px 2px rgb(21 27 34 / 5%);
   --lift-lg: 0 4px 8px -2px rgb(16 24 40 / 8%), 0 2px 4px -2px rgb(16 24 40 / 4%);
 
   --control: 34px;
@@ -105,26 +104,26 @@
    të mos mbeten të çelët brenda një ekrani të errët. */
 :root.dark {
   color-scheme: dark;
-  --ink: #e6e8eb;
-  --ink-soft: #a3aab4;
-  --ink-faint: #8b929c;
-  --paper: #0f1216;
-  --surface: #171b21;
-  --sunken: #1d222a;
-  --rule: #333a44;
-  --rule-soft: #262c34;
+  --ink: #e3e8ee;
+  --ink-soft: #b3bcc6;
+  --ink-faint: #95a0ac;
+  --paper: #0c1015;
+  --surface: #151b22;
+  --sunken: #1b222b;
+  --rule: #2f3843;
+  --rule-soft: #232b34;
 
-  --accent: #5b96d2;
-  --on-accent: #0f1216;
-  --accent-hover: #74a8dd;
-  --accent-wash: #17232f;
+  --accent: #8dbbe6;
+  --on-accent: #0c1015;
+  --accent-hover: #a5cbee;
+  --accent-wash: #17222e;
   --accent-line: #4d7ea8;
 
   --critical: #f08a7e;
   --critical-wash: #2a1614;
-  --major: #e0a960;
+  --major: #e3a257;
   --major-wash: #2a2114;
-  --minor: #a3aab4;
+  --minor: #a7b1bc;
   --minor-wash: #20252c;
 
   --added: #6ec18f;
@@ -461,8 +460,6 @@ button:disabled {
   margin-top: var(--s-1);
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 /* The one figure the reader came for. */
@@ -526,8 +523,6 @@ button:disabled {
   gap: 2px;
   color: var(--ink-faint);
   font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 select {
@@ -547,7 +542,8 @@ select:hover {
 }
 
 .count {
-  margin: 0 0 0 auto;
+  margin: 0;
+  padding: var(--s-2) var(--s-3) 0;
   color: var(--ink-soft);
   font-size: var(--t-small);
   font-variant-numeric: tabular-nums;
@@ -656,8 +652,6 @@ select:hover {
   margin-left: auto;
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -691,8 +685,6 @@ select:hover {
   border-bottom: 1px solid var(--rule-soft);
   color: var(--ink-faint);
   font: 600 0.7rem/1 var(--sans);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
 }
 
 .detail .where {
@@ -749,7 +741,7 @@ select:hover {
 
 /* A bar in the last column: how far past the threshold the measurement sits.
    Capped at five times, the same cap the severity score applies. */
-.excess span {
+.excess > span:not(.gauge) {
   display: block;
   height: 6px;
   min-width: 2px;
@@ -779,6 +771,9 @@ select:hover {
   margin: 0;
   padding-left: 17px;
   font-size: 0.87rem;
+  /* `ReplaceConditionalWithPolymorphism` është një fjalë e vetme, dhe te 390
+     piksela e shtynte panelin 3 piksela jashtë kartës. */
+  overflow-wrap: anywhere;
 }
 
 .refactorings li + li {
@@ -893,8 +888,6 @@ select:hover {
   margin: 20px 0 7px;
   color: var(--ink-faint);
   font: 600 0.7rem/1 var(--sans);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
 }
 
 .panel h3:first-of-type {
@@ -954,8 +947,6 @@ select:hover {
 .data-grid thead th {
   border-bottom: 1px solid var(--ink);
   font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .data-grid td {
@@ -1191,8 +1182,10 @@ select:hover {
 
 .filters input[type="search"] {
   width: 100%;
-  padding: 4px 7px;
+  height: var(--control);
+  padding: 0 var(--s-2);
   border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink);
   font: 0.86rem var(--mono);
@@ -1487,8 +1480,6 @@ select:hover {
   color: var(--ink-soft);
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .predictions tbody th {
@@ -1638,8 +1629,6 @@ select:hover {
   gap: 8px;
   margin: 0 0 var(--s-3);
   font: 600 var(--t-body) / 1.2 var(--sans);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 /* Shkronja e qasjes si distinktiv: A, B dhe C janë emrat që përdor punimi, dhe
@@ -1705,15 +1694,11 @@ select:hover {
   margin: 2px 0 0;
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .evidence h3 {
   margin: 0 0 var(--s-3);
   font: 600 var(--t-body) / 1.2 var(--sans);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .evidence .hint {
@@ -1788,8 +1773,6 @@ select:hover {
   flex-wrap: wrap;
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 .context .facts b {
@@ -1918,8 +1901,6 @@ select:hover {
 .recommendations h2 {
   margin: 0 0 4px;
   font: 600 var(--t-body) / 1.2 var(--sans);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .recommendations .caption {
@@ -2079,8 +2060,6 @@ select:hover {
   margin: 0 0 4px;
   color: var(--ink-soft);
   font: 600 var(--t-micro) / 1.2 var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .card .caption {
@@ -2126,8 +2105,6 @@ select:hover {
   margin-top: 2px;
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 /* ---------- unaza ---------- */
@@ -2152,9 +2129,7 @@ select:hover {
 .donut .under {
   fill: var(--ink-faint);
   font: 400 8px/1 var(--sans);
-  letter-spacing: 0.08em;
   text-anchor: middle;
-  text-transform: uppercase;
 }
 
 .legend {
@@ -2247,8 +2222,6 @@ select:hover {
   margin-top: 6px;
   color: var(--ink-faint);
   font-size: var(--t-micro);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 /* ---------- tabela e skedarëve ---------- */
@@ -2263,9 +2236,7 @@ select:hover {
   border-bottom: 1px solid var(--rule-soft);
   color: var(--ink-faint);
   font: 600 var(--t-micro) / 1 var(--sans);
-  letter-spacing: 0.06em;
   text-align: left;
-  text-transform: uppercase;
 }
 
 .files tbody th {
@@ -2301,17 +2272,15 @@ select:hover {
   padding: 1px 7px;
   border-radius: 9px;
   font-size: var(--t-micro);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .pill.critical {
-  background: #f6eae8;
+  background: var(--critical-wash);
   color: var(--critical);
 }
 
 .pill.major {
-  background: #f6efe2;
+  background: var(--major-wash);
   color: var(--major);
 }
 
@@ -2437,8 +2406,6 @@ select:hover {
   margin: 0 0 4px;
   color: var(--ink-soft);
   font: 600 var(--t-micro) / 1.2 var(--sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .waiting ul {
@@ -2456,4 +2423,88 @@ select:hover {
 .waiting li b {
   color: var(--ink);
   font-weight: 600;
+}
+
+/* ----------------------------------------------------------------------
+   Matësi i klauzolës (VD-119).
+
+   E vetmja pjesë e ekranit që lejohet të bjerë në sy, sepse është arsyeja pse
+   mjeti ekziston: një matje përballë pragut të botuar. Vija vertikale është pragu,
+   te 1×; shiriti nis aty dhe mbaron te teprica, e kufizuar në 5× si ashpërsia.
+   ---------------------------------------------------------------------- */
+.conditions .gauge {
+  position: relative;
+  display: block;
+  height: 16px;
+  min-width: 132px;
+}
+
+.conditions .gauge::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 0;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--rule-soft);
+}
+
+.conditions .gauge .fill {
+  position: absolute;
+  top: 5px;
+  height: 6px;
+  min-width: 2px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.conditions .gauge .tick {
+  position: absolute;
+  top: 0;
+  left: calc(20% - 1px);
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--ink);
+}
+
+/* Te 390 piksela paneli nuk i ka 132 pikselat pas metrikës dhe dy numrave, dhe
+   matësi dilte jashtë kartës. */
+@media (max-width: 700px) {
+  .conditions .gauge {
+    min-width: 64px;
+  }
+}
+
+/* Shkronja e qasjes: A, B, C janë emrat e punimit. Katror i vijëzuar me shkronjë
+   kodi, jo rreth i mbushur. */
+.approach .tag {
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background: none;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+/* Pa ligatura. JetBrains Mono i bashkon `!=` në `≠` dhe `>=` në `≥` si parazgjedhje,
+   ndaj kodi Java i shfaqur dukej ndryshe nga ai te skedari, dhe pragu `>= 4` i një
+   klauzole lexohej si simbol matematik. Te fonti i tekstit humbet vetëm bashkimi
+   «fi», që nuk shihet (VD-119).
+
+   Çdo element dhe `!important`, jo vetëm trupi: vetia trashëgohet, por shkurtesa
+   `font:` e rivendos, dhe pikërisht `pre.source` e diff-i e përdorin. Rregulli i
+   parë te trupi u mat mbi faqen e gjallë dhe kodi dilte ende me `≠`. */
+*,
+*::before,
+*::after {
+  font-variant-ligatures: none !important;
+}
+
+/* Titujt e seksioneve të detajit dhe të vlerësimit, tani si fjali: pak më të
+   mëdhenj se etiketat kapitale që zëvendësojnë, që të mbajnë të njëjtën peshë. */
+.detail h3,
+.panel h3 {
+  font-size: var(--t-small);
+  color: var(--ink-soft);
 }

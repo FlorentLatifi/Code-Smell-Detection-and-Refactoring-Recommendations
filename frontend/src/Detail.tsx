@@ -196,7 +196,13 @@ function Conditions({ smell }: { smell: Smell }) {
                 {condition.operator} {condition.threshold}
               </td>
               <td className="excess">
-                <span style={{ width: `${width * 100}%` }} title={`${excess.toFixed(1)}×`} />
+                {/* Vija vertikale është pragu, te 1×. Shiriti nis aty dhe mbaron te
+                    teprica e matur, e kufizuar në 5× si te ashpërsia: lexuesi sheh
+                    sa larg vijës është kodi, jo vetëm dy numra (VD-119). */}
+                <span className="gauge" title={`${excess.toFixed(1)}× pragu`} aria-hidden="true">
+                  <span className="fill" style={{ left: "20%", width: `${(width - 0.2) * 100}%` }} />
+                  <span className="tick" />
+                </span>
               </td>
             </tr>
           );
@@ -301,5 +307,5 @@ const MASKED_NOTE =
  * reviewers' judgement.
  */
 const EXCESS_NOTE =
-  "Shiriti tregon tepricën mbi kufirin, e kufizuar në 5× — e njëjta madhësi nga e cila " +
-  "derivohet ashpërsia.";
+  "Vija vertikale është pragu. Shiriti tregon sa e kalon matja, deri në 5×, e njëjta " +
+  "tepricë nga e cila derivohet ashpërsia.";

@@ -4381,3 +4381,71 @@ Te 4.2, rregulli i rreshtave logjikë tani thotë saktë cilat rreshta nuk numë
 duket i shkruar nga AI. Rishkrimi nuk u bë nga asistenti, sepse qëllimi ishte
 fshehja e mënyrës si u shkrua teksti në një punim që vlerësohet si i autorit. Në vend
 të tij u përgatit një raport me vendet konkrete, që autori t'i rishkruajë vetë.
+
+### VD-119: Një gjuhë vizuale e vetme, dhe matësi i klauzolës si pika e saj
+
+**Konteksti.** Autori kërkoi një analizë të dizajnit dhe përmirësimin e tij. Ekrani u
+fotografua i tëri me Playwright, në të dyja temat dhe te 390 piksela, mbi `jsoup`.
+
+**Çfarë doli.**
+
+- *Dy sisteme që përplaseshin.* Gjysma e sipërme ishte vjollca e parazgjedhur e
+  Tailwind-it (`#4f46e5`); lista, detaji, ekrani i parë dhe vlerësimi ishin blu-ja e
+  figurave të punimit. Butoni kryesor dhe skeda ishin vjollcë, shiritat e ashpërsisë blu.
+- *Ngjyra thoshte dy gjëra.* Unaza e llojeve kishte tetë ngjyra, dhe tri prej tyre ishin
+  ato të ashpërsisë: GodClass dilte me të kuqen e «rëndës», FeatureEnvy me jeshilen e
+  «lehtës». «E lehtë» ishte jeshile te kartat dhe gri te lista.
+- *Pamja e një paneli të gatshëm.* Katër karta identike me ikonë në qoshe (një shigjetë
+  rënëse për «e mesme»), etiketa me shkronja kapitale kudo, fakte të ndara me pika të
+  mesme. Gjetja e parë nuk dilte para 540 pikselave.
+- *Kodi nuk dukej si kodi.* Me fontin e ri të kodit, `!=` dilte si `≠` dhe `>=` si `≥`.
+  Rregulli i parë kundër ligaturave, te trupi, nuk mjaftoi: shkurtesa `font:` e rivendos,
+  dhe `pre.source` e përdor. U gjet duke lexuar stilin e llogaritur mbi faqen e gjallë.
+- *Pesë defekte të vogla.* Numri «135 nga 135 vende» rrinte ngjitur me kufirin e kartës;
+  kutia e kërkimit ishte 27 piksela e lartë pranë zgjedhësve 34-pikselësh; ekrani i parë
+  dhe vlerësimi shkruanin «522 depo» (VD-118); te 390 piksela shiritat e llojeve
+  tkurreshin në zero dhe paneli i detajit dilte 3 piksela jashtë kartës.
+
+**Vendimet.**
+
+- *Paleta.* Blu-ja e figurave (`#1f4e79`) për veprimin, grafit i ftohtë për tekstin, dhe
+  ashpërsia si shkallë intensiteti: e kuqe, portokalli e errët, gur gri. Jeshilja mbahet
+  vetëm për atë që u shkrua vërtet te disku. Emrat e klasave të Tailwind-it nuk
+  ndryshuan; ndryshoi ajo që mbajnë, ndaj `styles.css` dhe komponentët marrin të njëjtat
+  vlera.
+- *Tipografia.* Instrument Sans për tekstin dhe JetBrains Mono, fonti i IDE-së së Java-s,
+  për kodin, metrikat dhe shtigjet. Të dyja shërbehen nga paketa e jo nga një CDN,
+  sepse demonstrimi mund të bëhet pa internet dhe një font që mungon e kthen ekranin te
+  fonti i secilit sistem.
+- *Leximi i projektit.* Katër kartat, unaza dhe karta e automatizimit u bënë një kartë
+  me numrin e vendeve, një vizore të ashpërsisë dhe sa i rishkruan motori vetë, pranë
+  llojeve si shirita të renditur me një ngjyrë.
+- *Klauzolat si lexime.* Rreshtat e rekomandimeve e shfaqnin arsyen si fjalinë e
+  serverit, «MLOC = 77 (> 35) and CC = 36 (>= 4)», me «and» anglisht. Tani çdo klauzolë
+  është një lexim më vete: metrika, e matura e theksuar, pragu.
+- *Matësi i klauzolës.* E vetmja pjesë që lejohet të bjerë në sy, sepse është arsyeja e
+  mjetit: te detaji, një vijë vertikale shënon pragun dhe shiriti tregon sa e kalon matja,
+  deri në 5×, e njëjta tepricë nga e cila derivohet ashpërsia.
+- *Titujt si fjali, skedat me emër.* Asnjë etiketë me kapitale. Rreshti i pamjeve
+  shfaq «Analiza» dhe «Vlerësimi» nën ikonë; emri i plotë mbetet për lexuesin e ekranit.
+
+**Dy varësi të reja**, `@fontsource-variable/instrument-sans` dhe
+`@fontsource-variable/jetbrains-mono`, të pinuara saktësisht te 5.3.0, me licencë
+SIL OFL 1.1, e cila e lejon shpërndarjen bashkë me aplikacionin. Alternativa ishte
+kopjimi i skedarëve të fontit me dorë, pa versione dhe pa licencë pranë tyre.
+
+**Matja.**
+
+- Kontrasti: teksti më i zbehtë (`ink-500`) jep 5.85:1 mbi të bardhën dhe 5.16:1 mbi
+  letrën. Teksti i ashpërsisë mbi tintën e vet del mbi 5.5:1 në dritë dhe mbi 6.8:1 në
+  errësirë. Katër testet e axe-it mbi Chromium kalojnë në të dyja temat.
+- 117 teste të ndërfaqes dhe 9 end-to-end kalojnë pa u ndryshuar asnjë test: rolet dhe
+  emrat që pohojnë u ruajtën.
+- Paketa JavaScript ra nga 678 kB (195 kB gzip) te 650 kB (190 kB gzip), sepse
+  unaza e Recharts-it u hoq. CSS-ja është 55 kB (14 kB gzip). Fontet janë 7 skedarë
+  woff2, 125 kB gjithsej, dhe shfletuesi merr vetëm ata që i duhen shkronjave të faqes.
+
+**Çfarë nuk u verifikua.** Pamja u pa vetëm në Chromium, jo në Firefox apo Safari. Nuk
+u provua mbi projektorin ose laptopin ku do të bëhet demonstrimi. Fleta e vjetër
+`styles.css` mbetet, me rregulla për klasa që nuk përdoren më (`.donut`, `.tally`);
+heqja e saj mbetet punë e hapur, siç e la VD-106.

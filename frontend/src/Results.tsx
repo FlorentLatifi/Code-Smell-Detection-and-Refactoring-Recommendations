@@ -9,6 +9,7 @@ import {
   SMELLS,
   SMELL_SQ,
   VERDICT_SQ,
+  corpusRepositories,
   dataset,
   ml,
   refactoring,
@@ -44,7 +45,7 @@ export function Results() {
 
       <div className="summary">
         <Figure value={dataset.rows.toLocaleString("sq")} label="mostra të vlerësuara" accent />
-        <Figure value={dataset.repositories} label="depo Java" />
+        <Figure value={corpusRepositories} label="depo Java" />
         <Figure value={dataset.samples_considered.toLocaleString("sq")} label="mostra në MLCQ" />
         <Figure value={`${coverage.toFixed(1)}%`} label="e MLCQ-së e vlerësuar" />
         <Figure value={ml.folds} label="fold-e sipas depos" />

@@ -1,22 +1,21 @@
-// Rreshti i parë: sa janë, sa rëndë, dhe si ndahen.
+// Rreshti i parë: sa vende, sa rëndë, sa i rishkruan motori vetë, dhe cilat lloje.
 //
-// Numri i madh mban ngjyrën e vet dhe jo vetëm etiketën: një rresht me tri numra
-// gri kërkon lexim, ndërsa tre të ngjyrosur lexohen me një shikim, dhe kjo është
-// e vetmja gjë që ky rresht duhet të bëjë.
+// Ishte katër karta me ikona, një unazë me tetë ngjyra dhe një kartë automatizimi:
+// rreth 540 piksela para gjetjes së parë. Unaza e ngjyroste GodClass-in me të
+// kuqen e «rëndës» dhe FeatureEnvy-n me jeshilen e «lehtës», pra ngjyra thoshte dy
+// gjëra njëherësh. Tani ngjyra mban vetëm ashpërsinë; llojet renditen si shirita
+// të një ngjyre, dhe tërë rreshti zë gjysmën e hapësirës (VD-119).
 //
 // Ashpërsia numërohet **sipas vendit**, me të njëjtin rregull që përdor çdo
-// rresht i listës: më e rënda që mban vendi. Kështu shuma e tri kutizave barazon
+// rresht i listës: më e rënda që mban vendi. Kështu shuma e tri pjesëve barazon
 // numrin e vendeve, dhe klikimi nga paneli te lista nuk ndryshon njësi në rrugë.
 
-import { AlertTriangle, CheckCircle2, ShieldAlert, Sparkles, TrendingDown } from "lucide-react";
 import { memo } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card } from "./DashboardLayout";
 
 export interface Slice {
   name: string;
   value: number;
-  color: string;
 }
 
 export interface Overview {
@@ -29,18 +28,6 @@ export interface Overview {
   applied: number;
   byType: Slice[];
 }
-
-/** Paleta e prerjeve, e njëjta si te figurat: tetë lloje janë maksimumi i mundshëm. */
-const SLICE_COLORS = [
-  "#6366f1",
-  "#22d3ee",
-  "#f59e0b",
-  "#f43f5e",
-  "#10b981",
-  "#a78bfa",
-  "#64748b",
-  "#94a3b8",
-];
 
 /**
  * Pjesa si tekst, pa e rrumbullakosur një numër jozero në zero.
@@ -61,145 +48,87 @@ export function share(value: number, total: number): string {
 export function slicesOf(counts: Record<string, number>): Slice[] {
   return Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
-    .map(([name, value], index) => ({ name, value, color: SLICE_COLORS[index % SLICE_COLORS.length] }));
+    .map(([name, value]) => ({ name, value }));
 }
 
-/** Nuk varet nga filtrat; `memo` e mban unazën jashtë çdo shkronje të kërkimit. */
+/** Tri nivelet, nga më i rëndi. Fjala e MLCQ-së rri pranë emrit shqip. */
+const LEVELS = [
+  { key: "high", label: "E rëndë", word: "critical", bar: "bg-high", ink: "text-high-ink" },
+  { key: "medium", label: "E mesme", word: "major", bar: "bg-medium", ink: "text-medium-ink" },
+  { key: "low", label: "E lehtë", word: "minor", bar: "bg-low", ink: "text-low-ink" },
+] as const;
+
+/** Nuk varet nga filtrat; `memo` e mban jashtë çdo shkronje të kërkimit. */
 export const OverviewMetrics = memo(function OverviewMetrics({ data }: { data: Overview }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-4">
-      <Metric
-        icon={ShieldAlert}
-        label="Erëra gjithsej"
-        value={data.smells}
-        note={`${data.sites} vende`}
-        tone="brand"
-      />
-      <Metric icon={AlertTriangle} label="E rëndë" value={data.high} note="vende" tone="high" />
-      <Metric icon={TrendingDown} label="E mesme" value={data.medium} note="vende" tone="medium" />
-      <Metric icon={CheckCircle2} label="E lehtë" value={data.low} note="vende" tone="low" />
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      {/* Kolonë me hapësirën mes dy blloqeve: rreshti i rrjetit e shtrin kartën
+          sa lista e llojeve, dhe vizorja e ashpërsisë i përket fundit të saj e jo
+          mesit, ku linte një boshllëk 110-pikselësh poshtë. */}
+      <section
+        aria-label="Leximi i projektit"
+        className="flex min-w-0 flex-col justify-between gap-6 rounded-lg border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <p className="m-0">
+            <span className="block text-[44px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-ink-900 dark:text-white">
+              {data.sites.toLocaleString("sq")}
+            </span>
+            <span className="mt-2 block text-sm text-ink-600 dark:text-ink-300">
+              vende me erëra, {data.smells.toLocaleString("sq")} erëra gjithsej
+            </span>
+          </p>
+          <Automation data={data} />
+        </div>
+        <SeverityRuler data={data} />
+      </section>
 
-      <Card title="Sipas llojit" className="lg:col-span-2">
-        <TypeDonut slices={data.byType} total={data.smells} />
-      </Card>
-
-      <Card title="Sa mund të ndreqet vetë" className="lg:col-span-2">
-        <AutomationPanel data={data} />
+      <Card title="Sipas llojit">
+        <TypeBars slices={data.byType} total={data.smells} />
       </Card>
     </div>
   );
 });
 
-const TONES = {
-  brand: { ring: "ring-brand-500/20", chip: "bg-brand-500/10 text-brand-ink", value: "text-ink-900 dark:text-white" },
-  high: { ring: "ring-high/20", chip: "bg-high/10 text-high-ink", value: "text-high-ink" },
-  medium: { ring: "ring-medium/20", chip: "bg-medium/10 text-medium-ink", value: "text-medium-ink" },
-  low: { ring: "ring-low/20", chip: "bg-low/10 text-low-ink", value: "text-low-ink" },
-} as const;
-
-function Metric({
-  icon: Icon,
-  label,
-  value,
-  note,
-  tone,
-}: {
-  icon: typeof ShieldAlert;
-  label: string;
-  value: number;
-  note: string;
-  tone: keyof typeof TONES;
-}) {
-  const style = TONES[tone];
+/**
+ * Ashpërsia si një vizore e vetme, e ndarë në tri pjesë.
+ *
+ * Tri kutiza me numra kërkonin që lexuesi t'i mblidhte vetë për të parë
+ * përpjesën; një shirit i ndarë e jep përpjesën dhe numrat nën të japin sasinë.
+ */
+function SeverityRuler({ data }: { data: Overview }) {
+  const total = data.high + data.medium + data.low;
   return (
-    <section
-      aria-label={label}
-      className={`min-w-0 rounded-xl border border-ink-200 bg-white p-4 shadow-sm ring-1 ${style.ring} dark:border-ink-800 dark:bg-ink-900`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-[11px] font-semibold tracking-wider text-ink-500 uppercase dark:text-ink-400">
-          {label}
-        </span>
-        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${style.chip}`}>
-          <Icon className="h-4 w-4" aria-hidden="true" />
-        </span>
-      </div>
-      <p className={`mt-3 text-3xl font-semibold tabular-nums ${style.value}`}>
-        {value.toLocaleString("sq")}
-      </p>
-      <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">{note}</p>
-    </section>
-  );
-}
-
-function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
-  if (total <= 0 || slices.length === 0) return null;
-  const label = `${total} erëra gjithsej: ${slices.map((s) => `${s.name} ${s.value}`).join(", ")}`;
-
-  return (
-    <div className="flex flex-wrap items-center gap-4 p-4">
-      <div className="relative h-[150px] w-[150px] shrink-0" role="img" aria-label={label}>
-        {/* Vetë unaza fshihet nga pema e aksesueshmërisë: etiketa më lart e thotë
-            tërë përmbajtjen, dhe pa këtë, Recharts-i i jep çdo prerjeje një rol
-            `img` pa emër — pesë elemente pa kuptim për lexuesin e ekranit. */}
-        <div className="h-full w-full" aria-hidden="true">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={slices}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={48}
-              outerRadius={70}
-              paddingAngle={2}
-              strokeWidth={0}
-              isAnimationActive={false}
-              // Recharts-i e bën shtresën e prerjeve fokusabël me `tabindex=0`.
-              // Brenda një zone të fshehur ajo është kurth: tastiera ndalon te
-              // diçka që lexuesi i ekranit nuk e njofton dot.
-              rootTabIndex={-1}
-            >
-              {slices.map((slice) => (
-                <Cell key={slice.name} fill={slice.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                borderRadius: 8,
-                border: "1px solid #1e293b",
-                background: "#0f172a",
-                color: "#e2e8f0",
-                fontSize: 12,
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-        </div>
-        {/* Totali te vrima: numri që lexohet i pari, pa një etiketë të vetën. */}
-        <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="text-center">
-            <p className="text-2xl font-semibold tabular-nums text-ink-900 dark:text-white">{total}</p>
-            <p className="text-[10px] tracking-wider text-ink-500 uppercase dark:text-ink-400">erëra</p>
-          </div>
-        </div>
-      </div>
-
-      <ul className="m-0 min-w-0 flex-1 list-none space-y-1.5 p-0">
-        {slices.map((slice) => (
-          <li key={slice.name} className="flex min-w-0 items-center gap-2 text-sm">
+    <div>
+      <div className="flex h-2.5 gap-px overflow-hidden rounded-sm bg-ink-100 dark:bg-ink-800" aria-hidden="true">
+        {LEVELS.map((level) =>
+          data[level.key] > 0 ? (
             <span
-              className="h-2.5 w-2.5 shrink-0 rounded-sm"
-              style={{ background: slice.color }}
-              aria-hidden="true"
+              key={level.key}
+              className={`h-full ${level.bar}`}
+              style={{ width: `${(data[level.key] / total) * 100}%` }}
             />
-            <span className="min-w-0 flex-1 truncate text-ink-600 dark:text-ink-300">{slice.name}</span>
-            <span className="tabular-nums text-ink-500 dark:text-ink-400">{slice.value}</span>
-            <span className="w-10 text-right text-xs tabular-nums text-ink-500 dark:text-ink-400">
-              {share(slice.value, total)}
-            </span>
-          </li>
+          ) : null,
+        )}
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-4">
+        {LEVELS.map((level) => (
+          <section key={level.key} aria-label={level.label} className="min-w-0">
+            <p className="m-0 flex items-baseline gap-2">
+              <b className={`text-2xl font-semibold tabular-nums ${level.ink}`}>
+                {data[level.key].toLocaleString("sq")}
+              </b>
+              <span className="text-xs tabular-nums text-ink-500 dark:text-ink-400">
+                {share(data[level.key], total)}
+              </span>
+            </p>
+            <p className="m-0 mt-0.5 text-sm text-ink-700 dark:text-ink-200">
+              {level.label}{" "}
+              <span className="font-mono text-xs text-ink-500 dark:text-ink-400">{level.word}</span>
+            </p>
+          </section>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -208,43 +137,81 @@ function TypeDonut({ slices, total }: { slices: Slice[]; total: number }) {
  * Sa nga vendet i rishkruan motori vetë.
  *
  * Pyetje tjetër nga «sa ka»: kjo është ajo që vendos se çfarë bëhet pas këtij
- * ekrani. «Aplikuar» numëron vetëm atë që ka shkuar te disku në këtë seancë.
+ * ekrani. «Aplikuar» numëron vetëm atë që ka shkuar te disku në këtë seancë, dhe
+ * është i vetmi numër i ekranit që merr jeshilen.
  */
-function AutomationPanel({ data }: { data: Overview }) {
+function Automation({ data }: { data: Overview }) {
   const width = data.sites ? (data.automated / data.sites) * 100 : 0;
+  const pending = Math.max(0, data.automated - data.applied);
   return (
-    <div className="p-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <p className="text-3xl font-semibold tabular-nums text-ink-900 dark:text-white">
-            {data.automated}
-          </p>
-          <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
-            vende me rishkrim që motori e provon
-          </p>
-        </div>
-        <span className="flex items-center gap-1.5 rounded-full bg-low/10 px-2.5 py-1 text-xs font-semibold text-low-ink">
-          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-          {share(data.automated, data.sites)} e vendeve
-        </span>
+    <section aria-label="Sa mund të ndreqet vetë" className="min-w-[240px] flex-1 sm:max-w-[340px]">
+      <p className="m-0 text-sm text-ink-700 dark:text-ink-200">
+        <b className="text-lg font-semibold tabular-nums text-ink-900 dark:text-white">
+          {data.automated.toLocaleString("sq")}
+        </b>{" "}
+        nga {data.sites.toLocaleString("sq")} vende i rishkruan motori vetë
+      </p>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-ink-100 dark:bg-ink-800" aria-hidden="true">
+        <div className="h-full bg-brand-500 dark:bg-brand-400" style={{ width: `${width}%` }} />
       </div>
+      <p className="m-0 mt-1.5 text-xs text-ink-500 dark:text-ink-400">
+        {share(data.automated, data.sites)} e vendeve.{" "}
+        {data.applied > 0 ? (
+          <>
+            <span className="font-medium text-ok-ink">{data.applied} të aplikuara</span>, {pending} në
+            pritje.
+          </>
+        ) : (
+          "Asgjë e aplikuar ende."
+        )}
+      </p>
+    </section>
+  );
+}
 
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
-        <div className="h-full rounded-full bg-brand-500" style={{ width: `${width}%` }} />
-      </div>
+/**
+ * Llojet si shirita të renditur, të një ngjyre.
+ *
+ * Gjatësia matet kundrejt llojit më të shpeshtë, jo kundrejt totalit, që dallimi
+ * mes të dytit dhe të tretit të shihet; pjesa e totalit shkruhet pranë. Paragrafi
+ * me rolin `img` e përshkruan tërë shpërndarjen për një lexues ekrani, dhe lista
+ * mbetet listë e lexueshme.
+ *
+ * Te ekranet e ngushta emri merr pjesën që mbetet dhe shiriti mban një gjerësi të
+ * fiksuar: me kolonën e emrit të fiksuar, te 390 piksela shiriti tkurrej në zero.
+ */
+function TypeBars({ slices, total }: { slices: Slice[]; total: number }) {
+  if (total <= 0 || slices.length === 0) return null;
+  const label = `${total} erëra gjithsej: ${slices.map((s) => `${s.name} ${s.value}`).join(", ")}`;
+  const most = slices[0].value;
 
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
-          <dt className="text-xs text-ink-500 dark:text-ink-400">Aplikuar</dt>
-          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-low-ink">{data.applied}</dd>
-        </div>
-        <div className="rounded-lg bg-ink-50 p-3 dark:bg-ink-800/50">
-          <dt className="text-xs text-ink-500 dark:text-ink-400">Në pritje</dt>
-          <dd className="mt-0.5 text-lg font-semibold tabular-nums text-ink-700 dark:text-ink-200">
-            {Math.max(0, data.automated - data.applied)}
-          </dd>
-        </div>
-      </dl>
+  return (
+    <div className="px-4 pb-4">
+      <p role="img" aria-label={label} className="m-0 text-xs text-ink-500 dark:text-ink-400">
+        {total.toLocaleString("sq")} erëra, nga më i shpeshti
+      </p>
+      <ul className="m-0 mt-3 list-none space-y-2 p-0">
+        {slices.map((slice) => (
+          <li
+            key={slice.name}
+            className="grid grid-cols-[minmax(0,1fr)_4.5rem_2rem_2.5rem] items-center gap-3 text-sm sm:grid-cols-[minmax(0,10.5rem)_minmax(0,1fr)_2.5rem_2.75rem]"
+          >
+            <span className="truncate font-mono text-[13px] text-ink-800 dark:text-ink-100">
+              {slice.name}
+            </span>
+            <span className="h-2 rounded-sm bg-ink-100 dark:bg-ink-800" aria-hidden="true">
+              <span
+                className="block h-full rounded-sm bg-brand-600 dark:bg-brand-400"
+                style={{ width: `${(slice.value / most) * 100}%` }}
+              />
+            </span>
+            <span className="text-right tabular-nums text-ink-800 dark:text-ink-100">{slice.value}</span>
+            <span className="text-right text-xs tabular-nums text-ink-500 dark:text-ink-400">
+              {share(slice.value, total)}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

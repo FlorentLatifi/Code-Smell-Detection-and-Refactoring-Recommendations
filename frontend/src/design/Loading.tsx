@@ -50,7 +50,7 @@ export function Loading() {
 function Block({ className }: { className: string }) {
   return (
     <div
-      className={`rounded-xl border border-ink-200 bg-white motion-safe:animate-pulse dark:border-ink-800 dark:bg-ink-900 ${className}`}
+      className={`rounded-lg border border-ink-200 bg-white motion-safe:animate-pulse dark:border-ink-800 dark:bg-ink-900 ${className}`}
     />
   );
 }

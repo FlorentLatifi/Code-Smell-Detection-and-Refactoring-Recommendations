@@ -22,51 +22,70 @@
 @import "../styles.css" layer(legacy);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/* Një paletë për të dy sistemet (VD-119).
+ *
+ * Gjysma e sipërme e ekranit ishte vjollca e parazgjedhur e Tailwind-it, gjysma e
+ * poshtme blu-ja e figurave të punimit, dhe ashpërsia kishte dy gjuhë: «e lehtë»
+ * ishte jeshile te kartat dhe gri te lista. Emrat e klasave mbeten (`brand`,
+ * `high`, `low`) që komponentët të mos preken; ndryshon ajo që ata mbajnë.
+ *
+ * - `ink`: grafit i ftohtë, jo gri neutral, që letra të mos duket krem.
+ * - `brand`: blu-ja e figurave dhe e prezantimit. Komisioni e sheh të njëjtën
+ *   ngjyrë te punimi, te sllajdet dhe te mjeti.
+ * - `high`, `medium`, `low`: një shkallë intensiteti, jo semafor. «E lehtë» është
+ *   gur gri, sepse një erë e lehtë mbetet erë dhe jeshilja thotë «në rregull».
+ * - `ok`: e vetmja jeshile, vetëm për atë që u shkrua vërtet te disku. */
 @theme {
-  --color-ink-50: #f8fafc;
-  --color-ink-100: #f1f5f9;
-  --color-ink-200: #e2e8f0;
-  --color-ink-300: #cbd5e1;
-  --color-ink-400: #94a3b8;
-  --color-ink-500: #64748b;
-  --color-ink-600: #475569;
-  --color-ink-700: #334155;
-  --color-ink-800: #1e293b;
-  --color-ink-900: #0f172a;
-  --color-ink-950: #020617;
+  --font-sans: "Instrument Sans Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "Cascadia Mono", Consolas, monospace;
 
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  /* Hover-i i butonit kryesor shkon më i errët, jo më i çelët: e bardha mbi
-     brand-500 jep 4.46:1, nën kufirin, ndërsa mbi këtë jep 7.9:1 (VD-109). */
-  --color-brand-700: #4338ca;
+  --color-ink-50: #f6f8fa;
+  --color-ink-100: #eef1f4;
+  --color-ink-200: #dde2e8;
+  --color-ink-300: #c3cad3;
+  --color-ink-400: #95a0ac;
+  /* 5.85:1 mbi të bardhën dhe 5.16:1 mbi letrën (`ink-100`): teksti më i zbehtë
+     që ekrani përdor mbetet mbi kufirin 4.5:1 të WCAG 2.1 AA. */
+  --color-ink-500: #5b6672;
+  --color-ink-600: #46505c;
+  --color-ink-700: #343d47;
+  --color-ink-800: #232b34;
+  --color-ink-900: #151b22;
+  --color-ink-950: #0c1015;
 
-  --color-high: #f43f5e;
-  --color-medium: #f59e0b;
-  --color-low: #10b981;
+  --color-brand-400: #8dbbe6;
+  --color-brand-500: #2f6699;
+  /* E bardha mbi të jep 8.66:1. */
+  --color-brand-600: #1f4e79;
+  --color-brand-700: #173d61;
 
-  /* Teksti mbi një tintë 10% të së njëjtës ngjyrë.
-   *
-   * Ngjyra e sipërme është e figurës: shtylla, unaza, vija e ashpërsisë. Mbi një
-   * tintë të zbehtë ajo bie nën 4.5:1 te teksti 11-12 piksela, ndaj etiketat
-   * marrin një hap më të errët në dritë dhe një më të çelët në errësirë. Vlerat
-   * janë matur, jo zgjedhur: `scripts/` nuk i llogarit dot, ndaj raporti i secilës
-   * rri te DECISIONS (VD-108). Më e ulëta është 4.65:1, mbi kufirin 4.5:1 të
-   * WCAG 2.1 AA për tekst normal. */
-  --color-high-ink: #be123c;
-  --color-medium-ink: #b45309;
-  --color-low-ink: #047857;
-  --color-brand-ink: #4f46e5;
+  /* Ngjyrat e figurës: shiritat dhe vijat e ashpërsisë. `medium` si tekst mbi të
+     bardhë jep 4.24:1, ndaj teksti merr gjithmonë hapin `-ink`. */
+  --color-high: #b42318;
+  --color-medium: #b26a00;
+  --color-low: #7a8591;
+  --color-ok: #067647;
+
+  /* Teksti mbi një tintë 10% të së njëjtës ngjyrë, i matur mbi atë tintë:
+     high 5.58:1, medium 6.01:1, low 6.33:1, ok 4.92:1, brand 7.54:1. */
+  --color-high-ink: #b42318;
+  --color-medium-ink: #8a4b04;
+  --color-low-ink: #4f5a66;
+  --color-ok-ink: #067647;
+  --color-brand-ink: #1f4e79;
 }
 
-/* Në errësirë e njëjta tintë ulet mbi të zezë, ndaj teksti duhet të shkojë lart
-   e jo poshtë. Të njëjtat katër role, të matura mbi `--color-ink-900`. */
+/* Në errësirë e njëjta tintë ulet mbi grafit, ndaj teksti shkon lart e jo poshtë.
+   Të matura mbi tintën 10% mbi `ink-900`: të gjitha mbi 6.8:1. Butoni kryesor
+   çelet një hap, që të dallohet nga sfondi; e bardha mbi të jep 5.96:1. */
 :root.dark {
-  --color-high-ink: #fb7185;
-  --color-medium-ink: #fbbf24;
-  --color-low-ink: #34d399;
-  --color-brand-ink: #818cf8;
+  --color-brand-600: #2f6699;
+  --color-brand-700: #3a74aa;
+  --color-high-ink: #f08a7e;
+  --color-medium-ink: #e3a257;
+  --color-low-ink: #a7b1bc;
+  --color-ok-ink: #6ec18f;
+  --color-brand-ink: #8dbbe6;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

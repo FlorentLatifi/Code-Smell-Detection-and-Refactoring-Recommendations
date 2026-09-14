@@ -3,13 +3,21 @@
 // Ishte një fjali: «Shkruaj shtegun e një projekti Java për të filluar». E saktë
 // dhe e padobishme. Dikush që e hap mjetin nuk mëson dot as çfarë bën, as sa
 // mirë e bën, as çfarë e mban atë pohim — dhe mjeti duket sikur nuk ka bërë
-// asgjë, ndërsa vlerësimi i tij mbi 522 depo është i komituar dy dosje më tutje.
+// asgjë, ndërsa vlerësimi i tij mbi 512 depo është i komituar dy dosje më tutje.
 //
 // Asnjë shifër këtu nuk shtypet me dorë. Të gjitha lexohen nga `data/results/`,
 // nga të njëjtët skedarë që ndërton Kapitulli 5, ndaj ekrani nuk mund të pohojë
 // diçka që punimi nuk e raporton.
 
-import { dataset, ml, refactoring, ruleScore, SMELL_SQ, SMELLS } from "./evaluation";
+import {
+  corpusRepositories,
+  dataset,
+  ml,
+  refactoring,
+  ruleScore,
+  SMELL_SQ,
+  SMELLS,
+} from "./evaluation";
 
 export function Landing({ root }: { root: string | null }) {
   return (
@@ -125,7 +133,7 @@ function Evidence() {
     <section className="evidence">
       <h3>Mbi çfarë janë matur</h3>
       <dl className="figures-row wide">
-        <Figure value={dataset.repositories} label="depo Java" />
+        <Figure value={corpusRepositories} label="depo Java" />
         <Figure value={dataset.rows} label="mostra të vlerësuara" />
         <Figure value={dataset.samples_considered} label="mostra në MLCQ" />
         <Figure value={refactoring.files} label="skedarë të rishkruar e verifikuar" />
@@ -133,7 +141,7 @@ function Evidence() {
       <p className="hint">
         Gjykimet vijnë nga zhvillues profesionistë, jo nga vetë mjeti. Çdo shifër këtu lexohet nga
         skedarët e komituar te <code>data/results/</code> dhe është e njëjta që raporton punimi.
-        Skeda «Rezultatet e vlerësimit» i hap të plota.
+        Skeda «Vlerësimi» i hap të plota.
       </p>
     </section>
   );

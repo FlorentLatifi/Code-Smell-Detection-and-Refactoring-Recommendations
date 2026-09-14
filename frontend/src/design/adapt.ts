@@ -48,6 +48,7 @@ export function suggestionsOf(sites: Site[]): Suggestion[] {
       line: site.start_line,
       smell: smell.smell_type,
       reason: smell.rationale,
+      conditions: smell.conditions,
       refactoring: smell.refactorings[0] ?? "",
       severity: site.worst as Severity,
       automated: site.automated,

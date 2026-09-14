@@ -1,6 +1,5 @@
 // Dy panelet e mbetura: krahasimi i dy qasjeve, dhe skedarët më të ndotur.
 
-import { FileCode2 } from "lucide-react";
 import { memo } from "react";
 import {
   Bar,
@@ -15,12 +14,23 @@ import {
 import { Card } from "./DashboardLayout";
 
 const TOOLTIP = {
-  borderRadius: 8,
-  border: "1px solid #1e293b",
-  background: "#0f172a",
-  color: "#e2e8f0",
+  borderRadius: 6,
+  border: "1px solid #232b34",
+  background: "#151b22",
+  color: "#e3e8ee",
   fontSize: 12,
 } as const;
+
+/**
+ * Ngjyrat e grafikut, si vlera e jo si variabla CSS.
+ *
+ * Recharts-i i shkruan si atribute `fill` të SVG-së, dhe një atribut nuk e lexon
+ * `var(...)`. Të dyja zgjidhen që të mbeten të dallueshme mbi të dyja temat:
+ * grafiti i rregullave dhe blu-ja e modelit, e njëjta blu si te punimi (VD-119).
+ */
+const RULES_FILL = "#7a8591";
+const MODEL_FILL = "#2f6699";
+const AXIS = "#5b6672";
 
 export interface ScoreRow {
   smell: string;
@@ -41,34 +51,36 @@ function PerformanceChartsView({ scores }: { scores: ScoreRow[] }) {
     .map((row) => `${row.smell}: rregullat ${row.rules ?? "—"}, modeli ${row.model ?? "—"}`)
     .join("; ");
   return (
-    <Card title="Rregullat kundrejt modelit (MCC)">
-      <div className="h-[280px] p-4" role="img" aria-label={label}>
-        {/* Si te unaza: etiketa e mban përmbajtjen, vizatimi fshihet. */}
+    <Card title="Rregullat kundrejt modelit, MCC">
+      <div className="h-[270px] px-4 pt-2 pb-4" role="img" aria-label={label}>
+        {/* Si te llojet: etiketa e mban përmbajtjen, vizatimi fshihet. */}
         <div className="h-full w-full" aria-hidden="true">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={scores} barGap={6} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#64748b33" vertical={false} />
-            <XAxis
-              dataKey="smell"
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              axisLine={{ stroke: "#64748b33" }}
-              tickLine={false}
-            />
-            <YAxis
-              domain={[0, 1]}
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip contentStyle={TOOLTIP} cursor={{ fill: "#64748b18" }} />
-            <Legend
-              wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
-              formatter={(value) => (value === "rules" ? "A — rregullat" : "B — modeli")}
-            />
-            <Bar dataKey="rules" fill="#64748b" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-            <Bar dataKey="model" fill="#6366f1" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-          </BarChart>
-        </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={scores} barGap={4} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
+              <CartesianGrid stroke="#95a0ac33" vertical={false} />
+              <XAxis
+                dataKey="smell"
+                tick={{ fill: AXIS, fontSize: 12 }}
+                axisLine={{ stroke: "#95a0ac66" }}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, 1]}
+                ticks={[0, 0.25, 0.5, 0.75, 1]}
+                tick={{ fill: AXIS, fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip contentStyle={TOOLTIP} cursor={{ fill: "#95a0ac1f" }} />
+              <Legend
+                iconType="square"
+                wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                formatter={(value) => (value === "rules" ? "A: rregullat" : "B: modeli")}
+              />
+              <Bar dataKey="rules" fill={RULES_FILL} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+              <Bar dataKey="model" fill={MODEL_FILL} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </Card>
@@ -87,10 +99,11 @@ export interface FileRow {
   severity: Severity;
 }
 
-const PILL: Record<Severity, string> = {
-  critical: "bg-high/10 text-high-ink ring-high/20",
-  major: "bg-medium/10 text-medium-ink ring-medium/20",
-  minor: "bg-low/10 text-low-ink ring-low/20",
+/** Ashpërsia si fjalë me ngjyrë, e njëjta gjuhë si te lista e vendeve. */
+const SEVERITY_INK: Record<Severity, string> = {
+  critical: "text-high-ink",
+  major: "text-medium-ink",
+  minor: "text-low-ink",
 };
 
 function SmellyFilesTableView({
@@ -103,7 +116,7 @@ function SmellyFilesTableView({
   if (rows.length === 0) return null;
   return (
     <Card title="Skedarët më të ndotur">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto px-4 pb-2">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-ink-200 text-left dark:border-ink-800">
@@ -120,37 +133,32 @@ function SmellyFilesTableView({
           <tbody className="divide-y divide-ink-200 dark:divide-ink-800">
             {rows.map((row) => (
               <tr key={row.file} className="transition hover:bg-ink-50 dark:hover:bg-ink-800/40">
-                <td className="px-4 py-2.5">
+                <td className="py-2.5 pr-4">
                   {/* Buton e jo `onClick` mbi rreshtin: një `tr` nuk merr fokus, ndaj
                       tabela nuk përdorej dot fare me tastierë. */}
                   <button
                     type="button"
                     onClick={() => onPick(row.file)}
                     title="Shfaq vendet e këtij skedari te lista"
-                    className="flex h-auto max-w-full items-center gap-2 rounded border-0 bg-transparent p-0 text-left font-medium text-ink-900 hover:underline dark:text-white"
+                    className="h-auto max-w-full truncate rounded-sm border-0 bg-transparent p-0 text-left font-mono text-[13px] font-medium text-ink-900 underline-offset-2 hover:underline dark:text-white"
                   >
-                    <FileCode2 className="h-3.5 w-3.5 shrink-0 text-ink-500" aria-hidden="true" />
-                    <span className="truncate">{row.cls}</span>
+                    {row.cls}
                   </button>
                 </td>
                 <td
-                  className="max-w-[220px] truncate px-4 py-2.5 font-mono text-xs text-ink-500 dark:text-ink-400"
+                  className="max-w-[220px] truncate py-2.5 pr-4 font-mono text-xs text-ink-500 dark:text-ink-400"
                   title={row.path}
                 >
                   {row.path}
                 </td>
-                <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-ink-900 dark:text-white">
+                <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink-900 dark:text-white">
                   {row.sites}
                 </td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-ink-600 dark:text-ink-300">
+                <td className="py-2.5 pr-4 text-right tabular-nums text-ink-600 dark:text-ink-300">
                   {row.smells}
                 </td>
-                <td className="px-4 py-2.5">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${PILL[row.severity]}`}
-                  >
-                    {row.severity}
-                  </span>
+                <td className={`py-2.5 text-xs font-medium ${SEVERITY_INK[row.severity]}`}>
+                  {row.severity}
                 </td>
               </tr>
             ))}
@@ -165,7 +173,7 @@ function Th({ children, align = "left" }: { children: React.ReactNode; align?: "
   return (
     <th
       scope="col"
-      className={`px-4 py-2.5 text-[11px] font-semibold tracking-wider text-ink-500 uppercase dark:text-ink-400 ${
+      className={`py-2 pr-4 text-xs font-medium text-ink-500 last:pr-0 dark:text-ink-400 ${
         align === "right" ? "text-right" : ""
       }`}
     >
