@@ -121,9 +121,21 @@ export function analyse(
   return post<Analysis>("/analyze", { path, include_model: includeModel }, signal);
 }
 
-/** Join the project path and the file path the analysis reported. */
-function within(path: string, file: string): string {
-  return file ? `${path.replace(/\/+$/, "")}/${file}` : path;
+/**
+ * Join the analysed path and the file path the analysis reported.
+ *
+ * The server reports `file_path` relative to the analysed directory, or to the
+ * file's own directory when a single `.java` file was analysed (`_relative` in
+ * the API). Joining it to the file itself asked for
+ * `OrderManager.java/OrderManager.java`, so the source and the proposed diff of
+ * every finding in a single-file analysis failed with "nothing at this path".
+ * Found by walking the demonstration script, not by a test (VD-120).
+ */
+export function within(path: string, file: string): string {
+  const trimmed = path.replace(/[\\/]+$/, "");
+  if (!file) return trimmed;
+  const base = /\.java$/i.test(trimmed) ? trimmed.replace(/[\\/]?[^\\/]*$/, "") : trimmed;
+  return base ? `${base}/${file}` : file;
 }
 
 export function preview(path: string, smell: Smell): Promise<Preview> {

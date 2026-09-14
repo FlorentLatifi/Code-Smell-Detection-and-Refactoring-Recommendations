@@ -36,12 +36,13 @@ export function Loading() {
           </span>
         )}
       </p>
-      <div className="grid gap-4 lg:grid-cols-4" aria-hidden="true">
-        {[0, 1, 2, 3].map((index) => (
-          <Block key={index} className="h-[120px]" />
-        ))}
-        <Block className="h-[260px] lg:col-span-2" />
-        <Block className="h-[260px] lg:col-span-2" />
+      {/* E njëjta formë si paneli që vjen: leximi i projektit pranë llojeve, pastaj
+          rekomandimet. Skica e katër kutive i përkiste panelit të mëparshëm, dhe
+          ekrani ndërronte formë në çastin që mbaronte pritja (VD-120). */}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]" aria-hidden="true">
+        <Block className="h-[300px]" />
+        <Block className="h-[300px]" />
+        <Block className="h-[360px] xl:col-span-2" />
       </div>
     </div>
   );

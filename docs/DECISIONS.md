@@ -4449,3 +4449,44 @@ kopjimi i skedarëve të fontit me dorë, pa versione dhe pa licencë pranë tyr
 u provua mbi projektorin ose laptopin ku do të bëhet demonstrimi. Fleta e vjetër
 `styles.css` mbetet, me rregulla për klasa që nuk përdoren më (`.donut`, `.tally`);
 heqja e saj mbetet punë e hapur, siç e la VD-106.
+
+### VD-120: Kodi i gjetjes nuk shfaqej kur analizohej një skedar i vetëm
+
+**Si u gjet.** Duke ekzekutuar skenarin e demonstrimit hap pas hapi mbi ndërfaqen e
+re, me Playwright dhe me API-në mbi dosjen e demonstrimit. Te hapi 2,
+`OrderManager.java`, paneli i gjetjes shkruante «Kodi nuk u lexua dot: Nuk ka asgjë te
+ky shteg», dhe `/source` kthente 400 `path_not_found`.
+
+**Shkaku.** API-ja e jep `file_path` relativ ndaj dosjes së analizuar, ose ndaj dosjes së
+skedarit kur analizohet një skedar i vetëm (`_relative` te `api/app.py`). Ndërfaqja e
+ngjiste gjithmonë te shtegu i analizuar, ndaj kërkonte
+`OrderManager.java/OrderManager.java`. I njëjti bashkim ushqen `/refactor/preview`, pra
+edhe «Shfaq ndryshimin e propozuar» dështonte për çdo gjetje të një skedari të vetëm.
+
+**Pse nuk u kap.** Testet e ndërfaqes e zëvendësojnë `fetch` dhe nuk e lexojnë trupin e
+kërkesës për kodin; testet e API-së e thërrasin `/source` me shtegun e saktë; suita
+end-to-end analizon vetëm një dosje. Asnjëra nuk e kalonte rrugën skedar i vetëm, gjetje,
+kod.
+
+**Ndreqja.** `within` te `api.ts` e ngjit shtegun te dosja e skedarit kur shtegu i
+analizuar mbaron me `.java`, dhe pesë teste e kontrollojnë me pritje të nxjerra nga
+rregulli i serverit. Kufiri: skedari njihet nga prapashtesa, jo nga disku, ndaj një dosje
+me emër që mbaron me `.java` do të trajtohej si skedar.
+
+**Skenari pas ndreqjes**, i kryer i tëri:
+- `OrderManager.java`: 5 erëra në 2 vende dhe 5 lloje; kodi i gjetjes 43 rreshta, 3 matës.
+- `janusgraph-utils`: 31 skedarë, 1 263 rreshta, 31 erëra në 14 vende dhe 8 lloje. Me
+  modelin: 11 rreshta A∩B dhe 28 entitete që i shënoi vetëm modeli.
+- Patch-i: 4 ndryshime në 3 skedarë, 8.2 sekonda.
+- Shkrimi: `3 files changed, 72 insertions(+), 56 deletions(-)`. `git restore .` e ktheu
+  pemën të pastër.
+- Vlerësimi: 4 534 mostra nga 512 depo; MCC-të si te Kapitulli 5.
+- Komanda e terminalit mbi të njëjtin projekt: 31 skedarë, 31 erëra, kodi 0.
+
+Prova gjeti edhe `janusgraph-utils` me rishkrimin e 13 shtatorit të pakthyer: po ato tri
+skedarë dhe po ato 72/56 rreshta. Me të, butoni i shkrimit do të refuzonte para mentores.
+Dosja e demonstrimit është jashtë depos, ndaj u kthye me `git restore .` dhe shënohet
+këtu, jo me commit.
+
+Skica e pritjes u përshtat me paraqitjen e VD-119: tregonte ende katër kutitë e panelit
+të mëparshëm.

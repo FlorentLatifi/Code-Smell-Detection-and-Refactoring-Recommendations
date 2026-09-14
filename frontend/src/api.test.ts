@@ -10,7 +10,35 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ERROR_SQ, noteText, patch } from "./api";
+import { ERROR_SQ, noteText, patch, within } from "./api";
+
+// Serveri e jep `file_path` relativ ndaj dosjes së analizuar, ose ndaj dosjes së
+// skedarit kur analizohet një skedar i vetëm (`_relative` te `api/app.py`). Çdo
+// pritje më poshtë del nga ai rregull, jo nga dalja e funksionit (VD-120).
+describe("shtegu i skedarit të një gjetjeje", () => {
+  it("e ngjit te dosja e analizuar", () => {
+    expect(within("jsoup", "src/main/Node.java")).toBe("jsoup/src/main/Node.java");
+  });
+
+  it("nuk dyfishon vijën kur dosja mbaron me të", () => {
+    expect(within("jsoup/", "src/main/Node.java")).toBe("jsoup/src/main/Node.java");
+  });
+
+  it("e gjen skedarin e vetëm pa e ngjitur te vetja", () => {
+    // Defekti: dilte `OrderManager.java/OrderManager.java`.
+    expect(within("OrderManager.java", "OrderManager.java")).toBe("OrderManager.java");
+  });
+
+  it("ruan dosjen e skedarit të vetëm", () => {
+    expect(within("demo/shop/OrderManager.java", "OrderManager.java")).toBe(
+      "demo/shop/OrderManager.java",
+    );
+  });
+
+  it("kthen shtegun e analizuar kur gjetja nuk ka skedar", () => {
+    expect(within("jsoup/", "")).toBe("jsoup");
+  });
+});
 
 /** Nga `api/paths.py` dhe nga thirrjet e `error(...)` te `api/app.py`. */
 const CODES_FROM_BACKEND = [
