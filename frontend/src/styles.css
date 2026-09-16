@@ -1399,6 +1399,14 @@ select:hover {
   margin: 4px 0;
 }
 
+/* Hollësia anglisht e një refuzimi: teknike, ndaj më e qetë se fjalia mbi të. */
+.refusal-detail {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-faint);
+  font-size: var(--t-small);
+}
+
 /* ----------------------------------------------------------------------
    Ekrani i parë.
 

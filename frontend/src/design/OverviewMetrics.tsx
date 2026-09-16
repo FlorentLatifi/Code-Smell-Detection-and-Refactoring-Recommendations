@@ -25,7 +25,9 @@ export interface Overview {
   low: number;
   sites: number;
   automated: number;
+  /** Rishkrimet e shkruara në këtë seancë, jo skedarët që i mbajnë. */
   applied: number;
+  appliedFiles: number;
   byType: Slice[];
 }
 
@@ -142,7 +144,9 @@ function SeverityRuler({ data }: { data: Overview }) {
  */
 function Automation({ data }: { data: Overview }) {
   const width = data.sites ? (data.automated / data.sites) * 100 : 0;
-  const pending = Math.max(0, data.automated - data.applied);
+  // Pa «në pritje»: ai numër zbriste rishkrime nga vende, dhe pas një skanimi të
+  // ri vendet e ndrequra nuk janë më te lista, ndaj zbritja i numëronte dy herë
+  // (VD-122).
   return (
     <section aria-label="Sa mund të ndreqet vetë" className="min-w-[240px] flex-1 sm:max-w-[340px]">
       <p className="m-0 text-sm text-ink-700 dark:text-ink-200">
@@ -157,10 +161,10 @@ function Automation({ data }: { data: Overview }) {
       <p className="m-0 mt-1.5 text-xs text-ink-500 dark:text-ink-400">
         {share(data.automated, data.sites)} e vendeve.{" "}
         {data.applied > 0 ? (
-          <>
-            <span className="font-medium text-ok-ink">{data.applied} të aplikuara</span>, {pending} në
-            pritje.
-          </>
+          <span className="font-medium text-ok-ink">
+            {data.applied} {data.applied === 1 ? "ndryshim u aplikua" : "ndryshime u aplikuan"} në{" "}
+            {data.appliedFiles} {data.appliedFiles === 1 ? "skedar" : "skedarë"}.
+          </span>
         ) : (
           "Asgjë e aplikuar ende."
         )}

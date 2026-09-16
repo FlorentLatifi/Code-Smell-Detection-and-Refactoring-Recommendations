@@ -16,7 +16,11 @@ import type { Suggestion } from "./RefactoringActionList";
 
 const ORDER: Severity[] = ["critical", "major", "minor"];
 
-export function overviewOf(summary: Summary, sites: Site[], applied: number): Overview {
+export function overviewOf(
+  summary: Summary,
+  sites: Site[],
+  applied: { changes: number; files: number },
+): Overview {
   const worst = countByWorst(sites);
   return {
     smells: summary.smells,
@@ -25,7 +29,8 @@ export function overviewOf(summary: Summary, sites: Site[], applied: number): Ov
     low: worst.minor ?? 0,
     sites: sites.length,
     automated: sites.filter((site) => site.automated).length,
-    applied,
+    applied: applied.changes,
+    appliedFiles: applied.files,
     byType: slicesOf(summary.by_type),
   };
 }

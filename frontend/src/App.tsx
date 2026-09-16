@@ -166,6 +166,10 @@ export function App() {
   // Çfarë ka shkuar te disku në këtë seancë. Serveri nuk e mban: ai është pa
   // gjendje me qëllim, dhe kjo listë i përket kësaj dritareje.
   const [applied, setApplied] = useState<{ file: string; when: string }[]>([]);
+  // Ndryshimet, jo skedarët: një skedar mban disa rishkrime, dhe paneli i numëron
+  // pranë vendeve. Me numrin e skedarëve, 6 rishkrime në 4 skedarë dilnin «4 të
+  // aplikuara» (VD-122).
+  const [appliedChanges, setAppliedChanges] = useState(0);
   const [revert, setRevert] = useState<string | null>(null);
 
   async function run(event: React.FormEvent) {
@@ -215,6 +219,7 @@ export function App() {
   function onApplied(result: ApplyResult): void {
     const when = new Date().toLocaleTimeString("sq", { hour: "2-digit", minute: "2-digit" });
     setApplied(result.written.map((file) => ({ file, when })));
+    setAppliedChanges(result.changes);
     setRevert(result.revert);
     // Pema nuk është më e pastër pasi u shkrua, ndaj lexohet sërish: butoni do
     // të premtonte një shkrim të dytë që do të refuzohej.
@@ -414,8 +419,13 @@ export function App() {
   // mbi `apache/ambari` (4 249 vende) kjo ishte 48–88 ms për shkronjë (VD-109).
   const overview = useMemo(
     () =>
-      screen.state === "ready" ? overviewOf(screen.analysis.summary, allSites, applied.length) : null,
-    [screen, allSites, applied.length],
+      screen.state === "ready"
+        ? overviewOf(screen.analysis.summary, allSites, {
+            changes: appliedChanges,
+            files: applied.length,
+          })
+        : null,
+    [screen, allSites, appliedChanges, applied.length],
   );
   const suggestions = useMemo(() => suggestionsOf(allSites), [allSites]);
   const fileRows = useMemo(() => fileRowsOf(allSites), [allSites]);

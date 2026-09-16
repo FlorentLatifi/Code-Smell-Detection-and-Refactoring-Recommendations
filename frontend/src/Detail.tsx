@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { noteText, preview, source } from "./api";
 import { Diff } from "./Diff";
+import { REFUSAL_SQ } from "./evaluation";
 import type { Prediction, Preview, Smell, Source, Summary } from "./types";
 
 /**
@@ -103,8 +104,19 @@ export function Detail({
 
       {result && !result.applied && (
         <p className="note">
-          Motori nuk e rishkroi këtë vend: {result.detail || result.refusal}. Refuzimi është
-          rezultat i saktë, jo dështim.
+          {/* Arsyeja shqip sipas kodit, si gjetiu. Hollësia e motorit është
+              anglisht dhe mban emra nga kodi, ndaj shfaqet e shënuar si e tillë
+              e jo si pjesë e fjalisë (VD-122). */}
+          Motori nuk e rishkroi këtë vend: {REFUSAL_SQ[result.refusal ?? ""] ?? result.refusal}.
+          Refuzimi është rezultat i saktë, jo dështim.
+          {result.detail && (
+            <>
+              {" "}
+              <span className="refusal-detail">
+                Hollësia e motorit, anglisht: <code>{result.detail}</code>
+              </span>
+            </>
+          )}
         </p>
       )}
 

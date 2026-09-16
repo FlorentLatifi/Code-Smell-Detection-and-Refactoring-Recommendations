@@ -452,6 +452,44 @@ describe("kodi i një gjetjeje", () => {
   });
 });
 
+describe("refuzimi i një rishkrimi", () => {
+  it("e thotë arsyen shqip dhe e shënon hollësinë anglisht si të tillë", async () => {
+    // Defekti: «Motori nuk e rishkroi këtë vend: not private, so the call sites
+    // are not local», anglisht në mes të fjalisë shqip (VD-122).
+    const body = analysis([smell({ method: "m0(int)" })]);
+    const reply = (payload: unknown, status = 200) =>
+      new Response(JSON.stringify(payload), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).endsWith("/analyze")) return reply(body);
+        if (String(url).endsWith("/refactor/preview")) {
+          return reply({
+            applied: false,
+            refactoring: "IntroduceParameterObject",
+            target: "m0",
+            refusal: "shape_not_matched",
+            detail: "not private, so the call sites are not local",
+          });
+        }
+        return reply({ error: { code: "not_found", message: "x" } }, 404);
+      }),
+    );
+    render(<App />);
+    await analyse();
+    fireEvent.click(screen.getAllByRole("button", { name: ROW })[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "Shfaq ndryshimin e propozuar" }));
+
+    const note = await screen.findByText(/Motori nuk e rishkroi këtë vend/);
+
+    expect(note.textContent).toContain("forma e kodit nuk përputhet");
+    expect(within(note).getByText("not private, so the call sites are not local").tagName).toBe("CODE");
+  });
+});
+
 describe("skedarët që nuk parsohen dhe dosja e lejuar", () => {
   it("paralajmëron kur një skedar nuk u parsua pastër", async () => {
     // Tree-sitter-i kthen pemë edhe për një skedar të prishur, ndaj heshtja
@@ -732,6 +770,27 @@ describe("aplikimi mbi skedarët", () => {
     expect(within(timeline).getByText("A.java")).toBeDefined();
     expect(within(timeline).getByText("B.java")).toBeDefined();
     expect(within(timeline).getByText("git restore .")).toBeDefined();
+  });
+
+  it("numëron ndryshimet e shkruara, jo skedarët, si të aplikuara", async () => {
+    // Defekti: 6 rishkrime në 4 skedarë dilnin «4 të aplikuara, 2 në pritje» (VD-122).
+    serveApply(
+      { writable: true, reason: null, detail: "" },
+      {
+        status: 200,
+        body: { written: ["A.java", "B.java"], revert: "git restore .", changes: 3, verified_with_javac: true },
+      },
+    );
+    await preparePatch();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
+    fireEvent.click(screen.getByRole("button", { name: "Po, shkruaji" }));
+    await screen.findByRole("region", { name: "Aplikuar në këtë seancë" });
+
+    const automation = screen.getByRole("region", { name: "Sa mund të ndreqet vetë" });
+
+    expect(within(automation).getByText("3 ndryshime u aplikuan në 2 skedarë.")).toBeDefined();
+    expect(within(automation).queryByText(/në pritje/)).toBeNull();
   });
 
   it("e thotë shqip kur serveri e refuzon shkrimin", async () => {
