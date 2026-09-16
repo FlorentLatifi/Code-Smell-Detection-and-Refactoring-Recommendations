@@ -16,12 +16,12 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
-| Testet | ✅ 505 kalojnë, mbulim 95% | vlera të derivuara me dorë; asnjë modul nën 90% (VD-64); 1 anashkalohet pa symlink |
+| Testet | ✅ 575 kalojnë, mbulim 95% | vlera të derivuara me dorë; 1 anashkalohet pa symlink. Kufiri i VD-64, asnjë modul nën 90%, ka rënë pak: `cli.py` dhe `refactor/apply.py` janë te 89%, `__main__.py` (2 rreshta) pa test (VD-121) |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
 | Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55); përmbysja e vetme u veçua (VD-82) |
 | API | ✅ e plotë | `/analyze` (me `include_model`), `/metrics`, `/source`, `/refactor/preview`, `/refactor/patch` (VD-50), `/health`; pa gjendje (VD-35) |
-| Frontend | ✅ e plotë | React + TypeScript + Vite; panel me Tailwind, Recharts dhe lucide (VD-106); një paletë, fonte lokale dhe matësi i klauzolës (VD-119); dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48); 117 teste me vitest plus 9 end-to-end, nga të cilat 4 me axe mbi shfletues (VD-87, VD-108); auditim i plotë (VD-85, VD-86); lista grupuar sipas vendit (VD-68) |
+| Frontend | ✅ e plotë | React + TypeScript + Vite; panel me Tailwind, Recharts dhe lucide (VD-106); një paletë, fonte lokale dhe matësi i klauzolës (VD-119); dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48); 133 teste me vitest plus 9 end-to-end, nga të cilat 4 me axe mbi shfletues (VD-87, VD-108); auditim i plotë (VD-85, VD-86); lista grupuar sipas vendit (VD-68) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
 | Krahasimi me mjet të jashtëm | ✅ e plotë | PMD 7.27.0 me pragjet e veta; intervale të çiftuara mbi riterheqje depoje (VD-76, VD-77) |
 | Cilësia e rishkrimeve | 🟡 aparati gati | mostër e mbjellë dhe rubrikë e fiksuar (VD-72, VD-74); gjykimi i autorit mbetet |

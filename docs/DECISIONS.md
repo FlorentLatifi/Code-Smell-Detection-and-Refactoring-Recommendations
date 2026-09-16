@@ -4490,3 +4490,73 @@ këtu, jo me commit.
 
 Skica e pritjes u përshtat me paraqitjen e VD-119: tregonte ende katër kutitë e panelit
 të mëparshëm.
+
+### VD-121: Pesë mangësi të sistemit, të gjetura me raste kufitare pas demonstrimit
+
+**Si u gjetën.** Pas VD-120, API-ja u provua me raste kufitare mbi dosjen e
+demonstrimit dhe mbi një dosje të përkohshme. Rastet ishin: skedar i vetëm, nëndosje e
+një depoje, vija të pasme, shteg absolut, vijë në fund, shteg jashtë rrënjës, skedar
+jo-Java, dosje bosh, dosje pa Java, hapësira në shteg, Latin-1, BOM me CRLF, skedar i
+prishur dhe dosje me emër `*.java`. Të gjitha u sollën si duhet përveç tre rasteve më
+poshtë. Pikat 4 dhe 5 janë pastrim.
+
+1. **Arsyeja e modelit dilte anglisht.** Me modelin të ndezur, çdo analizë e një skedari
+   të vetëm shkruante «Modeli nuk u pyet dot: a model verdict needs project-wide
+   measurement…». `ModelUnavailable` tani mban një `code` (`not_trained`,
+   `library_mismatch`, `dataset_missing`, `feature_missing`), dhe `_model_block` e kthen
+   atë bashkë me fjalinë, plus `needs_project` për skedarin e vetëm. Ndërfaqja e përkthen
+   sipas kodit (`MODEL_REFUSAL_SQ`), si gabimet te `ERROR_SQ`. Fjalinë e serverit e
+   shfaq vetëm për një kod që nuk e njeh. Lista e kodeve mbahet me dorë në të dyja anët,
+   me nga një test: `test_serving.py::REFUSAL_CODES` e krahason me `raise`-t e vërteta,
+   dhe `api.test.ts` e krahason me hartën.
+
+2. **«Kodi kaloi çdo strategji» mbi kod të palexuar.** Kur nuk gjendej asnjë erë, fjalia
+   shfaqej edhe kur asnjë skedar nuk ishte parsuar pastër. Ky është i njëjti defekt që
+   VD-91 mbylli te numrat. Tani fjalia ka tri trajta: e plotë kur çdo skedar u lexua, e
+   kufizuar te skedarët e lexuar kur disa nuk u lexuan, dhe «nuk thotë gjë për kodin» kur
+   asnjë nuk u lexua. Për një server që nuk e dërgon `unparsed`, mbetet vetëm «Asnjë erë e
+   detektuar». Në të njëjtën degë mungonin edhe rreshti i modelit dhe gjetjet vetëm të
+   modelit. Një projekt ku rregullat nuk gjenin asgjë e fshihte kështu përgjigjen e modelit
+   që ishte kërkuar. Tani të dyja shfaqen.
+
+3. **Dosje me emër `*.java`.** Ndreqja e VD-120 e njihte skedarin e vetëm nga prapashtesa,
+   dhe ky kufi u shënua atje. Prova e konfirmoi: për `Dosje.java/B.java`, `/source`
+   kthente 400. Përmbledhja e `/analyze` tani mban `scope` (`file` ose `directory`), dhe
+   `within` e përdor atë. Prapashtesa mbetet vetëm për një server që nuk e dërgon.
+
+4. **Kod i vdekur.** `PatchTrigger` dhe `Working` te `Patch.tsx` nuk thirreshin më që nga
+   paneli i VD-106. Nga `styles.css` u hoqën rregullat që nuk i përdor asnjë `className`:
+   shiriti i vjetër i kërkimit, skedat, rreshti anësor, rekomandimet, kartat, unaza,
+   shtyllat, tabela e skedarëve, gjendjet, shkrimi, konteksti, etiketat e ashpërsisë,
+   pritja e patch-it, `tagline` dhe `skip`. Lidhja për kalimin te përmbajtja ekziston ende
+   te `DashboardLayout`, me Tailwind. Skedari zbriti nga 2 510 në 1 804 rreshta.
+   Çdo klasë u kontrollua dy herë: njëherë kundrejt çdo literali në burim dhe në teste,
+   njëherë kundrejt vlerave të `className`. Marzhet negative të rreshtit të modelit u
+   hoqën gjithashtu. Brenda `space-y-4` ato anuloheshin kur rreshti nuk ishte i fundit,
+   ndërsa te dega e re bosh do ta mbulonin tekstin mbi to.
+
+5. **Numra të vjetruar te ROADMAP-i.** Ai shkruante 505 teste backend dhe 117 teste
+   vitest. Matja e sotme jep 575 dhe 133. Matja nxori edhe një rezultat negativ, që nuk ka
+   lidhje me këto ndryshime. Kufiri i VD-64, «asnjë modul nën 90%», nuk qëndron më:
+   `cli.py` dhe `refactor/apply.py` janë te 89%, dhe `__main__.py` (2 rreshta) nuk
+   ekzekutohet nga asnjë test. Shënohet këtu dhe te ROADMAP-i. Nuk u ndreq me këtë
+   ndryshim.
+
+**Verifikimi.**
+- Backend: 575 teste kalojnë, 1 anashkalohet pa symlink, mbulimi 95%.
+- `ruff check`, `ruff format --check` dhe `mypy` kalojnë, si mbi paketën ashtu edhe mbi
+  `scripts/`.
+- Frontend: `tsc` pa gabime, 133 teste vitest, dhe build-i kryhet.
+- 9 teste end-to-end kalojnë, 4 prej tyre me axe.
+- Në shfletues, mbi dosjen e demonstrimit:
+  - `OrderManager.java` me modelin të ndezur e shfaq arsyen shqip, dhe kodi i gjetjes
+    ngarkohet (43 rreshta).
+  - `package-info.java` jep gjendjen bosh me shënimin e modelit 16 piksela poshtë saj.
+  - Konsola nuk ka asnjë gabim.
+
+**Çfarë nuk u verifikua.** Trajtat e pjesshme të gjendjes bosh, me disa ose me të gjithë
+skedarët të paparsuar, u provuan vetëm me teste DOM, jo mbi një projekt të vërtetë. Po
+ashtu edhe dosja `*.java` në ndërfaqe, sepse dosja e demonstrimit nuk ka të tillë dhe
+atje nuk shkruhet. Kodet `library_mismatch` dhe `dataset_missing` provohen te
+`load_model`. `feature_missing` nuk ka test që e ngre, dhe e kap vetëm krahasimi i
+listës së kodeve. Asnjëri nga të tre nuk u pa në ekran.
