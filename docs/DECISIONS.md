@@ -4560,3 +4560,48 @@ ashtu edhe dosja `*.java` në ndërfaqe, sepse dosja e demonstrimit nuk ka të t
 atje nuk shkruhet. Kodet `library_mismatch` dhe `dataset_missing` provohen te
 `load_model`. `feature_missing` nuk ka test që e ngre, dhe e kap vetëm krahasimi i
 listës së kodeve. Asnjëri nga të tre nuk u pa në ekran.
+
+### VD-122: Dy defekte të ndërfaqes, të gjetura me projektin e testimit
+
+**Si u gjetën.** Për takimin me mentoren u shkrua një projekt i vogël Java,
+`regjistri-studentor`, jashtë depos, te `Desktop\JavaSmell-projekti-i-testimit`. Ka 10
+skedarë dhe 536 rreshta, kompilohet dhe ekzekutohet pa varësi, dhe mbulon të 8 llojet
+e erërave. Skenari i tij u kalua i tëri në ndërfaqe, me Playwright. Rezultatet:
+- analiza: 18 erëra në 14 vende;
+- patch-i: 6 ndryshime në 4 skedarë, i verifikuar me `javac`, në 7 sekonda, me 5
+  refuzime;
+- shkrimi dhe `git restore .` kaluan;
+- dalja e programit para dhe pas shkrimit është e njëjtë, 58 rreshta.
+
+Prova nxori dy defekte.
+
+1. **Arsyeja e refuzimit dilte anglisht te detaji.** «Motori nuk e rishkroi këtë vend:
+   not private, so the call sites are not local». `Detail` e shfaqte `detail`-in e
+   motorit në vend të arsyes. Tani fjalia mban arsyen shqip sipas kodit (`REFUSAL_SQ`),
+   si tabela e refuzimeve te patch-i. Hollësia e motorit shfaqet poshtë saj, e shënuar
+   «anglisht», sepse mban emra nga kodi. Përkthimi i plotë i hollësisë do të kërkonte
+   që motori ta dërgojë si kod me vlera, si shënimet e VD-97. Ka rreth 25 fjali të
+   tilla, disa me emra të futur brenda, ndaj ky ndryshim mbetet i hapur.
+
+2. **«4 të aplikuara, 2 në pritje» pas 6 rishkrimeve.** Paneli merrte numrin e
+   skedarëve të shkruar dhe e vinte pranë numrit të vendeve. «Në pritje» dilte nga
+   zbritja e njërit prej tjetrit. Pas skanimit të ri, vendet e ndrequra nuk janë më te
+   lista, ndaj zbritja i numëronte dy herë. Tani paneli thotë «6 ndryshime u aplikuan në
+   4 skedarë», me `changes` nga përgjigjja e shkrimit, dhe «në pritje» u hoq.
+
+**Një rezultat negativ që nuk ndreqet këtu.** Pas shkrimit, numri i erërave mbetet 18.
+- Nga 6 rishkrimet, 5 e hoqën erën e synuar:
+  - dy `DeepNesting`;
+  - `LongMethod` te `buildTranscript`;
+  - dy `LongParameterList`.
+- `App.main` ra nga 60 në 56 rreshta dhe mbetet `LongMethod`.
+- Rishkrimet sollën 5 erëra të reja:
+  - konstruktori i secilit objekt-parametër ka vetë 6 parametra, pra `LongParameterList`;
+  - `applyDiscounts` dhe `createStudent` tani lexojnë `params.x`, pra `FeatureEnvy`;
+  - metoda e nxjerrë nga `buildTranscript` është gjithashtu `FeatureEnvy`.
+
+VD-44 mat nëse u hoq era e synuar, jo erërat që rishkrimi lind gjetiu. Ky kufi i
+matjes duhet thënë në punim.
+
+**Verifikimi.** 135 teste vitest dhe 9 end-to-end kalojnë. `tsc` nuk jep gabime.
+Skenari në ndërfaqe u përsërit pas ndreqjes, dhe konsola nuk pati asnjë gabim.
