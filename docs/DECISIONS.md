@@ -4600,8 +4600,11 @@ Prova nxori dy defekte.
   - `applyDiscounts` dhe `createStudent` tani lexojnë `params.x`, pra `FeatureEnvy`;
   - metoda e nxjerrë nga `buildTranscript` është gjithashtu `FeatureEnvy`.
 
-VD-44 mat nëse u hoq era e synuar, jo erërat që rishkrimi lind gjetiu. Ky kufi i
-matjes duhet thënë në punim.
+Kjo nuk është gjë e re për punimin. VD-44 mat vetëm erën e synuar, por Nënkapitulli
+5.4 mat edhe klasën e tërë para dhe pas: mbi korpusin, rishkrimet sollën 937 erëra që
+nuk ishin aty, shumica Long Parameter List. Projekti i testimit e tregon të njëjtën gjë
+në të vogël. Versioni i parë i këtij shënimi pohonte se punimi nuk i mat këto erëra; ai
+pohim ishte i gabuar dhe u ndreq pasi u lexua sërish Nënkapitulli 5.4.
 
 **Verifikimi.** 135 teste vitest dhe 9 end-to-end kalojnë. `tsc` nuk jep gabime.
 Skenari në ndërfaqe u përsërit pas ndreqjes, dhe konsola nuk pati asnjë gabim.
