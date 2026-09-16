@@ -157,6 +157,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         payload: dict[str, Any] = {
             "summary": {
+                # Skedar apo dosje. Te i pari `file_path` është relativ ndaj dosjes
+                # së skedarit, dhe ndërfaqja nuk e merr dot me mend nga emri: edhe
+                # një dosje mund të quhet `Dosje.java` (VD-121).
+                "scope": "file" if target.is_file() else "directory",
                 "files": len(project.units),
                 # Rreshtat efektivë, me të njëjtin përkufizim si CLOC: një
                 # përkufizim i vetëm për tërë sistemin, dhe ai që raporton punimi.
@@ -477,11 +481,11 @@ def _model_block(project: ProjectModel, target: Path, config: Settings) -> dict[
     there is none rather than losing the first one.
     """
     if target.is_file():
-        return {"available": False, "reason": MODEL_NEEDS_PROJECT}
+        return {"available": False, "code": "needs_project", "reason": MODEL_NEEDS_PROJECT}
     try:
         models = load_models(config.models_dir, config.dataset_csv)
     except ModelUnavailable as exc:
-        return {"available": False, "reason": str(exc)}
+        return {"available": False, "code": exc.code, "reason": str(exc)}
 
     reports = predict_all(models, project)
     return {

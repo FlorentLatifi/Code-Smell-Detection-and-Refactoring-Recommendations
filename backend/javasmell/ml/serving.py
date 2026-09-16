@@ -55,7 +55,16 @@ SERVED = ("blob", "data class", "long method", "feature envy")
 
 
 class ModelUnavailable(Exception):
-    """A model cannot be served, carrying the reason a caller can show a user."""
+    """A model cannot be served, carrying the reason a caller can show a user.
+
+    The message is English and the interface that shows it is not, so the reason
+    also travels as a ``code``. Translating by matching the sentence would break
+    silently the first time its wording changed (VD-121).
+    """
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
 
 
 @dataclass(frozen=True)
@@ -142,7 +151,9 @@ def load_model(models_dir: Path, dataset_csv: Path, smell: str) -> SmellModel:
     manifest_path = models_dir / f"{slug(smell)}.json"
     model_path = models_dir / f"{slug(smell)}.joblib"
     if not manifest_path.is_file() or not model_path.is_file():
-        raise ModelUnavailable(f"no trained model for {smell!r}; run scripts/train_models.py")
+        raise ModelUnavailable(
+            "not_trained", f"no trained model for {smell!r}; run scripts/train_models.py"
+        )
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     recorded: dict[str, str] = manifest["libraries"]
@@ -150,11 +161,14 @@ def load_model(models_dir: Path, dataset_csv: Path, smell: str) -> SmellModel:
     differing = sorted(name for name, version in recorded.items() if running.get(name) != version)
     if differing:
         raise ModelUnavailable(
-            f"{smell!r} was fitted with a different {', '.join(differing)}; retrain first"
+            "library_mismatch",
+            f"{smell!r} was fitted with a different {', '.join(differing)}; retrain first",
         )
 
     if not dataset_csv.is_file():
-        raise ModelUnavailable(f"{dataset_csv.name} is needed to explain a verdict")
+        raise ModelUnavailable(
+            "dataset_missing", f"{dataset_csv.name} is needed to explain a verdict"
+        )
 
     features: tuple[str, ...] = tuple(manifest["features"])
     return SmellModel(
@@ -182,7 +196,9 @@ def medians(
     position = {name: index for index, name in enumerate(data.names)}
     missing = [name for name in features if name not in position]
     if missing:
-        raise ModelUnavailable(f"{smell!r} names {', '.join(missing)}, absent from the dataset")
+        raise ModelUnavailable(
+            "feature_missing", f"{smell!r} names {', '.join(missing)}, absent from the dataset"
+        )
 
     typical = typical_values(data.x)
     return np.array([typical[position[name]] for name in features], dtype=np.float64)

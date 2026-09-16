@@ -8,6 +8,7 @@ import type {
   RewriteNote,
   Smell,
   Source,
+  Summary,
   TreeState,
 } from "./types";
 
@@ -65,6 +66,26 @@ export const ERROR_SQ: Record<string, string> = {
   unreadable: "Skedari nuk u lexua dot.",
   advisory_only: "Motori nuk e rishkruan vetë këtë erë; mbetet propozim.",
   not_found: "Asnjë entitet te ai rresht. Analiza mund të jetë e vjetruar; ri-ekzekutoje.",
+};
+
+/**
+ * Pse modeli nuk u pyet, shqip, lidhur me kodin për të njëjtën arsye si `ERROR_SQ`.
+ *
+ * Fjalia vazhdon pas «Modeli nuk u pyet dot:», ndaj nis me shkronjë të vogël, dhe
+ * si te gabimet i thotë përdoruesit çfarë të bëjë. Kodet vijnë nga
+ * `ModelUnavailable` te `ml/serving.py` dhe nga `_model_block` te `api/app.py`
+ * (VD-121).
+ */
+export const MODEL_REFUSAL_SQ: Record<string, string> = {
+  needs_project:
+    "ai lexon matje që varen nga i gjithë projekti. Analizo dosjen e projektit, jo një skedar të vetëm.",
+  not_trained: "modelet nuk janë trajnuar në këtë kopje. Ekzekuto scripts/train_models.py.",
+  library_mismatch:
+    "modelet u trajnuan me një version tjetër të librarive. Trajnoji përsëri me scripts/train_models.py.",
+  dataset_missing:
+    "mungojnë të dhënat e MLCQ-së, mbi të cilat shpjegohet çdo verdikt. Ekzekuto scripts/build_dataset.py.",
+  feature_missing:
+    "një model kërkon matje që nuk janë te të dhënat e MLCQ-së. Trajnoji përsëri me scripts/train_models.py.",
 };
 
 async function post<T>(
@@ -130,17 +151,23 @@ export function analyse(
  * `OrderManager.java/OrderManager.java`, so the source and the proposed diff of
  * every finding in a single-file analysis failed with "nothing at this path".
  * Found by walking the demonstration script, not by a test (VD-120).
+ *
+ * `scope` comes from the server and settles which case it is. The name ending in
+ * `.java` is only the fallback for a server that does not send it: a directory
+ * may be called `Orders.java`, and the guess then dropped it from the path
+ * (VD-121).
  */
-export function within(path: string, file: string): string {
+export function within(path: string, file: string, scope?: Summary["scope"]): string {
   const trimmed = path.replace(/[\\/]+$/, "");
   if (!file) return trimmed;
-  const base = /\.java$/i.test(trimmed) ? trimmed.replace(/[\\/]?[^\\/]*$/, "") : trimmed;
+  const single = scope ? scope === "file" : /\.java$/i.test(trimmed);
+  const base = single ? trimmed.replace(/[\\/]?[^\\/]*$/, "") : trimmed;
   return base ? `${base}/${file}` : file;
 }
 
-export function preview(path: string, smell: Smell): Promise<Preview> {
+export function preview(path: string, smell: Smell, scope?: Summary["scope"]): Promise<Preview> {
   return post<Preview>("/refactor/preview", {
-    path: within(path, smell.file_path),
+    path: within(path, smell.file_path, scope),
     class_name: smell.class_name,
     method: smell.method ? smell.method.replace(/\(.*$/, "") : null,
     start_line: smell.start_line,
@@ -243,9 +270,9 @@ async function refuse(response: Response): Promise<never> {
   throw new Error(`Serveri ktheu ${response.status}.`);
 }
 
-export function source(path: string, smell: Smell): Promise<Source> {
+export function source(path: string, smell: Smell, scope?: Summary["scope"]): Promise<Source> {
   return post<Source>("/source", {
-    path: within(path, smell.file_path),
+    path: within(path, smell.file_path, scope),
     start_line: smell.start_line,
     end_line: smell.end_line,
   });

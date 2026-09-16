@@ -71,9 +71,26 @@ export interface ModelReport {
  */
 export type ModelBlock =
   | { available: true; smells: ModelReport[] }
-  | { available: false; reason: string };
+  | {
+      available: false;
+      /**
+       * Pse, si kod, që përkthimi të lidhet me të e jo me fjalinë anglisht.
+       * Opsional sepse një server i vjetër dërgon vetëm fjalinë, e cila atëherë
+       * shfaqet ashtu si erdhi (VD-121).
+       */
+      code?: string;
+      reason: string;
+    };
 
 export interface Summary {
+  /**
+   * Skedar i vetëm apo dosje.
+   *
+   * Te i pari `file_path` i çdo gjetjeje është relativ ndaj dosjes së skedarit.
+   * Opsional si `loc`: pa të ndërfaqja bie te emri, që gabon për një dosje të
+   * quajtur `Dosje.java` (VD-121).
+   */
+  scope?: "file" | "directory";
   files: number;
   /**
    * Rreshtat efektivë të gjithçkaje që u lexua.

@@ -368,6 +368,88 @@ describe("gjetjet që i shënoi vetëm modeli", () => {
 
     expect(screen.queryByRole("region", { name: "Gjetjet vetëm të modelit" })).toBeNull();
   });
+
+  it("shfaqet edhe kur rregullat nuk gjetën asgjë", async () => {
+    // Defekti: dega bosh tregonte vetëm «Asnjë erë e detektuar» dhe e fshihte
+    // përgjigjen e modelit që u kërkua (VD-121).
+    serve({ ...withModel(), smells: [], summary: analysis([]).summary });
+    render(<App />);
+    fireEvent.change(screen.getByLabelText("Shtegu i projektit"), { target: { value: "src" } });
+    fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
+
+    const section = await screen.findByRole("region", { name: "Gjetjet vetëm të modelit" });
+
+    expect(within(section).getByText("Basket")).toBeDefined();
+    expect(within(section).getByText("Ledger.post")).toBeDefined();
+  });
+});
+
+describe("modeli që nuk u pyet", () => {
+  it("e thotë arsyen shqip, jo me fjalinë anglisht të serverit", async () => {
+    // Defekti: «Modeli nuk u pyet dot: a model verdict needs project-wide
+    // measurement…» te çdo analizë e një skedari të vetëm (VD-121).
+    serve({
+      ...analysis([smell({ method: "m0(int)" })]),
+      model: {
+        available: false,
+        code: "needs_project",
+        reason: "a model verdict needs project-wide measurement",
+      },
+    });
+    render(<App />);
+    await analyse("Ledger.java");
+
+    expect(screen.getByText(/Analizo dosjen e projektit/)).toBeDefined();
+    expect(screen.queryByText(/project-wide/)).toBeNull();
+  });
+
+  it("e lë fjalinë e serverit për një kod që ndërfaqja ende nuk e njeh", async () => {
+    // Anglisht por e vërtetë, që është më mirë se një arsye e shpikur.
+    serve({
+      ...analysis([smell({ method: "m0(int)" })]),
+      model: { available: false, code: "something_new", reason: "a reason nobody translated" },
+    });
+    render(<App />);
+    await analyse();
+
+    expect(screen.getByText(/a reason nobody translated/)).toBeDefined();
+  });
+});
+
+describe("kodi i një gjetjeje", () => {
+  it("e kërkon brenda dosjes edhe kur dosja quhet si skedar Java", async () => {
+    // Defekti: `Orders.java` lexohej si skedar dhe hiqej nga shtegu, ndaj
+    // `/source` merrte `com/acme/Ledger.java` dhe kthente «nuk ka asgjë» (VD-121).
+    const asked: unknown[] = [];
+    const body = analysis([smell({ method: "m0(int)" })]);
+    body.summary.scope = "directory";
+    const reply = (payload: unknown, status = 200) =>
+      new Response(JSON.stringify(payload), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (String(url).endsWith("/analyze")) return reply(body);
+        if (String(url).endsWith("/source")) {
+          asked.push(JSON.parse(String(init?.body)));
+          return reply({ start_line: 10, end_line: 11, truncated: false, lines: ["void post() {", "}"] });
+        }
+        return reply({ error: { code: "not_found", message: "x" } }, 404);
+      }),
+    );
+    render(<App />);
+    await analyse("Orders.java");
+    fireEvent.click(screen.getAllByRole("button", { name: ROW })[0]);
+
+    await screen.findByRole("region", { name: "Kodi i gjetjes" });
+    expect(asked[0]).toEqual({
+      path: "Orders.java/com/acme/Ledger.java",
+      start_line: 10,
+      end_line: 60,
+    });
+  });
 });
 
 describe("skedarët që nuk parsohen dhe dosja e lejuar", () => {
@@ -506,6 +588,36 @@ describe("përmbledhja", () => {
 
     expect(await screen.findByText(/Asnjë erë e detektuar/)).toBeDefined();
     expect(screen.queryByRole("region", { name: "Sipas llojit" })).toBeNull();
+  });
+
+  /** Analizë pa erëra, me aq skedarë sa u lexuan dhe aq sa nuk u parsuan. */
+  async function emptyWith(files: number, unparsed: number): Promise<void> {
+    const empty = analysis([]);
+    serve({ ...empty, summary: { ...empty.summary, files, unparsed } });
+    render(<App />);
+    fireEvent.change(screen.getByLabelText("Shtegu i projektit"), { target: { value: "src" } });
+    fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
+    await screen.findByText(/Asnjë erë e detektuar/);
+  }
+
+  it("e thotë se kodi kaloi kur çdo skedar u lexua pastër", async () => {
+    await emptyWith(2, 0);
+
+    expect(screen.getByText("Asnjë erë e detektuar. Kodi kaloi çdo strategji.")).toBeDefined();
+  });
+
+  it("nuk e shpall kodin të pastër kur asnjë skedar nuk u parsua", async () => {
+    // Defekti: «Kodi kaloi çdo strategji» mbi skedarë që parser-i nuk i lexoi dot.
+    await emptyWith(2, 2);
+
+    expect(screen.getByText(/asnjë skedar nuk u parsua pastër/)).toBeDefined();
+    expect(screen.queryByText(/Kodi kaloi çdo strategji/)).toBeNull();
+  });
+
+  it("e kufizon pohimin te skedarët që u lexuan kur disa nuk u parsuan", async () => {
+    await emptyWith(3, 1);
+
+    expect(screen.getByText(/Skedarët që u parsuan pastër kaluan çdo strategji/)).toBeDefined();
   });
 });
 

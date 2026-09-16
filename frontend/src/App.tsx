@@ -16,7 +16,7 @@ import { PatchActions, RefactoringActionList } from "./design/RefactoringActionL
 import { Waiting } from "./Waiting";
 import { PatchOutput, usePatch } from "./Patch";
 import { Results } from "./Results";
-import { ModelBar, Unparsed } from "./Summary";
+import { ModelBar, NoSmells, Unparsed } from "./Summary";
 import { automatable, byFile, byScore, bySeverity, groupBySite } from "./sites";
 import type { Site } from "./sites";
 import type { Analysis, ApplyResult, Severity, Smell, TreeState } from "./types";
@@ -504,7 +504,13 @@ export function App() {
         <>
           <Unparsed summary={screen.analysis.summary} />
           {screen.analysis.smells.length === 0 ? (
-            <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>
+            <div className="space-y-4">
+              <NoSmells summary={screen.analysis.summary} />
+              {/* Modeli mund të shënojë aty ku asnjë strategji nuk shënoi. Pa këto
+                  dy, «asnjë erë» fshihte edhe përgjigjen që u kërkua (VD-121). */}
+              {screen.analysis.model && <ModelBar block={screen.analysis.model} />}
+              <ModelOnly predictions={modelOnly(model, screen.analysis.smells)} />
+            </div>
           ) : (
             <div className="space-y-4">
             <OverviewMetrics data={overview} />
@@ -658,6 +664,7 @@ export function App() {
                     <Detail
                       smell={shownSmell}
                       path={screen.path}
+                      scope={screen.analysis.summary.scope}
                       prediction={agreementOn(model, shownSmell)}
                       asked={model !== null}
                     />

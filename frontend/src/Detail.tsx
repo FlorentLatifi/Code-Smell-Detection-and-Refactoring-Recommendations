@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { noteText, preview, source } from "./api";
 import { Diff } from "./Diff";
-import type { Prediction, Preview, Smell, Source } from "./types";
+import type { Prediction, Preview, Smell, Source, Summary } from "./types";
 
 /**
  * Everything known about one finding: the code, why it fired, and what it would
@@ -14,11 +14,14 @@ import type { Prediction, Preview, Smell, Source } from "./types";
 export function Detail({
   smell,
   path,
+  scope,
   prediction,
   asked,
 }: {
   smell: Smell;
   path: string;
+  /** Whether `path` is one file or a directory, as the analysis reported it. */
+  scope?: Summary["scope"];
   /** The model's verdict on this same entity, when it flagged it too. */
   prediction: Prediction | null;
   /** Whether the model was consulted at all, which is what makes silence mean something. */
@@ -33,7 +36,7 @@ export function Detail({
     setFailure(null);
     setResult(null);
     try {
-      setResult(await preview(path, smell));
+      setResult(await preview(path, smell, scope));
     } catch (error) {
       setFailure((error as Error).message);
     } finally {
@@ -54,7 +57,7 @@ export function Detail({
       </p>
 
       <h3>Kodi</h3>
-      <SourceView smell={smell} path={path} />
+      <SourceView smell={smell} path={path} scope={scope} />
 
       <h3>Pse u shënua</h3>
       <Conditions smell={smell} />
@@ -127,7 +130,15 @@ export function Detail({
  * span comes from the detector, so what is displayed is exactly what was
  * measured — no more, and never a different part of the file.
  */
-function SourceView({ smell, path }: { smell: Smell; path: string }) {
+function SourceView({
+  smell,
+  path,
+  scope,
+}: {
+  smell: Smell;
+  path: string;
+  scope?: Summary["scope"];
+}) {
   const [lines, setLines] = useState<Source | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
 
@@ -135,7 +146,7 @@ function SourceView({ smell, path }: { smell: Smell; path: string }) {
     let live = true;
     setLines(null);
     setFailure(null);
-    source(path, smell)
+    source(path, smell, scope)
       .then((body) => live && setLines(body))
       .catch((error: Error) => live && setFailure(error.message));
     return () => {
@@ -143,7 +154,7 @@ function SourceView({ smell, path }: { smell: Smell; path: string }) {
     };
     // The finding identifies the span, so it is the only thing worth watching:
     // listing its fields as well would be the same dependency written twice.
-  }, [path, smell]);
+  }, [path, smell, scope]);
 
   if (failure) return <p className="note">Kodi nuk u lexua dot: {failure}</p>;
   if (!lines) return <p className="note">Duke lexuar…</p>;

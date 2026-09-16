@@ -10,7 +10,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ERROR_SQ, noteText, patch, within } from "./api";
+import { ERROR_SQ, MODEL_REFUSAL_SQ, noteText, patch, within } from "./api";
 
 // Serveri e jep `file_path` relativ ndaj dosjes së analizuar, ose ndaj dosjes së
 // skedarit kur analizohet një skedar i vetëm (`_relative` te `api/app.py`). Çdo
@@ -37,6 +37,17 @@ describe("shtegu i skedarit të një gjetjeje", () => {
 
   it("kthen shtegun e analizuar kur gjetja nuk ka skedar", () => {
     expect(within("jsoup/", "")).toBe("jsoup");
+  });
+
+  it("ngjit skedarin te një dosje që quhet si skedar Java", () => {
+    // Defekti: pa `scope`, dosja `Orders.java` hiqej nga shtegu (VD-121).
+    expect(within("Orders.java", "Ledger.java", "directory")).toBe("Orders.java/Ledger.java");
+  });
+
+  it("i beson serverit kur ai thotë se u lexua një skedar", () => {
+    expect(within("shop/OrderManager.java", "OrderManager.java", "file")).toBe(
+      "shop/OrderManager.java",
+    );
   });
 });
 
@@ -76,6 +87,33 @@ describe("mesazhet e gabimit", () => {
       expect(text.length, code).toBeGreaterThan(15);
       expect(text.trim(), code).toBe(text);
       expect(text.endsWith(".") || text.endsWith("?"), code).toBe(true);
+    }
+  });
+});
+
+/**
+ * Nga `ModelUnavailable(...)` te `ml/serving.py`, plus `needs_project` nga
+ * `api/app.py`. Ana tjetër ka kopjen e vet (`test_serving.py::REFUSAL_CODES`).
+ */
+const MODEL_CODES_FROM_BACKEND = [
+  "needs_project",
+  "not_trained",
+  "library_mismatch",
+  "dataset_missing",
+  "feature_missing",
+];
+
+describe("arsyet pse modeli nuk u pyet", () => {
+  it("çdo kod ka fjali shqip dhe asnjë fjali nuk rri pa kod", () => {
+    // Pa këtë, «a model verdict needs project-wide measurement…» dilte anglisht mes
+    // tekstit shqip sa herë analizohej një skedar i vetëm (VD-121).
+    expect(Object.keys(MODEL_REFUSAL_SQ).sort()).toEqual([...MODEL_CODES_FROM_BACKEND].sort());
+  });
+
+  it("çdo fjali vazhdon pas dy pikave dhe mbaron me pikë", () => {
+    for (const [code, text] of Object.entries(MODEL_REFUSAL_SQ)) {
+      expect(text.charAt(0), code).toBe(text.charAt(0).toLowerCase());
+      expect(text.endsWith("."), code).toBe(true);
     }
   });
 });

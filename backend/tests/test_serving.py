@@ -10,13 +10,16 @@ rule is known -- the same device `test_explain` uses.
 
 from __future__ import annotations
 
+import inspect
 import json
+import re
 from pathlib import Path
 
 import numpy as np
 import pytest
 from sklearn.tree import DecisionTreeClassifier
 
+from javasmell.ml import serving
 from javasmell.ml.serving import (
     ModelUnavailable,
     SmellModel,
@@ -26,6 +29,7 @@ from javasmell.ml.serving import (
     slug,
     vector,
 )
+from javasmell.ml.training import library_versions
 from javasmell.model.entities import ClassInfo, CompilationUnit, MethodInfo, ProjectModel
 
 FEATURES = ("c_WMC", "c_CBO", "m_MLOC")
@@ -227,8 +231,11 @@ def test_slug_matches_the_filename_training_writes() -> None:
 
 
 def test_an_absent_model_is_refused_with_a_reason(tmp_path: Path) -> None:
-    with pytest.raises(ModelUnavailable, match="no trained model"):
+    with pytest.raises(ModelUnavailable, match="no trained model") as refused:
         load_model(tmp_path, tmp_path / "dataset.csv", "blob")
+
+    # The interface translates by the code, never by the sentence (VD-121).
+    assert refused.value.code == "not_trained"
 
 
 def test_a_model_fitted_by_another_library_is_refused(tmp_path: Path) -> None:
@@ -251,8 +258,43 @@ def test_a_model_fitted_by_another_library_is_refused(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(ModelUnavailable, match="scikit-learn"):
+    with pytest.raises(ModelUnavailable, match="scikit-learn") as refused:
         load_model(models, models / "dataset.csv", "blob")
+
+    assert refused.value.code == "library_mismatch"
+
+
+def test_a_model_without_its_dataset_is_refused(tmp_path: Path) -> None:
+    """A verdict is explained against medians over the dataset, so none is served without it."""
+    (tmp_path / "blob.joblib").write_bytes(b"never unpickled: the dataset is checked first")
+    (tmp_path / "blob.json").write_text(
+        json.dumps(
+            {
+                "features": ["c_WMC"],
+                "label": "smelly_mean",
+                "libraries": library_versions(),
+                "trained_on": 20,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ModelUnavailable, match=r"dataset\.csv") as refused:
+        load_model(tmp_path, tmp_path / "dataset.csv", "blob")
+
+    assert refused.value.code == "dataset_missing"
+
+
+#: The codes `ModelUnavailable` carries. `frontend/src/api.ts` translates these
+#: plus the API's own `needs_project`, and its test keeps a copy of the list, so a
+#: new code breaks a test on each side instead of reaching the screen in English.
+REFUSAL_CODES = {"not_trained", "library_mismatch", "dataset_missing", "feature_missing"}
+
+
+def test_every_refusal_carries_a_code_the_interface_knows() -> None:
+    raised = set(re.findall(r'raise ModelUnavailable\(\s*"(\w+)"', inspect.getsource(serving)))
+
+    assert raised == REFUSAL_CODES
 
 
 def test_a_project_the_model_flags_nowhere_is_not_an_error() -> None:

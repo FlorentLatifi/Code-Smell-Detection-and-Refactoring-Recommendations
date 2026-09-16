@@ -202,6 +202,7 @@ def test_an_untrained_checkout_says_so_without_losing_the_rules(untrained):
     # The rules ran and found what they found; only the second opinion is missing.
     assert body["summary"]["classes"] == 1
     assert body["model"]["available"] is False
+    assert body["model"]["code"] == "not_trained"
     assert "train_models" in body["model"]["reason"]
 
 
@@ -210,7 +211,11 @@ def test_a_single_file_gets_no_model_verdict(trained):
     columns it was fitted on, so it is not asked."""
     body = trained.post("/analyze", json={"path": "src/Wide.java", "include_model": True}).json()
 
-    assert body["model"] == {"available": False, "reason": MODEL_NEEDS_PROJECT}
+    assert body["model"] == {
+        "available": False,
+        "code": "needs_project",
+        "reason": MODEL_NEEDS_PROJECT,
+    }
 
 
 def test_a_model_fitted_by_another_library_is_not_served(tmp_path, workspace):
@@ -231,4 +236,5 @@ def test_a_model_fitted_by_another_library_is_not_served(tmp_path, workspace):
 
     body = client.post("/analyze", json={"path": "src", "include_model": True}).json()
     assert body["model"]["available"] is False
+    assert body["model"]["code"] == "library_mismatch"
     assert "scikit-learn" in body["model"]["reason"]

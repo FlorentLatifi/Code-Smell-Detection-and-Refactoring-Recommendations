@@ -1,3 +1,4 @@
+import { MODEL_REFUSAL_SQ } from "./api";
 import { SMELL_SQ } from "./evaluation";
 import type { ModelBlock, Summary } from "./types";
 
@@ -35,6 +36,37 @@ export function Unparsed({ summary }: { summary: Summary }) {
 }
 
 /**
+ * Asnjë erë, dhe sa larg shkon ky pohim.
+ *
+ * «Kodi kaloi çdo strategji» vlen vetëm për skedarët që u lexuan pastër. Kur
+ * asnjë nuk u parsua, e njëjta fjali e shpallte të pastër një projekt që mjeti
+ * nuk e lexoi dot: defekti që VD-91 mbylli te numrat, i mbetur te gjendja bosh
+ * (VD-121).
+ */
+export function NoSmells({ summary }: { summary: Summary }) {
+  const { files, unparsed } = summary;
+  // Një server i vjetër nuk e dërgon numrin, dhe mungesa nuk është zero.
+  if (unparsed === undefined) return <p className="empty">Asnjë erë e detektuar.</p>;
+  if (unparsed === 0) {
+    return <p className="empty">Asnjë erë e detektuar. Kodi kaloi çdo strategji.</p>;
+  }
+  if (unparsed >= files) {
+    return (
+      <p className="empty">
+        Asnjë erë e detektuar, por kjo nuk thotë gjë për kodin:{" "}
+        {files === 1 ? "skedari nuk u parsua pastër." : "asnjë skedar nuk u parsua pastër."}
+      </p>
+    );
+  }
+  return (
+    <p className="empty">
+      Asnjë erë e detektuar. Skedarët që u parsuan pastër kaluan çdo strategji; për të tjerët shih
+      shënimin më sipër.
+    </p>
+  );
+}
+
+/**
  * What the second approach found, kept apart from what the rules found.
  *
  * Deliberately its own row rather than numbers folded into the summary. The two
@@ -45,8 +77,10 @@ export function Unparsed({ summary }: { summary: Summary }) {
 export function ModelBar({ block }: { block: ModelBlock }) {
   if (!block.available) {
     return (
-      <p className="note model-note">
-        Modeli nuk u pyet dot: {block.reason}
+      <p className="note">
+        {/* Fjalia e serverit mbetet vetëm për një kod që kjo anë ende nuk e njeh:
+            anglisht, por e vërtetë, që është më mirë se një arsye e shpikur. */}
+        Modeli nuk u pyet dot: {MODEL_REFUSAL_SQ[block.code ?? ""] ?? block.reason}
       </p>
     );
   }
