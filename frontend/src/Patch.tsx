@@ -72,41 +72,6 @@ export function usePatch(path: string): PatchSession {
   return { result, busy, progress, failure, copied, ask, copy };
 }
 
-/** Butoni dhe shkalla e tij, aq të ngushtë sa hyjnë te kolona e veglave. */
-export function PatchTrigger({
-  session,
-  ready,
-  total,
-  path,
-}: {
-  session: PatchSession;
-  ready: number;
-  total: number;
-  path: string;
-}) {
-  return (
-    <div className="patch-trigger">
-      <button
-        className="primary wide"
-        onClick={session.ask}
-        disabled={session.busy || !path.trim()}
-      >
-        {session.busy ? "Duke përgatitur…" : "Përgatit patch-in"}
-      </button>
-      <p className="caption">
-        {/* Shkalla para shtypjes: butoni rrinte këtu pa thënë nëse do të dilnin dy
-            ndryshime apo dyqind, dhe ajo shifër llogaritet nga e njëjta fushë që vë
-            shenjën ✎ te çdo rresht. */}
-        <b>
-          {ready} nga {total} {total === 1 ? "vend" : "vende"}
-        </b>{" "}
-        {ready === 1 ? "ka" : "kanë"} një rishkrim që motori e provon.
-      </p>
-      {session.busy && <Working progress={session.progress} />}
-    </div>
-  );
-}
-
 /** Diff-i dhe llogaria e tij, poshtë rrjetit ku ka gjerësi për t'u lexuar. */
 export function PatchOutput({ session }: { session: PatchSession }) {
   if (!session.failure && !session.result) return null;
@@ -121,35 +86,6 @@ export function PatchOutput({ session }: { session: PatchSession }) {
         <Outcome result={session.result} onCopy={session.copy} copied={session.copied} />
       )}
     </section>
-  );
-}
-
-function Working({ progress }: { progress: PatchProgress | null }) {
-  if (!progress) {
-    return (
-      <p className="note" role="status">
-        Duke matur skedarët…
-      </p>
-    );
-  }
-
-  const share = progress.files_total
-    ? Math.round((progress.files_done / progress.files_total) * 100)
-    : 0;
-  return (
-    <div className="working">
-      <progress value={progress.files_done} max={progress.files_total} />
-      {/* `aria-live` te teksti e jo te shiriti: një lexues ekrani duhet ta dëgjojë
-          numrin, e jo çdo lëvizje piksele. */}
-      <p className="note" role="status">
-        {progress.files_done} nga {progress.files_total}{" "}
-        {word(progress.files_total, "skedar", "skedarë")} ({share}%),{" "}
-        {progress.changes === 0
-          ? "ende asnjë ndryshim"
-          : `${progress.changes} ${word(progress.changes, "ndryshim", "ndryshime")} deri tani`}
-        .
-      </p>
-    </div>
   );
 }
 
