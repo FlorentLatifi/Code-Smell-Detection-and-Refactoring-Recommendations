@@ -13,10 +13,12 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
+from javasmell.refactor import apply as apply_module
 from javasmell.refactor.apply import Applied, Refusal, Refused, apply_patches, working_tree_state
 from javasmell.refactor.patch import FilePatch
 from javasmell.refactor.verify import Verdict
@@ -264,3 +266,94 @@ def test_the_named_revert_command_actually_reverts_it(tmp_path: Path) -> None:
     subprocess.run([str(GIT), "-C", str(root), "restore", "."], check=True, capture_output=True)
 
     assert (root / "T.java").read_bytes() == BEFORE
+
+
+# ----------------------------------------------------------------------
+# git itself failing
+# ----------------------------------------------------------------------
+# The one place git is stubbed. A real tree cannot be told to make git vanish or
+# stop answering, and that is exactly the case pinned here: when git cannot say
+# yes, the answer is no, and nothing reaches the disk (VD-123).
+def test_missing_git_is_a_refusal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = repository(tmp_path)
+
+    def vanished(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(apply_module.subprocess, "run", vanished)
+
+    result = apply_patches((patch_for(root),), root, requested=True)
+
+    assert result == Refusal(Refused.NOT_A_REPOSITORY, "git is not available")
+    assert (root / "T.java").read_bytes() == BEFORE
+
+
+def test_git_that_does_not_answer_in_time_is_a_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = repository(tmp_path)
+
+    def hung(*args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise subprocess.TimeoutExpired(cmd="git", timeout=apply_module.GIT_TIMEOUT_S)
+
+    monkeypatch.setattr(apply_module.subprocess, "run", hung)
+
+    result = apply_patches((patch_for(root),), root, requested=True)
+
+    assert result == Refusal(Refused.NOT_A_REPOSITORY, "git is not available")
+
+
+def failing(subcommand: str) -> Callable[..., subprocess.CompletedProcess[str] | None]:
+    """The real `_git`, except that one subcommand exits 128 as a broken git would."""
+    real = apply_module._git
+
+    def fake(repository: Path, *arguments: str) -> subprocess.CompletedProcess[str] | None:
+        if arguments[0] == subcommand:
+            return subprocess.CompletedProcess(["git", *arguments], 128, "", "fatal")
+        return real(repository, *arguments)
+
+    return fake
+
+
+@pytest.mark.parametrize(
+    ("subcommand", "detail"),
+    [
+        ("check-ignore", "git check-ignore could not be read"),
+        ("status", "git status could not be read"),
+        ("ls-files", "git ls-files could not be read"),
+    ],
+)
+def test_a_git_command_that_fails_is_a_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, subcommand: str, detail: str
+) -> None:
+    """Exit 128 is git failing to answer, which is not a yes."""
+    root = repository(tmp_path)
+    monkeypatch.setattr(apply_module, "_git", failing(subcommand))
+
+    result = apply_patches((patch_for(root),), root, requested=True)
+
+    assert result == Refusal(Refused.NOT_A_REPOSITORY, detail)
+    assert (root / "T.java").read_bytes() == BEFORE
+
+
+def test_a_file_that_cannot_be_read_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A file locked by another program is not one whose bytes can be compared."""
+    root = repository(tmp_path)
+    patch = patch_for(root)
+    kind = type(patch.path)
+    real = kind.read_bytes
+
+    def locked(self: Path) -> bytes:
+        if self == patch.path:
+            raise PermissionError("locked by another program")
+        return real(self)
+
+    monkeypatch.setattr(kind, "read_bytes", locked)
+
+    result = apply_patches((patch,), root, requested=True)
+
+    assert result == Refusal(
+        Refused.FILE_CHANGED, "T.java could not be read: locked by another program"
+    )

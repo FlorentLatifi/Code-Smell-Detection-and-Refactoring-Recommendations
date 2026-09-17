@@ -10,15 +10,23 @@ user. The contract worth pinning down is therefore the *shape* of each output
 from __future__ import annotations
 
 import csv
+import io
 import json
+import re
+import runpy
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+from javasmell import cli
+from javasmell.analysis import analyze_path
 from javasmell.cli import main
 from javasmell.metrics.calculator import metric_names
+from javasmell.refactor.patch import Change, FilePatch, Plan, Rejected
+from javasmell.refactor.verify import Verdict
 
 FIXTURES = str(Path(__file__).parent / "fixtures")
 
@@ -282,3 +290,131 @@ def test_reported_paths_use_one_separator(capsys):
     main([FIXTURES, "--format", "csv"])
 
     assert "\\" not in capsys.readouterr().out
+
+
+# ----------------------------------------------------------------------
+# --apply, progress, and the account around a patch (VD-123)
+# ----------------------------------------------------------------------
+GIT = shutil.which("git")
+
+#: One method nested four deep and nothing else the engine rewrites, so Guard
+#: Clauses is the only change and it lifts exactly the outer condition.
+NESTED = """public class Gate {
+    private int count;
+
+    void touch(int a, int b, int c) {
+        if (a > 0) {
+            if (b > 0) {
+                if (c > 0) {
+                    if (a > b) {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+}
+"""
+
+
+def committed(root):
+    """`root` as a git tree with Gate.java committed: the state `--apply` requires."""
+    root.mkdir()
+    (root / "Gate.java").write_text(NESTED, encoding="utf-8", newline="\n")
+    for command in (
+        ["init", "-q"],
+        ["config", "user.email", "t@example.com"],
+        ["config", "user.name", "T"],
+        ["config", "core.autocrlf", "false"],
+        ["add", "."],
+        ["commit", "-q", "-m", "first"],
+    ):
+        subprocess.run([str(GIT), "-C", str(root), *command], check=True, capture_output=True)
+    return root
+
+
+@pytest.mark.skipif(not GIT, reason="git not installed")
+def test_apply_writes_the_rewrite_and_names_the_undo(tmp_path, capsys):
+    root = committed(tmp_path / "project")
+
+    assert main([str(root), "--apply"]) == 0
+
+    err = capsys.readouterr().err
+    assert "wrote Gate.java" in err
+    assert "1 file(s) written. To undo all of it: git restore ." in err
+    # Guard Clauses wraps the outer condition rather than inverting it.
+    assert "if (!(a > 0)) {" in (root / "Gate.java").read_text(encoding="utf-8")
+
+
+@pytest.mark.skipif(not GIT, reason="git not installed")
+def test_apply_outside_a_repository_writes_nothing_and_exits_4(tmp_path, capsys):
+    """A script that asked for a write and got a refusal must not read it as success."""
+    loose = tmp_path / "loose"
+    loose.mkdir()
+    (loose / "Gate.java").write_text(NESTED, encoding="utf-8", newline="\n")
+
+    assert main([str(loose), "--apply"]) == 4
+
+    err = capsys.readouterr().err
+    assert "Nothing was written: the path is not inside a git working tree" in err
+    assert (loose / "Gate.java").read_text(encoding="utf-8") == NESTED
+
+
+class Terminal(io.StringIO):
+    """A stderr that says it is a terminal, which is the only time progress is drawn."""
+
+    def isatty(self):
+        return True
+
+
+def test_progress_is_drawn_on_a_terminal_and_cleared_after(monkeypatch):
+    terminal = Terminal()
+    monkeypatch.setattr(sys, "stderr", terminal)
+
+    assert main([FIXTURES, "--format", "patch"]) == 0
+
+    drawn = terminal.getvalue()
+    assert re.search(r"\r\d+/\d+ files, \d+ change\(s\)", drawn)
+    # Blanked with spaces between two returns, never with an ANSI sequence.
+    assert re.search(r"\r +\r", drawn)
+    assert "\x1b" not in drawn
+
+
+def test_the_account_names_what_was_deferred_and_dropped(capsys):
+    """A patch that silently leaves out part of what was found cannot be trusted."""
+    guard = Change("ReplaceNestedConditionalWithGuardClauses", "DeepNesting", "Ledger", "post", 10)
+    extract = Change("ExtractMethod", "LongMethod", "Ledger", "post", 10)
+    rewritten = FilePatch(
+        path=Path("Ledger.java"),
+        relative="Ledger.java",
+        before=b"class Ledger {}\n",
+        after=b"class Ledger { }\n",
+        applied=(guard,),
+        deferred=(extract,),
+        verdict=Verdict.PARSES,
+    )
+    plan = Plan(
+        patches=(rewritten,),
+        dropped=(Rejected("Other.java", Verdict.NEW_ERRORS, "cannot find symbol"),),
+        declines=(),
+    )
+
+    cli._write_patch(io.StringIO(), analyze_path(FIXTURES), [], plan)
+
+    err = capsys.readouterr().err
+    assert "1 change(s) in 1 file(s)" in err
+    assert "1 deferred: their edits overlap a change already in the patch." in err
+    assert "dropped Other.java: new_errors -- cannot find symbol" in err
+    assert "declined" not in err
+
+
+def test_python_dash_m_runs_the_same_command(monkeypatch, capsys):
+    """`python -m javasmell` is how the README and the scripts start it."""
+    monkeypatch.setattr(sys, "argv", ["javasmell", FIXTURES])
+    monkeypatch.delitem(sys.modules, "javasmell.__main__", raising=False)
+
+    with pytest.raises(SystemExit) as exited:
+        runpy.run_module("javasmell", run_name="__main__")
+
+    assert exited.value.code == 0
+    assert "Analysed 2 file(s), 5 class(es)" in capsys.readouterr().out
