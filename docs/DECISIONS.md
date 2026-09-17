@@ -4608,3 +4608,76 @@ pohim ishte i gabuar dhe u ndreq pasi u lexua sërish Nënkapitulli 5.4.
 
 **Verifikimi.** 135 teste vitest dhe 9 end-to-end kalojnë. `tsc` nuk jep gabime.
 Skenari në ndërfaqe u përsërit pas ndreqjes, dhe konsola nuk pati asnjë gabim.
+
+### VD-123: Katër gjëra që mbetën te sistemi, të mbyllura
+
+**Konteksti.** Pas VD-122, inventari i sistemit u bë nga ROADMAP-i, nga pikat e hapura
+te ky regjistër dhe nga mbulimi i testeve. Punimi mbeti jashtë. Mbetën katër pika, të
+gjitha të kufizuara dhe pa ndikim te asnjë numër i komituar.
+
+1. **Kufiri i VD-64 u rikthye.** `cli.py` dhe `refactor/apply.py` ishin te 89%, dhe
+   `__main__.py` nuk ekzekutohej nga asnjë test. Mungonin këto teste:
+   - `--apply` nga CLI, si shkrim dhe si refuzim me kodin 4;
+   - rreshti i progresit në terminal;
+   - llogaria e ndryshimeve të shtyra dhe të hequra;
+   - `python -m javasmell`;
+   - te `apply.py`: `git` që mungon, që nuk përgjigjet në kohë, ose që dështon te
+     `check-ignore`, `status` apo `ls-files`, dhe skedari që nuk lexohet.
+
+   Të tre modulet janë tani te 100%. `git` zëvendësohet vetëm te testet ku dështon vetë
+   `git`-i, sepse një pemë e vërtetë nuk mund ta bëjë atë të zhduket. Kushtet e pemës
+   provohen me `git` të vërtetë, si më parë.
+
+2. **Hollësia e refuzimit tani udhëton si kod.** VD-122 e la të hapur. Motori ka 26
+   fjali refuzimi, disa me vlera brenda. Tani secila ka një kod te
+   `refactor/base.py::DETAILS`, dhe transformimet refuzojnë përmes `explain(kod, vlera)`.
+   - Fjalia anglisht ndërtohet nga po ai shabllon dhe mbetet `detail`, shkronjë për
+     shkronjë, sepse e lexojnë tabelat e korpusit dhe CLI-ja.
+   - U provua mbi `refactoring_sites.csv`: të 14 183 refuzimet, me 427 fjali të ndryshme,
+     dalin nga një shabllon. Asnjë rezultat i komituar nuk lëviz.
+   - API-ja e dërgon kodin si `explanation`, dhe ndërfaqja e shkruan shqip
+     (`REFUSAL_DETAIL_SQ`). Fjalia anglisht e shënuar si e tillë mbetet vetëm për një kod
+     të panjohur ose për një server të vjetër.
+   - Lista e kodeve mbahet me dorë në të dyja anët, me nga një test.
+   - Një test tjetër ndalon një `decline` me fjali të lirë te transformimet.
+   - Një ndryshim i vetëm sjelljeje: te `_plan`, rasti pa trup, i paarritshëm sepse
+     `apply` e refuzon më herët, tani refuzohet si `shape_not_matched` dhe jo si
+     `multiple_outputs`.
+
+3. **Grafiku i MCC-së ngarkohet vetëm kur duhet.** Paketa ishte 651 kB, mbi pragun 500 kB
+   të Vite-s, dhe pjesën më të madhe e zinte Recharts-i. Ekrani i parë nuk e përdor atë.
+   - Vizatimi u nda te `ScoreBars.tsx` dhe ngarkohet me `lazy`. Kartela dhe etiketa e
+     arritshme mbeten te paketa kryesore, dhe hapësira e grafikut e mban lartësinë, që
+     faqja të mos kërcejë.
+   - Paketa kryesore ra në 271 kB (85 kB gzip, nga 191), dhe Recharts-i (383 kB) vjen
+     pas analizës së parë. Paralajmërimi i Vite-s u zhduk.
+
+4. **Pas shkrimit, ekrani thotë çfarë ndodhi me erërat.** Pyetja «pse mbetet 18?» nuk
+   kishte përgjigje në ekran.
+   - Kur i njëjti shteg skanohet sërish pas një shkrimi, kartela «Aplikuar në këtë
+     seancë» i numëron veç: sa erëra u hoqën, sa lindën dhe sa mbetën, me emrat e
+     secilës.
+   - Entitetet krahasohen sipas emrit dhe jo sipas rreshtit, si te VD-44, sepse
+     rishkrimi i lëviz rreshtat. Parametrat hiqen nga emri i metodës, sepse Introduce
+     Parameter Object e ndryshon nënshkrimin. Mbingarkesat numërohen si shumësi.
+   - Para skanimit, kartela nuk pretendon asgjë. Ajo fton për skanim.
+   - Mbi projektin e testimit, kartela thotë: 5 u hoqën, 5 lindën, 13 mbetën. Kjo
+     përputhet me numërimin me dorë te VD-122.
+
+**Verifikimi.**
+- Backend: 591 teste kalojnë, 1 anashkalohet. Mbulimi është 96%, dhe asnjë modul nuk
+  është nën 90%. `ruff` dhe `mypy` kalojnë.
+- Frontend: 146 teste vitest dhe 9 end-to-end kalojnë, dhe `tsc` nuk jep gabime.
+- Skenari i projektit të testimit u kalua i tëri në shfletues mbi backend-in e ri:
+  - numrat e analizës dhe të patch-it janë të njëjtë si te VD-122;
+  - refuzimi i `registerStudent` del krejt shqip;
+  - dalja e programit pas shkrimit është e njëjtë;
+  - `git restore .` e la pemën të pastër;
+  - konsola nuk pati asnjë gabim.
+
+**Çfarë mbetet jashtë, me vetëdije.**
+- **Testet e projekteve:** korpusi nuk mban skedarë ndërtimi, ndaj ruajtja e sjelljes
+  mbetet e pamatur (VD-53).
+- **Zgjidhja e simboleve:** mungesa e saj e mban Move Method dhe Encapsulate Field si
+  propozim.
+- Të dyja janë ndryshime arkitekture, jo pika të hapura të këtij sistemi.
