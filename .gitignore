@@ -23,6 +23,9 @@ data/review/
 # PMD, shkarkuar nga fetch_pmd.py per krahasimin me nje mjet te jashtem.
 # 127 MB binar i palidhur me kodin tone; recepta komitohet, artefakti jo.
 data/tools/
+# Depot publike te importuara nga nderfaqja. Kod i huaj dhe i rishkarkueshem,
+# si korpusi: shtegu komitohet, permbajtja jo (VD-126).
+data/projects/
 *.joblib
 *.pkl
 .env
