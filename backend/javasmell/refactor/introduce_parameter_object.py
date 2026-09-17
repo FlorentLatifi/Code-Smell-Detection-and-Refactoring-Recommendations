@@ -67,7 +67,7 @@ from dataclasses import dataclass
 
 from tree_sitter import Node
 
-from javasmell.refactor.base import Outcome, Refusal
+from javasmell.refactor.base import Note, Outcome, Refusal, explain
 from javasmell.refactor.dataflow import text_of, walk
 from javasmell.refactor.edits import Edit, indent_at
 from javasmell.refactor.locate import Site
@@ -227,22 +227,22 @@ def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"
 
-    def decline(reason: Refusal, detail: str) -> Outcome:
+    def decline(reason: Refusal, detail: Note) -> Outcome:
         return Outcome.refuse(NAME, site.file_path, target, reason, detail)
 
     if method.type != "method_declaration":
-        return decline(Refusal.SHAPE_NOT_MATCHED, "not a method declaration")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("not_method"))
 
     body = method.child_by_field_name("body")
     if body is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "no body to rewrite")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_body"))
 
     modifiers = next((c for c in method.named_children if c.type == "modifiers"), None)
     if modifiers is None or "private" not in text_of(modifiers, source).split():
-        return decline(Refusal.SHAPE_NOT_MATCHED, "not private, so the call sites are not local")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("not_private"))
 
     if method.child_by_field_name("type_parameters") is not None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "generic method")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("generic_method"))
 
     # The object is emitted as a static nested class, which older Java forbids
     # inside an inner class. Restricting to a top-level enclosing class keeps the
@@ -251,27 +251,29 @@ def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
     if site.enclosing_type.type != "class_declaration" or (
         parent is not None and parent.type != "program"
     ):
-        return decline(Refusal.SHAPE_NOT_MATCHED, "enclosing type is not a top-level class")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("nested_enclosing_type"))
 
     declared = method.child_by_field_name("parameters")
     if declared is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "no parameter list")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_parameter_list"))
     parameters = _parameters(declared, source)
     if parameters is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "varargs or annotated parameter")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("varargs_or_annotated"))
     if len(parameters) < MINIMUM_PARAMETERS:
-        return decline(Refusal.SHAPE_NOT_MATCHED, f"only {len(parameters)} parameter(s)")
+        return decline(
+            Refusal.SHAPE_NOT_MATCHED, explain("too_few_parameters", count=len(parameters))
+        )
 
     root = site.enclosing_type
     while root.parent is not None:
         root = root.parent
 
     if _same_name_declarations(root, source, target) != 1:
-        return decline(Refusal.AMBIGUOUS_OVERLOAD, f"more than one method named {target}")
+        return decline(Refusal.AMBIGUOUS_OVERLOAD, explain("overloaded", name=target))
 
     call_sites = _call_sites(root, source, target, len(parameters))
     if call_sites is None:
-        return decline(Refusal.UNRESOLVED_NAME, "a reference that cannot be tied to the method")
+        return decline(Refusal.UNRESOLVED_NAME, explain("unresolvable_reference"))
 
     taken = {
         text_of(named, source)

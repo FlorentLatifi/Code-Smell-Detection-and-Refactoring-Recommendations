@@ -488,6 +488,43 @@ describe("refuzimi i një rishkrimi", () => {
     expect(note.textContent).toContain("forma e kodit nuk përputhet");
     expect(within(note).getByText("not private, so the call sites are not local").tagName).toBe("CODE");
   });
+
+  it("e shkruan vetë hollësinë shqip kur motori dërgon kodin e saj", async () => {
+    // VD-123: me kodin, fjalia anglisht nuk shfaqet më fare.
+    const body = analysis([smell({ method: "m0(int)" })]);
+    const reply = (payload: unknown, status = 200) =>
+      new Response(JSON.stringify(payload), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).endsWith("/analyze")) return reply(body);
+        if (String(url).endsWith("/refactor/preview")) {
+          return reply({
+            applied: false,
+            refactoring: "IntroduceParameterObject",
+            target: "m0",
+            refusal: "shape_not_matched",
+            detail: "not private, so the call sites are not local",
+            explanation: { code: "not_private" },
+          });
+        }
+        return reply({ error: { code: "not_found", message: "x" } }, 404);
+      }),
+    );
+    render(<App />);
+    await analyse();
+    fireEvent.click(screen.getAllByRole("button", { name: ROW })[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "Shfaq ndryshimin e propozuar" }));
+
+    const note = await screen.findByText(/Motori nuk e rishkroi këtë vend/);
+
+    expect(note.textContent).toContain("metoda nuk është private");
+    expect(note.textContent).not.toContain("not private");
+    expect(within(note).queryByText(/anglisht/)).toBeNull();
+  });
 });
 
 describe("skedarët që nuk parsohen dhe dosja e lejuar", () => {

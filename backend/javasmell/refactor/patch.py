@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from javasmell.detectors.base import Smell
-from javasmell.refactor.base import Refusal
+from javasmell.refactor.base import Note, Refusal, explain, sentence
 from javasmell.refactor.edits import Edit, EditConflict, apply_edits
 from javasmell.refactor.edits import check as check_edits
 from javasmell.refactor.locate import FileIndex
@@ -149,7 +149,13 @@ def plan_file(
         refactoring, transform = found
         method = None if smell.method is None else smell.method.split("(")[0]
 
-        def record(reason: str, detail: str, smell: Smell = smell, name: str = refactoring) -> None:
+        def record(
+            reason: str,
+            explanation: Note | None,
+            detail: str,
+            smell: Smell = smell,
+            name: str = refactoring,
+        ) -> None:
             declined.append(
                 Declined(
                     file_path=_relative(path, root),
@@ -160,18 +166,20 @@ def plan_file(
                     refactoring=name,
                     reason=reason,
                     detail=detail,
+                    explanation=explanation,
                 )
             )
 
         site = index.find(smell.class_name, smell.start_line, method)
         if site is None:
             # Nuk eshte refuzim i transformimit: vendi nuk u gjet dot ne peme.
-            record(Refusal.SHAPE_NOT_MATCHED.value, "the entity was not found at that line")
+            missing = explain("entity_not_found")
+            record(Refusal.SHAPE_NOT_MATCHED.value, missing, sentence(missing))
             continue
         outcome = transform(site, frozenset(reserved))
         if not outcome.applied:
             assert outcome.refusal is not None
-            record(outcome.refusal.value, outcome.detail)
+            record(outcome.refusal.value, outcome.explanation, outcome.detail)
             continue
 
         change = Change(refactoring, smell.smell_type, smell.class_name, method, smell.start_line)
@@ -225,6 +233,9 @@ class Declined:
     refactoring: str
     reason: str
     detail: str
+    #: `detail` as a code and its values, for a caller that does not write
+    #: English (VD-123).
+    explanation: Note | None = None
 
 
 @dataclass(frozen=True)

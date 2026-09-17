@@ -52,7 +52,7 @@ from dataclasses import dataclass
 from tree_sitter import Node
 
 from javasmell.detectors.thresholds import DEFAULT, Thresholds
-from javasmell.refactor.base import Note, Outcome, Refusal
+from javasmell.refactor.base import Note, Outcome, Refusal, explain
 from javasmell.refactor.dataflow import (
     declarations_in,
     escaping_control_flow,
@@ -146,11 +146,19 @@ def _free_name(taken: set[str]) -> str:
     return f"{BASE_NAME}{suffix}"
 
 
-def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
+#: Which refusal each reason `_plan` can give belongs to. The first two are the
+#: ones the corpus meets; the missing body is already refused before `_plan`.
+PLAN_REFUSALS = {
+    "not_assigned": Refusal.NOT_DEFINITELY_ASSIGNED,
+    "several_outputs": Refusal.MULTIPLE_OUTPUTS,
+}
+
+
+def _plan(method: Node, statement: Node, source: bytes) -> Plan | Note:
     """Work out the boundary, or return the reason it cannot be crossed."""
     body = method.child_by_field_name("body")
     if body is None:
-        return "no body"
+        return explain("no_body_to_extract")
 
     chosen = span_of(statement)
     siblings = list(body.named_children)
@@ -185,7 +193,7 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
     outputs = sorted(written & read_after)
 
     if len(outputs) > 1:
-        return f"{len(outputs)} values flow out: {', '.join(outputs)}"
+        return explain("several_outputs", count=len(outputs), names=", ".join(outputs))
 
     # Java's definite-assignment rules: a local read before it is certainly
     # assigned is a compile error, and that includes reading it as a parameter.
@@ -193,7 +201,7 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | str:
     # going in, so only the inputs are checked.
     unassigned = sorted(set(inputs) - _definitely_assigned(method, before, source))
     if unassigned:
-        return "unassigned:" + ", ".join(unassigned)
+        return explain("not_assigned", names=", ".join(unassigned))
 
     types = {name: outer.types[name] for name in [*inputs, *outputs]}
     return Plan(
@@ -310,43 +318,39 @@ def apply(
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"
 
-    def decline(reason: Refusal, detail: str) -> Outcome:
+    def decline(reason: Refusal, detail: Note) -> Outcome:
         return Outcome.refuse(NAME, site.file_path, target, reason, detail)
 
     if method.type != "method_declaration":
-        return decline(Refusal.SHAPE_NOT_MATCHED, "a constructor has no return type to give back")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("constructor"))
 
     body = method.child_by_field_name("body")
     if body is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "no body to extract from")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_body_to_extract"))
 
     statement = _largest_candidate(body)
     if statement is None:
-        return decline(
-            Refusal.SHAPE_NOT_MATCHED,
-            f"no top-level block of at least {MINIMUM_LINES} lines",
-        )
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_large_block", lines=MINIMUM_LINES))
 
     escape = escaping_control_flow([statement])
     if escape is not None:
-        return decline(Refusal.CONTROL_FLOW_ESCAPES, f"the block contains a {escape}")
+        return decline(
+            Refusal.CONTROL_FLOW_ESCAPES, explain("escaping_statement", statement=escape)
+        )
 
     planned = _plan(method, statement, source)
-    if isinstance(planned, str):
-        if planned.startswith("unassigned:"):
-            names = planned.removeprefix("unassigned:").strip()
-            return decline(Refusal.NOT_DEFINITELY_ASSIGNED, f"{names} may not be assigned yet")
-        return decline(Refusal.MULTIPLE_OUTPUTS, planned)
+    if isinstance(planned, Note):
+        return decline(PLAN_REFUSALS.get(planned.code, Refusal.SHAPE_NOT_MATCHED), planned)
 
     missing = [n for n in (*planned.inputs, planned.output) if n and n not in planned.types]
     if missing:
-        return decline(Refusal.UNRESOLVED_NAME, f"no declared type for {', '.join(missing)}")
+        return decline(Refusal.UNRESOLVED_NAME, explain("untyped_names", names=", ".join(missing)))
 
     # A generic method's block may mention its type variables, and carrying them
     # over correctly means reasoning about bounds and about where inference can
     # still reach. Rare enough that the analysis would not earn its risk.
     if any(child.type == "type_parameters" for child in method.children):
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the method declares type parameters")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("type_parameters"))
 
     static = any(
         child.type == "modifiers" and "static" in text_of(child, source)

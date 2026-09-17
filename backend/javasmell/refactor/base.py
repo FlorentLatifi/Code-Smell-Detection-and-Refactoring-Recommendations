@@ -17,6 +17,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from types import MappingProxyType
 
 from javasmell.refactor.edits import Edit
 
@@ -78,7 +79,65 @@ class Note:
     """
 
     code: str
-    values: Mapping[str, float] = field(default_factory=dict)
+    values: Mapping[str, float | str] = field(default_factory=dict)
+
+
+#: Every refusal detail as a code, with the English sentence it has always been.
+#:
+#: The sentence was all there was, and the interface showed it in English in the
+#: middle of an Albanian screen. The code is what now crosses to the interface;
+#: the sentence is what the corpus tables and the terminal print, kept word for
+#: word so that no committed result changes (VD-123). A placeholder names a value
+#: the sentence carries, and the note supplies it.
+DETAILS: Mapping[str, str] = MappingProxyType(
+    {
+        # Guard Clauses
+        "needs_void": "a non-void method needs a return value",
+        "no_body": "no body to rewrite",
+        "not_single_conditional": "the body is not a single conditional",
+        "has_else": "the conditional has an else branch",
+        "branch_not_block": "the branch is not a block",
+        "branch_empty": "the branch is empty",
+        "no_condition": "the conditional has no condition",
+        "irregular_indent": "the branch is not indented one level past the conditional",
+        # Introduce Parameter Object
+        "not_method": "not a method declaration",
+        "not_private": "not private, so the call sites are not local",
+        "generic_method": "generic method",
+        "nested_enclosing_type": "enclosing type is not a top-level class",
+        "no_parameter_list": "no parameter list",
+        "varargs_or_annotated": "varargs or annotated parameter",
+        "too_few_parameters": "only {count} parameter(s)",
+        "overloaded": "more than one method named {name}",
+        "unresolvable_reference": "a reference that cannot be tied to the method",
+        # Extract Method
+        "constructor": "a constructor has no return type to give back",
+        "no_body_to_extract": "no body to extract from",
+        "no_large_block": "no top-level block of at least {lines} lines",
+        "escaping_statement": "the block contains a {statement}",
+        "not_assigned": "{names} may not be assigned yet",
+        "several_outputs": "{count} values flow out: {names}",
+        "untyped_names": "no declared type for {names}",
+        "type_parameters": "the method declares type parameters",
+        # The planner, before any transformation is asked
+        "entity_not_found": "the entity was not found at that line",
+    }
+)
+
+
+def explain(code: str, **values: float | str) -> Note:
+    """A refusal detail as a code and its values.
+
+    Raises for a code :data:`DETAILS` does not know, and for a missing value, so a
+    new refusal cannot reach a caller without a sentence to fall back on.
+    """
+    DETAILS[code].format(**values)
+    return Note(code, values)
+
+
+def sentence(note: Note) -> str:
+    """The English sentence a refusal detail has always been."""
+    return DETAILS[note.code].format(**note.values)
 
 
 @dataclass(frozen=True)
@@ -107,6 +166,9 @@ class Outcome:
     #: want to know before taking it, which is the whole posture of an engine
     #: that proposes rather than applies (VD-97).
     notes: tuple[Note, ...] = ()
+    #: The refusal detail as a code and its values, when the transformation gave
+    #: one. ``detail`` is the same thing as an English sentence.
+    explanation: Note | None = None
 
     @property
     def applied(self) -> bool:
@@ -135,14 +197,21 @@ class Outcome:
 
     @classmethod
     def refuse(
-        cls, refactoring: str, file_path: str, target: str, refusal: Refusal, detail: str = ""
+        cls,
+        refactoring: str,
+        file_path: str,
+        target: str,
+        refusal: Refusal,
+        detail: str | Note = "",
     ) -> Outcome:
+        explanation = detail if isinstance(detail, Note) else None
         return cls(
             refactoring=refactoring,
             file_path=file_path,
             target=target,
             refusal=refusal,
-            detail=detail,
+            detail=detail if isinstance(detail, str) else sentence(detail),
+            explanation=explanation,
         )
 
     def describe(self) -> str:

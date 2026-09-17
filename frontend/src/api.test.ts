@@ -10,7 +10,15 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ERROR_SQ, MODEL_REFUSAL_SQ, noteText, patch, within } from "./api";
+import {
+  ERROR_SQ,
+  MODEL_REFUSAL_SQ,
+  REFUSAL_DETAIL_SQ,
+  explanationText,
+  noteText,
+  patch,
+  within,
+} from "./api";
 
 // Serveri e jep `file_path` relativ ndaj dosjes së analizuar, ose ndaj dosjes së
 // skedarit kur analizohet një skedar i vetëm (`_relative` te `api/app.py`). Çdo
@@ -115,6 +123,71 @@ describe("arsyet pse modeli nuk u pyet", () => {
       expect(text.charAt(0), code).toBe(text.charAt(0).toLowerCase());
       expect(text.endsWith("."), code).toBe(true);
     }
+  });
+});
+
+/**
+ * Nga `DETAILS` te `refactor/base.py`. Ana tjetër ka kopjen e vet
+ * (`test_refactor_base.py::DETAIL_CODES`).
+ */
+const DETAIL_CODES_FROM_BACKEND = [
+  "needs_void",
+  "no_body",
+  "not_single_conditional",
+  "has_else",
+  "branch_not_block",
+  "branch_empty",
+  "no_condition",
+  "irregular_indent",
+  "not_method",
+  "not_private",
+  "generic_method",
+  "nested_enclosing_type",
+  "no_parameter_list",
+  "varargs_or_annotated",
+  "too_few_parameters",
+  "overloaded",
+  "unresolvable_reference",
+  "constructor",
+  "no_body_to_extract",
+  "no_large_block",
+  "escaping_statement",
+  "not_assigned",
+  "several_outputs",
+  "untyped_names",
+  "type_parameters",
+  "entity_not_found",
+];
+
+describe("hollësitë e refuzimit", () => {
+  it("çdo kod i motorit ka fjali shqip dhe asnjë fjali nuk rri pa kod", () => {
+    // Pa këtë, «not private, so the call sites are not local» dilte anglisht te
+    // detaji i çdo metode publike me shumë parametra (VD-123).
+    expect(Object.keys(REFUSAL_DETAIL_SQ).sort()).toEqual([...DETAIL_CODES_FROM_BACKEND].sort());
+  });
+
+  it("çdo fjali i fut vlerat e veta dhe mbaron me pikë", () => {
+    const values = { count: 3, names: "attempts, excellent, failed", name: "total", lines: 5, statement: "return" };
+    for (const [code, build] of Object.entries(REFUSAL_DETAIL_SQ)) {
+      const text = build({ code, ...values });
+      expect(text.endsWith("."), code).toBe(true);
+      expect(text, code).not.toContain("undefined");
+    }
+  });
+
+  it("i shkruan numrat dhe emrat ashtu si i dërgon motori", () => {
+    expect(
+      explanationText({ code: "several_outputs", count: 3, names: "attempts, excellent, failed" }),
+    ).toBe("nga blloku dalin 3 vlera (attempts, excellent, failed), ndërsa një metodë kthen vetëm një.");
+    expect(explanationText({ code: "escaping_statement", statement: "labelled break" })).toBe(
+      "blloku përmban një break me etiketë që del jashtë tij.",
+    );
+  });
+
+  it("kthen null për një kod që ende nuk njihet, që ekrani të bjerë te fjalia e motorit", () => {
+    expect(explanationText({ code: "something_new" })).toBeNull();
+    expect(explanationText(null)).toBeNull();
+    expect(explanationText(undefined)).toBeNull();
   });
 });
 

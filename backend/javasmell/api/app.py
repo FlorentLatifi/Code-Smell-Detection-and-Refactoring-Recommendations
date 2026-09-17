@@ -48,7 +48,7 @@ from javasmell.ml.serving import (
 from javasmell.model.entities import ProjectModel
 from javasmell.refactor.apply import Refusal as ApplyRefusal
 from javasmell.refactor.apply import apply_patches, working_tree_state
-from javasmell.refactor.base import Outcome
+from javasmell.refactor.base import Note, Outcome
 from javasmell.refactor.edits import apply_edits
 from javasmell.refactor.locate import find_site
 from javasmell.refactor.patch import Plan, Progress, iter_plan, plan, unified
@@ -432,6 +432,7 @@ def _plan_json(result: Plan, javac: str | None) -> dict[str, Any]:
                 "refactoring": d.refactoring,
                 "reason": d.reason,
                 "detail": d.detail,
+                "explanation": _note_json(d.explanation),
             }
             for d in result.declines
         ],
@@ -529,6 +530,10 @@ def _prediction_json(prediction: Prediction, target: Path) -> dict[str, Any]:
     }
 
 
+def _note_json(note: Note | None) -> dict[str, Any] | None:
+    return None if note is None else {"code": note.code, **note.values}
+
+
 def _outcome_json(outcome: Outcome, source: bytes) -> dict[str, Any]:
     if not outcome.applied:
         return {
@@ -537,6 +542,9 @@ def _outcome_json(outcome: Outcome, source: bytes) -> dict[str, Any]:
             "target": outcome.target,
             "refusal": None if outcome.refusal is None else outcome.refusal.value,
             "detail": outcome.detail,
+            # E njejta hollesi si kod me vlera, qe nderfaqja ta shkruaje shqip
+            # (VD-123). `detail` mbetet per thirresit qe lexojne anglisht.
+            "explanation": _note_json(outcome.explanation),
         }
     return {
         "applied": True,

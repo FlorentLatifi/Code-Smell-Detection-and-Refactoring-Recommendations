@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 
 from javasmell.api.app import create_app
 from javasmell.api.settings import Settings
+from javasmell.refactor.extract_method import MINIMUM_LINES
 
 # A Long Method needs more than thirty effective lines, and a Data Class needs a
 # wide public surface. Both are present so one fixture exercises an automated
@@ -286,7 +287,11 @@ def test_preview_reports_a_refusal_as_a_result_not_an_error(client, tmp_path):
     body = response.json()
     assert body["applied"] is False
     assert body["refusal"] == "shape_not_matched"
-    assert body["detail"]
+    # One println is shorter than the smallest block worth lifting, so the reason
+    # is that no block qualifies: the same fact once as a sentence and once as a
+    # code the interface translates (VD-123).
+    assert body["detail"] == f"no top-level block of at least {MINIMUM_LINES} lines"
+    assert body["explanation"] == {"code": "no_large_block", "lines": MINIMUM_LINES}
 
 
 def test_preview_of_a_missing_entity_is_a_404(client):
@@ -494,9 +499,15 @@ def test_patch_names_the_reason_for_each_site_it_declined(client, tmp_path):
         "refactoring",
         "reason",
         "detail",
+        "explanation",
     }
     assert first["reason"]
     assert not first["file_path"].startswith("/")
+
+    # `deep` returns an int, which is the one thing Guard Clauses cannot work round.
+    guard = next(d for d in declines if d["class_name"] == "Refuses")
+    assert guard["detail"] == "a non-void method needs a return value"
+    assert guard["explanation"] == {"code": "needs_void"}
 
 
 def test_patch_names_each_change_it_made(client):

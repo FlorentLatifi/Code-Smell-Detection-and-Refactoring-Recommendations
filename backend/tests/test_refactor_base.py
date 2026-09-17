@@ -7,9 +7,13 @@ claimed without an actual change.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pytest
 
-from javasmell.refactor.base import Outcome, Refusal, Tally
+from javasmell.refactor import base
+from javasmell.refactor.base import DETAILS, Note, Outcome, Refusal, Tally, explain
 from javasmell.refactor.edits import Edit
 
 
@@ -75,3 +79,78 @@ def test_describe_states_the_share_applied():
     for _ in range(3):
         tally.record(decline())
     assert "1/4 applied (25.0%)" in tally.describe()
+
+
+# ----------------------------------------------------------------------
+# Refusal details as codes (VD-123)
+# ----------------------------------------------------------------------
+#: Kept by hand, and copied by `frontend/src/api.test.ts`: a new code breaks one
+#: test on each side instead of reaching the screen in English.
+DETAIL_CODES = {
+    "needs_void",
+    "no_body",
+    "not_single_conditional",
+    "has_else",
+    "branch_not_block",
+    "branch_empty",
+    "no_condition",
+    "irregular_indent",
+    "not_method",
+    "not_private",
+    "generic_method",
+    "nested_enclosing_type",
+    "no_parameter_list",
+    "varargs_or_annotated",
+    "too_few_parameters",
+    "overloaded",
+    "unresolvable_reference",
+    "constructor",
+    "no_body_to_extract",
+    "no_large_block",
+    "escaping_statement",
+    "not_assigned",
+    "several_outputs",
+    "untyped_names",
+    "type_parameters",
+    "entity_not_found",
+}
+
+
+def test_every_detail_code_is_one_the_interface_knows():
+    assert set(DETAILS) == DETAIL_CODES
+
+
+def test_a_coded_refusal_keeps_the_sentence_it_always_had():
+    """The corpus tables read `detail`; a code must not change a word of it."""
+    outcome = Outcome.refuse(
+        "ExtractMethod",
+        "Ledger.java",
+        "Ledger.post",
+        Refusal.MULTIPLE_OUTPUTS,
+        explain("several_outputs", count=2, names="a, b"),
+    )
+
+    assert outcome.detail == "2 values flow out: a, b"
+    assert outcome.explanation == Note("several_outputs", {"count": 2, "names": "a, b"})
+
+
+def test_a_plain_sentence_still_refuses_without_a_code():
+    assert decline().explanation is None
+    assert decline().detail == "totals"
+
+
+def test_an_unknown_code_or_a_missing_value_is_refused_at_once():
+    """Caught where the refusal is built, not where a caller first reads it."""
+    with pytest.raises(KeyError):
+        explain("no_such_reason")
+    with pytest.raises(KeyError):
+        explain("overloaded")
+
+
+def test_every_transformation_refuses_through_a_code():
+    """A bare sentence in a transformation would reach the screen untranslated."""
+    package = Path(base.__file__).parent
+    for module in ("guard_clauses.py", "introduce_parameter_object.py", "extract_method.py"):
+        source = (package / module).read_text(encoding="utf-8")
+        bare = re.findall(r"decline\(\s*Refusal\.\w+,\s*f?[\"']", source)
+        assert bare == [], module

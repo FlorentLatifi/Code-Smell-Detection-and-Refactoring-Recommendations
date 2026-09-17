@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { noteText, preview, source } from "./api";
+import { explanationText, noteText, preview, source } from "./api";
 import { Diff } from "./Diff";
 import { REFUSAL_SQ } from "./evaluation";
 import type { Prediction, Preview, Smell, Source, Summary } from "./types";
@@ -102,23 +102,7 @@ export function Detail({
         </p>
       )}
 
-      {result && !result.applied && (
-        <p className="note">
-          {/* Arsyeja shqip sipas kodit, si gjetiu. Hollësia e motorit është
-              anglisht dhe mban emra nga kodi, ndaj shfaqet e shënuar si e tillë
-              e jo si pjesë e fjalisë (VD-122). */}
-          Motori nuk e rishkroi këtë vend: {REFUSAL_SQ[result.refusal ?? ""] ?? result.refusal}.
-          Refuzimi është rezultat i saktë, jo dështim.
-          {result.detail && (
-            <>
-              {" "}
-              <span className="refusal-detail">
-                Hollësia e motorit, anglisht: <code>{result.detail}</code>
-              </span>
-            </>
-          )}
-        </p>
-      )}
+      {result && !result.applied && <Refused result={result} />}
 
       {result?.applied && result.notes?.length ? (
         <ul className="note rewrite-notes">
@@ -132,6 +116,39 @@ export function Detail({
         <Diff before={result.before} after={result.after} />
       )}
     </article>
+  );
+}
+
+/**
+ * Pse motori nuk e rishkroi vendin.
+ *
+ * Hollësia vjen si kod dhe shkruhet shqip (VD-123). Vetëm kur kodi mungon ose
+ * nuk njihet, ekrani bie te arsyeja e përgjithshme dhe te fjalia anglisht e
+ * motorit, e shënuar si e tillë e jo si pjesë e fjalisë (VD-122).
+ */
+function Refused({ result }: { result: Preview }) {
+  const explained = explanationText(result.explanation);
+  if (explained) {
+    return (
+      <p className="note">
+        Motori nuk e rishkroi këtë vend: {explained} Refuzimi është rezultat i saktë, jo
+        dështim.
+      </p>
+    );
+  }
+  return (
+    <p className="note">
+      Motori nuk e rishkroi këtë vend: {REFUSAL_SQ[result.refusal ?? ""] ?? result.refusal}.
+      Refuzimi është rezultat i saktë, jo dështim.
+      {result.detail && (
+        <>
+          {" "}
+          <span className="refusal-detail">
+            Hollësia e motorit, anglisht: <code>{result.detail}</code>
+          </span>
+        </>
+      )}
+    </p>
   );
 }
 

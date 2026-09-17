@@ -39,7 +39,7 @@ from __future__ import annotations
 
 from tree_sitter import Node
 
-from javasmell.refactor.base import Outcome, Refusal
+from javasmell.refactor.base import Note, Outcome, Refusal, explain
 from javasmell.refactor.edits import Edit, dedent, indent_at
 from javasmell.refactor.locate import Site
 
@@ -64,43 +64,40 @@ def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
     method = site.node
     target = site.text(method.child_by_field_name("name")) or "<anonymous>"
 
-    def decline(reason: Refusal, detail: str) -> Outcome:
+    def decline(reason: Refusal, detail: Note) -> Outcome:
         return Outcome.refuse(NAME, site.file_path, target, reason, detail)
 
     returns = method.child_by_field_name("type")
     if returns is None or site.text(returns) != "void":
-        return decline(Refusal.SHAPE_NOT_MATCHED, "a non-void method needs a return value")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("needs_void"))
 
     body = method.child_by_field_name("body")
     if body is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "no body to rewrite")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_body"))
 
     conditional = _sole_statement(body)
     if conditional is None or conditional.type != "if_statement":
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the body is not a single conditional")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("not_single_conditional"))
 
     if conditional.child_by_field_name("alternative") is not None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the conditional has an else branch")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("has_else"))
 
     consequence = conditional.child_by_field_name("consequence")
     if consequence is None or consequence.type != "block":
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the branch is not a block")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("branch_not_block"))
 
     kept = [child for child in consequence.named_children if child.type != "comment"]
     if not kept:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the branch is empty")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("branch_empty"))
 
     condition = conditional.child_by_field_name("condition")
     if condition is None:
-        return decline(Refusal.SHAPE_NOT_MATCHED, "the conditional has no condition")
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("no_condition"))
 
     outer = indent_at(source, conditional.start_byte)
     inner = indent_at(source, kept[0].start_byte)
     if not inner.startswith(outer) or inner == outer:
-        return decline(
-            Refusal.SHAPE_NOT_MATCHED,
-            "the branch is not indented one level past the conditional",
-        )
+        return decline(Refusal.SHAPE_NOT_MATCHED, explain("irregular_indent"))
     unit = inner[len(outer) :]
 
     # The condition node includes its own parentheses, so wrapping gives

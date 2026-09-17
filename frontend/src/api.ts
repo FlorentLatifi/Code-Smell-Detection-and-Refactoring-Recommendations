@@ -318,6 +318,71 @@ export function noteText(note: RewriteNote): string {
   return note.code;
 }
 
+const value = (raw: string | number | undefined): string => String(raw ?? "");
+
+/** Shprehjet e kontrollit që mund ta nxjerrin rrjedhën jashtë bllokut. */
+const STATEMENT_SQ: Record<string, string> = {
+  return: "return",
+  break: "break",
+  continue: "continue",
+  "labelled break": "break me etiketë",
+  "labelled continue": "continue me etiketë",
+};
+
+/**
+ * Pse motori nuk e rishkroi një vend, shqip, sipas kodit që dërgon (VD-123).
+ *
+ * Deri tani ekrani shfaqte fjalinë anglisht të motorit, p.sh. «not private, so
+ * the call sites are not local». Fjalia vazhdon pas «Motori nuk e rishkroi këtë
+ * vend:», ndaj nis me shkronjë të vogël. Kodet vijnë nga `DETAILS` te
+ * `refactor/base.py`, dhe ana tjetër e mban listën e vet në test.
+ */
+export const REFUSAL_DETAIL_SQ: Record<string, (note: RewriteNote) => string> = {
+  needs_void: () =>
+    "metoda kthen vlerë, dhe një dalje e hershme do të kërkonte një vlerë që motori nuk e shpik.",
+  no_body: () => "metoda nuk ka trup për t'u rishkruar.",
+  not_single_conditional: () => "trupi i metodës nuk është një if i vetëm.",
+  has_else: () => "if-i ka degë else, dhe ajo nuk ka ku të shkojë pas një dalje të hershme.",
+  branch_not_block: () => "dega e if-it nuk është bllok me kllapa.",
+  branch_empty: () => "dega e if-it është bosh.",
+  no_condition: () => "if-i nuk ka kusht.",
+  irregular_indent: () =>
+    "dega nuk është e dhëmbëzuar një nivel më thellë se if-i, ndaj rreshtat nuk zhvendosen dot me siguri.",
+  not_method: () => "vendi nuk është deklarim metode.",
+  not_private: () =>
+    "metoda nuk është private, ndaj thirrjet e saj mund të jenë në skedarë të tjerë që analiza nuk i lidh.",
+  generic_method: () => "metoda është gjenerike.",
+  nested_enclosing_type: () =>
+    "metoda nuk ndodhet në një klasë të nivelit të parë, ku objekti i ri do të ishte i ligjshëm në çdo version të Java-s.",
+  no_parameter_list: () => "metoda nuk ka listë parametrash.",
+  varargs_or_annotated: () => "një parametër është varargs ose ka anotim.",
+  too_few_parameters: (n) => `metoda ka vetëm ${value(n.count)} parametra.`,
+  overloaded: (n) =>
+    `ka më shumë se një metodë me emrin ${value(n.name)}, ndaj thirrjet nuk i atribuohen dot njërës.`,
+  unresolvable_reference: () =>
+    "një referencë ndaj metodës nuk lidhet dot me të, p.sh. referencë metode ose thirrje përmes një instance tjetër.",
+  constructor: () => "konstruktori nuk ka tip kthimi për ta dhënë vlerën mbrapsht.",
+  no_body_to_extract: () => "metoda nuk ka trup nga i cili të nxirret.",
+  no_large_block: (n) =>
+    `nuk ka bllok në nivelin e parë të metodës me të paktën ${value(n.lines)} rreshta.`,
+  escaping_statement: (n) =>
+    `blloku përmban një ${STATEMENT_SQ[value(n.statement)] ?? value(n.statement)} që del jashtë tij.`,
+  not_assigned: (n) =>
+    `${value(n.names)} mund të mos kenë vlerë ende në atë pikë, dhe Java nuk lejon të kalohen si parametra.`,
+  several_outputs: (n) =>
+    `nga blloku dalin ${value(n.count)} vlera (${value(n.names)}), ndërsa një metodë kthen vetëm një.`,
+  untyped_names: (n) => `nuk gjendet tipi i deklaruar për ${value(n.names)}.`,
+  type_parameters: () => "metoda deklaron parametra tipi.",
+  entity_not_found: () => "entiteti nuk u gjet në atë rresht; analiza mund të jetë e vjetruar.",
+};
+
+/** Fjalia shqip e një hollësie refuzimi, ose `null` kur kodi ende nuk njihet. */
+export function explanationText(note: RewriteNote | null | undefined): string | null {
+  if (!note) return null;
+  const build = REFUSAL_DETAIL_SQ[note.code];
+  return build ? build(note) : null;
+}
+
 /**
  * Çfarë do të thotë secili refuzim i shkrimit, shqip.
  *

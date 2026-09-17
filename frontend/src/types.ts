@@ -134,6 +134,11 @@ export interface Preview {
   refusal?: string | null;
   detail?: string;
   /**
+   * `detail` si kod me vlera, që ekrani ta shkruajë shqip (VD-123). Mungon te një
+   * server i vjetër, dhe atëherë ekrani bie te fjalia anglisht e shënuar si e tillë.
+   */
+  explanation?: RewriteNote | null;
+  /**
    * Gjëra të vërteta për një rishkrim që zbatohet, e jo arsye për ta refuzuar.
    *
    * Kod dhe numra, jo fjali: serveri shkruan anglisht dhe ky ekran shqip, ndaj
@@ -187,6 +192,8 @@ export interface DeclinedSite {
   refactoring: string;
   reason: string;
   detail: string;
+  /** `detail` si kod me vlera (VD-123). */
+  explanation?: RewriteNote | null;
 }
 
 /**
