@@ -1,36 +1,10 @@
 // Dy panelet e mbetura: krahasimi i dy qasjeve, dhe skedarët më të ndotur.
 
-import { memo } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Suspense, lazy, memo } from "react";
 import { Card } from "./DashboardLayout";
 
-const TOOLTIP = {
-  borderRadius: 6,
-  border: "1px solid #232b34",
-  background: "#151b22",
-  color: "#e3e8ee",
-  fontSize: 12,
-} as const;
-
-/**
- * Ngjyrat e grafikut, si vlera e jo si variabla CSS.
- *
- * Recharts-i i shkruan si atribute `fill` të SVG-së, dhe një atribut nuk e lexon
- * `var(...)`. Të dyja zgjidhen që të mbeten të dallueshme mbi të dyja temat:
- * grafiti i rregullave dhe blu-ja e modelit, e njëjta blu si te punimi (VD-119).
- */
-const RULES_FILL = "#7a8591";
-const MODEL_FILL = "#2f6699";
-const AXIS = "#5b6672";
+/** Vizatimi vjen në copën e vet, sepse Recharts-i nuk i duhet ekranit të parë. */
+const ScoreBars = lazy(() => import("./ScoreBars"));
 
 export interface ScoreRow {
   smell: string;
@@ -53,34 +27,13 @@ function PerformanceChartsView({ scores }: { scores: ScoreRow[] }) {
   return (
     <Card title="Rregullat kundrejt modelit, MCC">
       <div className="h-[270px] px-4 pt-2 pb-4" role="img" aria-label={label}>
-        {/* Si te llojet: etiketa e mban përmbajtjen, vizatimi fshihet. */}
+        {/* Si te llojet: etiketa e mban përmbajtjen, vizatimi fshihet. Etiketa
+            është këtu e jo te copa e vonuar, që të lexohet pa pritur vizatimin;
+            hapësira ka lartësinë e vet, që faqja të mos kërcejë kur ai mbërrin. */}
         <div className="h-full w-full" aria-hidden="true">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={scores} barGap={4} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
-              <CartesianGrid stroke="#95a0ac33" vertical={false} />
-              <XAxis
-                dataKey="smell"
-                tick={{ fill: AXIS, fontSize: 12 }}
-                axisLine={{ stroke: "#95a0ac66" }}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[0, 1]}
-                ticks={[0, 0.25, 0.5, 0.75, 1]}
-                tick={{ fill: AXIS, fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip contentStyle={TOOLTIP} cursor={{ fill: "#95a0ac1f" }} />
-              <Legend
-                iconType="square"
-                wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
-                formatter={(value) => (value === "rules" ? "A: rregullat" : "B: modeli")}
-              />
-              <Bar dataKey="rules" fill={RULES_FILL} radius={[2, 2, 0, 0]} isAnimationActive={false} />
-              <Bar dataKey="model" fill={MODEL_FILL} radius={[2, 2, 0, 0]} isAnimationActive={false} />
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense fallback={null}>
+            <ScoreBars scores={scores} />
+          </Suspense>
         </div>
       </div>
     </Card>
