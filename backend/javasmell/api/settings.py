@@ -36,6 +36,11 @@ _REPO = Path(__file__).resolve().parents[3]
 DEFAULT_MODELS_DIR = _REPO / "data" / "models"
 DEFAULT_DATASET = _REPO / "data" / "results" / "mlcq_dataset.csv"
 
+# Ku zbresin depot publike që importohen nga ndërfaqja. Jashtë git-it, si
+# korpusi, sepse është kod i huaj dhe i rishkarkueshëm; dhe brenda depos e jo te
+# një dosje e përkohshme, që një import i djeshëm të hapet sërish pa rrjet.
+DEFAULT_PROJECTS_DIR = _REPO / "data" / "projects"
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -47,9 +52,20 @@ class Settings:
     timeout_s: int = DEFAULT_TIMEOUT_S
     #: Where `scripts/train_models.py` left the fitted models and their manifests.
     models_dir: Path = DEFAULT_MODELS_DIR
+    #: Ku shkruhen depot e importuara nga GitHub, dhe rrënja e dytë e lexueshme.
+    projects_dir: Path = DEFAULT_PROJECTS_DIR
     #: The table those models were fitted on, read back for the median a
     #: verdict is explained against.
     dataset_csv: Path = DEFAULT_DATASET
+
+    @property
+    def roots(self) -> tuple[Path, ...]:
+        """Dosjet nga të cilat analiza lexon, në radhën e provimit.
+
+        Dosja e zgjedhur vjen e para dhe ajo e depove të importuara e dyta, që
+        një emër që ndodhet te të dyja të zgjidhet te ajo që zgjodhi përdoruesi.
+        """
+        return (self.root, self.projects_dir)
 
     @classmethod
     def from_environment(cls) -> Settings:
@@ -64,5 +80,6 @@ class Settings:
             max_bytes=int(os.environ.get("JAVASMELL_MAX_BYTES", DEFAULT_MAX_BYTES)),
             timeout_s=int(os.environ.get("JAVASMELL_TIMEOUT_S", DEFAULT_TIMEOUT_S)),
             models_dir=Path(os.environ.get("JAVASMELL_MODELS", DEFAULT_MODELS_DIR)).resolve(),
+            projects_dir=Path(os.environ.get("JAVASMELL_PROJECTS", DEFAULT_PROJECTS_DIR)).resolve(),
             dataset_csv=Path(os.environ.get("JAVASMELL_DATASET", DEFAULT_DATASET)).resolve(),
         )

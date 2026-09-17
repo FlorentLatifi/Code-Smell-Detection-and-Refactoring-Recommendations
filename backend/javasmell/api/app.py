@@ -33,7 +33,14 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from javasmell.analysis import analyze_path
-from javasmell.api.paths import PathRejected, confine, java_files_under
+from javasmell.api.paths import (
+    PathRejected,
+    allowed_roots,
+    confine,
+    contains_java,
+    java_files_under,
+    subfolders,
+)
 from javasmell.api.settings import Settings
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import detect_all
@@ -98,6 +105,12 @@ class PathRequest(BaseModel):
     path: str = Field(min_length=1, max_length=4096, description="File or directory to analyse")
 
 
+class BrowseRequest(BaseModel):
+    #: Bosh do të thotë «nis nga rrënjët», ndaj ky është i vetmi shteg që lejohet
+    #: bosh: pa të, ndërfaqja nuk do të kishte nga t'ia filloje shfletimit.
+    path: str = Field(default="", max_length=4096)
+
+
 class AnalyseRequest(PathRequest):
     #: Approach B is opt-in. Reading four models and the medians they are
     #: explained against costs about a second, and a caller that wants only the
@@ -143,12 +156,63 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health")
     def health() -> dict[str, Any]:
-        return {"status": "ok", "version": API_VERSION, "root": config.root.name}
+        return {
+            "status": "ok",
+            "version": API_VERSION,
+            "root": config.root.name,
+            # Emrat e të gjitha rrënjëve, që ndërfaqja të thotë saktësisht ku
+            # lexon: dosja e zgjedhur dhe ajo e depove të importuara (VD-126).
+            "roots": [root.name for root in allowed_roots(config.roots)],
+        }
+
+    @app.post("/browse")
+    def browse(request: BrowseRequest) -> dict[str, Any]:
+        """Nënndosjet e një shtegu, që dosja të zgjidhet pa u shkruar me dorë.
+
+        Ekzistonte vetëm kutia e tekstit, dhe ajo kërkonte nga përdoruesi të
+        dinte paraprakisht shtegun e plotë e të mos e shtypte gabim; gabimi më i
+        shpeshtë i demonstrimit ishte pikërisht ky (VD-126).
+
+        Ndryshe nga mesazhet e gabimit, përgjigjja mban shtigje absolute: pa
+        ato, kthimi te `/analyze` nuk do të kishte si të emërtonte dosjen e
+        zgjedhur kur dy rrënjë mbajnë nënndosje me të njëjtin emër. Kjo nuk
+        zbulon gjë: shërbimi dëgjon vetëm te localhost dhe përdoruesi është
+        pronari i dosjeve.
+        """
+        roots = allowed_roots(config.roots)
+        if not request.path.strip():
+            # Pa shteg, lista nis nga rrënjët: ndërfaqja hapet pa ditur asgjë.
+            return {
+                "path": "",
+                "name": "",
+                "parent": None,
+                "folders": [
+                    {"name": root.name, "path": str(root), "java": contains_java(root)}
+                    for root in roots
+                ],
+                "roots": [{"name": root.name, "path": str(root)} for root in roots],
+            }
+
+        target = confine(request.path, roots)
+        parent = target.parent
+        # Shtegu prind jepet vetëm kur ai vetë është i lexueshëm, që butoni «lart»
+        # të mos ofrojë një hap që do të refuzohej.
+        walkable = any(parent == root or root in parent.parents for root in roots)
+        return {
+            "path": str(target),
+            "name": target.name,
+            "parent": str(parent) if walkable else None,
+            "folders": [
+                {"name": folder.name, "path": folder.path, "java": folder.java}
+                for folder in subfolders(target)
+            ],
+            "roots": [{"name": root.name, "path": str(root)} for root in roots],
+        }
 
     @app.post("/analyze")
     def analyze(request: AnalyseRequest) -> dict[str, Any]:
         """Measure a path and return every smell found in it."""
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
 
         project = analyze_path(str(target))
@@ -183,7 +247,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/metrics")
     def metrics(request: PathRequest) -> dict[str, Any]:
         """The measured metrics for every class at a path."""
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
 
         project = analyze_path(str(target))
@@ -223,7 +287,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         route uses, and capped in lines so a generated file cannot be pulled
         through this route in one response.
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         if not target.is_file():
             return error("not_a_file", "source is read one file at a time", 400)
         if request.end_line < request.start_line:
@@ -255,7 +319,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         that does not exist yet, and when it does it will need its own flag and a
         clean working tree (ENGINEERING.md §4).
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         if not target.is_file():
             return error("not_a_file", "a preview needs a single file", 400)
 
@@ -291,7 +355,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         patch, never a failed request -- and the response says how many files
         were left, so a partial answer cannot be mistaken for a complete one.
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
 
         project = analyze_path(str(target))
@@ -322,7 +386,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         can refuse the request happens here, in the handler, where it can still
         answer 400.
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
 
         def lines() -> Iterator[str]:
@@ -356,7 +420,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         A refusal is a 409 and not a 500: nothing went wrong, a condition did not
         hold, and the caller is told which so it can say so in its own words.
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         java_files_under(target, max_files=config.max_files, max_bytes=config.max_bytes)
 
         project = analyze_path(str(target))
@@ -385,7 +449,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         rather than after two minutes of planning, and asking costs two git
         commands.
         """
-        target = confine(request.path, config.root)
+        target = confine(request.path, config.roots)
         state = working_tree_state(target)
         return {
             "writable": state is None,

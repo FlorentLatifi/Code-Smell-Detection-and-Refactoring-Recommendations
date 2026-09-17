@@ -83,7 +83,16 @@ def client(tmp_path):
     (root / "src" / "Ledger.java").write_text(SMELLY, encoding="utf-8")
     (tmp_path / "secret").mkdir()
     (tmp_path / "secret" / "keys.txt").write_text("s3cret", encoding="utf-8")
-    return TestClient(create_app(Settings(root=root, max_files=50, max_bytes=1_000_000)))
+    settings = Settings(
+        root=root,
+        # E dhënë shprehimisht, e jo e lënë te parazgjedhja: ajo shikon
+        # `data/projects` të depos, dhe atëherë çfarë lexon testi varet nga
+        # nëse ndonjë depo u importua në këtë makinë (VD-126).
+        projects_dir=tmp_path / "projects",
+        max_files=50,
+        max_bytes=1_000_000,
+    )
+    return TestClient(create_app(settings))
 
 
 def test_health_reports_ready():
@@ -91,6 +100,88 @@ def test_health_reports_ready():
     response = TestClient(app).get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+# ----------------------------------------------------------------------
+# Zgjedhja e dosjes pa shkruar shteg (VD-126)
+# ----------------------------------------------------------------------
+
+
+@pytest.fixture
+def browsing(tmp_path):
+    """Një rrënjë me dy nënndosje, dhe një dosje depove të importuara."""
+    root = tmp_path / "workspace"
+    (root / "projekti" / "src").mkdir(parents=True)
+    (root / "projekti" / "src" / "Ledger.java").write_text(SMELLY, encoding="utf-8")
+    (root / "shenime").mkdir()
+    projects = tmp_path / "projects"
+    (projects / "acme__widgets").mkdir(parents=True)
+    (tmp_path / "secret").mkdir()
+    settings = Settings(root=root, projects_dir=projects, max_files=50, max_bytes=1_000_000)
+    return TestClient(create_app(settings))
+
+
+def test_health_names_every_root_it_reads_from(browsing):
+    body = browsing.get("/health").json()
+
+    assert body["root"] == "workspace"
+    assert body["roots"] == ["workspace", "projects"]
+
+
+def test_browsing_without_a_path_starts_at_the_roots(browsing):
+    body = browsing.post("/browse", json={}).json()
+
+    assert body["parent"] is None
+    assert [folder["name"] for folder in body["folders"]] == ["workspace", "projects"]
+
+
+def test_browsing_a_folder_lists_its_subfolders_and_marks_java(browsing):
+    root = browsing.post("/browse", json={}).json()["folders"][0]["path"]
+
+    body = browsing.post("/browse", json={"path": root}).json()
+
+    assert {folder["name"]: folder["java"] for folder in body["folders"]} == {
+        "projekti": True,
+        "shenime": False,
+    }
+
+
+def test_browsing_stops_at_the_root_rather_than_offering_the_parent(browsing):
+    root = browsing.post("/browse", json={}).json()["folders"][0]["path"]
+
+    body = browsing.post("/browse", json={"path": root}).json()
+
+    # Prindi i rrënjës nuk është i lexueshëm, ndaj butoni «lart» nuk ofrohet.
+    assert body["parent"] is None
+
+
+def test_browsing_below_the_root_offers_the_way_back(browsing):
+    root = browsing.post("/browse", json={}).json()["folders"][0]["path"]
+    inside = browsing.post("/browse", json={"path": root}).json()["folders"][0]["path"]
+
+    body = browsing.post("/browse", json={"path": inside}).json()
+
+    assert body["parent"] == root
+
+
+def test_browsing_outside_the_roots_is_refused(browsing, tmp_path):
+    response = browsing.post("/browse", json={"path": str(tmp_path / "secret")})
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "path_outside_root"
+
+
+def test_a_repository_under_the_second_root_can_be_analysed(browsing, tmp_path):
+    """Importi shkruan te dosja e depove, dhe analiza duhet të lexojë atje."""
+    (tmp_path / "projects" / "acme__widgets" / "src").mkdir(parents=True)
+    (tmp_path / "projects" / "acme__widgets" / "src" / "Ledger.java").write_text(
+        SMELLY, encoding="utf-8"
+    )
+
+    response = browsing.post("/analyze", json={"path": "acme__widgets"})
+
+    assert response.status_code == 200
+    assert response.json()["summary"]["smells"] > 0
 
 
 # ----------------------------------------------------------------------
@@ -212,7 +303,16 @@ def test_too_many_files_is_refused(tmp_path):
     root.mkdir()
     for index in range(5):
         (root / f"F{index}.java").write_text("class F {}", encoding="utf-8")
-    client = TestClient(create_app(Settings(root=root, max_files=2, max_bytes=1_000_000)))
+    client = TestClient(
+        create_app(
+            Settings(
+                root=root,
+                projects_dir=tmp_path / "projects",
+                max_files=2,
+                max_bytes=1_000_000,
+            )
+        )
+    )
 
     response = client.post("/analyze", json={"path": "."})
     assert response.status_code == 400
@@ -542,7 +642,15 @@ def test_a_spent_budget_yields_a_shorter_patch_not_an_error(tmp_path):
     (root / "src" / "Ledger.java").write_text(SMELLY, encoding="utf-8")
 
     spent = TestClient(
-        create_app(Settings(root=root, max_files=50, max_bytes=1_000_000, timeout_s=0))
+        create_app(
+            Settings(
+                root=root,
+                projects_dir=tmp_path / "projects",
+                max_files=50,
+                max_bytes=1_000_000,
+                timeout_s=0,
+            )
+        )
     )
     body = spent.post("/refactor/patch", json={"path": "src"}).json()
 

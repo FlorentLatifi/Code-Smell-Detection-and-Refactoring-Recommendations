@@ -119,6 +119,7 @@ def trained(tmp_path, workspace):
         create_app(
             Settings(
                 root=workspace,
+                projects_dir=tmp_path / "projects",
                 max_files=50,
                 max_bytes=1_000_000,
                 models_dir=tmp_path / "models",
@@ -135,6 +136,7 @@ def untrained(tmp_path, workspace):
         create_app(
             Settings(
                 root=workspace,
+                projects_dir=tmp_path / "projects",
                 max_files=50,
                 max_bytes=1_000_000,
                 models_dir=tmp_path / "absent",
@@ -226,6 +228,7 @@ def test_a_model_fitted_by_another_library_is_not_served(tmp_path, workspace):
         create_app(
             Settings(
                 root=workspace,
+                projects_dir=tmp_path / "projects",
                 max_files=50,
                 max_bytes=1_000_000,
                 models_dir=tmp_path / "models",

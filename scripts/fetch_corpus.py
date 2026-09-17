@@ -38,10 +38,10 @@ from javasmell.evaluation.corpus import (  # noqa: E402
     Manifest,
     RepoStatus,
     download_name,
-    long_path,
     repo_dirname,
 )
 from javasmell.evaluation.mlcq import Sample, load_samples  # noqa: E402
+from javasmell.filesystem import long_path  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
 DEFAULT_OUT = Path("data/corpus")

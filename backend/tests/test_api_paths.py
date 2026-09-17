@@ -10,7 +10,14 @@ from __future__ import annotations
 
 import pytest
 
-from javasmell.api.paths import PathRejected, confine, java_files_under
+from javasmell.api.paths import (
+    PathRejected,
+    allowed_roots,
+    confine,
+    contains_java,
+    java_files_under,
+    subfolders,
+)
 
 
 @pytest.fixture
@@ -131,6 +138,7 @@ REJECTION_CODES = {
     "root_missing",
     "path_outside_root",
     "path_not_found",
+    "path_not_directory",
     "too_many_files",
     "too_much_source",
     "no_java_files",
@@ -171,6 +179,109 @@ def test_every_rejection_names_which_rejection_it_is(tmp_path):
 def test_a_rejection_without_a_code_still_names_one():
     """Parazgjedhja mbetet, qe nje `raise` i ri te mos dale pa kod fare."""
     assert PathRejected("dicka").code == "path_rejected"
+
+
+# ----------------------------------------------------------------------
+# Me dy rrënjë: dosja e zgjedhur dhe ajo e depove të importuara (VD-126)
+# ----------------------------------------------------------------------
+
+
+def test_a_path_inside_the_second_root_is_accepted(root, tmp_path):
+    """Depot e importuara nuk rrinë brenda dosjes që zgjodhi përdoruesi."""
+    projects = tmp_path / "projects"
+    (projects / "acme__widgets").mkdir(parents=True)
+
+    found = confine("acme__widgets", [root, projects])
+
+    assert found == (projects / "acme__widgets").resolve()
+
+
+def test_the_first_root_wins_a_name_that_exists_in_both(root, tmp_path):
+    """Dy rrënjë mund të mbajnë të njëjtin emër; radha e vendos, jo rastësia."""
+    projects = tmp_path / "projects"
+    (projects / "project").mkdir(parents=True)
+
+    assert confine("project", [root, projects]) == (root / "project").resolve()
+    assert confine("project", [projects, root]) == (projects / "project").resolve()
+
+
+def test_a_path_outside_every_root_is_still_refused(root, tmp_path):
+    projects = tmp_path / "projects"
+    projects.mkdir()
+
+    with pytest.raises(PathRejected, match="outside") as raised:
+        confine(str(tmp_path / "secret" / "keys.txt"), [root, projects])
+
+    # Emrat e të dyja rrënjëve, sepse tani janë dy vende ku shtegu do të hynte.
+    assert "allowed" in str(raised.value)
+    assert "projects" in str(raised.value)
+    assert "secret" not in str(raised.value)
+
+
+def test_a_root_that_does_not_exist_is_simply_not_allowed(root, tmp_path):
+    """Dosja e depove krijohet vetëm kur importohet e para; deri atëherë mungon."""
+    assert allowed_roots([root, tmp_path / "nuk-ekziston"]) == (root.resolve(),)
+
+
+def test_with_no_usable_root_the_rejection_says_so(tmp_path):
+    with pytest.raises(PathRejected, match="root") as raised:
+        confine("project", [tmp_path / "a", tmp_path / "b"])
+
+    assert raised.value.code == "root_missing"
+
+
+# ----------------------------------------------------------------------
+# Shfletimi i dosjeve
+# ----------------------------------------------------------------------
+
+
+def test_subfolders_lists_directories_and_marks_the_ones_with_java(root):
+    (root / "docs").mkdir()
+
+    found = subfolders(root.resolve())
+
+    # Dy nënndosje: `docs` bosh dhe `project`, që mban `src/A.java`.
+    assert [(folder.name, folder.java) for folder in found] == [
+        ("docs", False),
+        ("project", True),
+    ]
+
+
+def test_subfolders_leaves_out_hidden_directories(root):
+    (root / ".git").mkdir()
+    (root / ".git" / "objects").mkdir()
+
+    assert [folder.name for folder in subfolders(root.resolve())] == ["project"]
+
+
+def test_subfolders_refuses_a_file(root):
+    with pytest.raises(PathRejected, match="not a directory") as raised:
+        subfolders(confine("project/notes.txt", root))
+
+    assert raised.value.code == "path_not_directory"
+
+
+def test_the_java_probe_gives_up_rather_than_walking_a_whole_tree(root):
+    """Kufiri ekziston sepse shfletimi ndodh ndërsa përdoruesi pret.
+
+    Pesë skedarë pa Java dhe një kufi prej tre: kërkimi ndalet dhe kthen
+    «nuk e dita», e jo «nuk ka».
+    """
+    deep = root / "big"
+    deep.mkdir()
+    for index in range(5):
+        (deep / f"f{index}.txt").write_text("x", encoding="utf-8")
+
+    assert contains_java(deep, limit=3) is None
+    assert contains_java(deep, limit=50) is False
+    assert contains_java(root / "project", limit=50) is True
+
+
+def test_the_folder_list_is_capped(root):
+    for index in range(6):
+        (root / f"d{index}").mkdir()
+
+    assert len(subfolders(root.resolve(), limit=4)) == 4
 
 
 def test_the_rejection_names_the_folder_that_is_allowed(tmp_path):

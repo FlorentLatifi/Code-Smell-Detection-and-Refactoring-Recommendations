@@ -43,7 +43,7 @@ BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
 from javasmell.detectors.thresholds import DEFAULT  # noqa: E402
-from javasmell.evaluation.corpus import Corpus, long_path  # noqa: E402
+from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.missed import (  # noqa: E402
     SATURATED_COLUMNS,
     Saturated,
@@ -55,6 +55,7 @@ from javasmell.evaluation.missed import (  # noqa: E402
 from javasmell.evaluation.mlcq import Aggregation, Sample, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
+from javasmell.filesystem import long_path  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")

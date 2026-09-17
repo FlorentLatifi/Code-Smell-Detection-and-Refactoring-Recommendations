@@ -29,7 +29,7 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
-from javasmell.evaluation.corpus import Corpus, long_path  # noqa: E402
+from javasmell.evaluation.corpus import Corpus  # noqa: E402
 from javasmell.evaluation.matcher import (  # noqa: E402
     MatchOutcome,
     MatchResult,
@@ -38,6 +38,7 @@ from javasmell.evaluation.matcher import (  # noqa: E402
 )
 from javasmell.evaluation.mlcq import Sample, load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
+from javasmell.filesystem import long_path  # noqa: E402
 from javasmell.model.entities import ProjectModel  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 

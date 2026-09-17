@@ -31,8 +31,8 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from enum import StrEnum
 
-from javasmell.evaluation.corpus import WINDOWS_LONG_PATH_PREFIX
 from javasmell.evaluation.mlcq import Sample
+from javasmell.filesystem import WINDOWS_LONG_PATH_PREFIX
 from javasmell.model.entities import ClassInfo, MethodInfo, ProjectModel
 
 CLASS_ENTITY = "class"

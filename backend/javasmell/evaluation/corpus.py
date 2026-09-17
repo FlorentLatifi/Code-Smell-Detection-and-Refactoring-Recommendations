@@ -14,43 +14,18 @@ study, so it has to be recorded as it happens rather than reconstructed later.
 from __future__ import annotations
 
 import json
-import os
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from javasmell.evaluation.mlcq import Sample
+from javasmell.filesystem import long_path
 
 MANIFEST_NAME = "manifest.json"
 
 # Enough of the commit to be unique in practice while keeping directory names
 # readable; the full hash is preserved in the manifest.
 SHORT_HASH = 12
-
-WINDOWS_LONG_PATH_PREFIX = "\\\\?\\"
-
-
-def long_path(path: Path) -> Path:
-    """Return a form of ``path`` that Windows will accept at any depth.
-
-    Windows refuses paths beyond 260 characters unless the extended-length
-    prefix is used, and this corpus exceeds that routinely: Java package trees
-    inside the analysed projects reach 174 characters on their own, on top of
-    whatever the checkout root costs. The failure mode is quiet and misleading
-    -- ``FileNotFoundError`` on a file that is plainly there, or ``is_file()``
-    simply returning False, so every filesystem access below the corpus root
-    goes through here.
-
-    Lifting the limit system-wide instead would need administrator rights and
-    would make the corpus reproducible only on a machine configured that way,
-    which defeats the point of a corpus a third party can rebuild.
-    """
-    if os.name != "nt":
-        return path
-    resolved = path.resolve()
-    if str(resolved).startswith(WINDOWS_LONG_PATH_PREFIX):
-        return resolved
-    return Path(WINDOWS_LONG_PATH_PREFIX + str(resolved))
 
 
 @dataclass

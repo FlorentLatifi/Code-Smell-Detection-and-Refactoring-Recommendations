@@ -20,7 +20,19 @@ allowed prefix and is not inside it.
 
 from __future__ import annotations
 
+import os
+from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
+
+#: Sa skedarë shihen para se kërkimi i një `.java` të ndalet e të thotë «nuk e
+#: dita». Shfletimi i dosjeve ndodh ndërsa përdoruesi pret, ndaj ai nuk guxon të
+#: ecë një dru të tërë vetëm për të zbehur një rresht të listës.
+JAVA_PROBE_FILES = 4_000
+
+#: Sa nënndosje kthen një shfletim. Një dosje me mijëra nënndosje nuk lexohet
+#: dot as në ekran, dhe lista e plotë do të ishte vetëm ngarkesë.
+MAX_FOLDERS = 500
 
 
 class PathRejected(Exception):
@@ -47,42 +59,125 @@ def _resolved(path: Path) -> Path:
     return path.resolve(strict=False)
 
 
-def confine(candidate: str, root: Path) -> Path:
-    """The path ``candidate`` names inside ``root``, or raise.
+def allowed_roots(roots: Path | Sequence[Path]) -> tuple[Path, ...]:
+    """Të gjitha rrënjët që ekzistojnë vërtet, të zgjidhura dhe pa dublikate.
 
-    ``candidate`` may be absolute or relative; either way it must land inside
-    the root. A relative path is taken as relative to the root rather than to
+    Një rrënjë e dytë u shtua kur ndërfaqja mori importin nga GitHub: depot e
+    shkarkuara nuk rrinë brenda dosjes që zgjodhi përdoruesi, ndaj analiza duhet
+    të lexojë edhe atje (VD-126). Një rrënjë e konfiguruar që nuk ekziston nuk e
+    ndal shërbimin; ajo thjesht nuk hyn mes të lejuarave, sepse dosja e depove
+    krijohet vetëm kur importohet e para.
+    """
+    candidates = [roots] if isinstance(roots, Path) else list(roots)
+    found: list[Path] = []
+    for candidate in candidates:
+        resolved = _resolved(candidate)
+        if resolved.is_dir() and resolved not in found:
+            found.append(resolved)
+    return tuple(found)
+
+
+def confine(candidate: str, roots: Path | Sequence[Path]) -> Path:
+    """The path ``candidate`` names inside one of ``roots``, or raise.
+
+    ``candidate`` may be absolute or relative; either way it must land inside an
+    allowed root. A relative path is taken as relative to a root rather than to
     the process's working directory, which is not something an HTTP caller can
-    see or reason about.
+    see or reason about; the roots are tried in order, so the first one wins a
+    name that exists in two of them.
     """
     if not candidate or not candidate.strip():
         raise PathRejected("the path is empty", "path_empty")
 
-    root_resolved = _resolved(root)
-    if not root_resolved.is_dir():
+    allowed = allowed_roots(roots)
+    if not allowed:
         raise PathRejected("the configured root is not a directory", "root_missing")
 
     requested = Path(candidate)
-    joined = requested if requested.is_absolute() else root_resolved / requested
-    target = _resolved(joined)
+    inside: Path | None = None
+    for root in allowed:
+        joined = requested if requested.is_absolute() else root / requested
+        target = _resolved(joined)
+        # Resolution has already followed every symlink, so this single check
+        # covers both `..` traversal and a link pointing out of the root.
+        if target != root and root not in target.parents:
+            continue
+        if target.exists():
+            return target
+        # Brenda një rrënje por i paqenë: mbahet, që mesazhi të thotë «nuk
+        # ekziston» në vend që «jashtë dosjes», sepse të dyja ndreqen ndryshe.
+        inside = inside or target
 
-    # Resolution has already followed every symlink, so this single check covers
-    # both `..` traversal and a link pointing out of the root.
-    if target != root_resolved and root_resolved not in target.parents:
+    if inside is None:
         # The folder's *name*, never its absolute path. Without it the caller is
         # told the path is wrong and given nothing to correct it with, which on
         # a tool whose root is set by an environment variable is most of the
         # error's usefulness (VD-95). The name alone tells an attacker nothing
         # they could not learn by trying one path.
+        names = ", ".join(repr(root.name) for root in allowed)
+        one = len(allowed) == 1
+        which = "directory, which is" if one else "directories, which are"
         raise PathRejected(
-            f"the path is outside the allowed directory, which is {root_resolved.name!r}",
+            f"the path is outside the allowed {which} {names}",
             "path_outside_root",
         )
 
-    if not target.exists():
-        raise PathRejected("the path does not exist", "path_not_found")
+    raise PathRejected("the path does not exist", "path_not_found")
 
-    return target
+
+@dataclass(frozen=True)
+class Folder:
+    """Një nënndosje, ashtu si e shfaq lista e zgjedhjes.
+
+    ``java`` është ``None`` kur kërkimi u ndal te kufiri, e jo kur dosja është
+    bosh. Dallimi mbahet, sepse «nuk ka kod Java» dhe «nuk e dita» i thonë
+    përdoruesit dy gjëra të kundërta.
+    """
+
+    name: str
+    path: str
+    java: bool | None
+
+
+def contains_java(directory: Path, *, limit: int = JAVA_PROBE_FILES) -> bool | None:
+    """A ka kod Java brenda kësaj dosjeje, pa e ecur tërë drurin.
+
+    Kërkimi ndalet te skedari i parë `.java`, ndaj rasti i mirë është i shpejtë;
+    rasti i keq, një dru i madh pa asnjë `.java`, ndalet te kufiri dhe kthen
+    ``None``. Pa kufi, shfletimi i dosjes së përdoruesit mund të zgjatur minuta
+    për një rresht liste.
+    """
+    seen = 0
+    for _, _, files in os.walk(directory):
+        for name in files:
+            if name.endswith(".java"):
+                return True
+            seen += 1
+            if seen > limit:
+                return None
+    return False
+
+
+def subfolders(target: Path, *, limit: int = MAX_FOLDERS) -> list[Folder]:
+    """Nënndosjet e ``target``, të renditura, me shënimin nëse mbajnë Java.
+
+    Dosjet e fshehura nuk listohen: nuk ka kod Java për analizë brenda
+    ``.git``, dhe një listë ku ato zënë rreshtat e para është listë që
+    përdoruesi duhet ta kalojë me sy para se të gjejë projektin e vet. Lidhjet
+    simbolike lihen jashtë sepse ato mund të çojnë kudo, dhe një shteg që del
+    nga rrënja refuzohet gjithsesi te `confine`.
+    """
+    if not target.is_dir():
+        raise PathRejected("the path is not a directory", "path_not_directory")
+
+    found: list[Folder] = []
+    for entry in sorted(target.iterdir(), key=lambda path: path.name.lower()):
+        if len(found) >= limit:
+            break
+        if entry.name.startswith(".") or not entry.is_dir() or entry.is_symlink():
+            continue
+        found.append(Folder(entry.name, str(entry), contains_java(entry)))
+    return found
 
 
 def java_files_under(target: Path, *, max_files: int, max_bytes: int) -> list[Path]:

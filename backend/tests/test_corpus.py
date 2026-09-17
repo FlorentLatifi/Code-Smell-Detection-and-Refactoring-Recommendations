@@ -18,10 +18,10 @@ from javasmell.evaluation.corpus import (
     Manifest,
     RepoStatus,
     download_name,
-    long_path,
     repo_dirname,
 )
 from javasmell.evaluation.mlcq import Review, Sample
+from javasmell.filesystem import long_path
 
 
 def make_sample(
