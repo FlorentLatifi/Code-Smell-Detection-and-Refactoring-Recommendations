@@ -2,7 +2,8 @@
 
     python scripts/build_figures.py
 
-Shkruan PNG-të te ``docs/thesis/figures/``.
+Shkruan PNG-të te ``docs/thesis/figures/``: arkitekturën e Kapitullit 4 dhe
+figurat e rezultateve.
 
 Asnjë figurë nuk vizatohet me dorë dhe asnjë numër nuk shkruhet këtu. Çdo vlerë
 lexohet nga ``data/results/``, ndaj nëse një rezultat rigjenerohet, figurat
@@ -27,6 +28,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 
 RESULTS = Path("data/results")
 FIGURES = Path("docs/thesis/figures")
@@ -333,6 +335,115 @@ def figure_severity_bias(rules: Results) -> None:
     save(fig, "ashpersia_kundrejt_rishikuesve")
 
 
+# Shtresat e sistemit, në radhën e varësisë (ENGINEERING.md §2), me qendrën e
+# kutisë në figurë. Emri i një shtrese është emri i paketës së saj, dhe paketa
+# verifikohet se ekziston, që figura të mos mbetet pas kodit po të riemërtohet.
+# `None` shënon dy skajet që nuk janë paketa të backend-it: hyrjen dhe ndërfaqen.
+ARCHITECTURE: tuple[tuple[str, str, float, float, str | None], ...] = (
+    ("projekti Java", "skedarët .java\nnë diskun lokal", 0.85, 1.75, None),
+    ("parsing", "analiza sintaksore\n(tree-sitter)", 0.85, 3.0, "parsing"),
+    ("model", "klasat, metodat,\nfushat", 3.1, 3.0, "model"),
+    ("metrics", "metrikat e klasës\ndhe të metodës", 5.2, 3.0, "metrics"),
+    ("detectors", "rregullat mbi metrika\n(Qasja A)", 7.3, 3.0, "detectors"),
+    ("ml", "klasifikuesit\n(Qasja B)", 5.2, 1.75, "ml"),
+    ("refactor", "rishkrimet mbi pemën\n(Qasja C)", 7.3, 1.75, "refactor"),
+    ("api", "shërbimi HTTP\n(FastAPI)", 3.1, 0.5, "api"),
+    ("frontend", "ndërfaqja web\n(React, TypeScript)", 0.85, 0.5, None),
+    ("evaluation", "vlerësimi mbi MLCQ\n(scripts/)", 7.3, 0.5, "evaluation"),
+)
+# Shigjeta shkon nga ai që jep te ai që përdor. Ndërfaqja dhe shërbimi flasin në
+# të dy drejtimet, kërkesë e përgjigje.
+ARCHITECTURE_EDGES = (
+    ("projekti Java", "parsing", "-|>"),
+    ("parsing", "model", "-|>"),
+    ("model", "metrics", "-|>"),
+    ("metrics", "detectors", "-|>"),
+    ("detectors", "ml", "-|>"),
+    ("detectors", "refactor", "-|>"),
+    ("ml", "api", "-|>"),
+    ("refactor", "api", "-|>"),
+    ("api", "frontend", "<|-|>"),
+)
+BOX_WIDTH, BOX_HEIGHT = 1.75, 0.78
+PACKAGE = Path("backend/javasmell")
+
+
+def _edge(start: tuple[float, float], end: tuple[float, float]) -> tuple[tuple[float, float], ...]:
+    """Pikat ku shigjeta del nga një kuti dhe hyn te tjetra."""
+    (x0, y0), (x1, y1) = start, end
+    if y0 == y1:
+        sign = 1 if x1 > x0 else -1
+        return (x0 + sign * BOX_WIDTH / 2, y0), (x1 - sign * BOX_WIDTH / 2, y1)
+    if x0 == x1:
+        sign = 1 if y1 > y0 else -1
+        return (x0, y0 + sign * BOX_HEIGHT / 2), (x1, y1 - sign * BOX_HEIGHT / 2)
+    side = -1 if x1 < x0 else 1
+    return (x0 + side * BOX_WIDTH / 2, y0 - BOX_HEIGHT / 2), (
+        x1 - side * BOX_WIDTH / 2,
+        y1 + BOX_HEIGHT / 2,
+    )
+
+
+def figure_architecture() -> None:
+    """Shtresat e sistemit dhe rrjedha e të dhënave mes tyre.
+
+    E vetmja figurë që nuk lexon `data/results/`: ajo përshkruan kodin, jo një
+    matje, dhe nuk mban asnjë numër.
+    """
+    for _, _, _, _, package in ARCHITECTURE:
+        if package is not None and not (PACKAGE / package).is_dir():
+            print(f"mungon paketa: {PACKAGE / package}", file=sys.stderr)
+            raise SystemExit(1)
+
+    centres = {name: (x, y) for name, _, x, y, _ in ARCHITECTURE}
+    fig, ax = plt.subplots(figsize=(6.6, 3.6))
+    ax.set_xlim(-0.15, 8.75)
+    ax.set_ylim(-0.1, 3.6)
+    ax.axis("off")
+
+    for name, text, x, y, package in ARCHITECTURE:
+        # Skajet vizatohen me gri; tri qasjet me sfond, sepse janë objekti i punimit.
+        colour = ACCENT if package else MUTED
+        face = "#eef3f8" if package in {"detectors", "ml", "refactor"} else "white"
+        ax.add_patch(
+            Rectangle(
+                (x - BOX_WIDTH / 2, y - BOX_HEIGHT / 2), BOX_WIDTH, BOX_HEIGHT,
+                facecolor=face, edgecolor=colour, linewidth=1.0,
+            )
+        )  # fmt: skip
+        ax.text(
+            x, y + 0.17, name, ha="center", va="center", fontsize=9, weight="bold", color=colour
+        )
+        ax.text(x, y - 0.12, text, ha="center", va="center", fontsize=7, linespacing=1.1)
+
+    def arrow(start: tuple[float, float], end: tuple[float, float], style: str) -> None:
+        ax.annotate(
+            "", xy=end, xytext=start,
+            arrowprops={"arrowstyle": style, "color": "#404040", "linewidth": 0.8,
+                        "shrinkA": 0, "shrinkB": 0},
+        )  # fmt: skip
+
+    for source, target, style in ARCHITECTURE_EDGES:
+        start, end = _edge(centres[source], centres[target])
+        arrow(start, end, style)
+
+    # Vlerësimi i lexon të tria qasjet. Vija e tij kalon anash, që të mos e
+    # presë kutinë e refaktorimit, dhe është e ndërprerë sepse nuk është pjesë
+    # e rrjedhës që sheh përdoruesi.
+    x, top = centres["detectors"]
+    _, bottom = centres["evaluation"]
+    right = x + BOX_WIDTH / 2
+    ax.plot(
+        [right, right + 0.3, right + 0.3],
+        [top, top, bottom],
+        color="#404040",
+        linewidth=0.8,
+        linestyle="--",
+    )
+    arrow((right + 0.3, bottom), (right, bottom), "-|>")
+    save(fig, "arkitektura_e_sistemit")
+
+
 def main() -> int:
     rules = load("rules_evaluation.json")
     ml = load("ml_evaluation.json")
@@ -341,6 +452,7 @@ def main() -> int:
     intervals = load("bootstrap_intervals.json")
 
     print("Figurat:")
+    figure_architecture()
     figure_rules_vs_ml(rules, ml)
     figure_recall_by_severity(rules)
     figure_agreement(ml)
