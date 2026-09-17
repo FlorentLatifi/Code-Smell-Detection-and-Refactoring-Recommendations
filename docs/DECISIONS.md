@@ -4785,3 +4785,83 @@ sepse porti ishte i zënë.
 **Çfarë nuk u bë.** Dy `[PLOTËSO]` mbeten të autorit: falënderimet dhe fleta e
 cilësisë së rishkrimeve. Shtojcat 8.6–8.11 mbajnë ende interpretimin e tyre,
 sepse rregulli i mentores i përket Kapitullit 5.
+
+### VD-126: Projekti zgjidhet me klikim, dhe depot publike importohen nga një lidhje
+
+**Konteksti.** Hyrja e vetme te sistemi ishte një kuti teksti me shtegun e
+projektit, dhe ajo kërkonte tri gjëra që përdoruesi nuk i di: shtegun e plotë, se
+ku e ka serveri rrënjën e lejuar, dhe se shtegu relativ lexohet kundrejt asaj
+rrënje e jo kundrejt dosjes ku ndodhet. Gjatë provës para demonstrimit, gabimi i
+vetëm që u përsërit vinte prej tyre: «Ky shteg del jashtë dosjes që serveri e ka
+të lejuar» ishte e vërtetë dhe e padobishme, sepse nuk thoshte se ku ishte
+kufiri. Përveç kësaj, kushdo që do ta provonte mjetin duhej më parë të
+shkarkonte vetë një projekt Java.
+
+**Vendimi.** Tri rrugë hyrjeje, dhe asnjëra nuk kërkon terminal.
+
+1. **Shfletimi i dosjeve** (`POST /browse`). Kthen nënndosjet e një shtegu, me
+   shënimin nëse mbajnë kod Java. Pa shteg, lista nis nga rrënjët, ndaj dialogu
+   hapet pa asnjë dijeni paraprake. Kur rrënja është e vetme, ndërfaqja hyn
+   drejt brenda saj: një listë me një rresht do të ishte klikim i tepërt.
+2. **Importi nga GitHub** (`POST /projects/github`). Shkarkon arkivin `tar.gz`
+   nga codeload dhe shkruan vetëm anëtarët `.java`, te `data/projects/`.
+3. **Nisësi** (`Nis-JavaSmell.bat` → `tools/Nis-JavaSmell.ps1`). Hap dialogun e
+   Windows-it për dosjen, nis të dy shërbimet me atë rrënjë, pret derisa
+   përgjigjen, dhe hap shfletuesin.
+
+**Rrënja e dytë.** Depot e importuara nuk rrinë brenda dosjes që zgjodhi
+përdoruesi, ndaj `confine` tani pranon një listë rrënjësh dhe i provon me radhë.
+Radha ka kuptim: dosja e përdoruesit vjen e para, që një emër që ndodhet te të
+dyja të zgjidhet te ajo. Një rrënjë e konfiguruar që nuk ekziston nuk e ndal
+shërbimin, sepse dosja e depove krijohet vetëm kur importohet e para. Mesazhi i
+refuzimit i emërton tani të dyja dosjet, por, si më parë, jo shtigjet absolute.
+
+**Pse arkivi dhe jo `git clone`.** Një kërkesë e vetme HTTPS, pa git te makina
+dhe pa historik: analiza lexon një pamje të vetme, ndaj kloni do të shkarkonte
+të kaluarën për asgjë. Kjo është e njëjta rrugë që ndjek `fetch_corpus.py` për
+korpusin e MLCQ-së, dhe `long_path` u zhvendos te `javasmell/filesystem.py`, që
+rregulli i shtigjeve të gjata të Windows-it të kishte një zbatim të vetëm e jo
+dy.
+
+**Siguria e importit.** Anëtarët e një arkivi janë hyrje e kontrolluar nga
+jashtë, ndaj:
+- shkruhen vetëm anëtarët `.java`, dhe çdo shteg zgjidhet e kontrollohet se bie
+  brenda dosjes së synuar (ekuivalenti me tar i «zip-slip»);
+- arkivi ka tavan 400 MB, skedari 4 MB, dhe numri i skedarëve 20 000, të
+  matura ndërsa shkarkohet e jo pasi arkivi është te disku;
+- lidhjet me kredenciale refuzohen, sepse importohen vetëm depo publike;
+- hostet e pranuara janë vetëm `github.com`, dhe emri i pronarit e i depos duhet
+  të përputhet me atë që lejon GitHub-u;
+- dalja e një depoje pa kod Java fshihet, që një provë e dytë të nisë e pastër.
+
+Kodi i shkarkuar nuk ekzekutohet: si te korpusi, ai lexohet si tekst dhe
+kompilohet me javac vetëm për verifikim.
+
+**Portat kontrollohen para nisjes.** Një server i vjetër te porti 8000 mban
+rrënjën e vet, dhe ndërfaqja do të analizonte atë dosje e jo atë që zgjodhi
+përdoruesi. Ky gabim është i heshtur — analiza kthehet me sukses, mbi dosjen e
+gabuar — ndaj nisësi ndalet me mesazh në vend që të nisë një shërbim të dytë që
+nuk lidh dot portin.
+
+**Verifikimi.**
+- Backend: 645 teste kalojnë. Të reja janë 52: shfletimi, rrënjët e shumta,
+  kufiri i kërkimit të Java-s, dhe importi — lidhjet e pranuara e të refuzuara
+  një nga një, anëtari që del jashtë dosjes me `..`, anëtari mbi tavan, arkivi
+  mbi tavan, arkivi i prishur, depoja pa Java, 404-a dhe 429-a. Asnjë test nuk
+  prek rrjetin: shkarkimi është një funksion i injektuar.
+- Frontend: 159 teste vitest, plus 12 end-to-end (tri të reja) mbi serverin e
+  vërtetë.
+- `playwright.config.ts` e tregon dosjen e depove te një shteg që nuk ekziston,
+  që rrënja të jetë e vetme sido që të jetë makina; pa këtë, një checkout ku
+  dikush kishte importuar një depo i rrëzonte testet e zgjedhjes.
+- Me dorë, mbi serverin e vërtetë: `jhy/jsoup` u importua në 3.5 sekonda me 199
+  skedarë `.java`, dhe analiza e tij gjeti 181 erëra në 1.9 sekonda. Herën e
+  dytë depoja u kthye pa rrjet. `gitlab.com` dhe një depo që nuk ekziston dolën
+  me kodet e tyre, dhe `C:\Windows\System32` mbeti i refuzuar.
+- Nisësi u provua me portat e lira: i nisi të dy shërbimet, i priti, dhe i
+  liroi portat në mbyllje. Skedari `.ps1` ruhet me BOM, sepse PowerShell 5.1 e
+  lexon ndryshe si ANSI dhe shkronjat shqipe dalin të ngatërruara.
+
+**Punimi.** Nënkapitulli 4.1 e përmend shtresën `projects`, 4.8 i numëron
+njëmbëdhjetë pikat e hyrjes dhe e përshkruan importin, dhe figura e arkitekturës
+e thotë se hyrja mund të vijë lokalisht ose nga GitHub.

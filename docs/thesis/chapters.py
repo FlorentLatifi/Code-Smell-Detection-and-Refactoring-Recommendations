@@ -494,10 +494,10 @@ def _coverage_sentence() -> str:
 # Gjendja e validimit në verifikimin e fundit, e njëjta me `docs/ROADMAP.md`.
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
-VALIDATION_DATE = "17 shtator 2026"
-BACKEND_TESTS = 593
+VALIDATION_DATE = "18 shtator 2026"
+BACKEND_TESTS = 645
 COVERAGE = "96%"
-FRONTEND_TESTS = 147
+FRONTEND_TESTS = 159
 
 # Versionet e varësive që kanë rol në rezultate ose në sistem, ashtu si janë
 # fiksuar te `backend/requirements*.txt`, `frontend/package.json` dhe
@@ -565,6 +565,8 @@ CHAPTER_4 = [
              "numerik rri në një skedar të vetëm."),
             ("bullet", "ml dhe refactor: Qasja B dhe Qasja C. Të dyja përdorin daljen e "
              "detektorëve dhe modelin, por nuk importojnë njëra-tjetrën."),
+            ("bullet", "projects: materializon te disku një depo publike të GitHub-ut, "
+             "që analiza të mos kërkojë një kopje të shkarkuar më parë."),
             ("bullet", "api: vetëm transport, pra validim, serializim dhe hartëzim "
              "gabimesh, pa logjikë detektimi apo refaktorimi."),
             ("bullet", "frontend: ndërfaqja web, që flet me shërbimin vetëm përmes HTTP."),
@@ -742,27 +744,35 @@ CHAPTER_4 = [
         "4.8",
         "Ndërfaqja web dhe API",
         [
-            "Shërbimi HTTP ofron nëntë pika hyrjeje. /health jep gjendjen, /analyze "
-            "analizon një projekt ose skedar, /metrics jep metrikat e një entiteti dhe "
-            "/source kodin e tij. Pesë të tjera janë nën /refactor: pamja paraprake e një "
-            "rishkrimi (preview), diff-i i të gjitha rishkrimeve të verifikuara (patch, "
-            "edhe si rrjedhë progresi), pyetja nëse shkrimi lejohet (tree) dhe shkrimi "
-            "në disk (apply). Çdo pikë e validon kërkesën, thërret të njëjtat funksione "
-            "si rreshti i komandës dhe e kthen përgjigjen si JSON.",
+            "Shërbimi HTTP ofron njëmbëdhjetë pika hyrjeje. /health jep gjendjen, "
+            "/analyze analizon një projekt ose skedar, /metrics jep metrikat e një "
+            "entiteti, /source kodin e tij, /browse nënndosjet e një shtegu dhe "
+            "/projects/github importon një depo publike. Pesë të tjera janë nën "
+            "/refactor: pamja paraprake e një rishkrimi (preview), diff-i i të gjitha "
+            "rishkrimeve të verifikuara (patch, edhe si rrjedhë progresi), pyetja nëse "
+            "shkrimi lejohet (tree) dhe shkrimi në disk (apply). Çdo pikë e validon "
+            "kërkesën, thërret të njëjtat funksione si rreshti i komandës dhe e kthen "
+            "përgjigjen si JSON.",
             "Aplikacioni ka një përdorues dhe dëgjon vetëm në localhost, ndaj rreziqet "
             "që mbrohen nuk janë autentikimi, por shtegu dhe burimet. Shtegu që dërgon "
             "përdoruesi kanonizohet dhe pranohet vetëm nëse bie brenda një rrënje të "
-            "lejuar, edhe pasi ndiqen lidhjet simbolike. Një analizë ka kufij për numrin "
-            "e skedarëve, madhësinë totale dhe kohën. Gabimet kthehen me mesazh dhe kod, "
+            "lejuar, edhe pasi ndiqen lidhjet simbolike; rrënjët janë dosja e zgjedhur "
+            "dhe ajo e depove të importuara. Një analizë ka kufij për numrin e "
+            "skedarëve, madhësinë totale dhe kohën. Gabimet kthehen me mesazh dhe kod, "
             "pa gjurmë të brendshme dhe pa shtigje absolute.",
+            "Importi nga GitHub shkarkon arkivin e një depoje publike dhe shkruan vetëm "
+            "anëtarët «.java», me kufij për madhësinë e arkivit e të skedarit, dhe me "
+            "çdo shteg të kontrolluar se bie brenda dosjes së synuar. Lidhjet me "
+            "kredenciale refuzohen: importohen vetëm depo publike.",
             "Shkrimi në disk është i vetmi veprim që ndryshon kodin e autorit, ndaj "
             "kërkon një konfirmim të qartë në kërkesë, një depo git pa ndryshime të "
             "pakomituara, dhe skedarë që git-i i ndjek. Vetëm atëherë një komandë e "
             "vetme, «git restore», e kthen gjithçka; nëse një kusht nuk plotësohet, "
             "shkrimi refuzohet me arsyen përkatëse. Shkruhen vetëm rishkrimet që kaluan "
             "verifikimin.",
-            "Ndërfaqja është aplikacion React me TypeScript. Përdoruesi shkruan shtegun e "
-            "projektit dhe, sipas dëshirës, kërkon edhe verdiktin e modelit. Paneli "
+            "Ndërfaqja është aplikacion React me TypeScript. Projekti zgjidhet duke "
+            "shfletuar dosjet brenda rrënjëve të lejuara, ose duke importuar një depo, "
+            "dhe përdoruesi, sipas dëshirës, kërkon edhe verdiktin e modelit. Paneli "
             "tregon përmbledhjen sipas erës, të dy qasjet përballë njëra-tjetrës dhe "
             "gjetjet sipas skedarit. Për secilën gjetje shfaqen kushtet me vlerat e "
             "matura, shpjegimi i modelit, dhe diff-i i rishkrimit ose arsyeja e "

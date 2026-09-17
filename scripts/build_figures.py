@@ -340,7 +340,7 @@ def figure_severity_bias(rules: Results) -> None:
 # verifikohet se ekziston, që figura të mos mbetet pas kodit po të riemërtohet.
 # `None` shënon dy skajet që nuk janë paketa të backend-it: hyrjen dhe ndërfaqen.
 ARCHITECTURE: tuple[tuple[str, str, float, float, str | None], ...] = (
-    ("projekti Java", "skedarët .java\nnë diskun lokal", 0.85, 1.75, None),
+    ("projekti Java", "skedarët .java, lokal\nose nga GitHub", 0.85, 1.75, None),
     ("parsing", "analiza sintaksore\n(tree-sitter)", 0.85, 3.0, "parsing"),
     ("model", "klasat, metodat,\nfushat", 3.1, 3.0, "model"),
     ("metrics", "metrikat e klasës\ndhe të metodës", 5.2, 3.0, "metrics"),
