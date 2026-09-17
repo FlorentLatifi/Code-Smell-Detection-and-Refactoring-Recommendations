@@ -19,7 +19,7 @@ import {
   SMELLS,
 } from "./evaluation";
 
-export function Landing({ root }: { root: string | null }) {
+export function Landing({ root, onPick }: { root: string | null; onPick: () => void }) {
   return (
     <div className="landing">
       <section className="lead">
@@ -29,12 +29,19 @@ export function Landing({ root }: { root: string | null }) {
           rishikuesve, dhe një motor refaktorimi që rishkruan vetëm atë që e provon dot të sigurt.
           Të tria ekzekutohen lokalisht dhe asnjëra nuk e prek kodin tënd.
         </p>
+        {/* Nisja është një buton e jo një udhëzim: kushdo që e hap mjetin duhet
+            të mund të nisë pa ditur ku lexon serveri (VD-126). */}
+        <p className="start">
+          <button type="button" className="primary" onClick={onPick}>
+            Zgjidh një projekt Java
+          </button>
+        </p>
         <p className="hint">
-          Shkruaj shtegun e një projekti Java lart për të filluar. Analiza lexon vetëm brenda dosjes
-          që serveri e ka të lejuar
+          Zgjidh një dosje nga kompjuteri, ose importo një depo publike nga GitHub te skeda «Nga
+          GitHub». Analiza lexon vetëm brenda dosjes që serveri e ka të lejuar
           {root ? (
             <>
-              , që është <code>{root}</code>. Shtegu shkruhet relativ ndaj saj.
+              , që është <code>{root}</code>, dhe brenda dosjes së depove të importuara.
             </>
           ) : (
             "."

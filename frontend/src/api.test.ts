@@ -73,6 +73,24 @@ const CODES_FROM_BACKEND = [
   "unreadable",
   "advisory_only",
   "not_found",
+  "path_not_directory",
+  // Nga `ImportRejected(...)` te `projects/github.py`, plus hartëzimi i statusit
+  // te `api/app.py`. Ana tjetër ka kopjen e vet te `test_github.py` (VD-126).
+  "link_empty",
+  "not_github",
+  "bad_scheme",
+  "credentials_in_link",
+  "no_repository",
+  "bad_repository",
+  "bad_ref",
+  "repository_not_found",
+  "rate_limited",
+  "http_error",
+  "network",
+  "timeout",
+  "archive_too_large",
+  "archive_broken",
+  "too_many_java_files",
 ];
 
 describe("mesazhet e gabimit", () => {

@@ -3,6 +3,8 @@ import type {
   ApiError,
   PatchResult,
   ApplyResult,
+  Imported,
+  Listing,
   PatchProgress,
   Preview,
   RewriteNote,
@@ -38,6 +40,12 @@ const TIMEOUT_MS = 120_000;
  */
 const PATCH_TIMEOUT_MS = 330_000;
 
+/** Shfletimi i një dosjeje lexon vetëm një nivel, ndaj duhet të jetë i shpejtë. */
+const BROWSE_TIMEOUT_MS = 30_000;
+
+/** Importi është shkarkim mbi rrjet; ai e ka kufirin e vet, më të gjerë. */
+const IMPORT_TIMEOUT_MS = 180_000;
+
 /** Ndalimi nga vetë përdoruesi dhe ndalimi nga afati lexohen ndryshe. */
 export class Cancelled extends Error {}
 
@@ -66,6 +74,24 @@ export const ERROR_SQ: Record<string, string> = {
   unreadable: "Skedari nuk u lexua dot.",
   advisory_only: "Motori nuk e rishkruan vetë këtë erë; mbetet propozim.",
   not_found: "Asnjë entitet te ai rresht. Analiza mund të jetë e vjetruar; ri-ekzekutoje.",
+  path_not_directory: "Ky është skedar, e nuk hapet si dosje.",
+  // Importi nga GitHub (VD-126). Kodet vijnë nga `ImportRejected` te
+  // `projects/github.py`, dhe secili i thotë përdoruesit çfarë të ndreqë.
+  link_empty: "Shkruaj lidhjen e një depoje publike, p.sh. github.com/jhy/jsoup.",
+  not_github: "Për tani importohen vetëm depo nga github.com.",
+  bad_scheme: "Lidhja duhet të nisë me https.",
+  credentials_in_link: "Lidhjet me fjalëkalim nuk pranohen; importohen vetëm depo publike.",
+  no_repository: "Lidhja nuk emërton një depo. Duhet forma github.com/pronari/depoja.",
+  bad_repository: "Emri i pronarit ose i depos nuk është i vlefshëm.",
+  bad_ref: "Dega ose commit-i te lidhja nuk është i vlefshëm.",
+  repository_not_found: "Asnjë depo publike te ajo lidhje. Kontrollo emrin dhe degën.",
+  rate_limited: "GitHub-u nuk e pranoi kërkesën tani. Provo pas një minute.",
+  http_error: "GitHub-u u përgjigj me gabim. Provo më vonë.",
+  network: "Shkarkimi nuk përfundoi. Kontrollo lidhjen me internetin.",
+  timeout: "Shkarkimi zgjati shumë dhe u ndal. Provo një depo më të vogël.",
+  archive_too_large: "Depoja është shumë e madhe për t'u shkarkuar e tëra.",
+  archive_broken: "Arkivi i shkarkuar nuk u lexua dot. Provo sërish.",
+  too_many_java_files: "Depoja mban tepër skedarë Java. Analizo një nëndosje të saj.",
 };
 
 /**
@@ -298,6 +324,37 @@ export async function allowedRoot(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Nënndosjet e një shtegu, që dosja të zgjidhet duke klikuar (VD-126).
+ *
+ * Shtegu bosh do të thotë «nis nga rrënjët», dhe atëherë lista mban dosjen e
+ * lejuar e serverit dhe atë të depove të importuara. Shtigjet vijnë absolute,
+ * sepse ato kthehen ashtu si janë te `/analyze`.
+ */
+export function browse(path: string, signal?: AbortSignal): Promise<Listing> {
+  return post<Listing>("/browse", { path }, signal, BROWSE_TIMEOUT_MS);
+}
+
+/**
+ * Shkarkon një depo publike nga GitHub dhe kthen shtegun ku u shkrua.
+ *
+ * Afati është i gjatë sepse hapi është shkarkim mbi rrjet, jo matje lokale: një
+ * depo e madhe mbi një lidhje të ngadaltë e kalon lehtë kufirin prej dy minutash
+ * të analizës, dhe do të dukej si dështim ndonëse serveri e kishte kryer.
+ */
+export function importRepository(
+  url: string,
+  options: { refresh?: boolean } = {},
+  signal?: AbortSignal,
+): Promise<Imported> {
+  return post<Imported>(
+    "/projects/github",
+    { url, refresh: options.refresh ?? false },
+    signal,
+    IMPORT_TIMEOUT_MS,
+  );
 }
 
 /**

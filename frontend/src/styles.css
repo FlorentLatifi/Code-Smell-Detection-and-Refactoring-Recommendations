@@ -299,6 +299,10 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.failure p {
+  margin: 0;
+}
+
 /* ---------- measured figures ---------- */
 /* Eight numbers in an even row read as a wall: nothing said which of them the
    reader came for. The accented figure is now genuinely larger, the rest step
@@ -1444,6 +1448,17 @@ select:hover {
   color: var(--ink-faint);
   font-size: var(--t-small);
   line-height: 1.6;
+}
+
+/* Nisja e ekranit të parë. Vetëm këtu një buton merr ngjyrën e theksit te ky
+   ekran: ai është veprimi i vetëm që dikush pa projekt të hapur mund të bëjë. */
+.landing .start {
+  margin: 0 0 var(--s-3);
+}
+
+.landing .start button {
+  padding: 9px 15px;
+  font-size: 0.95rem;
 }
 
 .approaches {

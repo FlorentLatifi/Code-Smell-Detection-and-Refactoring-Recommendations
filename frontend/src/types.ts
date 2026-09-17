@@ -246,6 +246,35 @@ export interface ApiError {
   error: { code: string; message: string };
 }
 
+/** Një nënndosje te lista e zgjedhjes, si e kthen `/browse`. */
+export interface Folder {
+  name: string;
+  path: string;
+  /** `null` kur kërkimi i një `.java` u ndal te kufiri, e jo kur dosja është pa kod. */
+  java: boolean | null;
+}
+
+/** Ç'ka brenda një shtegu, dhe nga ku vjen ai. */
+export interface Listing {
+  path: string;
+  name: string;
+  /** `null` te rrënja: përtej saj serveri nuk lexon. */
+  parent: string | null;
+  folders: Folder[];
+  roots: { name: string; path: string }[];
+}
+
+/** Një depo publike e materializuar te disku, si e kthen `/projects/github`. */
+export interface Imported {
+  path: string;
+  name: string;
+  /** «pronari/depoja», ose «pronari/depoja@degë» kur lidhja emërtoi një degë. */
+  repository: string;
+  java_files: number;
+  /** E vërtetë kur depoja ishte shkarkuar më parë dhe nuk u kërkua rrjeti. */
+  cached: boolean;
+}
+
 /** The lines of one file around a finding, as `/source` returns them. */
 export interface Source {
   start_line: number;

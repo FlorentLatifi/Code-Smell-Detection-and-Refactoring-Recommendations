@@ -41,7 +41,15 @@ export default defineConfig({
     {
       command: `"${PYTHON}" -m uvicorn javasmell.api.app:create_app --factory --port 8000`,
       cwd: "../backend",
-      env: { JAVASMELL_ROOT: ".." },
+      env: {
+        JAVASMELL_ROOT: "..",
+        // Dosja e depove të importuara tregohet te një shteg që nuk ekziston, që
+        // rrënja të jetë e vetme sido që të jetë makina. Pa këtë, një checkout
+        // ku dikush kishte importuar një depo hapte listën e rrënjëve në vend që
+        // të hynte drejt brenda, dhe testet e zgjedhjes dështonin për arsye që
+        // nuk i përkasin kodit (VD-126).
+        JAVASMELL_PROJECTS: "../data/projects-e2e",
+      },
       url: "http://127.0.0.1:8000/health",
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,

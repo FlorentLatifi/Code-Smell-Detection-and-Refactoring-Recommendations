@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FolderOpen } from "lucide-react";
 import { allowedRoot, analyse, Cancelled, treeState } from "./api";
 import { Detail } from "./Detail";
 import { Filters } from "./Filters";
@@ -6,6 +7,7 @@ import type { Order } from "./Filters";
 import { agreementOn, indexModel, modelOnly } from "./model";
 import { ModelOnly } from "./ModelOnly";
 import { Landing } from "./Landing";
+import { Picker, RECENT } from "./Picker";
 import { ApplyControl } from "./design/ApplyControl";
 import { fileRowsOf, overviewOf, scoreRows, suggestionsOf } from "./design/adapt";
 import { DashboardLayout, StatusStrip } from "./design/DashboardLayout";
@@ -25,6 +27,7 @@ import { writeEffect } from "./writeEffect";
 
 const REMEMBERED_PATH = "javasmell.path";
 const REMEMBERED_THEME = "javasmell.theme";
+const REMEMBERED_RECENT = "javasmell.recent";
 
 /**
  * Sa rreshta hyjnë te DOM-i njëherësh.
@@ -103,6 +106,29 @@ function remember(key: string, value: string): void {
 }
 
 /**
+ * Shtigjet e hapura së fundi, që dosja e njohur të zgjidhet me një klikim.
+ *
+ * Lexohet me kujdes dhe jo me besim: te kjo kyçe mund të ketë mbetur çfarëdo nga
+ * një version i mëparshëm, dhe një listë e prishur nuk guxon të ndalë ekranin.
+ */
+function recentPaths(): string[] {
+  try {
+    const stored: unknown = JSON.parse(remembered(REMEMBERED_RECENT) || "[]");
+    if (!Array.isArray(stored)) return [];
+    return stored.filter((item): item is string => typeof item === "string").slice(0, RECENT);
+  } catch {
+    return [];
+  }
+}
+
+/** E njëjta listë, me `path` te kreu dhe pa dublikatë. */
+function withRecent(paths: string[], path: string): string[] {
+  const next = [path, ...paths.filter((item) => item !== path)].slice(0, RECENT);
+  remember(REMEMBERED_RECENT, JSON.stringify(next));
+  return next;
+}
+
+/**
  * `path` udhëton bashkë me analizën, e nuk lexohet nga kutia.
  *
  * Kutia mban atë që po shkruan përdoruesi tani; analiza i përket shtegut që u
@@ -175,13 +201,21 @@ export function App() {
   // Erërat e shtegut në çastin e shkrimit. Krahasohen me skanimin e radhës të të
   // njëjtit shteg, që ekrani të thotë çfarë u hoq dhe çfarë lindi (VD-123).
   const [beforeWrite, setBeforeWrite] = useState<{ path: string; smells: Smell[] } | null>(null);
+  // Zgjedhja e projektit: dosje me klikim ose depo nga GitHub (VD-126).
+  const [picking, setPicking] = useState(false);
+  const [recent, setRecent] = useState<string[]>(recentPaths);
 
-  async function run(event: React.FormEvent) {
-    event.preventDefault();
+  /** Analizon një shteg të dhënë, e jo atë që mban kutia në këtë çast.
+   *
+   * Zgjedhja e dosjes e nis analizën menjëherë, dhe gjendja e Reactit nuk është
+   * përditësuar ende kur ajo thirret: një `rerun()` pas `setPath()` do të
+   * analizonte shtegun e vjetër. Shtegu udhëton pra si argument.
+   */
+  async function runFor(target: string) {
     setScreen({ state: "loading" });
     setSelected(null);
     setShownSmell(null);
-    const asked = path;
+    const asked = target;
     const controller = new AbortController();
     running.current = controller;
     const started = performance.now();
@@ -195,6 +229,7 @@ export function App() {
         askedModel: askModel,
       });
       remember(REMEMBERED_PATH, asked);
+      setRecent((paths) => withRecent(paths, asked));
     } catch (failure) {
       // Ndalimi nga vetë përdoruesi nuk është gabim: ekrani kthehet aty ku ishte,
       // pa një banderolë të kuqe që i thotë se diçka shkoi keq.
@@ -206,6 +241,18 @@ export function App() {
     } finally {
       running.current = null;
     }
+  }
+
+  async function run(event: React.FormEvent) {
+    event.preventDefault();
+    await runFor(path);
+  }
+
+  /** Dosja ose depoja e zgjedhur hyn te kutia dhe analizohet menjëherë. */
+  function chosen(next: string): void {
+    setPath(next);
+    setPicking(false);
+    void runFor(next);
   }
 
   function stop(): void {
@@ -235,7 +282,7 @@ export function App() {
 
   /** I njëjti ekzekutim si forma, i thirrur nga një buton pa ngjarje. */
   async function rerun(): Promise<void> {
-    await run({ preventDefault() {} } as React.FormEvent);
+    await runFor(path);
   }
 
   // Adresa përditësohet pas çdo renderimi që e ndryshon atë që ajo mban.
@@ -476,10 +523,20 @@ export function App() {
           className="order-last flex min-w-0 flex-1 basis-full items-center gap-2 sm:order-none sm:basis-auto"
           onSubmit={run}
         >
+          {/* Zgjedhja me klikim vjen para kutisë: ajo është rruga që nuk kërkon
+              të dish paraprakisht asnjë shteg (VD-126). */}
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-ink-200 px-2.5 text-xs font-medium text-ink-700 hover:border-brand-500 hover:text-brand-700 dark:border-ink-700 dark:text-ink-300 dark:hover:text-brand-300"
+          >
+            <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Zgjidh</span>
+          </button>
           <input
             value={path}
             onChange={(e) => setPath(e.target.value)}
-            placeholder="Shtegu i projektit, brenda dosjes së lejuar"
+            placeholder="Shtegu i projektit, ose zgjidhe me butonin majtas"
             aria-label="Shtegu i projektit"
             className="h-9 min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-3 font-mono text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-2 focus-visible:ring-brand-500/25 focus-visible:outline-none dark:border-ink-700 dark:bg-ink-950 dark:text-ink-100"
           />
@@ -515,18 +572,34 @@ export function App() {
         )
       }
     >
+      <Picker
+        open={picking}
+        recent={recent}
+        onChoose={chosen}
+        onClose={() => setPicking(false)}
+      />
+
       {view === "results" && <Results />}
 
       {view === "analysis" && (
       <>
-      {screen.state === "idle" && <Landing root={root} />}
+      {screen.state === "idle" && <Landing root={root} onPick={() => setPicking(true)} />}
 
       {screen.state === "loading" && <Loading />}
 
       {screen.state === "error" && (
-        <p className="failure" role="alert">
-          {screen.message}
-        </p>
+        <div className="failure" role="alert">
+          <p>{screen.message}</p>
+          {/* Një gabim shtegu ndreqet më lehtë duke e zgjedhur dosjen sesa duke
+              e shtypur sërish, ndaj dalja ofrohet pranë mesazhit. */}
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="mt-2 rounded-lg border border-current px-2.5 py-1 text-xs font-medium"
+          >
+            Zgjidh dosjen
+          </button>
+        </div>
       )}
 
       {screen.state === "ready" && overview && (

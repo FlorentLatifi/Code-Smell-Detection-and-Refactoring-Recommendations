@@ -113,7 +113,10 @@ describe("gjendjet e ekranit", () => {
   it("hapet me një ftesë, jo me një listë bosh", () => {
     render(<App />);
 
-    expect(screen.getByText(/Shkruaj shtegun e një projekti/)).toBeDefined();
+    // Ftesa është buton e jo fjali: dikush që e hap mjetin duhet të mund të nisë
+    // pa ditur ku lexon serveri (VD-126).
+    expect(screen.getByRole("button", { name: "Zgjidh një projekt Java" })).toBeDefined();
+    expect(screen.getByText(/importo një depo publike nga GitHub/)).toBeDefined();
   });
 
   it("e ndalon analizën derisa të ketë një shteg", () => {
