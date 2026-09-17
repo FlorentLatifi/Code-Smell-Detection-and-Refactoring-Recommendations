@@ -315,6 +315,16 @@ export function noteText(note: RewriteNote): string {
       "shpesh është prerja e gabuar për t'u ngritur."
     );
   }
+  if (note.code === "wide_constructor") {
+    // VD-124: pa këtë, rishkrimi dukej sikur e hoqi erën, dhe skanimi i radhës
+    // e gjente te konstruktori i ri pa asnjë shpjegim.
+    return (
+      `Konstruktori i objektit të ri merr ${note.parameters} parametra, mbi kufirin ` +
+      `${note.threshold} që ky mjet vetë e shënon si Long Parameter List. Nënshkrimi i ` +
+      "metodës shkurtohet, por lista kalon te konstruktori; objekti është hapi që lejon " +
+      "të zhvendoset më pas sjellja brenda tij."
+    );
+  }
   return note.code;
 }
 

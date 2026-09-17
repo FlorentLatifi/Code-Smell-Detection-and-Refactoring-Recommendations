@@ -200,6 +200,14 @@ describe("noteText", () => {
     expect(text).toContain("kufirin 5");
   });
 
+  it("says in Albanian that the parameter object's constructor is as wide as the method was", () => {
+    // VD-124: gjashtë parametra kalojnë te konstruktori, një mbi kufirin pesë.
+    const text = noteText({ code: "wide_constructor", parameters: 6, threshold: 5 });
+
+    expect(text).toContain("Konstruktori i objektit të ri merr 6 parametra");
+    expect(text).toContain("kufirin 5");
+  });
+
   it("falls back to the code when a note has no translation yet", () => {
     // I shëmtuar, por i sinqertë: më mirë kodi se një fjali e trilluar.
     expect(noteText({ code: "something_new" })).toBe("something_new");

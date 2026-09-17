@@ -67,12 +67,17 @@ from dataclasses import dataclass
 
 from tree_sitter import Node
 
+from javasmell.detectors.thresholds import DEFAULT, Thresholds
 from javasmell.refactor.base import Note, Outcome, Refusal, explain
 from javasmell.refactor.dataflow import text_of, walk
 from javasmell.refactor.edits import Edit, indent_at
 from javasmell.refactor.locate import Site
 
 NAME = "IntroduceParameterObject"
+
+#: The one note this transformation can raise. Named so the interface can
+#: translate it without parsing a sentence, as for Extract Method (VD-97).
+WIDE_CONSTRUCTOR = "wide_constructor"
 
 # Below this an object hides nothing: the call site trades two arguments for one
 # constructor call of two arguments. The detector fires far above this, so the
@@ -214,7 +219,11 @@ def _unpacking(parameters: list[Parameter], holder: str, indent: bytes, unit: by
     )
 
 
-def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
+def apply(
+    site: Site,
+    reserved: frozenset[str] = frozenset(),
+    thresholds: Thresholds = DEFAULT,
+) -> Outcome:
     """Rewrite the site, or decline with the reason it does not fit.
 
     ``reserved`` is accepted so that every transformation has one signature.
@@ -310,4 +319,32 @@ def apply(site: Site, reserved: frozenset[str] = frozenset()) -> Outcome:
             )
         )
 
-    return Outcome.rewrite(NAME, site.file_path, target, tuple(sorted(edits)))
+    return Outcome.rewrite(
+        NAME,
+        site.file_path,
+        target,
+        tuple(sorted(edits)),
+        notes=_notes(len(parameters), thresholds),
+    )
+
+
+def _notes(count: int, thresholds: Thresholds) -> tuple[Note, ...]:
+    """What the author should know about an object that is otherwise correct.
+
+    The object's constructor takes every parameter the method took, so a method
+    flagged for its parameter list hands the same list to the constructor, and
+    this same tool then flags the constructor. On the test project both applied
+    rewrites did exactly that, and the count of smells did not move.
+
+    Not a refusal. The method's signature is what the smell was about, and the
+    object is the step that lets behaviour move onto it later. Saying so is what
+    the engine can honestly do, as Extract Method already does (VD-97, VD-124).
+    """
+    if count <= thresholds.long_parameter_list_np:
+        return ()
+    return (
+        Note(
+            WIDE_CONSTRUCTOR,
+            {"parameters": float(count), "threshold": thresholds.long_parameter_list_np},
+        ),
+    )

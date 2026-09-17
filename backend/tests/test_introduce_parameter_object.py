@@ -17,9 +17,9 @@ from pathlib import Path
 
 import pytest
 
-from javasmell.refactor.base import Refusal
+from javasmell.refactor.base import Note, Refusal
 from javasmell.refactor.edits import apply_edits
-from javasmell.refactor.introduce_parameter_object import apply
+from javasmell.refactor.introduce_parameter_object import WIDE_CONSTRUCTOR, apply
 from javasmell.refactor.locate import find_site
 
 JAVAC = shutil.which("javac")
@@ -332,3 +332,47 @@ class Order {
     assert outcome.applied, outcome.detail
     after, message = compiles(apply_edits(source, outcome.edits))
     assert after, message
+
+
+# ----------------------------------------------------------------------
+# The note about the constructor (VD-124)
+# ----------------------------------------------------------------------
+def test_a_constructor_as_wide_as_the_method_is_said() -> None:
+    """Six parameters go into the constructor, one over the limit of five.
+
+    The method was flagged for six parameters, so its object's constructor takes
+    six, and the same detector flags that constructor next time. The rewrite is
+    still made; the author is told.
+    """
+    source = b"""class T {
+    private int total(int a, int b, int c, int d, int e, int f) {
+        return a + b + c + d + e + f;
+    }
+
+    int run() {
+        return total(1, 2, 3, 4, 5, 6);
+    }
+}
+"""
+    outcome = transform(source)
+    assert outcome.applied, outcome.detail
+
+    assert outcome.notes == (Note(WIDE_CONSTRUCTOR, {"parameters": 6.0, "threshold": 5}),)
+
+
+def test_a_constructor_within_the_limit_says_nothing() -> None:
+    """Four parameters stay under five, so there is nothing to warn about."""
+    source = b"""class T {
+    private int total(Order order, int qty, double rate, boolean taxed) {
+        return order.base(qty) + (taxed ? 1 : 0);
+    }
+
+    void run(Order o) {
+        report(total(o, 3, 1.5, true));
+    }
+}
+"""
+    outcome = transform(source)
+    assert outcome.applied, outcome.detail
+
+    assert outcome.notes == ()
