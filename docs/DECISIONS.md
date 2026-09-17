@@ -4681,3 +4681,36 @@ gjitha të kufizuara dhe pa ndikim te asnjë numër i komituar.
 - **Zgjidhja e simboleve:** mungesa e saj e mban Move Method dhe Encapsulate Field si
   propozim.
 - Të dyja janë ndryshime arkitekture, jo pika të hapura të këtij sistemi.
+
+### VD-124: Introduce Parameter Object e thotë që konstruktori mbetet i gjerë
+
+**Konteksti.** Objekti-parametër merr në konstruktor çdo parametër që merrte metoda.
+Një metodë e shënuar si Long Parameter List ia kalon, pra, të njëjtën listë
+konstruktorit, dhe i njëjti mjet e shënon konstruktorin në skanimin e radhës. Te
+projekti i testimit, të dy rishkrimet e aplikuara bënë pikërisht këtë (VD-122).
+Extract Method e thoshte tashmë rastin e vet të ngjashëm (VD-97). Ky rishkrim nuk
+thoshte asgjë.
+
+**Vendimi.** I njëjti qëndrim si te VD-97: nuk refuzohet, thuhet.
+- Nënshkrimi i metodës është ajo për të cilën është era.
+- Objekti është hapi që lejon të zhvendoset më pas sjellja brenda tij.
+- Kur numri i parametrave kalon `long_parameter_list_np`, `Outcome.notes` mban
+  `wide_constructor` me numrin dhe kufirin.
+- Ndërfaqja e shkruan shqip nën ndryshimin e propozuar.
+
+**Asnjë numër i komituar nuk lëviz.** Shënimi nuk e ndryshon verdiktin, dhe
+`evaluate_refactorings.py` nuk i lexon shënimet.
+
+**Gjithashtu u provua `1b-Nis-API-per-cdo-projekt.bat`,** i pakontrolluar te VD-122
+sepse porti ishte i zënë.
+- Serveri niset me rrënjë `C:\Users\flore`.
+- Shtigjet e plota pranohen: projekti i testimit (18 erëra) dhe jsoup (199 skedarë,
+  180 erëra).
+- `C:\Windows\System32` refuzohet me mesazhin shqip.
+
+**Verifikimi.**
+- Backend: testet e Introduce Parameter Object mbulojnë rastin me 6 parametra, që jep
+  shënimin, dhe rastin me 4, që nuk jep asgjë.
+- Frontend: 147 teste vitest dhe 9 end-to-end kalojnë.
+- Në shfletues, mbi serverin e nisur nga ai skedar, shënimi del te `createStudent`.
+  Konsola ka vetëm përgjigjen 400 të refuzimit të provuar qëllimisht.
