@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -182,6 +183,109 @@ def test_a_repository_under_the_second_root_can_be_analysed(browsing, tmp_path):
 
     assert response.status_code == 200
     assert response.json()["summary"]["smells"] > 0
+
+
+# ----------------------------------------------------------------------
+# Importi i një depoje publike (VD-126)
+# ----------------------------------------------------------------------
+#
+# Shkarkimi provohet i tëri te `test_github.py`, me hapin e rrjetit të
+# zëvendësuar. Këtu matet ajo që i përket vetëm rrugës: se ku shkruhet, se një
+# depo e importuar dje nuk rishkarkohet, dhe se një refuzim del me kodin e vet.
+
+
+def fake_fetch(written: str = "class A {}"):
+    """Një shkarkim i rremë që shkruan një skedar Java dhe kthen numrat."""
+
+    def fetch(repository, into, *, timeout_s=0, opener=None):
+        from javasmell.projects.github import Imported
+
+        destination = into / repository.directory
+        (destination / "src").mkdir(parents=True, exist_ok=True)
+        (destination / "src" / "A.java").write_text(written, encoding="utf-8")
+        return Imported(
+            repository=repository, path=destination, java_files=1, bytes_written=len(written)
+        )
+
+    return fetch
+
+
+def test_an_imported_repository_lands_under_the_projects_directory(browsing, tmp_path, monkeypatch):
+    monkeypatch.setattr("javasmell.api.app.fetch", fake_fetch())
+
+    body = browsing.post("/projects/github", json={"url": "https://github.com/jhy/jsoup"}).json()
+
+    assert body["repository"] == "jhy/jsoup"
+    assert body["cached"] is False
+    assert body["java_files"] == 1
+    assert Path(body["path"]) == tmp_path / "projects" / "jhy__jsoup"
+
+
+def test_an_imported_repository_can_then_be_analysed(browsing, monkeypatch):
+    monkeypatch.setattr("javasmell.api.app.fetch", fake_fetch(SMELLY))
+    imported = browsing.post("/projects/github", json={"url": "jhy/jsoup"}).json()
+
+    response = browsing.post("/analyze", json={"path": imported["path"]})
+
+    assert response.status_code == 200
+    assert response.json()["summary"]["smells"] > 0
+
+
+def test_a_repository_already_on_disk_is_not_downloaded_again(browsing, monkeypatch):
+    monkeypatch.setattr("javasmell.api.app.fetch", fake_fetch())
+    browsing.post("/projects/github", json={"url": "jhy/jsoup"})
+
+    def refuse(*_args, **_kwargs):
+        raise AssertionError("nuk duhej të shkarkohej sërish")
+
+    monkeypatch.setattr("javasmell.api.app.fetch", refuse)
+    body = browsing.post("/projects/github", json={"url": "jhy/jsoup"}).json()
+
+    assert body["cached"] is True
+    assert body["java_files"] == 1
+
+
+def test_refreshing_asks_for_the_download_again(browsing, monkeypatch):
+    monkeypatch.setattr("javasmell.api.app.fetch", fake_fetch())
+    browsing.post("/projects/github", json={"url": "jhy/jsoup"})
+
+    calls: list[str] = []
+
+    def counting(repository, into, **kwargs):
+        calls.append(repository.label)
+        return fake_fetch()(repository, into, **kwargs)
+
+    monkeypatch.setattr("javasmell.api.app.fetch", counting)
+    body = browsing.post("/projects/github", json={"url": "jhy/jsoup", "refresh": True}).json()
+
+    assert calls == ["jhy/jsoup"]
+    assert body["cached"] is False
+
+
+def test_a_link_that_is_not_github_is_refused_before_any_request(browsing, monkeypatch):
+    monkeypatch.setattr(
+        "javasmell.api.app.fetch",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("nuk duhej të kërkohej")),
+    )
+
+    response = browsing.post("/projects/github", json={"url": "https://gitlab.com/a/b"})
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "not_github"
+
+
+def test_a_failure_at_github_is_not_reported_as_the_callers_fault(browsing, monkeypatch):
+    from javasmell.projects.github import ImportRejected
+
+    def unreachable(*_args, **_kwargs):
+        raise ImportRejected("the download did not finish", "network")
+
+    monkeypatch.setattr("javasmell.api.app.fetch", unreachable)
+
+    response = browsing.post("/projects/github", json={"url": "jhy/jsoup"})
+
+    assert response.status_code == 502
+    assert response.json()["error"]["code"] == "network"
 
 
 # ----------------------------------------------------------------------

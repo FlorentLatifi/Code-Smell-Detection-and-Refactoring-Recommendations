@@ -53,6 +53,7 @@ from javasmell.ml.serving import (
     rule_equivalent,
 )
 from javasmell.model.entities import ProjectModel
+from javasmell.projects.github import ImportRejected, fetch, parse
 from javasmell.refactor.apply import Refusal as ApplyRefusal
 from javasmell.refactor.apply import apply_patches, working_tree_state
 from javasmell.refactor.base import Note, Outcome
@@ -105,6 +106,13 @@ class PathRequest(BaseModel):
     path: str = Field(min_length=1, max_length=4096, description="File or directory to analyse")
 
 
+class ImportRequest(BaseModel):
+    url: str = Field(min_length=1, max_length=2048, description="Lidhja e depos publike")
+    #: Rishkarkimi kërkohet shprehimisht. Pa të, një depo e importuar dje hapet
+    #: menjëherë dhe pa rrjet, çka është ajo që dikush pret kur e kthen.
+    refresh: bool = False
+
+
 class BrowseRequest(BaseModel):
     #: Bosh do të thotë «nis nga rrënjët», ndaj ky është i vetmi shteg që lejohet
     #: bosh: pa të, ndërfaqja nuk do të kishte nga t'ia filloje shfletimit.
@@ -139,6 +147,12 @@ class PreviewRequest(BaseModel):
     smell_type: str = Field(min_length=1, max_length=64)
 
 
+# Statusi HTTP për refuzimet e importit. Parazgjedhja është 400, sepse shumica
+# ndreqen nga thirrësi: lidhje e gabuar, depo private, degë që nuk ekziston. Këto
+# tre nuk i ndreq ai, ndaj nuk i vishen atij.
+IMPORT_STATUS = {"rate_limited": 503, "network": 502, "timeout": 504, "http_error": 502}
+
+
 def error(code: str, message: str, status: int) -> JSONResponse:
     """The single shape every failure takes."""
     return JSONResponse(status_code=status, content={"error": {"code": code, "message": message}})
@@ -153,6 +167,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.exception_handler(PathRejected)
     async def _rejected(_: Request, exc: PathRejected) -> JSONResponse:
         return error(exc.code, str(exc), 400)
+
+    @app.exception_handler(ImportRejected)
+    async def _import_rejected(_: Request, exc: ImportRejected) -> JSONResponse:
+        return error(exc.code, str(exc), IMPORT_STATUS.get(exc.code, 400))
 
     @app.get("/health")
     def health() -> dict[str, Any]:
@@ -207,6 +225,39 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 for folder in subfolders(target)
             ],
             "roots": [{"name": root.name, "path": str(root)} for root in roots],
+        }
+
+    @app.post("/projects/github")
+    def import_github(request: ImportRequest) -> dict[str, Any]:
+        """Materializon një depo publike dhe kthen shtegun ku e analizon.
+
+        Kjo është e vetmja rrugë që prek rrjetin, dhe shkruan vetëm nën dosjen e
+        depove: kodi i huaj nuk bie kurrë te dosja e projekteve të përdoruesit.
+        Një depo e importuar më parë kthehet ashtu si është, pa rrjet, përveç kur
+        kërkohet shprehimisht rifreskimi.
+        """
+        repository = parse(request.url)
+        destination = config.projects_dir / repository.directory
+        if destination.is_dir() and not request.refresh:
+            files = java_files_under(
+                destination, max_files=config.max_files, max_bytes=config.max_bytes
+            )
+            return {
+                "path": str(destination),
+                "name": repository.directory,
+                "repository": repository.label,
+                "java_files": len(files),
+                "cached": True,
+            }
+
+        config.projects_dir.mkdir(parents=True, exist_ok=True)
+        imported = fetch(repository, config.projects_dir, timeout_s=config.timeout_s)
+        return {
+            "path": str(imported.path),
+            "name": repository.directory,
+            "repository": repository.label,
+            "java_files": imported.java_files,
+            "cached": False,
         }
 
     @app.post("/analyze")
