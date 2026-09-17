@@ -49,10 +49,12 @@ backend/javasmell/
   detectors/   Detektorët me rregulla
   ml/          Trajnimi dhe inferenca e modelit
   refactor/    Motori i transformimeve mbi AST
+  projects/    Importi i një depoje publike nga GitHub
   evaluation/  Përputhja me MLCQ-në dhe harness-i i vlerësimit
   api/         FastAPI
 backend/tests/ Teste me vlera të derivuara me dorë
 frontend/      React + TypeScript
+tools/         Nisësi për Windows
 docs/thesis/   Punimi sipas shabllonit të UBT-së
 ```
 
@@ -120,6 +122,17 @@ JAVASMELL_ROOT=/shtegu/i/lejuar python -m uvicorn javasmell.api.app:create_app -
 ```bash
 cd frontend && npm install && npm run dev
 ```
+
+Në Windows, nisja bëhet edhe me dy klikime mbi `Nis-JavaSmell.bat`: ai hap
+dialogun e sistemit për të zgjedhur dosjen e lejuar, nis të dy shërbimet me atë
+rrënjë, pret derisa përgjigjen dhe hap shfletuesin. Dosja e zgjedhur mbahet mend,
+dhe portat kontrollohen para nisjes, që një server i vjetër me rrënjë tjetër të
+mos analizojë në heshtje dosjen e gabuar (VD-126).
+
+Brenda ndërfaqes, projekti zgjidhet me butonin **Zgjidh**: dosjet shfletohen
+brenda rrënjëve të lejuara, dhe ato që mbajnë kod Java shënohen. Skeda **Nga
+GitHub** importon një depo publike nga një lidhje — shkarkohen vetëm skedarët
+`.java`, te `data/projects/`, që është rrënja e dytë e lexueshme.
 
 Qasja B shërbehet vetëm nëse modelet janë trajnuar — `data/models/` nuk komitohet,
 sepse depoja mban recetën dhe jo rezultatin:
