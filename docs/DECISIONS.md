@@ -4714,3 +4714,74 @@ sepse porti ishte i zënë.
 - Frontend: 147 teste vitest dhe 9 end-to-end kalojnë.
 - Në shfletues, mbi serverin e nisur nga ai skedar, shënimi del te `createStudent`.
   Konsola ka vetëm përgjigjen 400 të refuzimit të provuar qëllimisht.
+
+### VD-125: Punimi rindërtohet sipas udhëzimeve të mentores
+
+**Konteksti.** Mentorja dha rregulla për çdo kapitull, dhe punimi i shkelte disa:
+- Hyrja kishte gjashtë nënkapituj dhe rreth 1 000 fjalë; kërkohej 1 deri 1.5 faqe
+  pa nënkapituj, me problemin në përgjithësi.
+- Pyetjet kërkimore ishin te Kapitulli 1; duhen te Kapitulli 3.
+- Metodologjisë i mungonin arkitektura, teknologjitë, ndërfaqja/API dhe validimi,
+  dhe mbante dy rezultate (sa kompilojnë të izoluara, pjesa e Extract Method).
+- Kapitulli 5 shpjegonte shpesh pse doli një rezultat; ajo i takon Kapitullit 6.
+- Kapitulli 6 nuk krahasohej me rezultatet e literaturës dhe nuk u përgjigjej
+  pyetjeve në mënyrë të qartë.
+- «Kontrollo që referencat ekzistojnë» ishte kërkesë kritike.
+
+**Vendimi.**
+- **Kapitulli 1** është një tekst i vetëm prej 500 fjalësh me të pesë citimet e
+  mëparshme. Objektivat, pyetjet dhe fushëveprimi kaluan te Kapitulli 3 (3.1–3.4).
+- **Kapitulli 4** fitoi 4.1 Arkitektura (me figurë të re, nga
+  `figure_architecture`), 4.2 Teknologjitë (tabelë me versionet e fiksuara),
+  4.8 Ndërfaqja web dhe API, 4.10 Validimi. Metoda e shpjegimit për rast, bashkimi
+  e prerja, rimatja pas rishkrimit dhe kompilimi brenda projektit përshkruhen
+  këtu. `_isolated_compiles` u hoq: ishte rezultat brenda metodologjisë.
+- **Kapitulli 5** mban tabelat, figurat dhe fjalitë faktike. Disa fjali që ishin
+  shkruar me dorë tani lexohen nga të dhënat, dhe dy prej tyre dolën të pasakta:
+  - Te Feature Envy, «një numër i krahasueshëm» rastesh vetëm te rregulli ishin 13
+    kundrejt 54.
+  - Te bashkimi, «e ngre recall-in» nuk vlen për Long Method, ku recall-i mbetet
+    i njëjtë (0.782).
+- **Kapitulli 6** ka:
+  - interpretimin e secilit rezultat;
+  - «Çfarë funksionoi dhe çfarë jo»;
+  - krahasimin me literaturën;
+  - përgjigjet PK1–PK3, me çdo numër nga `data/results/`;
+  - implikimet, kufizimet, punën e ardhshme dhe përfundimin.
+- **Krahasimi me literaturën** mbështetet te Madeyski & Lewowski (2023). Punimi i
+  tyre përdor të njëjtin MLCQ dhe të njëjtin përkufizim pozitivi (DS1), por
+  validim të shtresuar e jo të grupuar sipas projektit dhe hiperparametra të
+  akorduar. Vlerat e tyre shkruhen në `MADEYSKI_2023_DS1`; për Long Method artikulli
+  jep vetëm kufirin «> 0.75». Arcelli Fontana et al. (2016) dhe Di Nucci et al.
+  (2018) citohen me shifrat e lexuara në tekstin e Di Nucci et al.: mbi 95% dhe deri
+  në 90% më poshtë.
+- **Qelizat e tabelave drejtohen majtas.** Të justifikuara, qelizat e ngushta
+  hapeshin me boshllëqe.
+
+**Referencat.** Të 31 referencat ekzistuese u kontrolluan më 17 shtator 2026:
+- Hyrjet me DOI u krahasuan me Crossref: titulli, autorët, vëllimi dhe faqet
+  përputhen.
+- Librat (Fowler, Henderson-Sellers, Lanza & Marinescu), teza e Opdyke-s,
+  scikit-learn te JMLR, PMD 7.27.0 dhe tree-sitter u konfirmuan te botuesi,
+  universiteti ose faqja e projektit.
+- Asnjë referencë nuk doli e rreme.
+- Arcelli Fontana et al. doli online në 2015, por është te numri 21(3) i vitit
+  2016, ndaj citimi mbetet 2016.
+- Madeyski & Lewowski 2023 u shtua me DOI 10.1016/j.infsof.2022.107112. Gjithsej
+  janë 32 referenca.
+
+**Fjalët.** Word, pas përditësimit të përmbajtjes, jep për kapitujt 1–6:
+- 9 773 me tabela dhe 9 140 pa to, brenda kufirit 8–10 mijë;
+- 74 faqe gjithsej.
+
+**Verifikimi.**
+- `check_format`, `check_citations`, `check_reproduction` dhe `check_slides`
+  kalojnë.
+- Testet u ekzekutuan sot: 593 kaluan dhe 1 u anashkalua, me mbulim 96%; vitest
+  147/147. Numrat e Nënkapitullit 4.10 vijnë nga ky ekzekutim.
+- PDF-ja u lexua faqe për faqe: hyrja zë 1.25 faqe, përmbajtja është e
+  përditësuar, dhe figura e arkitekturës e dy tabelat e reja lexohen.
+
+**Çfarë nuk u bë.** Dy `[PLOTËSO]` mbeten të autorit: falënderimet dhe fleta e
+cilësisë së rishkrimeve. Shtojcat 8.6–8.11 mbajnë ende interpretimin e tyre,
+sepse rregulli i mentores i përket Kapitullit 5.
