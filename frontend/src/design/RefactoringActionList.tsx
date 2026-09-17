@@ -7,6 +7,7 @@
 
 import { CheckCircle2, Eye, GitPullRequestArrow, Info, Lock, Wand2 } from "lucide-react";
 import type { Condition } from "../types";
+import type { Entry, WriteEffect } from "../writeEffect";
 import { Card } from "./DashboardLayout";
 import type { Severity } from "./Panels";
 
@@ -35,6 +36,7 @@ export function RefactoringActionList({
   onOpen,
   applied,
   revert,
+  effect = null,
   children,
 }: {
   suggestions: Suggestion[];
@@ -42,6 +44,8 @@ export function RefactoringActionList({
   /** Çfarë ka shkuar te disku në këtë seancë. */
   applied: { file: string; when: string }[];
   revert: string | null;
+  /** Erërat para dhe pas shkrimit, pasi projekti u skanua sërish (VD-123). */
+  effect?: WriteEffect | null;
   /** Veprimet e patch-it dhe të shkrimit, që i mban thirrësi. */
   children?: React.ReactNode;
 }) {
@@ -85,9 +89,69 @@ export function RefactoringActionList({
 
       <div className="min-w-0 space-y-4">
         {children}
-        <AppliedTimeline applied={applied} revert={revert} />
+        <AppliedTimeline applied={applied} revert={revert} effect={effect} />
       </div>
     </div>
+  );
+}
+
+function count(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
+}
+
+/**
+ * Çfarë ndodhi me erërat pas shkrimit.
+ *
+ * Tre numra e jo një: pas 6 rishkrimeve mbi projektin e testimit numri mbeti 18,
+ * sepse 5 erëra u hoqën dhe 5 të reja lindën. Vetëm numri i përgjithshëm do të
+ * thoshte «nuk ndryshoi asgjë», që është e pavërtetë (VD-122, VD-123).
+ */
+function Effect({ effect }: { effect: WriteEffect }) {
+  const { removed, introduced, kept } = effect;
+  return (
+    <section
+      aria-label="Erërat pas shkrimit"
+      className="border-t border-ink-200 p-4 dark:border-ink-800"
+    >
+      <p className="m-0 text-xs text-ink-700 dark:text-ink-200">
+        Pas skanimit të ri:{" "}
+        <b className="font-semibold text-ok-ink">
+          {count(removed.length, "erë u hoq", "erëra u hoqën")}
+        </b>
+        ,{" "}
+        <b className="font-semibold text-medium-ink">
+          {count(introduced.length, "e re u shfaq", "të reja u shfaqën")}
+        </b>
+        , {count(kept, "mbeti", "mbetën")}.
+      </p>
+      {(removed.length > 0 || introduced.length > 0) && (
+        <details className="mt-2 text-xs text-ink-600 dark:text-ink-300">
+          <summary className="cursor-pointer">Cilat</summary>
+          <EntryList title="U hoqën" entries={removed} />
+          <EntryList title="Të reja" entries={introduced} />
+        </details>
+      )}
+      <p className="m-0 mt-2 text-[11px] text-ink-500 dark:text-ink-400">
+        Një rishkrim i saktë mund të sjellë erë të re, p.sh. një konstruktor me po aq parametra.
+        Punimi e mat të njëjtën gjë mbi korpusin (Nënkapitulli 5.4).
+      </p>
+    </section>
+  );
+}
+
+function EntryList({ title, entries }: { title: string; entries: Entry[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <>
+      <p className="m-0 mt-2 font-medium">{title}</p>
+      <ul className="m-0 mt-1 list-none space-y-0.5 p-0">
+        {entries.map((entry, index) => (
+          <li key={`${entry.file}|${entry.entity}|${entry.smell}|${index}`} className="font-mono text-[11px]">
+            {entry.entity} · {entry.smell}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -188,9 +252,11 @@ function reading(value: number): string {
 function AppliedTimeline({
   applied,
   revert,
+  effect,
 }: {
   applied: { file: string; when: string }[];
   revert: string | null;
+  effect: WriteEffect | null;
 }) {
   return (
     <Card title="Aplikuar në këtë seancë">
@@ -230,6 +296,13 @@ function AppliedTimeline({
                 </code>
               </p>
             </div>
+          )}
+          {effect ? (
+            <Effect effect={effect} />
+          ) : (
+            <p className="m-0 border-t border-ink-200 p-4 text-xs text-ink-500 dark:border-ink-800 dark:text-ink-400">
+              Skano sërish, që të shihet çfarë ndodhi me erërat.
+            </p>
           )}
         </>
       )}

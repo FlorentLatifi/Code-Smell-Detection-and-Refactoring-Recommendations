@@ -20,6 +20,7 @@ import { ModelBar, NoSmells, Unparsed } from "./Summary";
 import { automatable, byFile, byScore, bySeverity, groupBySite } from "./sites";
 import type { Site } from "./sites";
 import type { Analysis, ApplyResult, Severity, Smell, TreeState } from "./types";
+import { writeEffect } from "./writeEffect";
 
 
 const REMEMBERED_PATH = "javasmell.path";
@@ -171,6 +172,9 @@ export function App() {
   // aplikuara» (VD-122).
   const [appliedChanges, setAppliedChanges] = useState(0);
   const [revert, setRevert] = useState<string | null>(null);
+  // Erërat e shtegut në çastin e shkrimit. Krahasohen me skanimin e radhës të të
+  // njëjtit shteg, që ekrani të thotë çfarë u hoq dhe çfarë lindi (VD-123).
+  const [beforeWrite, setBeforeWrite] = useState<{ path: string; smells: Smell[] } | null>(null);
 
   async function run(event: React.FormEvent) {
     event.preventDefault();
@@ -221,6 +225,9 @@ export function App() {
     setApplied(result.written.map((file) => ({ file, when })));
     setAppliedChanges(result.changes);
     setRevert(result.revert);
+    if (screen.state === "ready") {
+      setBeforeWrite({ path: screen.path, smells: screen.analysis.smells });
+    }
     // Pema nuk është më e pastër pasi u shkrua, ndaj lexohet sërish: butoni do
     // të premtonte një shkrim të dytë që do të refuzohej.
     void treeState(analysed).then(setTree).catch(() => setTree(null));
@@ -428,6 +435,18 @@ export function App() {
     [screen, allSites, appliedChanges, applied.length],
   );
   const suggestions = useMemo(() => suggestionsOf(allSites), [allSites]);
+  // Vetëm pasi i njëjti shteg u skanua sërish: para kësaj, erërat e ekranit janë
+  // ato që motori lexoi para shkrimit, dhe krahasimi me veten nuk thotë asgjë.
+  const effect = useMemo(
+    () =>
+      beforeWrite &&
+      screen.state === "ready" &&
+      screen.path === beforeWrite.path &&
+      screen.analysis.smells !== beforeWrite.smells
+        ? writeEffect(beforeWrite.smells, screen.analysis.smells)
+        : null,
+    [beforeWrite, screen],
+  );
   const fileRows = useMemo(() => fileRowsOf(allSites), [allSites]);
   const scores = useMemo(() => scoreRows(), []);
 
@@ -529,6 +548,7 @@ export function App() {
               onOpen={openSite}
               applied={applied}
               revert={revert}
+              effect={effect}
             >
               <PatchActions
                 ready={automatable(allSites)}

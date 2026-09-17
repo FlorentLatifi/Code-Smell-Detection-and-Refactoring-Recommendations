@@ -809,6 +809,59 @@ describe("aplikimi mbi skedarët", () => {
     expect(within(timeline).getByText("git restore .")).toBeDefined();
   });
 
+  it("pas skanimit të ri thotë cilat erëra u hoqën dhe cilat lindën", async () => {
+    // VD-123. Para: m0 LongMethod, m1 DeepNesting, m2 LongMethod. Pas: m0
+    // LongMethod, zhvendosur katër rreshta, dhe m3 LongParameterList e re. Pra m0
+    // mbeti, m1 dhe m2 u hoqën, m3 lindi.
+    const before = analysis([
+      smell({ method: "m0(int)", start_line: 10 }),
+      smell({ method: "m1(int)", start_line: 110, smell_type: "DeepNesting" }),
+      smell({ method: "m2(int)", start_line: 210 }),
+    ]);
+    const after = analysis([
+      smell({ method: "m0(int)", start_line: 14 }),
+      smell({ method: "m3(int)", start_line: 310, smell_type: "LongParameterList" }),
+    ]);
+    let scans = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const target = String(url);
+        if (target.endsWith("/analyze")) {
+          scans += 1;
+          return json(scans === 1 ? before : after);
+        }
+        if (target.endsWith("/refactor/tree")) return json({ writable: true, reason: null, detail: "" });
+        if (target.endsWith("/refactor/apply")) {
+          return json({ written: ["A.java"], revert: "git restore .", changes: 2, verified_with_javac: true });
+        }
+        if (target.endsWith("/refactor/patch/stream")) {
+          return new Response(`{"result":${JSON.stringify(PATCH)}}\n`, {
+            status: 200,
+            headers: { "Content-Type": "application/x-ndjson" },
+          });
+        }
+        return new Response("{}", { status: 404 });
+      }),
+    );
+    await preparePatch();
+    fireEvent.click(await screen.findByRole("button", { name: "Apliko te skedarët" }));
+    fireEvent.click(screen.getByRole("button", { name: "Po, shkruaji" }));
+    const timeline = await screen.findByRole("region", { name: "Aplikuar në këtë seancë" });
+
+    // Para skanimit, ekrani nuk pretendon asgjë për erërat.
+    expect(within(timeline).getByText(/Skano sërish, që të shihet/)).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: /Skano sërish/ }));
+    const effect = await screen.findByRole("region", { name: "Erërat pas shkrimit" });
+
+    expect(effect.textContent).toContain("2 erëra u hoqën");
+    expect(effect.textContent).toContain("1 e re u shfaq");
+    expect(effect.textContent).toContain("1 mbeti");
+    expect(within(effect).getByText("Ledger.m1 · DeepNesting")).toBeDefined();
+    expect(within(effect).getByText("Ledger.m3 · LongParameterList")).toBeDefined();
+  });
+
   it("numëron ndryshimet e shkruara, jo skedarët, si të aplikuara", async () => {
     // Defekti: 6 rishkrime në 4 skedarë dilnin «4 të aplikuara, 2 në pritje» (VD-122).
     serveApply(
