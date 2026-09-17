@@ -363,18 +363,25 @@ def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
 def table(
     doc: Document, text: str, headers: list[str], rows: list[list[str]], numbering: Numbering
 ) -> None:
-    """Një tabelë me titullin sipër, siç e kërkon shablloni."""
+    """Një tabelë me titullin sipër, siç e kërkon shablloni.
+
+    Qelizat drejtohen majtas. Të trashëguara nga teksti rrjedhës, ato dilnin të
+    justifikuara, dhe një qelizë e ngushtë me dy-tri fjalë hapej me boshllëqe të
+    mëdha mes tyre (VD-125). Rregulli i justifikimit i përket tekstit, jo tabelave.
+    """
     numbering.table += 1
     caption(doc, f"Tabela {numbering.table}. {text}")
     grid = doc.add_table(rows=1, cols=len(headers))
     grid.style = "Table Grid"
     for cell, header in zip(grid.rows[0].cells, headers, strict=True):
         cell.paragraphs[0].paragraph_format.line_spacing = 1.0
+        cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
         _set_font(cell.paragraphs[0].add_run(header), size=CAPTION_SIZE, bold=True)
     for values in rows:
         cells = grid.add_row().cells
         for cell, value in zip(cells, values, strict=True):
             cell.paragraphs[0].paragraph_format.line_spacing = 1.0
+            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
             _set_font(cell.paragraphs[0].add_run(value), size=CAPTION_SIZE)
     blank(doc)
 
@@ -711,151 +718,57 @@ GLOSSARY = [
     "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
 ]
 
+# Hyrja është një tekst i vetëm, pa nënkapituj, 1 deri 1.5 faqe, dhe e shtron
+# problemin në përgjithësi (udhëzimi i mentores, 17 shtator 2026). Pyetjet
+# kërkimore, objektivat dhe fushëveprimi janë te Kapitulli 3 (VD-125).
 INTRODUCTION = [
     (
         None,
         "",
         [
             "Zhvillimi i një sistemi softuerik nuk përfundon me lëshimin e versionit "
-            "të parë. Përkundrazi, pjesa më e madhe e jetës së një sistemi kalon në "
-            "fazën e mirëmbajtjes dhe të evoluimit, ku kodi lexohet, kuptohet dhe "
-            "ndryshohet vazhdimisht nga zhvillues të ndryshëm. Lehman (1980) e "
-            "formuloi këtë si ligj: një sistem që përdoret në një mjedis real duhet "
-            "të ndryshojë vazhdimisht, përndryshe bëhet gradualisht më pak i "
-            "dobishëm. Rrjedhimisht, lehtësia me të cilën kodi mund të ndryshohet "
-            "nuk është çështje estetike, por faktor ekonomik.",
-            "Ky punim trajton një aspekt konkret të asaj lehtësie: strukturën e "
-            "brendshme të kodit burimor dhe mënyrat automatike për ta vlerësuar e "
-            "përmirësuar atë.",
-        ],
-    ),
-    (
-        "1.1",
-        "Konteksti",
-        [
-            "Termi code smell u prezantua nga Kent Beck dhe u popullarizua nga libri "
-            "Refactoring i Martin Fowler-it, botimi i dytë i të cilit (Fowler, 2018) "
-            "përdoret në këtë punim. Një code smell nuk është gabim: programi "
-            "kompilohet, testet kalojnë dhe funksionaliteti është i saktë. Ai është "
-            "një simptomë sipërfaqësore që zakonisht tregon një problem më të thellë "
-            "të dizajnit. Një klasë që mban shumë përgjegjësi të palidhura mes tyre, "
-            "një metodë që zgjatet për qindra rreshta, ose një klasë që mban vetëm të "
-            "dhëna pa asnjë sjellje, janë shembuj tipikë.",
-            "Rëndësia e tyre qëndron në efektin kumulativ. Cunningham (1992) e "
-            "përshkroi këtë fenomen me metaforën e borxhit teknik: çdo kompromis i "
-            "vogël në strukturë krijon një detyrim që paguhet me interes në çdo "
-            "ndryshim të ardhshëm. Një sistem me borxh të lartë teknik nuk dështon "
-            "menjëherë, por bëhet gjithnjë e më i shtrenjtë për t'u ndryshuar.",
-            "Kundërpesha ndaj këtij degradimi është refaktorimi, i përkufizuar nga "
-            "Fowler (2018) si ndryshim i strukturës së brendshme të kodit pa "
-            "ndryshuar sjelljen e tij të jashtme. Refaktorimi presupozon dy gjëra: "
-            "që problemi të jetë identifikuar, dhe që të dihet cila transformatë e "
-            "adreson atë. Të dyja këto janë pikërisht objekt i këtij punimi.",
-        ],
-    ),
-    (
-        "1.2",
-        "Motivimi",
-        [
-            "Identifikimi manual i code smells është i realizueshëm vetëm në shkallë "
-            "të vogël. Në një sistem me qindra klasa, shqyrtimi i secilës prej tyre "
-            "nga një zhvillues është praktikisht i pamundur dhe, për më tepër, i "
-            "varur nga përvoja subjektive e shqyrtuesit.",
-            "Mjetet ekzistuese të analizës statike e automatizojnë pjesërisht këtë "
-            "punë, por kanë tri kufizime. Së pari, shumë prej tyre mbështeten në "
-            "pragje fikse të kalibruara mbi korpuse të tjera; edhe strategjitë që "
-            "kombinojnë disa metrika, si ato të Lanza & Marinescu (2006), i përdorin "
-            "këto pragje pa i verifikuar mbi projektin që analizojnë. Së dyti, shumë "
-            "mjete të përhapura fokusohen kryesisht në probleme të nivelit të rreshtit "
-            "dhe të stilit, ndërsa problemet strukturore të nivelit të dizajnit "
-            "mbulohen dobët. Së treti, dhe më e rëndësishmja, shumica ndalen te "
-            "njoftimi: i tregojnë zhvilluesit se çfarë është e gabuar, por jo se çfarë "
-            "duhet bërë konkretisht. Qasjet që propozojnë edhe refaktorimin, si ajo e "
-            "Tsantalis & Chatzigeorgiou (2009) për Move Method, janë më të rralla dhe "
-            "mbulojnë vetëm disa smells.",
-            "Kjo hapësirë mes identifikimit dhe veprimit është motivimi kryesor i "
-            "këtij punimi.",
-        ],
-    ),
-    (
-        "1.3",
-        "Qëllimi dhe objektivat",
-        [
-            "Qëllimi i këtij punimi është projektimi, implementimi dhe vlerësimi "
-            "empirik i një sistemi që identifikon code smells në kod burimor Java "
-            "dhe propozon refaktorime konkrete e të verifikueshme për t'i adresuar "
-            "ato.",
-            "Për ta arritur këtë qëllim janë përcaktuar objektivat e mëposhtme:",
-            ("bullet", "Të shqyrtohet literatura mbi metrikat e cilësisë së kodit, "
-             "strategjitë e detektimit të code smells dhe teknikat e refaktorimit."),
-            ("bullet", "Të implementohet një motor analize që nxjerr metrika të "
-             "matshme nga kodi burimor Java në nivel klase dhe metode."),
-            ("bullet", "Të implementohet detektimi i bazuar në rregulla, duke "
-             "përdorur strategji të publikuara dhe pragje të justifikuara nga "
-             "literatura."),
-            ("bullet", "Të trajnohet dhe vlerësohet një model i mësimit të makinës "
-             "mbi një dataset të etiketuar nga zhvillues profesionistë, për ta "
-             "krahasuar me qasjen e bazuar në rregulla."),
-            ("bullet", "Të implementohet një motor refaktorimi që gjeneron "
-             "transformime konkrete dhe verifikon objektivisht efektin e tyre."),
-            ("bullet", "Të ndërtohet një ndërfaqe web që i bën rezultatet të "
-             "shfrytëzueshme nga zhvilluesi."),
-        ],
-    ),
-    (
-        "1.4",
-        "Pyetjet kërkimore",
-        [
-            "Punimi synon t'u përgjigjet tri pyetjeve kërkimore, secila e matshme "
-            "me kritere objektive:",
-            ("bullet", "PK1: Sa e saktë është detektimi i bazuar në strategji "
-             "metrikash, krahasuar me etiketimet manuale të zhvilluesve "
-             "profesionistë?"),
-            ("bullet", "PK2: A e përmirëson një model i mësimit të makinës, i "
-             "trajnuar mbi të njëjtat metrika, saktësinë e detektimit krahasuar me "
-             "pragjet fikse?"),
-            ("bullet", "PK3: A i përmirësojnë objektivisht refaktorimet e propozuara "
-             "karakteristikat strukturore të kodit, duke ruajtur "
-             "kompilueshmërinë dhe sjelljen e tij?"),
-        ],
-    ),
-    (
-        "1.5",
-        "Fushëveprimi dhe kufizimet",
-        [
-            "Punimi kufizohet në gjuhën programuese Java. Kjo zgjedhje është bërë "
-            "sepse pjesa dërrmuese e literaturës mbi metrikat e objekteve dhe "
-            "datasetet e etiketuara të code smells janë ndërtuar mbi kod Java, çka "
-            "mundëson krahasim të drejtpërdrejtë me rezultatet e publikuara.",
-            "Analiza kryhet mbi kodin burimor në mënyrë statike, pa ekzekutim të "
-            "programit. Rrjedhimisht, karakteristikat që shfaqen vetëm gjatë "
-            "ekzekutimit nuk mbulohen. Po ashtu, sistemi nuk kryen zgjidhje të "
-            "plotë të tipave, prandaj disa varësi që kërkojnë analizë të thellë "
-            "semantike trajtohen në mënyrë konservative.",
-            "Grupi i code smells të mbuluara është i kufizuar te ata për të cilët "
-            "ekzistojnë strategji detektimi të publikuara dhe të dhëna të "
-            "etiketuara, çka mundëson vlerësim empirik të besueshëm.",
-            "Korpusi ndërtohet duke ruajtur nga depot që përmend MLCQ-ja vetëm skedarët "
-            "«.java», pa skedarë ndërtimi dhe pa varësi. Disa depo nuk ishin më të "
-            "arritshme, ndaj mbulimi i MLCQ-së nuk është i plotë (Kapitulli 5).",
-            "Prandaj çdo rishkrim kontrollohet vetëm me kompilator: nëse kompilon, ose "
-            "nëse nuk shton lloj të ri gabimi. Ruajtja e sjelljes, që përmend pyetja e "
-            "tretë kërkimore, **nuk verifikohet empirikisht në këtë punim**, sepse kërkon "
-            "ekzekutimin e testeve të projekteve, çka korpusi nuk e lejon (Kapitulli 6).",
-        ],
-    ),
-    (
-        "1.6",
-        "Struktura e punimit",
-        [
-            "Punimi është organizuar si vijon. Kapitulli 2 shqyrton literaturën mbi "
-            "metrikat e cilësisë, strategjitë e detektimit dhe mjetet ekzistuese. "
-            "Kapitulli 3 formulon problemin që adresohet. Kapitulli 4 përshkruan "
-            "metodologjinë, arkitekturën e sistemit dhe vendimet e projektimit. "
-            "Kapitulli 5 paraqet rezultatet që u përgjigjen pyetjeve kërkimore. "
-            "Kapitulli 6 diskuton gjetjet, implikimet, kufizimet dhe drejtimet e punës "
-            "së ardhshme. Kapitulli 7 përmban referencat dhe kapitulli 8 shtojcat, "
-            "bashkë me analizat dytësore të rezultateve.",
+            "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje dhe evoluim, "
+            "ku kodi lexohet, kuptohet dhe ndryshohet vazhdimisht nga zhvillues të "
+            "ndryshëm. Lehman (1980) e formuloi këtë si ligj: një sistem që përdoret në "
+            "një mjedis real duhet të ndryshojë vazhdimisht, përndryshe bëhet "
+            "gradualisht më pak i dobishëm. Prandaj lehtësia me të cilën ndryshohet kodi "
+            "nuk është çështje estetike, por kosto e përditshme e çdo ekipi.",
+            "Një burim i madh i vështirësisë janë code smells. Termi u prezantua nga Kent "
+            "Beck dhe u popullarizua nga libri Refactoring i Martin Fowler-it, botimi i "
+            "dytë i të cilit (Fowler, 2018) përdoret në këtë punim. Një code smell nuk "
+            "është gabim: programi kompilohet dhe funksionon saktë. Ai është simptomë e "
+            "një problemi më të thellë dizajni, si një klasë që mban shumë përgjegjësi "
+            "të palidhura, një metodë që zgjatet për qindra rreshta, ose një klasë që "
+            "mban vetëm të dhëna pa asnjë sjellje. Cunningham (1992) e përshkroi efektin "
+            "e tyre të grumbulluar me metaforën e borxhit teknik: çdo kompromis i vogël "
+            "në strukturë krijon një detyrim që paguhet me interes në çdo ndryshim të "
+            "ardhshëm.",
+            "Kundërpesha ndaj këtij degradimi është refaktorimi, të cilin Fowler (2018) e "
+            "përkufizon si ndryshim të strukturës së brendshme të kodit pa ndryshuar "
+            "sjelljen e tij të jashtme. Refaktorimi kërkon dy gjëra: që problemi të jetë "
+            "gjetur, dhe që të dihet cili transformim e heq pa e prishur programin. Në një "
+            "sistem me qindra klasa asnjëra nuk bëhet dot me dorë në mënyrë sistematike, "
+            "dhe gjykimi se çfarë është problem ndryshon nga një shqyrtues te tjetri.",
+            "Mjetet e analizës statike e automatizojnë pjesërisht këtë punë, por problemi "
+            "mbetet i hapur në tri drejtime. Së pari, strategjitë që kombinojnë metrika, "
+            "si ato të Lanza & Marinescu (2006), përdorin pragje fikse të nxjerra nga një "
+            "korpus tjetër, dhe rrallë dihet sa pajtohen ato me gjykimin e zhvilluesve. "
+            "Së dyti, detektimi me mësim makine premton më shumë, por rezultatet e tij "
+            "varen fort nga mënyra si ndërtohen dhe ndahen të dhënat, dhe rrallë "
+            "krahasohet me rregullat mbi të njëjtën të vërtetë bazë. Së treti, shumica e "
+            "mjeteve ndalen te njoftimi: e thonë çfarë është e gabuar, por jo çfarë duhet "
+            "bërë. Qasjet që propozojnë edhe refaktorimin, si ajo e Tsantalis & "
+            "Chatzigeorgiou (2009) për Move Method, janë më të rralla dhe mbulojnë vetëm "
+            "disa raste.",
+            "Ky punim e trajton hapësirën mes gjetjes së problemit dhe ndreqjes së tij, "
+            "për gjuhën Java. Ai ndërton një sistem që i zbulon code smells në dy mënyra, "
+            "me strategji metrikash dhe me klasifikues të mësuar mbi të njëjtat metrika, i "
+            "vlerëson të dyja mbi të njëjtin dataset të etiketuar nga zhvillues "
+            "profesionistë, dhe shton një motor që e rishkruan kodin vetëm kur e provon se "
+            "transformimi është i sigurt. Kapitulli 2 shqyrton literaturën, Kapitulli 3 "
+            "shtron problemin dhe pyetjet kërkimore, Kapitulli 4 përshkruan metodologjinë "
+            "dhe sistemin, Kapitulli 5 paraqet rezultatet, dhe Kapitulli 6 i diskuton ato "
+            "dhe nxjerr përfundimet.",
         ],
     ),
 ]

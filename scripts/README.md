@@ -38,7 +38,7 @@ Skriptet varen nga njëri-tjetri në këtë radhë. Koha është për një lapto
 | 12 | `verify_with_project.py` | `verify_with_project.json` | ~18 min (mostër) |
 | 13 | `model_without_project.py` | `model_without_project.json` | minuta |
 | 14 | `export_system_reference.py` | `system_reference.json` | sekonda |
-| 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
+| 15 | `build_figures.py` | figurat e Kapitujve 4 dhe 5 | sekonda |
 
 Hapat 1, 3, 4 dhe 7 janë të vetmit që kushtojnë vërtet. Hapat 11–13 nuk kërkojnë
 `javac` përveç hapit 12, i cili e ekzekuton atë një herë për çdo rishkrim dhe

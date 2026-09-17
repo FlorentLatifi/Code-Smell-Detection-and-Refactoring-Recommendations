@@ -137,6 +137,10 @@ RELATED_WORK = [
         "Proceedings of the IEEE, 68(9), pp. 1060-1076."
     ),
     (
+        "Madeyski, L. & Lewowski, T. 2023. “Detecting code smells using "
+        "industry-relevant data.” Information and Software Technology, 155, 107112."
+    ),
+    (
         "Mäntylä, M. V. & Lassenius, C. 2006. “Subjective evaluation of software "
         "evolvability using code smells: An empirical study.” Empirical Software "
         "Engineering, 11(3), pp. 395-431."
@@ -210,6 +214,12 @@ def all_references() -> list[str]:
 # Vëllimi dhe faqet e rikontrolluara më 2026-08-31 kundrejt regjistrit të botuesit:
 # DBLP për të katërtat e para, IEEE Xplore dhe Springer për të tjerat. Të tetë dolën
 # të sakta ashtu si ishin shkruar; asnjë hyrje nuk u ndryshua.
+#
+# Më 2026-09-17 të gjitha referencat u kontrolluan se ekzistojnë. Për çdo hyrje me
+# DOI, Crossref ktheu të njëjtin titull, autorë, vëllim dhe faqe; Madeyski &
+# Lewowski 2023 u shtua me DOI 10.1016/j.infsof.2022.107112, dhe numri i artikullit
+# 107112 është ai i botuesit. Librat, teza e Opdyke-s dhe dy mjetet u konfirmuan te
+# botuesi, universiteti ose faqja e projektit (VD-125).
 PAGES_VERIFIED = (
     "Arcelli Fontana et al. 2016",
     "Bieman & Kang 1995",
@@ -217,6 +227,7 @@ PAGES_VERIFIED = (
     "Cunningham 1992",
     "Di Nucci et al. 2018",
     "Madeyski & Lewowski 2020",
+    "Madeyski & Lewowski 2023",
     "Marinescu 2004",
     "McCabe 1976",
 )

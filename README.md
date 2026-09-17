@@ -165,7 +165,7 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | 12 | `verify_with_project.py` | verdikti brenda kontekstit të projektit | orë |
 | 13 | `model_without_project.py` | Qasja B pa kontekstin e projektit | ~2 min |
 | 14 | `export_system_reference.py` | tabelat e kësaj shtojce | sekonda |
-| 15 | `build_figures.py` | figurat e Kapitullit 5 | sekonda |
+| 15 | `build_figures.py` | figurat e Kapitujve 4 dhe 5 | sekonda |
 | 16 | `review_rewrites.py --sample` | mostra e rishkrimeve dhe fleta e vlerësimit | sekonda |
 | 17 | `review_rewrites.py --score` | cilësia e rishkrimeve sipas rishikuesit | sekonda |
 | 18 | `fetch_pmd.py` | mjeti i jashtëm i krahasimit, jashtë git-it | minuta, një herë |

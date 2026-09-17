@@ -406,7 +406,7 @@ def build() -> str:
     _note(
         slide,
         "Nëse pyesin pse nuk u testua sjellja: rishkarkimi i korpusit me varësi ishte "
-        "jashtë kohës dhe hapësirës; kufizimi është i shkruar te Kapitulli 1 dhe 6.",
+        "jashtë kohës dhe hapësirës; kufizimi është i shkruar te Kapitulli 3 dhe 6.",
     )
 
     # --- 12. përgjigjet ---
