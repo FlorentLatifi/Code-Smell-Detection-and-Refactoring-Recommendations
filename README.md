@@ -229,3 +229,13 @@ ekzekutohej — dhe pikërisht ajo e shtoi kontrollin.
 - Lanza, M., Marinescu, R. (2006). *Object-Oriented Metrics in Practice.*
 - Fowler, M. (2018). *Refactoring: Improving the Design of Existing Code*, 2nd ed.
 - Madeyski, L., Lewowski, T. (2020). *MLCQ: Industry-relevant code smell data set.*
+
+## Licenca
+
+Kodi publikohet nën licencën MIT: lejohet përdorimi, ndryshimi dhe shpërndarja,
+me kusht që njoftimi i të drejtës së autorit të mbetet. Teksti i plotë është te
+[`LICENSE`](LICENSE).
+
+Licenca mbulon kodin e këtij depoje. Dataset-i MLCQ, depot Java të korpusit dhe
+depot e importuara nga ndërfaqja mbeten nën licencat e veta, dhe asnjëra prej tyre
+nuk shpërndahet bashkë me këtë kod.
