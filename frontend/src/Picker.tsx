@@ -35,14 +35,23 @@ export function Picker({
 
   // Escape mbyll, si te çdo dialog. Pa të, i vetmi dalje ishte butoni, dhe një
   // dialog që kapet me tastierë por nuk lëshohet me tastierë është gjysma e punës.
+  //
+  // Fokusi mbyllet brenda dialogut dhe kthehet aty ku ishte kur ai mbyllet
+  // (VD-127). Pa të, Tab-i kalonte te faqja pas perdes, e padukshme për
+  // përdoruesin e tastierës, dhe pas mbylljes fokusi binte te fundi i faqes.
   useEffect(() => {
     if (!open) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     function onKey(event: KeyboardEvent): void {
       if (event.key === "Escape") onClose();
+      if (event.key === "Tab" && dialog.current) trapFocus(event, dialog.current);
     }
     window.addEventListener("keydown", onKey);
     dialog.current?.focus();
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (opener?.isConnected) opener.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -80,38 +89,77 @@ export function Picker({
           aria-label="Nga ku vjen projekti"
           className="flex gap-1 border-b border-ink-200 px-4 pt-3 dark:border-ink-700"
         >
-          <TabButton active={tab === "folders"} onClick={() => setTab("folders")}>
+          <TabButton
+            id="picker-tab-folders"
+            active={tab === "folders"}
+            onClick={() => setTab("folders")}
+          >
             <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" /> Nga kompjuteri
           </TabButton>
-          <TabButton active={tab === "github"} onClick={() => setTab("github")}>
+          <TabButton
+            id="picker-tab-github"
+            active={tab === "github"}
+            onClick={() => setTab("github")}
+          >
             <Github className="h-3.5 w-3.5" aria-hidden="true" /> Nga GitHub
           </TabButton>
         </div>
 
-        {tab === "folders" ? (
-          <Folders recent={recent} onChoose={onChoose} />
-        ) : (
-          <FromGithub onChoose={onChoose} />
-        )}
+        <div id="picker-panel" role="tabpanel" aria-labelledby={`picker-tab-${tab}`}>
+          {tab === "folders" ? (
+            <Folders recent={recent} onChoose={onChoose} />
+          ) : (
+            <FromGithub onChoose={onChoose} />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+/**
+ * Tab-i te elementi i fundit kthehet te i pari, dhe Shift+Tab te i pari te i fundi.
+ *
+ * Elementet lexohen në çast e jo një herë, sepse lista e dosjeve ndryshon sa
+ * herë hyhet në një dosje tjetër.
+ */
+function trapFocus(event: KeyboardEvent, container: HTMLElement): void {
+  const focusable = Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+    ),
+  );
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const active = document.activeElement;
+  if (event.shiftKey && (active === first || active === container)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function TabButton({
+  id,
   active,
   onClick,
   children,
 }: {
+  id: string;
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
   return (
     <button
+      id={id}
       type="button"
       role="tab"
       aria-selected={active}
+      aria-controls="picker-panel"
       onClick={onClick}
       className={`-mb-px flex items-center gap-1.5 rounded-t-md border-b-2 px-3 py-2 text-xs font-medium ${
         active
@@ -286,6 +334,9 @@ function Row({ children }: { children: React.ReactNode }) {
 /** Importi i një depoje publike nga një lidhje. */
 function FromGithub({ onChoose }: { onChoose: (path: string) => void }) {
   const [url, setUrl] = useState("");
+  // API-ja e pranonte rishkarkimin, por ndërfaqja nuk e dërgonte kurrë: kush e
+  // importoi një depo dje nuk e merrte dot versionin e sotëm (VD-127).
+  const [refresh, setRefresh] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
@@ -294,7 +345,7 @@ function FromGithub({ onChoose }: { onChoose: (path: string) => void }) {
     if (!url.trim() || busy) return;
     setBusy(true);
     setFailure(null);
-    importRepository(url.trim())
+    importRepository(url.trim(), { refresh })
       .then((imported) => onChoose(imported.path))
       .catch((error: Error) => setFailure(error.message))
       .finally(() => setBusy(false));
@@ -338,6 +389,16 @@ function FromGithub({ onChoose }: { onChoose: (path: string) => void }) {
           {failure}
         </p>
       )}
+
+      <label className="mt-3 flex items-center gap-2 text-xs text-ink-700 dark:text-ink-300">
+        <input
+          type="checkbox"
+          checked={refresh}
+          onChange={(event) => setRefresh(event.target.checked)}
+          className="h-3.5 w-3.5 accent-brand-600"
+        />
+        Shkarko versionin më të ri, edhe nëse depoja është importuar më parë
+      </label>
 
       <p className="mt-3 text-xs text-ink-500 dark:text-ink-400">
         Shkarkohen vetëm skedarët «.java», te një dosje brenda mjetit. Kodi lexohet dhe kompilohet

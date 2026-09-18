@@ -7,6 +7,7 @@
 // (VD-126): hapja te rrënjët, hyrja brenda një dosjeje, kthimi lart, zgjedhja,
 // dhe shkarkimi i një depoje nga një lidhje.
 
+import axe from "axe-core";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -282,3 +283,85 @@ describe("importi nga GitHub", () => {
     expect(screen.getByText(/nuk ekzekutohet kurrë/)).toBeDefined();
   });
 });
+
+describe("rishkarkimi dhe aksesueshmëria (VD-127)", () => {
+  it("rishkarkimi dërgohet vetëm kur kërkohet", async () => {
+    serve({
+      importResponse: () =>
+        json({
+          path: "C:/p/jhy__jsoup",
+          name: "jhy__jsoup",
+          repository: "jhy/jsoup",
+          java_files: 1,
+          cached: false,
+        }),
+    });
+    const { onChoose } = open();
+    toGithubTab();
+    fireEvent.change(screen.getByLabelText("Lidhja e një depoje publike"), {
+      target: { value: "jhy/jsoup" },
+    });
+    fireEvent.click(
+      screen.getByLabelText("Shkarko versionin më të ri, edhe nëse depoja është importuar më parë"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Shkarko dhe analizo/ }));
+    await waitFor(() => expect(onChoose).toHaveBeenCalled());
+
+    const calls = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    const sent = calls.find(([url]) => String(url).endsWith("/projects/github"));
+    expect(JSON.parse(String((sent?.[1] as RequestInit).body))).toEqual({
+      url: "jhy/jsoup",
+      refresh: true,
+    });
+  });
+
+  it("Tab-i nga elementi i fundit kthehet brenda dialogut", async () => {
+    serve();
+    open();
+    await screen.findByRole("button", { name: /workspace/ });
+
+    const dialog = screen.getByRole("dialog");
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>("button:not([disabled])"));
+    focusable[focusable.length - 1].focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    expect(document.activeElement).toBe(focusable[0]);
+  });
+
+  it("pas mbylljes fokusi kthehet te butoni që e hapi", () => {
+    serve();
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
+
+    const { rerender } = render(<Picker open recent={[]} onChoose={vi.fn()} onClose={vi.fn()} />);
+    rerender(<Picker open={false} recent={[]} onChoose={vi.fn()} onClose={vi.fn()} />);
+
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
+
+  it("axe nuk gjen shkelje në asnjërën nga dy skedat", async () => {
+    serve();
+    const { container } = render(
+      <Picker open recent={["C:/kodi/workspace/jsoup"]} onChoose={vi.fn()} onClose={vi.fn()} />,
+    );
+    await screen.findByRole("button", { name: /workspace/ });
+    expect(await violations(container)).toEqual([]);
+
+    toGithubTab();
+    expect(await violations(container)).toEqual([]);
+  });
+});
+
+function toGithubTab(): void {
+  fireEvent.click(screen.getByRole("tab", { name: /Nga GitHub/ }));
+}
+
+/** Vetëm shkeljet, me të njëjtat rregulla të fikura si te `a11y.dom.test.tsx`. */
+async function violations(container: HTMLElement): Promise<string[]> {
+  const result = await axe.run(container, {
+    rules: { "color-contrast": { enabled: false }, region: { enabled: false } },
+  });
+  return result.violations.map((v) => `${v.id}: ${v.nodes.length} — ${v.help}`);
+}
