@@ -152,9 +152,17 @@ the app is single user and binds to localhost.
 - **Error responses** carry a message and a code, never a stack trace or an
   absolute filesystem path.
 
+- **The user's own browser**: binding to localhost does not keep other sites
+  out, because every page the user opens can address 127.0.0.1. `api/guard.py`
+  refuses a foreign `Host` (DNS rebinding), a POST from a foreign `Origin`, and
+  sets the headers that stop the interface being framed. Every new route sits
+  behind it; the static interface does too (VD-127).
+
 Out of scope, and deliberately so: authentication, authorisation, multi-tenancy,
-CSRF, rate limiting, secrets management, horizontal scaling, circuit breakers.
-If one of these later becomes relevant, log the change in `docs/DECISIONS.md`.
+rate limiting, secrets management, horizontal scaling, circuit breakers, and any
+deployment that listens beyond localhost. Cross-site requests were on this list
+until VD-127 moved them into the guard above. If one of these later becomes
+relevant, log the change in `docs/DECISIONS.md`.
 
 ## 7. Code standards
 

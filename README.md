@@ -19,7 +19,7 @@ dhe analiza ekzekutohet lokalisht.
 
 ## Gjendja
 
-Të tria qasjet janë të vlerësuara mbi **4 534 mostra nga 522 depo Java**, me të vërtetën
+Të tria qasjet janë të vlerësuara mbi **4 534 mostra nga 512 depo Java**, me të vërtetën
 bazë nga rishikues profesionistë (MLCQ). Numrat rigjenerohen me një komandë.
 
 | Erë | A: MCC | B: MCC | Modeli më i mirë |
@@ -113,26 +113,52 @@ Katër kontrollet që ekzekuton edhe CI-ja, nga dosja `backend/`:
 ruff check . && ruff format --check . && mypy && pytest -q --cov
 ```
 
-Ndërfaqja, me dy procese:
+**Përdorimi.** Ndërfaqja ndërtohet një herë, dhe pastaj një proces i vetëm i
+shërben të dyja: faqen te `/` dhe API-në te `/api` (VD-127).
+
+```bash
+cd frontend && npm install && npm run build
+```
+
+```bash
+cd backend && JAVASMELL_ROOT=/shtegu/i/lejuar python -m uvicorn javasmell.api.bundle:create_bundle --factory --port 8000
+```
+
+Mjeti hapet te `http://localhost:8000`. Në Windows, e njëjta gjë bëhet me dy
+klikime mbi `Nis-JavaSmell.bat`: ai hap dialogun e sistemit për të zgjedhur
+dosjen e lejuar, e ndërton ndërfaqen vetëm nëse kodi i saj ka ndryshuar, nis
+procesin, pret derisa përgjigjet dhe hap shfletuesin. Dosja e zgjedhur mbahet
+mend, dhe porti kontrollohet para nisjes, që një server i vjetër me rrënjë tjetër
+të mos analizojë në heshtje dosjen e gabuar (VD-126).
+
+Brenda ndërfaqes, projekti zgjidhet me butonin **Zgjidh**: dosjet shfletohen
+brenda rrënjëve të lejuara, dhe ato që mbajnë kod Java shënohen. Skeda **Nga
+GitHub** importon një depo publike nga një lidhje — shkarkohen vetëm skedarët
+`.java`, te `data/projects/`, që është rrënja e dytë e lexueshme.
+
+**Zhvillimi i ndërfaqes**, me dy procese dhe rifreskim të menjëhershëm:
 
 ```bash
 JAVASMELL_ROOT=/shtegu/i/lejuar python -m uvicorn javasmell.api.app:create_app --factory --port 8000
 ```
 
 ```bash
-cd frontend && npm install && npm run dev
+cd frontend && npm run dev
 ```
 
-Në Windows, nisja bëhet edhe me dy klikime mbi `Nis-JavaSmell.bat`: ai hap
-dialogun e sistemit për të zgjedhur dosjen e lejuar, nis të dy shërbimet me atë
-rrënjë, pret derisa përgjigjen dhe hap shfletuesin. Dosja e zgjedhur mbahet mend,
-dhe portat kontrollohen para nisjes, që një server i vjetër me rrënjë tjetër të
-mos analizojë në heshtje dosjen e gabuar (VD-126).
+**Siguria.** Mjeti është për një përdorues, në makinën e vet, dhe lidhet vetëm
+te `127.0.0.1`; autentikimi është qëllimisht jashtë fushës (`docs/ENGINEERING.md`
+§6). Kjo nuk mjafton vetë, sepse faqet e tjera që hap përdoruesi mund ta arrijnë
+localhost-in përmes shfletuesit të tij, ndaj çdo kërkesë kalon një roje (VD-127):
 
-Brenda ndërfaqes, projekti zgjidhet me butonin **Zgjidh**: dosjet shfletohen
-brenda rrënjëve të lejuara, dhe ato që mbajnë kod Java shënohen. Skeda **Nga
-GitHub** importon një depo publike nga një lidhje — shkarkohen vetëm skedarët
-`.java`, te `data/projects/`, që është rrënja e dytë e lexueshme.
+- vetëm emrat `localhost`, `127.0.0.1` dhe `::1` te koka `Host` (kundër DNS rebinding);
+- asnjë POST nga një origjinë e huaj (kundër kërkesave ndër-faqe);
+- `X-Frame-Options` dhe `frame-ancestors 'none'` (kundër mbështjelljes në iframe);
+- shtigjet mbyllen brenda rrënjëve të lejuara, dhe `/source` lexon vetëm skedarë `.java`;
+- importi shkruan vetëm `.java`, me kufij për arkivin, për skedarin dhe për totalin.
+
+Ekspozimi i shërbimit në rrjet nuk mbështetet: ai do të kërkonte autentikim, izolim
+të proceseve dhe një model tjetër kërcënimesh.
 
 Qasja B shërbehet vetëm nëse modelet janë trajnuar — `data/models/` nuk komitohet,
 sepse depoja mban recetën dhe jo rezultatin:

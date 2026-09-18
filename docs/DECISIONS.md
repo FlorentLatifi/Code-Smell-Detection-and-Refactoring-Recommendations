@@ -4865,3 +4865,92 @@ nuk lidh dot portin.
 **Punimi.** Nënkapitulli 4.1 e përmend shtresën `projects`, 4.8 i numëron
 njëmbëdhjetë pikat e hyrjes dhe e përshkruan importin, dhe figura e arkitekturës
 e thotë se hyrja mund të vijë lokalisht ose nga GitHub.
+
+### VD-127: Auditimi para lansimit, dhe ç'u ndreq prej tij
+
+**Konteksti.** Pyetja ishte nëse sistemi është gati për lansim: i sigurt,
+optimal, i plotë. Përgjigjja u kërkua me matje, jo me listë nga kujtesa. Çdo
+sulm tipik ndaj një shërbimi në localhost u provua me kërkesa të vërteta, dhe
+varësitë u kontrolluan kundrejt bazave publike të dobësive.
+
+**Çfarë u mat.**
+
+| Kontrolli | Rezultati para | Pas |
+|---|---|---|
+| DNS rebinding: `Host: evil.example` te `/browse` dhe `/source` | 200, lista e dosjeve dhe kodi të lexueshëm | 403 `host_not_allowed` |
+| POST nga një origjinë e huaj, `text/plain` dhe formë | 422, por vetëm sepse parser-i kërkon JSON | 403 `origin_not_allowed`, para çdo rruge |
+| Mbështjellja e faqes në iframe | asnjë kokë mbrojtëse | `X-Frame-Options: DENY`, `frame-ancestors 'none'` |
+| `/source` mbi një `.env` brenda rrënjës | lexohej | 400 `not_java` |
+| Shfletimi i një dosjeje me 500 nënndosje të mëdha | deri në 2 000 000 skedarë | buxhet i përbashkët prej 20 000 |
+| Arkiv që ngjeshet mirë: 20 000 × 4 MB | deri në 80 GB te disku | tavan 500 MB, dhe 4 GB lexim i zbërthyer |
+| Rifreskim i një depoje me arkiv të prishur | kopja e djeshme fshihej | kopja e djeshme mbetet |
+| Dy importe njëkohësisht të së njëjtës depo | shkruanin në të njëjtën dosje | një bravë për depo |
+| `pip-audit` mbi të tri skedarët e varësive | — | asnjë dobësi e njohur |
+| `npm audit`, me dhe pa varësitë e zhvillimit | — | asnjë dobësi e njohur |
+
+**Vendimet.**
+
+1. **Roja lokale** (`api/guard.py`). Middleware ASGI e pastër, jo
+   `BaseHTTPMiddleware`: ky i fundit e mbledh trupin e përgjigjes në memorie,
+   dhe `/refactor/patch/stream` duhet të rrjedhë.
+   - Pranon vetëm emrat `localhost`, `127.0.0.1` dhe `::1`, plus çdo emër që
+     shtohet shprehimisht me `JAVASMELL_ALLOWED_HOSTS`.
+   - Refuzon POST-in nga çdo origjinë jo-lokale, përfshirë `null`, që e dërgojnë
+     iframe-t e izoluara.
+   - Kërkesat pa `Origin` kalojnë, sepse vijnë nga programe lokale (curl,
+     rreshti i komandës) që e kanë tashmë qasjen e përdoruesit.
+   - Shton kokat kundër mbështjelljes, `nosniff`, `no-referrer` dhe `no-store`,
+     sepse përgjigjet mbajnë kod burimor.
+2. **Privilegji më i vogël.** `/source` dhe `/refactor/preview` lexojnë vetëm
+   `.java`. Ndërfaqja nuk kërkoi kurrë gjë tjetër, ndaj kufiri nuk heq asnjë
+   veçori.
+3. **Një proces i vetëm** (`api/bundle.py`). API-ja montohet te `/api` dhe
+   ndërfaqja e ndërtuar shërbehet te `/`, e kaluar nga e njëjta roje: faqja mban
+   butonin që shkruan në disk, ndaj ajo, më shumë se API-ja, duhet mbrojtur.
+   - Nisësi nuk ngre më serverin e zhvillimit të Vite-it. Ai e ndërton ndërfaqen
+     vetëm kur kodi i saj, ose rezultatet që ajo fut në ndërtim, janë më të reja
+     se ndërtimi.
+   - Nisja zbriti nga dy procese dhe dy porta në një të vetëm, dhe mori 5 sekonda
+     në provë. Pas ndërtimit të parë, Node nuk nevojitet më.
+   - Testet end-to-end ekzekutohen tani mbi paketën, pra mbi rrugën që i
+     dërgohet përdoruesit, e jo mbi serverin e zhvillimit.
+4. **Importi atomik.**
+   - Shpaketimi bëhet në një dosje anash (`.emri.partial`), e fshehur nga
+     shfletimi, dhe zëvendëson të vjetrën vetëm kur ka mbaruar mirë.
+   - Windows-i nuk lejon `os.replace` mbi një dosje jo bosh, ndaj e vjetra
+     zhvendoset anash para se e reja të marrë emrin e saj.
+5. **Tavanet e arkivit.**
+   - `MAX_EXTRACTED_MB = 500` për kodin e shkruar. Depoja më e madhe e korpusit,
+     `SAP/SapMachine`, ka 352.7 MB sipas manifestit. Një koment i shkruar më
+     parë pohonte se më e madhja ishte ambari, «pak mbi njëqind MB»; kur u mat,
+     doli e pasaktë dhe u ndreq para commit-it.
+   - `MAX_UNPACKED_MB = 4000` për leximin e rrjedhës së zbërthyer, që një arkiv
+     prej zerosh të mos e mbajë serverin të zënë pa shkruar asgjë.
+6. **Aksesueshmëria e dialogut.**
+   - Fokusi mbyllet brenda dialogut dhe kthehet te butoni që e hapi.
+   - Skedat marrin `aria-controls` dhe paneli rolin `tabpanel`.
+   - axe e kontrollon dialogun në të dyja skedat, me zero shkelje.
+7. **Rishkarkimi nga ndërfaqja.** API-ja e pranonte, ndërfaqja nuk e dërgonte.
+   Tani ka kutizën e vet.
+
+**Çfarë nuk është gati, dhe pse.**
+- **Ekspozimi në rrjet ose në internet nuk mbështetet**, dhe nuk duhet
+  provuar. Do të kërkonte autentikim, izolim të proceseve dhe një model tjetër
+  kërcënimesh. Rruga `apply` shkruan në diskun e përdoruesit, dhe `/browse` i
+  liston dosjet e tij: janë veçori për një përdorues në makinën e vet, jo për
+  një shërbim të përbashkët.
+- **Licenca mungon.** Pa licencë, një depo publike nuk lejon ligjërisht
+  përdorim nga të tjerët. Zgjedhja i takon autorit dhe ndoshta rregullave të
+  UBT-së për punimet, ndaj nuk u bë këtu.
+- **Versioni mbetet 0.1.0.** Një version 1.0 është vendim lansimi i autorit.
+
+**Verifikimi.**
+- Backend: 688 teste kalojnë, me mbulim 96%. Rojën e provojnë 29 teste, të
+  shkruara ashtu si do t'i dërgonte një sulmues: `Host` i ribashkuar, `Origin`
+  i huaj dhe `null`, `.env` brenda rrënjës.
+- Frontend: 163 teste vitest.
+- End-to-end: 12 teste mbi paketën e ndërtuar, përfshirë axe mbi Chromium.
+- Nisësi u provua me portin e lirë: gati për 5 sekonda, dhe e liroi portin në
+  mbyllje.
+- `README` thoshte ende «522 depo» në vend të 512 (VD-118), dhe §6 i
+  `ENGINEERING.md` e quante ende CSRF-në jashtë fushës. Të dyja u ndreqën.

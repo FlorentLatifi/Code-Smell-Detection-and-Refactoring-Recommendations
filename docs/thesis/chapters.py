@@ -495,9 +495,9 @@ def _coverage_sentence() -> str:
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
 VALIDATION_DATE = "18 shtator 2026"
-BACKEND_TESTS = 645
+BACKEND_TESTS = 688
 COVERAGE = "96%"
-FRONTEND_TESTS = 159
+FRONTEND_TESTS = 163
 
 # Versionet e varësive që kanë rol në rezultate ose në sistem, ashtu si janë
 # fiksuar te `backend/requirements*.txt`, `frontend/package.json` dhe
@@ -759,18 +759,22 @@ CHAPTER_4 = [
             "lejuar, edhe pasi ndiqen lidhjet simbolike; rrënjët janë dosja e zgjedhur "
             "dhe ajo e depove të importuara. Një analizë ka kufij për numrin e "
             "skedarëve, madhësinë totale dhe kohën. Gabimet kthehen me mesazh dhe kod, "
-            "pa gjurmë të brendshme dhe pa shtigje absolute.",
+            "pa gjurmë të brendshme dhe pa shtigje absolute. Meqë çdo faqe që hap "
+            "përdoruesi e arrin localhost-in përmes shfletuesit të tij, çdo kërkesë kalon "
+            "një roje: pranohen vetëm emra lokalë te koka Host, që e ndal DNS rebinding, "
+            "asnjë POST nga një origjinë e huaj, dhe ndërfaqja nuk lejohet të mbështillet "
+            "në një faqe tjetër. /source lexon vetëm skedarë «.java».",
             "Importi nga GitHub shkarkon arkivin e një depoje publike dhe shkruan vetëm "
-            "anëtarët «.java», me kufij për madhësinë e arkivit e të skedarit, dhe me "
-            "çdo shteg të kontrolluar se bie brenda dosjes së synuar. Lidhjet me "
-            "kredenciale refuzohen: importohen vetëm depo publike.",
+            "anëtarët «.java», me kufij madhësie dhe me çdo shteg të kontrolluar se bie "
+            "brenda dosjes së synuar; importohen vetëm depo publike.",
             "Shkrimi në disk është i vetmi veprim që ndryshon kodin e autorit, ndaj "
             "kërkon një konfirmim të qartë në kërkesë, një depo git pa ndryshime të "
             "pakomituara, dhe skedarë që git-i i ndjek. Vetëm atëherë një komandë e "
             "vetme, «git restore», e kthen gjithçka; nëse një kusht nuk plotësohet, "
             "shkrimi refuzohet me arsyen përkatëse. Shkruhen vetëm rishkrimet që kaluan "
             "verifikimin.",
-            "Ndërfaqja është aplikacion React me TypeScript. Projekti zgjidhet duke "
+            "Ndërfaqja është aplikacion React me TypeScript, e ndërtuar një herë dhe e "
+            "shërbyer nga i njëjti proces si API-ja. Projekti zgjidhet duke "
             "shfletuar dosjet brenda rrënjëve të lejuara, ose duke importuar një depo, "
             "dhe përdoruesi, sipas dëshirës, kërkon edhe verdiktin e modelit. Paneli "
             "tregon përmbledhjen sipas erës, të dy qasjet përballë njëra-tjetrës dhe "
