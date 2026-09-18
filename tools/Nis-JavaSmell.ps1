@@ -9,8 +9,12 @@ ato, dhe gabimi më i shpeshtë gjatë demonstrimit vinte pikërisht prej tyre
 (VD-126). Ky skript i bën të tria hapat vetë:
 
   1. hap dialogun e Windows-it për të zgjedhur dosjen ku rrinë projektet Java;
-  2. nis API-në me atë dosje si rrënjë të lejuar, dhe ndërfaqen;
-  3. pret derisa shërbimet përgjigjen, dhe hap shfletuesin.
+  2. nis një proces të vetëm që shërben ndërfaqen dhe API-në, me atë dosje si
+     rrënjë të lejuar (VD-127);
+  3. pret derisa ai përgjigjet, dhe hap shfletuesin.
+
+Ndërfaqja ndërtohet vetëm kur mungon ose kur kodi i saj është më i ri se
+ndërtimi; pas kësaj, nisja nuk kërkon Node.
 
 Dosja e zgjedhur mbahet mend, ndaj herën e dytë dialogu e ofron atë të parën.
 Asnjë ndryshim nuk bëhet te kodi i projektit që analizohet: shkrimi i një
@@ -104,18 +108,46 @@ Write-Host ''
 if (-not (Test-Path -LiteralPath $python)) {
     Fail "Mjedisi Python nuk u gjend te $python. Krijoje me: python -m venv .venv"
 }
-if (-not (Test-Path -LiteralPath (Join-Path $frontend 'node_modules'))) {
-    Fail "Varësitë e ndërfaqes mungojnë. Ekzekuto një herë: npm install --prefix `"$frontend`""
+$dist = Join-Path $frontend 'dist\index.html'
+$hasNode = Test-Path -LiteralPath (Join-Path $frontend 'node_modules')
+
+# A duhet ndërtuar ndërfaqja: kur mungon, ose kur ndonjë skedar i saj — apo
+# rezultatet që ajo i fut brenda ndërtimit — është më i ri se ndërtimi.
+function Interface-Is-Stale {
+    if (-not (Test-Path -LiteralPath $dist)) { return $true }
+    $built = (Get-Item -LiteralPath $dist).LastWriteTime
+    $sources = @(Get-ChildItem -LiteralPath (Join-Path $frontend 'src') -Recurse -File)
+    $sources += @(Get-ChildItem -LiteralPath (Join-Path $Repo 'data\results') -Filter '*.json' -File)
+    foreach ($name in 'index.html', 'package.json', 'vite.config.ts') {
+        $sources += Get-Item -LiteralPath (Join-Path $frontend $name)
+    }
+    return [bool]($sources | Where-Object { $_.LastWriteTime -gt $built } | Select-Object -First 1)
+}
+
+if (Interface-Is-Stale) {
+    if (-not $hasNode) {
+        if (-not (Test-Path -LiteralPath $dist)) {
+            Fail "Ndërfaqja nuk është ndërtuar dhe varësitë e saj mungojnë. Ekzekuto një herë: npm install --prefix `"$frontend`""
+        }
+        Write-Host '  Ndërfaqja është më e vjetër se kodi i saj, por Node mungon; hapet ndërtimi ekzistues.' -ForegroundColor Yellow
+    } else {
+        Write-Host '  Duke ndërtuar ndërfaqen (vetëm kur ajo ka ndryshuar)…'
+        Push-Location $frontend
+        try {
+            & npm run build | Out-Null
+            if ($LASTEXITCODE -ne 0) { Fail 'Ndërtimi i ndërfaqes dështoi. Ekzekuto «npm run build» te frontend/ për ta parë gabimin.' }
+        } finally {
+            Pop-Location
+        }
+    }
 }
 
 # Portat kontrollohen para dialogut, që dosja të mos zgjidhet për një server që
 # nuk do të nisej. Një server i vjetër te porti 8000 mban rrënjën e vet, dhe
 # ndërfaqja do të analizonte atë dosje e jo atë që zgjodhi përdoruesi — gabimi
 # është i heshtur, ndaj nisja ndalet me mesazh (VD-126).
-foreach ($port in @(8000, 5173)) {
-    if (Port-Busy $port) {
-        Fail "Porti $port është i zënë: JavaSmell-i ndoshta është ndezur në një dritare tjetër. Mbylle atë dritare dhe provo sërish."
-    }
+if (Port-Busy 8000) {
+    Fail 'Porti 8000 është i zënë: JavaSmell-i ndoshta është ndezur në një dritare tjetër. Mbylle atë dritare dhe provo sërish.'
 }
 
 if (-not $Root) {
@@ -137,30 +169,26 @@ New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
 Set-Content -LiteralPath $stateFile -Value $Root -Encoding utf8
 
 Write-Host "  Dosja e lejuar: $Root"
-Write-Host '  Duke nisur shërbimet…'
+Write-Host '  Duke nisur JavaSmell-in…'
 
-# Dy dritare të veçanta, që daljen e secilit shërbim ta shohë kush e kërkon.
-# `JAVASMELL_ROOT` caktohet vetëm për procesin e API-së.
-$api = Start-Process -FilePath 'cmd.exe' -WorkingDirectory $backend -PassThru -ArgumentList @(
-    '/c', "title JavaSmell API && set JAVASMELL_ROOT=$Root&& `"$python`" -m uvicorn javasmell.api.app:create_app --factory --port 8000"
-)
-$ui = Start-Process -FilePath 'cmd.exe' -WorkingDirectory $frontend -PassThru -ArgumentList @(
-    '/c', 'title JavaSmell nderfaqja && npm run dev'
+# Një proces i vetëm, në dritaren e vet që dalja të shihet po të duhet. Lidhet
+# vetëm te 127.0.0.1, dhe `JAVASMELL_ROOT` caktohet vetëm për të.
+$server = Start-Process -FilePath 'cmd.exe' -WorkingDirectory $backend -PassThru -ArgumentList @(
+    '/c', "title JavaSmell && set JAVASMELL_ROOT=$Root&& `"$python`" -m uvicorn javasmell.api.bundle:create_bundle --factory --host 127.0.0.1 --port 8000"
 )
 
-$apiReady = Wait-For 'http://127.0.0.1:8000/health' 40 'API-ja'
-$uiReady = Wait-For 'http://localhost:5173' 90 'Ndërfaqja'
+$ready = Wait-For 'http://127.0.0.1:8000/api/health' 60 'JavaSmell-i'
 
-if ($apiReady -and $uiReady) {
-    if (-not $NoBrowser) { Start-Process 'http://localhost:5173' }
-    Write-Host '  Gati. Ndërfaqja u hap te http://localhost:5173' -ForegroundColor Green
+if ($ready) {
+    if (-not $NoBrowser) { Start-Process 'http://localhost:8000' }
+    Write-Host '  Gati. Ndërfaqja u hap te http://localhost:8000' -ForegroundColor Green
     Write-Host '  Te ndërfaqja shtyp «Zgjidh një projekt Java», ose importo një depo nga GitHub.'
 } else {
-    Write-Host '  Shiko dy dritaret e shërbimeve për mesazhin e gabimit.' -ForegroundColor Yellow
+    Write-Host '  Shiko dritaren «JavaSmell» për mesazhin e gabimit.' -ForegroundColor Yellow
 }
 
 Write-Host ''
-Write-Host '  Mbyllja e kësaj dritareje i ndal edhe shërbimet.'
+Write-Host '  Mbyllja e kësaj dritareje e ndal edhe JavaSmell-in.'
 if ([Environment]::UserInteractive -and -not $env:JAVASMELL_NO_WAIT) {
     # Pa konsolë interaktive — p.sh. kur nisësi provohet nga një skript —
     # `Read-Host` dështon me gabim në vend që të presë, ndaj pyetja bëhet vetëm
@@ -168,11 +196,11 @@ if ([Environment]::UserInteractive -and -not $env:JAVASMELL_NO_WAIT) {
     try { Read-Host '  Shtyp Enter për të ndalur JavaSmell-in' | Out-Null } catch { }
 }
 
-foreach ($process in @($api, $ui)) {
+foreach ($process in @($server)) {
     if ($process -and -not $process.HasExited) {
-        # `taskkill /T` merr edhe fëmijët: `cmd` nis uvicorn-in dhe node-in, dhe
-        # vrasja e vetëm prindit do t'i lërë portat e zëna.
+        # `taskkill /T` merr edhe fëmijët: `cmd` nis uvicorn-in, dhe vrasja e
+        # vetëm prindit do ta linte portin të zënë.
         Start-Process -FilePath 'taskkill.exe' -ArgumentList @('/PID', $process.Id, '/T', '/F') -WindowStyle Hidden -Wait
     }
 }
-Write-Host '  Shërbimet u ndalën.'
+Write-Host '  JavaSmell-i u ndal.'

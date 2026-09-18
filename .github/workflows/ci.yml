@@ -161,7 +161,7 @@ jobs:
   # rreth nje minute te cdo shtytje. Shtuar me qellim dhe i heqshem pa humbje per
   # cdo gje tjeter qe kjo depo mat (VD-87).
   e2e:
-    name: End-to-end (dy sherbimet)
+    name: End-to-end (nderfaqja e ndertuar)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
