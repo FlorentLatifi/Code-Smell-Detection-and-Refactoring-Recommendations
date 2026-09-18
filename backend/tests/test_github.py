@@ -159,6 +159,40 @@ def test_a_member_past_the_size_ceiling_is_skipped(tmp_path):
     assert not (tmp_path / "out" / "src" / "Huge.java").exists()
 
 
+def test_the_total_written_has_a_ceiling_of_its_own(tmp_path, monkeypatch):
+    """Kufijtë për skedar dhe për numër lejonin bashkë 80 GB nga një arkiv."""
+    monkeypatch.setattr("javasmell.projects.github.MAX_EXTRACTED_MB", 1)
+    archive = tmp_path / "repo.tar.gz"
+    # Tre skedarë nga 600 kB: i dyti e kalon tavanin prej 1 MB.
+    archive.write_bytes(
+        make_archive({f"jsoup-abc/src/F{index}.java": b"x" * 600_000 for index in range(3)})
+    )
+
+    with pytest.raises(ImportRejected) as raised:
+        extract_java(archive, tmp_path / "out")
+
+    assert raised.value.code == "archive_too_large"
+
+
+def test_reading_through_a_huge_archive_is_bounded_too(tmp_path, monkeypatch):
+    """Edhe kur asnjë anëtar nuk shkruhet, leximi i zerove ka kufi."""
+    monkeypatch.setattr("javasmell.projects.github.MAX_UNPACKED_MB", 1)
+    archive = tmp_path / "repo.tar.gz"
+    archive.write_bytes(
+        make_archive(
+            {
+                "jsoup-abc/blob.bin": b"\0" * 2_000_000,
+                "jsoup-abc/src/A.java": b"class A {}",
+            }
+        )
+    )
+
+    with pytest.raises(ImportRejected) as raised:
+        extract_java(archive, tmp_path / "out")
+
+    assert raised.value.code == "archive_too_large"
+
+
 def test_extraction_starts_from_a_clean_directory(tmp_path):
     """Një provë e mëparshme e ndalur në mes nuk guxon të numërohet si e tëra."""
     destination = tmp_path / "out"

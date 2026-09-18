@@ -62,6 +62,15 @@ DEFAULT_TIMEOUT_S = 120
 MAX_ARCHIVE_MB = 400
 MAX_JAVA_FILE_MB = 4
 MAX_JAVA_FILES = 20_000
+#: Sa kod Java shkruhet gjithsej. Kufijtë e mësipërm bashkë lejonin 20 000 skedarë
+#: nga 4 MB, pra 80 GB nga një arkiv i vetëm që ngjeshet mirë; ky e mbyll atë
+#: shteg (VD-127). Depoja më e madhe e korpusit, `SAP/SapMachine`, mban 352.7 MB
+#: kod Java, sipas manifestit të korpusit; e dyta, `apache/hadoop`, 93.7 MB.
+MAX_EXTRACTED_MB = 500
+#: Sa larg lejohet të ecë shpaketimi brenda rrjedhës së zbërthyer, edhe kur nuk
+#: shkruan asgjë. Një arkiv prej zerosh ngjeshet me mijëra herë, dhe leximi i tij
+#: do ta mbante serverin të zënë pa shkruar asnjë bajt.
+MAX_UNPACKED_MB = 4_000
 CHUNK = 1 << 16
 
 #: Ndarësi mes pronarit dhe emrit te dosja, dy nënvija: një depo mund të mbajë
@@ -225,11 +234,24 @@ def extract_java(archive: Path, destination: Path) -> tuple[int, int]:
     count = 0
     total = 0
     size_cap = MAX_JAVA_FILE_MB * 1024 * 1024
+    total_cap = MAX_EXTRACTED_MB * 1024 * 1024
+    unpacked_cap = MAX_UNPACKED_MB * 1024 * 1024
 
     with tarfile.open(archive, "r:gz") as tar:
         for member in tar:
+            # `offset_data` është sa bajtë të zbërthyer janë lexuar deri këtu,
+            # ndaj matet edhe puna e anëtarëve që nuk shkruhen.
+            if member.offset_data > unpacked_cap:
+                raise ImportRejected(
+                    f"the archive unpacks to more than {MAX_UNPACKED_MB} MB", "archive_too_large"
+                )
             if not member.isfile() or not member.name.endswith(".java"):
                 continue
+            if total + member.size > total_cap:
+                raise ImportRejected(
+                    f"the repository holds more than {MAX_EXTRACTED_MB} MB of Java source",
+                    "archive_too_large",
+                )
             if member.size > size_cap:
                 continue
             _, _, relative = member.name.partition("/")  # heq {emri}-{sha}/
