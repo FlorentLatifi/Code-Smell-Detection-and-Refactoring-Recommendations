@@ -74,6 +74,10 @@ const CODES_FROM_BACKEND = [
   "advisory_only",
   "not_found",
   "path_not_directory",
+  // Nga `api/guard.py` dhe nga kufiri i `/source` (VD-127).
+  "not_java",
+  "host_not_allowed",
+  "origin_not_allowed",
   // Nga `ImportRejected(...)` te `projects/github.py`, plus hartëzimi i statusit
   // te `api/app.py`. Ana tjetër ka kopjen e vet te `test_github.py` (VD-126).
   "link_empty",

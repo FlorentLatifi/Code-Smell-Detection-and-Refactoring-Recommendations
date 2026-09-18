@@ -33,6 +33,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from javasmell.analysis import analyze_path
+from javasmell.api.guard import LocalOnly
 from javasmell.api.paths import (
     PathRejected,
     allowed_roots,
@@ -163,6 +164,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     config = settings or Settings.from_environment()
     app = FastAPI(title=API_TITLE, version=API_VERSION)
     app.state.settings = config
+    # Para çdo rruge: vetëm emra lokalë dhe vetëm faqe lokale (VD-127).
+    app.add_middleware(LocalOnly, hosts=config.allowed_hosts)
 
     @app.exception_handler(PathRejected)
     async def _rejected(_: Request, exc: PathRejected) -> JSONResponse:
@@ -341,6 +344,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         target = confine(request.path, config.roots)
         if not target.is_file():
             return error("not_a_file", "source is read one file at a time", 400)
+        if target.suffix.lower() != ".java":
+            # Ndërfaqja kërkon vetëm kod Java. Pa këtë kufi, rruga lexonte çdo
+            # skedar teksti brenda rrënjës — një `.env` apo shënime me fjalëkalime
+            # në Desktop — dhe privilegji i saj ishte më i gjerë se nevoja (VD-127).
+            return error("not_java", "only Java source files are read", 400)
         if request.end_line < request.start_line:
             return error("bad_range", "the range ends before it starts", 400)
 
@@ -373,6 +381,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         target = confine(request.path, config.roots)
         if not target.is_file():
             return error("not_a_file", "a preview needs a single file", 400)
+        if target.suffix.lower() != ".java":
+            return error("not_java", "only Java source files are read", 400)
 
         automated = for_smell(request.smell_type)
         if automated is None:

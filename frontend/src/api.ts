@@ -75,6 +75,11 @@ export const ERROR_SQ: Record<string, string> = {
   advisory_only: "Motori nuk e rishkruan vetë këtë erë; mbetet propozim.",
   not_found: "Asnjë entitet te ai rresht. Analiza mund të jetë e vjetruar; ri-ekzekutoje.",
   path_not_directory: "Ky është skedar, e nuk hapet si dosje.",
+  // Mbrojtja e shërbimit lokal (VD-127). Këto nuk duhet t'i shohë kurrë kush
+  // e përdor ndërfaqen nga kjo makinë; nëse dalin, adresa është e gabuar.
+  not_java: "Lexohen vetëm skedarë Java.",
+  host_not_allowed: "Serveri pranon vetëm adresat localhost ose 127.0.0.1. Hape ndërfaqen nga ato.",
+  origin_not_allowed: "Serveri pranon kërkesa vetëm nga ndërfaqja e tij në këtë makinë.",
   // Importi nga GitHub (VD-126). Kodet vijnë nga `ImportRejected` te
   // `projects/github.py`, dhe secili i thotë përdoruesit çfarë të ndreqë.
   link_empty: "Shkruaj lidhjen e një depoje publike, p.sh. github.com/jhy/jsoup.",

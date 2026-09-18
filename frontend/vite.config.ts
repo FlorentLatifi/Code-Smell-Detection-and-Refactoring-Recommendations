@@ -5,10 +5,22 @@ import tailwind from "@tailwindcss/vite";
 // The API runs separately on 8000. Proxying in development keeps the frontend
 // free of absolute URLs and of any CORS configuration, which the server does not
 // need: it binds to localhost and serves one user.
+// Ndërfaqja ka një buton që shkruan në disk, ndaj asnjë faqe tjetër nuk guxon
+// ta mbështjellë në iframe dhe ta mashtrojë klikimin (clickjacking). Të njëjtat
+// koka i vendos API-ja te përgjigjet e veta (VD-127).
+const SECURITY_HEADERS = {
+  "X-Frame-Options": "DENY",
+  "Content-Security-Policy": "frame-ancestors 'none'",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer",
+};
+
 export default defineConfig({
   plugins: [react(), tailwind()],
+  preview: { headers: SECURITY_HEADERS },
   server: {
     port: 5173,
+    headers: SECURITY_HEADERS,
     // Paneli i rezultateve i importon skedarët e komituar te `data/results/`, të
     // cilët rrinë jashtë kësaj dosjeje. Kopjimi i tyre këtu do të krijonte një
     // burim të dytë të së vërtetës për numra që punimi i raporton.

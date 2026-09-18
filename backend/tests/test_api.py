@@ -93,12 +93,12 @@ def client(tmp_path):
         max_files=50,
         max_bytes=1_000_000,
     )
-    return TestClient(create_app(settings))
+    return TestClient(create_app(settings), base_url="http://localhost")
 
 
 def test_health_reports_ready():
     app = create_app(Settings(root=__import__("pathlib").Path(".").resolve()))
-    response = TestClient(app).get("/health")
+    response = TestClient(app, base_url="http://localhost").get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
@@ -119,7 +119,7 @@ def browsing(tmp_path):
     (projects / "acme__widgets").mkdir(parents=True)
     (tmp_path / "secret").mkdir()
     settings = Settings(root=root, projects_dir=projects, max_files=50, max_bytes=1_000_000)
-    return TestClient(create_app(settings))
+    return TestClient(create_app(settings), base_url="http://localhost")
 
 
 def test_health_names_every_root_it_reads_from(browsing):
@@ -415,7 +415,8 @@ def test_too_many_files_is_refused(tmp_path):
                 max_files=2,
                 max_bytes=1_000_000,
             )
-        )
+        ),
+        base_url="http://localhost",
     )
 
     response = client.post("/analyze", json={"path": "."})
@@ -754,7 +755,8 @@ def test_a_spent_budget_yields_a_shorter_patch_not_an_error(tmp_path):
                 max_bytes=1_000_000,
                 timeout_s=0,
             )
-        )
+        ),
+        base_url="http://localhost",
     )
     body = spent.post("/refactor/patch", json={"path": "src"}).json()
 

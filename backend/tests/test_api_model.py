@@ -125,7 +125,8 @@ def trained(tmp_path, workspace):
                 models_dir=tmp_path / "models",
                 dataset_csv=dataset,
             )
-        )
+        ),
+        base_url="http://localhost",
     )
 
 
@@ -142,7 +143,8 @@ def untrained(tmp_path, workspace):
                 models_dir=tmp_path / "absent",
                 dataset_csv=tmp_path / "absent.csv",
             )
-        )
+        ),
+        base_url="http://localhost",
     )
 
 
@@ -234,7 +236,8 @@ def test_a_model_fitted_by_another_library_is_not_served(tmp_path, workspace):
                 models_dir=tmp_path / "models",
                 dataset_csv=dataset,
             )
-        )
+        ),
+        base_url="http://localhost",
     )
 
     body = client.post("/analyze", json={"path": "src", "include_model": True}).json()

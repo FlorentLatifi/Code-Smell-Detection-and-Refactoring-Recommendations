@@ -16,6 +16,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+from javasmell.api.guard import LOCAL_HOSTS
+
 # A project of ten thousand files is a large one; past that the caller is almost
 # certainly pointing at a directory they did not mean to.
 DEFAULT_MAX_FILES = 10_000
@@ -57,6 +59,9 @@ class Settings:
     #: The table those models were fitted on, read back for the median a
     #: verdict is explained against.
     dataset_csv: Path = DEFAULT_DATASET
+    #: Emrat me të cilët shërbimi pranon të thirret (VD-127). Zgjerohet vetëm me
+    #: vetëdije: çdo emër këtu është një emër që DNS rebinding mund ta përdorë.
+    allowed_hosts: tuple[str, ...] = tuple(sorted(LOCAL_HOSTS))
 
     @property
     def roots(self) -> tuple[Path, ...]:
@@ -82,4 +87,15 @@ class Settings:
             models_dir=Path(os.environ.get("JAVASMELL_MODELS", DEFAULT_MODELS_DIR)).resolve(),
             projects_dir=Path(os.environ.get("JAVASMELL_PROJECTS", DEFAULT_PROJECTS_DIR)).resolve(),
             dataset_csv=Path(os.environ.get("JAVASMELL_DATASET", DEFAULT_DATASET)).resolve(),
+            allowed_hosts=_hosts(os.environ.get("JAVASMELL_ALLOWED_HOSTS", "")),
         )
+
+
+def _hosts(configured: str) -> tuple[str, ...]:
+    """Emrat lokalë, plus çdo emër që dikush shton shprehimisht me presje.
+
+    Emrat lokalë mbeten gjithmonë: një konfigurim që i heq ata do ta bënte
+    shërbimin të paarritshëm nga vetë ndërfaqja e tij.
+    """
+    extra = {name.strip().lower() for name in configured.split(",") if name.strip()}
+    return tuple(sorted(LOCAL_HOSTS | extra))
