@@ -254,6 +254,54 @@ def test_a_broken_archive_is_reported_rather_than_half_extracted(tmp_path):
     assert not (tmp_path / "jhy__jsoup").exists()
 
 
+def test_a_failed_refresh_keeps_the_copy_that_was_there(tmp_path):
+    """Më parë shpaketimi e fshinte kopjen e djeshme para se e reja të ishte gati."""
+    fetch(
+        Repository("jhy", "jsoup"),
+        tmp_path,
+        opener=serving(make_archive({"jsoup-abc/src/A.java": b"class A {}"})),
+    )
+
+    with pytest.raises(ImportRejected):
+        fetch(Repository("jhy", "jsoup"), tmp_path, opener=serving(b"not a tarball"))
+
+    kept = tmp_path / "jhy__jsoup" / "src" / "A.java"
+    assert kept.read_text(encoding="utf-8") == "class A {}"
+
+
+def test_a_refresh_replaces_the_old_copy_entirely(tmp_path):
+    """Një skedar që u hoq nga depoja nuk guxon të mbetet te kopja e rifreskuar."""
+    fetch(
+        Repository("jhy", "jsoup"),
+        tmp_path,
+        opener=serving(
+            make_archive({"jsoup-abc/src/A.java": b"class A {}", "jsoup-abc/src/Old.java": b"x"})
+        ),
+    )
+
+    fetch(
+        Repository("jhy", "jsoup"),
+        tmp_path,
+        opener=serving(make_archive({"jsoup-def/src/A.java": b"class A { int v; }"})),
+    )
+
+    files = sorted(path.name for path in (tmp_path / "jhy__jsoup").rglob("*.java"))
+    assert files == ["A.java"]
+
+
+def test_no_working_directory_is_left_behind(tmp_path):
+    """Dosjet anash fillojnë me pikë, dhe asnjëra nuk mbetet pas importit."""
+    fetch(
+        Repository("jhy", "jsoup"),
+        tmp_path,
+        opener=serving(make_archive({"jsoup-abc/src/A.java": b"class A {}"})),
+    )
+    with pytest.raises(ImportRejected):
+        fetch(Repository("jhy", "jsoup"), tmp_path, opener=serving(b"broken"))
+
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["jhy__jsoup"]
+
+
 def test_a_lost_connection_is_reported_as_the_network(tmp_path):
     with pytest.raises(ImportRejected) as raised:
         fetch(

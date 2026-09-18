@@ -30,6 +30,12 @@ from pathlib import Path
 #: ecë një dru të tërë vetëm për të zbehur një rresht të listës.
 JAVA_PROBE_FILES = 4_000
 
+#: Sa skedarë shihen gjithsej për një listë të tërë. Pa buxhet të përbashkët,
+#: një dosje me 500 nënndosje të mëdha pa Java do të ecte deri në dy milionë
+#: skedarë për një klikim (VD-127); me të, pas kufirit dosjet e mbetura dalin «e
+#: madhe» dhe lista kthehet menjëherë.
+BROWSE_PROBE_FILES = 20_000
+
 #: Sa nënndosje kthen një shfletim. Një dosje me mijëra nënndosje nuk lexohet
 #: dot as në ekran, dhe lista e plotë do të ishte vetëm ngarkesë.
 MAX_FOLDERS = 500
@@ -147,18 +153,25 @@ def contains_java(directory: Path, *, limit: int = JAVA_PROBE_FILES) -> bool | N
     ``None``. Pa kufi, shfletimi i dosjes së përdoruesit mund të zgjatur minuta
     për një rresht liste.
     """
+    return _probe(directory, limit)[0]
+
+
+def _probe(directory: Path, limit: int) -> tuple[bool | None, int]:
+    """Përgjigjja e `contains_java`, bashkë me sa skedarë u panë për të."""
     seen = 0
     for _, _, files in os.walk(directory):
         for name in files:
             if name.endswith(".java"):
-                return True
+                return True, seen
             seen += 1
             if seen > limit:
-                return None
-    return False
+                return None, seen
+    return False, seen
 
 
-def subfolders(target: Path, *, limit: int = MAX_FOLDERS) -> list[Folder]:
+def subfolders(
+    target: Path, *, limit: int = MAX_FOLDERS, budget: int = BROWSE_PROBE_FILES
+) -> list[Folder]:
     """Nënndosjet e ``target``, të renditura, me shënimin nëse mbajnë Java.
 
     Dosjet e fshehura nuk listohen: nuk ka kod Java për analizë brenda
@@ -171,12 +184,17 @@ def subfolders(target: Path, *, limit: int = MAX_FOLDERS) -> list[Folder]:
         raise PathRejected("the path is not a directory", "path_not_directory")
 
     found: list[Folder] = []
+    remaining = budget
     for entry in sorted(target.iterdir(), key=lambda path: path.name.lower()):
         if len(found) >= limit:
             break
         if entry.name.startswith(".") or not entry.is_dir() or entry.is_symlink():
             continue
-        found.append(Folder(entry.name, str(entry), contains_java(entry)))
+        java: bool | None = None
+        if remaining > 0:
+            java, seen = _probe(entry, min(JAVA_PROBE_FILES, remaining))
+            remaining -= seen
+        found.append(Folder(entry.name, str(entry), java))
     return found
 
 

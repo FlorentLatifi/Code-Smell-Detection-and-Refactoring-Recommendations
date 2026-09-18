@@ -30,6 +30,7 @@ import re
 import shutil
 import tarfile
 import tempfile
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -268,24 +269,62 @@ def fetch(
     shtegut, kufijtë, numërimi — ekzekutohet e vërteta.
     """
     destination = into / repository.directory
+    # Shpaketimi bëhet në një dosje anash dhe zëvendëson të vjetrën vetëm kur ka
+    # mbaruar mirë. Më parë rifreskimi e fshinte kopjen e djeshme para se e reja
+    # të ishte gati, ndaj një arkiv i prishur i linte përdoruesit asgjë (VD-127).
+    # Pika në krye e mban atë jashtë listës së dosjeve që sheh ndërfaqja.
+    staging = into / f".{repository.directory}.partial"
     url = CODELOAD.format(owner=repository.owner, name=repository.name, ref=repository.ref)
     actual = opener or (lambda request: urllib.request.urlopen(request, timeout=timeout_s))
 
-    with tempfile.TemporaryDirectory() as temporary:
-        archive = Path(temporary) / "repo.tar.gz"
-        _download(url, archive, timeout_s, actual)
+    with _lock_for(repository.directory):
         try:
-            count, total = extract_java(archive, destination)
-        except tarfile.TarError as failure:
-            shutil.rmtree(long_path(destination), ignore_errors=True)
-            raise ImportRejected(
-                "the downloaded archive is not readable", "archive_broken"
-            ) from failure
+            with tempfile.TemporaryDirectory() as temporary:
+                archive = Path(temporary) / "repo.tar.gz"
+                _download(url, archive, timeout_s, actual)
+                try:
+                    count, total = extract_java(archive, staging)
+                except tarfile.TarError as failure:
+                    raise ImportRejected(
+                        "the downloaded archive is not readable", "archive_broken"
+                    ) from failure
 
-    if count == 0:
-        # Një dosje bosh do të kalonte te analiza dhe do të refuzohej atje me
-        # «asnjë skedar Java»; hiqet, që një provë e dytë të nisë nga pastër.
-        shutil.rmtree(long_path(destination), ignore_errors=True)
-        raise ImportRejected("the repository holds no Java files", "no_java_files")
+            if count == 0:
+                raise ImportRejected("the repository holds no Java files", "no_java_files")
+
+            _replace(staging, destination)
+        finally:
+            # Pas suksesit dosja anash është zhvendosur tashmë; pas çdo dështimi
+            # hiqet, që një provë e dytë të nisë nga e pastër.
+            shutil.rmtree(long_path(staging), ignore_errors=True)
 
     return Imported(repository=repository, path=destination, java_files=count, bytes_written=total)
+
+
+def _replace(staging: Path, destination: Path) -> None:
+    """Vendos dosjen e re në vend të së vjetrës, me dritaren më të ngushtë të mundshme.
+
+    Windows-i nuk lejon `os.replace` mbi një dosje jo bosh, ndaj e vjetra
+    zhvendoset anash para se e reja të marrë emrin e saj, dhe fshihet vetëm pas.
+    """
+    old = destination.with_name(f".{destination.name}.old")
+    shutil.rmtree(long_path(old), ignore_errors=True)
+    if destination.exists():
+        destination.rename(old)
+    staging.rename(destination)
+    shutil.rmtree(long_path(old), ignore_errors=True)
+
+
+_LOCKS: dict[str, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()
+
+
+def _lock_for(directory: str) -> threading.Lock:
+    """Një bravë për çdo depo: dy importe të së njëjtës nuk shkruajnë njëherësh.
+
+    Rrugët e FastAPI-t ekzekutohen në një grup fijesh, ndaj dy klikime të
+    shpejta mbi «Shkarko» do të shpaketonin në të njëjtën dosje. Depo të
+    ndryshme nuk presin njëra-tjetrën.
+    """
+    with _LOCKS_GUARD:
+        return _LOCKS.setdefault(directory, threading.Lock())

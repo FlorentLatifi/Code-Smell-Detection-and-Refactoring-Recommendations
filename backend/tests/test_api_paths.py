@@ -277,6 +277,23 @@ def test_the_java_probe_gives_up_rather_than_walking_a_whole_tree(root):
     assert contains_java(root / "project", limit=50) is True
 
 
+def test_the_whole_listing_shares_one_probe_budget(root):
+    """Tri dosje me nga pesë skedarë pa Java dhe një buxhet prej tetë.
+
+    E para i ha pesë nga tetë dhe del «pa Java»; e dyta merr tre të mbeturit,
+    i kalon dhe del «nuk e dita»; e treta nuk shihet fare. Pa buxhet të
+    përbashkët, secila do të ecte e plotë dhe lista do të rritej me dosjet.
+    """
+    for name in ("a", "b", "c"):
+        (root / name).mkdir()
+        for index in range(5):
+            (root / name / f"f{index}.txt").write_text("x", encoding="utf-8")
+
+    found = {folder.name: folder.java for folder in subfolders(root.resolve(), budget=8)}
+
+    assert (found["a"], found["b"], found["c"]) == (False, None, None)
+
+
 def test_the_folder_list_is_capped(root):
     for index in range(6):
         (root / f"d{index}").mkdir()
