@@ -161,7 +161,7 @@ function TabButton({
       aria-selected={active}
       aria-controls="picker-panel"
       onClick={onClick}
-      className={`-mb-px flex items-center gap-1.5 rounded-t-md border-b-2 px-3 py-2 text-xs font-medium ${
+      className={`-mb-px flex h-auto items-center gap-1.5 rounded-none border-0 border-b-2 bg-transparent px-3 py-2 text-xs font-medium ${
         active
           ? "border-brand-500 text-brand-700 dark:text-brand-300"
           : "border-transparent text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-200"
@@ -178,36 +178,39 @@ function Folders({ recent, onChoose }: { recent: string[]; onChoose: (path: stri
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback((path: string) => {
+  // Numri i kërkesës së fundit. Vetëm përgjigjja e saj pranohet: dy klikime të
+  // shpejta mbi dosje të ndryshme mund të kthehen në radhë të kundërt, dhe e
+  // vonuara do të mbishkruante listën e dosjes që përdoruesi zgjodhi i fundit.
+  const latest = useRef(0);
+
+  const load = useCallback((path: string, first = false) => {
+    const ticket = ++latest.current;
     setBusy(true);
     setFailure(null);
     browse(path)
-      .then((next) => setListing(next))
-      .catch((error: Error) => setFailure(error.message))
-      .finally(() => setBusy(false));
-  }, []);
-
-  // Hapet te rrënjët, që lista të mos kërkojë asnjë dijeni paraprake. Kur rrënja
-  // është e vetme, ajo listë do të ishte një rresht i vetëm për t'u klikuar para
-  // se puna të nisë, ndaj dialogu hyn drejt brenda saj.
-  useEffect(() => {
-    let live = true;
-    setBusy(true);
-    browse("")
-      .then((roots) => (roots.roots.length === 1 ? browse(roots.roots[0].path) : roots))
+      // Kur rrënja është e vetme, lista e rrënjëve do të ishte një rresht i
+      // vetëm për t'u klikuar para se puna të nisë, ndaj hyhet drejt brenda saj.
+      .then((next) => (first && next.roots.length === 1 ? browse(next.roots[0].path) : next))
       .then((next) => {
-        if (live) setListing(next);
+        if (ticket === latest.current) setListing(next);
       })
       .catch((error: Error) => {
-        if (live) setFailure(error.message);
+        if (ticket === latest.current) setFailure(error.message);
       })
       .finally(() => {
-        if (live) setBusy(false);
+        if (ticket === latest.current) setBusy(false);
       });
-    return () => {
-      live = false;
-    };
   }, []);
+
+  // Hapet te rrënjët, që lista të mos kërkojë asnjë dijeni paraprake. Pas
+  // mbylljes, një përgjigje e vonuar nuk ka ku të bjerë: numri i kërkesës
+  // rritet, dhe ajo injorohet.
+  useEffect(() => {
+    load("", true);
+    return () => {
+      latest.current += 1;
+    };
+  }, [load]);
 
   const here = listing?.path ?? "";
 
@@ -218,7 +221,7 @@ function Folders({ recent, onChoose }: { recent: string[]; onChoose: (path: stri
           <h3 className="mb-1.5 text-xs font-medium text-ink-500 dark:text-ink-400">
             Të hapura së fundi
           </h3>
-          <ul className="flex flex-wrap gap-1.5">
+          <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
             {recent.map((path) => (
               <li key={path}>
                 <button
@@ -261,7 +264,7 @@ function Folders({ recent, onChoose }: { recent: string[]; onChoose: (path: stri
         </p>
       )}
 
-      <ul className="max-h-72 overflow-y-auto rounded-md border border-ink-200 dark:border-ink-700">
+      <ul className="m-0 max-h-72 list-none overflow-y-auto rounded-md border border-ink-200 p-0 dark:border-ink-700">
         {busy && listing === null && <Row>Duke lexuar…</Row>}
         {listing?.folders.length === 0 && <Row>Asnjë nënndosje këtu.</Row>}
         {listing?.folders.map((folder) => (
@@ -272,7 +275,7 @@ function Folders({ recent, onChoose }: { recent: string[]; onChoose: (path: stri
             <button
               type="button"
               onClick={() => load(folder.path)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-50 dark:text-ink-200 dark:hover:bg-ink-800"
+              className="flex h-auto w-full items-center gap-2 rounded-none border-0 bg-transparent px-3 py-2 text-left text-sm text-ink-800 hover:bg-ink-50 dark:text-ink-200 dark:hover:bg-ink-800"
             >
               <FolderOpen className="h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate">{folder.name}</span>
@@ -288,7 +291,7 @@ function Folders({ recent, onChoose }: { recent: string[]; onChoose: (path: stri
         </p>
         <button
           type="button"
-          disabled={here === ""}
+          disabled={here === "" || busy}
           onClick={() => onChoose(here)}
           className="shrink-0 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-40"
         >
@@ -359,7 +362,7 @@ function FromGithub({ onChoose }: { onChoose: (path: string) => void }) {
       >
         Lidhja e një depoje publike
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           id="picker-url"
           value={url}

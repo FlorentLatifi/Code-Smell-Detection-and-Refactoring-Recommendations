@@ -365,3 +365,69 @@ async function violations(container: HTMLElement): Promise<string[]> {
   });
   return result.violations.map((v) => `${v.id}: ${v.nodes.length} — ${v.help}`);
 }
+
+describe("klikimet e shpejta (VD-127)", () => {
+  /**
+   * Një server ku përgjigjja e një dosjeje mbahet derisa testi ta lëshojë.
+   *
+   * Defekti u gjet duke fotografuar ndërfaqen: klikimi i «Analizo këtë dosje»
+   * menjëherë pas hyrjes në një dosje analizonte dosjen prind, sepse lista e re
+   * nuk kishte mbërritur ende.
+   */
+  function slowServer(held: string[]): Map<string, () => void> {
+    const release = new Map<string, () => void>();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        const path = (JSON.parse(String(init?.body ?? "{}")) as { path?: string }).path ?? "";
+        if (held.includes(path)) {
+          await new Promise<void>((resolve) => release.set(path, resolve));
+        }
+        return json(LISTINGS[path] ?? WORKSPACE);
+      }),
+    );
+    return release;
+  }
+
+  it("nuk e zgjedh dosjen e mëparshme ndërsa e reja po ngarkohet", async () => {
+    const release = slowServer(["C:/kodi/workspace/jsoup"]);
+    const { onChoose } = open();
+    fireEvent.click(await screen.findByRole("button", { name: /workspace/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /jsoup/ }));
+
+    // Lista e `jsoup` ende nuk ka ardhur: butoni nuk guxon të zgjedhë `workspace`.
+    const choose = screen.getByRole("button", { name: "Analizo këtë dosje" });
+    expect(choose).toHaveProperty("disabled", true);
+    fireEvent.click(choose);
+    expect(onChoose).not.toHaveBeenCalled();
+
+    release.get("C:/kodi/workspace/jsoup")?.();
+    await waitFor(() => expect(choose).toHaveProperty("disabled", false));
+    fireEvent.click(choose);
+    expect(onChoose).toHaveBeenCalledWith("C:/kodi/workspace/jsoup");
+  });
+
+  it("një përgjigje e vonuar nuk e mbishkruan dosjen e zgjedhur të fundit", async () => {
+    // Nga lista e rrënjëve: `workspace` mbahet, `projects` kthehet menjëherë.
+    // Përdoruesi klikon të parën, ndërron mendje dhe klikon të dytën.
+    LISTINGS["C:/kodi/projects"] = {
+      path: "C:/kodi/projects",
+      name: "projects",
+      parent: null,
+      folders: [{ name: "jhy__jsoup", path: "C:/kodi/projects/jhy__jsoup", java: true }],
+      roots: ROOTS.roots,
+    };
+    const release = slowServer(["C:/kodi/workspace"]);
+    open();
+    fireEvent.click(await screen.findByRole("button", { name: /^workspace/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^projects/ }));
+    expect(await screen.findByRole("button", { name: /jhy__jsoup/ })).toBeDefined();
+
+    // Përgjigjja e `workspace` mbërrin e fundit dhe injorohet.
+    release.get("C:/kodi/workspace")?.();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(screen.getByRole("button", { name: /jhy__jsoup/ })).toBeDefined();
+    expect(screen.queryByRole("button", { name: /shenime/ })).toBeNull();
+    delete LISTINGS["C:/kodi/projects"];
+  });
+});
