@@ -497,7 +497,7 @@ def _coverage_sentence() -> str:
 VALIDATION_DATE = "18 shtator 2026"
 BACKEND_TESTS = 688
 COVERAGE = "96%"
-FRONTEND_TESTS = 163
+FRONTEND_TESTS = 165
 
 # Versionet e varësive që kanë rol në rezultate ose në sistem, ashtu si janë
 # fiksuar te `backend/requirements*.txt`, `frontend/package.json` dhe

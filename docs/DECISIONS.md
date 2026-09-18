@@ -4932,6 +4932,16 @@ varësitë u kontrolluan kundrejt bazave publike të dobësive.
    - axe e kontrollon dialogun në të dyja skedat, me zero shkelje.
 7. **Rishkarkimi nga ndërfaqja.** API-ja e pranonte, ndërfaqja nuk e dërgonte.
    Tani ka kutizën e vet.
+8. **Dy gara te dialogu, të gjetura duke e fotografuar.** Pas ndreqjes së stileve
+   (pa preflight, listat mbanin pikën e shfletuesit dhe butonat kornizën globale),
+   fotografia e rrugës së plotë tregoi «ky shteg nuk është brenda një depoje git»
+   për një projekt që është. Shkaku nuk ishte te git-i: klikimi i «Analizo këtë
+   dosje» menjëherë pas hyrjes në një dosje zgjidhte dosjen prind, sepse lista e
+   re nuk kishte mbërritur ende. Butoni tani fiket derisa ajo të mbërrijë. Gara e
+   dytë, e së njëjtës familje: dy klikime të shpejta mund të ktheheshin në radhë
+   të kundërt, dhe përgjigjja e vonuar mbishkruante dosjen e zgjedhur të fundit;
+   tani pranohet vetëm përgjigjja e kërkesës së fundit. Të dy testet e rinj
+   dështojnë kur ndreqja hiqet, dhe kalojnë me të.
 
 **Çfarë nuk është gati, dhe pse.**
 - **Ekspozimi në rrjet ose në internet nuk mbështetet**, dhe nuk duhet
@@ -4948,7 +4958,7 @@ varësitë u kontrolluan kundrejt bazave publike të dobësive.
 - Backend: 688 teste kalojnë, me mbulim 96%. Rojën e provojnë 29 teste, të
   shkruara ashtu si do t'i dërgonte një sulmues: `Host` i ribashkuar, `Origin`
   i huaj dhe `null`, `.env` brenda rrënjës.
-- Frontend: 163 teste vitest.
+- Frontend: 165 teste vitest.
 - End-to-end: 12 teste mbi paketën e ndërtuar, përfshirë axe mbi Chromium.
 - Nisësi u provua me portin e lirë: gati për 5 sekonda, dhe e liroi portin në
   mbyllje.
