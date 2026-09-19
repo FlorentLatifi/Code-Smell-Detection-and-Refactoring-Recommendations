@@ -4,7 +4,7 @@ Every number here comes from published work rather than intuition, because the
 thesis has to defend each one. Two sources are used:
 
 * Lanza, M. & Marinescu, R. (2006), *Object-Oriented Metrics in Practice*:
-  the statistical thresholds derived from a corpus of 45 Java and C++ systems,
+  the statistical thresholds derived from a corpus of 45 Java systems,
   and the detection strategies built on them.
 * Fowler, M. (2018), *Refactoring*, 2nd ed.: the qualitative descriptions
   that motivate the size-based rules.

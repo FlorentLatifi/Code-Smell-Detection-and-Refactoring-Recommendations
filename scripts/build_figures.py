@@ -185,9 +185,15 @@ def figure_agreement(ml: Results) -> None:
 
 
 def figure_feature_importance(ml: Results) -> None:
-    """Veçoritë që modelet zgjodhën, për dy erëra."""
-    fig, axes = plt.subplots(1, 2, figsize=(6.8, 3.2))
-    for ax, smell in zip(axes, ("long method", "feature envy"), strict=True):
+    """Veçoritë që modelet zgjodhën, për të katër erërat.
+
+    Ishin vetëm dy, Long Method dhe Feature Envy. Por Diskutimi (6.2) dhe Shtojca
+    8.11 argumentojnë pikërisht me veçoritë e Blob-it, «të zgjedhura te 5.2», dhe
+    dëshmia që citonin nuk shfaqej askund në punim (VD-129).
+    """
+    fig, grid = plt.subplots(2, 2, figsize=(6.8, 5.8))
+    smells = ("blob", "data class", "long method", "feature envy")
+    for ax, smell in zip(grid.flat, smells, strict=True):
         ranked = sorted(ml["per_smell"][smell]["importances"].items(), key=lambda p: p[1])[-6:]
         names = [n for n, _ in ranked]
         values = [v for _, v in ranked]
@@ -195,7 +201,7 @@ def figure_feature_importance(ml: Results) -> None:
         ax.set_yticks(range(len(names)))
         ax.set_yticklabels(names, fontsize=9)
         ax.set_title(SMELL_LABELS[smell], fontsize=10)
-        ax.set_xlabel("Rëndësia (permutation)")
+        ax.set_xlabel("Rëndësia me permutim")
     fig.tight_layout()
     save(fig, "rendesia_e_vecorive")
 

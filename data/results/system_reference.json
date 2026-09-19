@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "40b3d7b24044c0b9a7cc4369853f6ab005d7e0ba",
+    "commit": "44edc463a6ab68c249789c4e664e3e39516f0545",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -111,7 +111,7 @@
     {
       "advisory_reason": null,
       "automated": "ExtractMethod",
-      "formula": "LOC > HIGH/2  AND  CC >= threshold  AND  MAXNESTING >= 3 AND  NOAV > MANY",
+      "formula": "MLOC > HIGH_METHOD_LOC/2  AND  CC >= 4  AND  MAXNESTING >= 3 AND  NOAV > MANY",
       "refactorings": [
         "ExtractMethod",
         "ReplaceConditionalWithPolymorphism"

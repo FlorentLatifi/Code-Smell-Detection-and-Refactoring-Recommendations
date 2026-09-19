@@ -240,7 +240,7 @@ def detect_brain_method(
 ) -> Smell | None:
     """Brain Method (Lanza & Marinescu, p. 92).
 
-        LOC > HIGH/2  AND  CC >= threshold  AND  MAXNESTING >= 3
+        MLOC > HIGH_METHOD_LOC/2  AND  CC >= 4  AND  MAXNESTING >= 3
         AND  NOAV > MANY
 
     A stricter, higher-confidence relative of Long Method: the method is not

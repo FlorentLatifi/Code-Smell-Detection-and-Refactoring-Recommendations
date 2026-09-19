@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from pathlib import Path
 
 RESULTS = Path(__file__).resolve().parents[2] / "data" / "results"
@@ -29,6 +30,71 @@ SMELL_SQ = {
     "long method": "Long Method",
     "feature envy": "Feature Envy",
 }
+
+# Verdiktet e verifikimit, ashtu si i emërton teksti. Tabelat i shtypnin
+# identifikuesit e kodit («no new errors») ndërsa proza fliste për «pa gabim të
+# ri», dhe lexuesi duhej ta bënte vetë lidhjen mes dy emrave të së njëjtës gjë.
+VERDICT_SQ = {
+    "compiles": "kompilon",
+    "no_new_errors": "pa gabim të ri",
+    "new_errors": "gabim i ri",
+    "parses": "u parsua, pa kompilim",
+    "broken_syntax": "sintaksë e prishur",
+    "not_checked": "i pakontrolluar",
+}
+
+# Numërorët në gjininë femërore, për «erëra», «rishkrime», «krahasime»: emrat
+# mashkullorë që marrin -e në shumës (rishkrim, rishkrime) sillen në shumës si
+# femërorë, ndaj «tri» e jo «tre».
+_FEMININE = ("asnjë", "një", "dy", "tri", "katër", "pesë", "gjashtë", "shtatë", "tetë",
+             "nëntë", "dhjetë")  # fmt: skip
+_ALL_OF = {2: "të dyja", 3: "të tria"}
+
+# Nga sa shifra ndahen mijëshet. Katër shifra shkruhen bashkë, sipas konventës së
+# SI-së, që «4534» të mos dalë njëherë si «4 534» e njëherë si «4.534».
+_GROUPED_FROM = 10_000
+
+
+def _count(value: int) -> str:
+    """Një numër i plotë në prozë ose në tabelë, në një trajtë të vetme.
+
+    Punimi e shkruante të njëjtin numër në tri mënyra: «4 534» te abstrakti,
+    «4534» te Kapitulli 5 dhe «4.534» te Shtojca 8.5. E treta është edhe e
+    rrezikshme, sepse këtu pika është presje dhjetore dhe «4.534» lexohet katër e
+    gjysmë. Nga pesë shifra e lart mijëshet ndahen me hapësirë të pandashme, që
+    numri të mos çahet në dy rreshta (VD-129).
+    """
+    if value < _GROUPED_FROM:
+        return str(value)
+    return f"{value:,}".replace(",", " ")
+
+
+def _word(count: int) -> str:
+    """Një numër i vogël me fjalë («tri»), një i madh me shifra."""
+    return _FEMININE[count] if 0 <= count < len(_FEMININE) else str(count)
+
+
+def _among(count: int, total: int, noun: str = "erërat") -> str:
+    """«te tri nga katër erërat», ose «te të katër erërat» kur janë të gjitha.
+
+    Proza e ndërtuar nga të dhënat shkruante «te 4 nga 4 erërat», e saktë por e
+    pazakontë në një tekst shqip, ku numrat e vegjël shkruhen me fjalë.
+    """
+    if count == total:
+        return f"te {_ALL_OF.get(total, 'të ' + _word(total))} {noun}"
+    if count == 0:
+        return f"te asnjëra nga {_word(total)} {noun}"
+    return f"te {_word(count)} nga {_word(total)} {noun}"
+
+
+def _named(identifier: str) -> str:
+    """Emri i një ere ose i një refaktorimi ashtu si e shkruan Fowler-i.
+
+    Kodi i mban si identifikues («BrainMethod», «ReplaceNestedConditionalWith
+    GuardClauses»), dhe ashtu dilnin në tabela, ndërsa teksti i shkruan «Brain
+    Method». Lexuesi s'duhet të mendojë nëse janë e njëjta gjë.
+    """
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", identifier).replace(" With ", " with ")
 
 
 def _load(name: str) -> dict:
@@ -116,10 +182,9 @@ def abstract() -> list[str]:
     def band(values: list[float]) -> str:
         return f"{min(values):.3f} deri {max(values):.3f}"
 
-    # Ndarësi i mijësheve në shqip është hapësira, jo presja, dhe zëvendësimi bëhet
-    # mbi numrin e vetëm e jo mbi paragrafin: një herë ai u lëshua mbi tërë tekstin
-    # dhe i hoqi të gjitha presjet e fjalisë.
-    samples = f"{dataset['rows']:,}".replace(",", " ")
+    # Numri formatohet vetë e jo paragrafi: një herë zëvendësimi u lëshua mbi tërë
+    # tekstin dhe i hoqi të gjitha presjet e fjalisë.
+    samples = _count(dataset["rows"])
 
     paragraphs = [
         "Code smells janë simptoma të dizajnit të dobët që nuk shkaktojnë gabime, por e "
@@ -148,7 +213,7 @@ def abstract() -> list[str]:
         f"Dy rezultate janë negative dhe raportohen si të tilla. Ashpërsia që sistemi "
         f"e derivon nga teprica mbi pragje nuk e riprodhon gjykimin e rishikuesve: "
         f"pajtimi i matur me kappa me peshë qëndron te {band(severity)}, dhe gabimi "
-        f"është i njëanshëm nga mbivlerësimi. "
+        f"anon nga mbivlerësimi. "
     )
     if ceiling is not None:
         ceilings = [entry["mcc"] for entry in ceiling["per_smell"].values()]
@@ -160,13 +225,13 @@ def abstract() -> list[str]:
     if refactoring is not None:
         share = refactoring["applied"] / refactoring["detected"]
         third += (
-            f"Motori i refaktorimit automatizon {automated} transformime dhe transformoi "
+            f"Motori i refaktorimit automatizon {_word(automated)} transformime dhe transformoi "
             f"{share:.1%} të vendeve të detektuara; refuzimi trajtohet si rezultat i "
             f"saktë dhe numërohet. "
         )
     third += (
-        "Kontributi kryesor nuk është një shifër e vetme, por një hark i plotë e i "
-        "riprodhueshëm nga korpusi te rezultati."
+        "Kontributi kryesor nuk është një shifër e vetme, por një zinxhir i plotë dhe "
+        "i riprodhueshëm, nga korpusi deri te rezultati."
     )
 
     paragraphs.append(third)
@@ -183,7 +248,7 @@ CHAPTER_2 = [
         [
             "Detektimi automatik i code smells dhe refaktorimi janë studiuar prej më "
             "shumë se dy dekadash. Ky kapitull i ndan burimet në katër grupe: "
-            "përkufizimi dhe matja e smells, detektimi me rregulla mbi metrika, "
+            "përkufizimi dhe matja e erërave, detektimi me rregulla mbi metrika, "
             "detektimi me mësim të makinës, dhe refaktorimi i automatizuar. Në fund "
             "identifikohet hendeku që ky punim e adreson.",
         ],
@@ -192,9 +257,9 @@ CHAPTER_2 = [
         "2.1",
         "Përkufizimi dhe matja",
         [
-            "Katalogun kanonik e jep Fowler (2018): njëzet e katër smells, secili me "
+            "Katalogun kanonik e jep Fowler (2018): njëzet e katër erëra, secila me "
             "refaktorimet që e adresojnë. Përkufizimi "
-            "mbetet qëllimisht cilësor: një smell është simptomë, jo gabim, dhe "
+            "mbetet qëllimisht cilësor: një erë është simptomë, jo gabim, dhe "
             "gjykimi nëse diçka është problem varet nga konteksti.",
             "Matja sasiore u mundësua nga suita e metrikave e Chidamber & Kemerer "
             "(1994), e cila propozoi gjashtë metrika për sistemet e orientuara nga "
@@ -204,7 +269,7 @@ CHAPTER_2 = [
             "përmes çifteve të metodave që ndajnë të paktën një fushë. Këto metrika "
             "janë baza mbi të cilën ndërtohet çdo detektim sasior i mëvonshëm.",
             "Sharma & Spinellis (2018) ofrojnë një shqyrtim sistematik të fushës dhe "
-            "vërejnë se literatura ka prodhuar përkufizime jokonsistente për smells, "
+            "vërejnë se literatura ka prodhuar përkufizime jokonsistente për erërat, "
             "dhe se metodat e detektimit japin rezultate po aq jokonsistente, çka e "
             "bën krahasimin mes mjeteve të vështirë.",
         ],
@@ -216,17 +281,17 @@ CHAPTER_2 = [
             "Marinescu (2004) prezantoi konceptin e strategjive të detektimit: "
             "rregulla që kombinojnë disa metrika me pragje, në vend që të mbështeten "
             "në një metrikë të vetme. Ideja u zhvillua në një katalog të plotë nga "
-            "Lanza & Marinescu (2006), ku çdo smell shprehet si kombinim logjik "
+            "Lanza & Marinescu (2006), ku çdo erë shprehet si kombinim logjik "
             "kushtesh mbi metrika, zakonisht si konjunksion, me pragje të nxjerra "
             "statistikisht nga një korpus prej dyzet e pesë sistemesh Java.",
             "Moha et al. (2010) propozuan DECOR-in, një metodë me gjuhë të "
-            "specifikimit për smells, e cila i gjeneron detektorët nga përshkrimet. "
+            "specifikimit të erërave, e cila i gjeneron detektorët nga përshkrimet. "
             "Përparësia e këtyre qasjeve është transparenca: kur një detektor ndez, "
             "arsyeja është e lexueshme. Dobësia e tyre është ndjeshmëria ndaj "
             "pragjeve, të cilat janë të vështira për t'u kalibruar përtej korpusit ku "
             "u nxorën.",
             "Palomba et al. (2015) morën një drejtim tjetër me HIST-in, duke i "
-            "detektuar smells nga historiku i ndryshimeve në vend që nga një pamje e "
+            "detektuar erërat nga historiku i ndryshimeve në vend që nga një pamje e "
             "vetme e kodit. Kjo e kap një dimension që metrikat statike nuk e shohin, "
             "por kërkon akses në historikun e plotë të depos.",
         ],
@@ -236,13 +301,13 @@ CHAPTER_2 = [
         "Detektimi me mësim të makinës",
         [
             "Arcelli Fontana et al. (2016) krahasuan gjashtëmbëdhjetë algoritme të "
-            "mësimit të makinës mbi katër smells dhe raportuan performancë të lartë "
+            "mësimit të makinës mbi katër erëra dhe raportuan performancë të lartë "
             "për të gjitha në validimin e kryqëzuar, me J48 dhe Random Forest si më "
             "të mirat. Ky punim u bë referenca kryesore e fushës dhe motivoi një varg "
             "studimesh pasuese.",
             "Megjithatë, Di Nucci et al. (2018) vunë re se në atë studim çdo dataset "
-            "përmbante raste të një lloji të vetëm smell-i. E përsëritën eksperimentin "
-            "me dataset-e ku bashkëjetojnë disa lloje smells, dhe në këtë konfigurim "
+            "përmbante raste të një lloji të vetëm ere. E përsëritën eksperimentin "
+            "me dataset-e ku bashkëjetojnë disa lloje erërash, dhe në këtë konfigurim "
             "më realist teknikat e mësimit të makinës shfaqën kufizime kritike. "
             "Rrjedhimisht, një rezultat i raportuar varet nga mënyra si ndërtohet "
             "bashkësia e vlerësimit, jo vetëm nga algoritmi.",
@@ -254,7 +319,7 @@ CHAPTER_2 = [
             "fryn çdo shifër.",
             "Azeem et al. (2019), në një shqyrtim sistematik dhe meta-analizë, gjetën "
             "vetëm pesëmbëdhjetë studime që përdorin mësimin e makinës për detektimin "
-            "e smells, nga një bashkësi fillestare prej më shumë se dy mijë punimesh, "
+            "e erërave, nga një bashkësi fillestare prej më shumë se dy mijë punimesh, "
             "dhe përfundojnë se në këtë nënfushë ka ende hapësirë për përmirësim.",
         ],
     ),
@@ -264,11 +329,11 @@ CHAPTER_2 = [
         [
             "Çdo vlerësim i detektimit kërkon një të vërtetë bazë, dhe këtu literatura "
             "has një problem themelor. Mäntylä & Lassenius (2006) treguan në një "
-            "studim empirik se vlerësimi i zhvilluesve për praninë e një smell "
+            "studim empirik se vlerësimi i zhvilluesve për praninë e një ere "
             "është subjektiv dhe se mospajtimi mes tyre është i konsiderueshëm.",
             "Madeyski & Lewowski (2020) e adresuan mungesën e dataset-eve me MLCQ-në, "
             "një bashkësi mostrash Java të etiketuara nga zhvillues profesionistë për "
-            "katër smells, me ashpërsi në shkallën none/minor/major/critical. Ky "
+            "katër erëra, me ashpërsi në shkallën none/minor/major/critical. Ky "
             "punim e përdor MLCQ-në si të vërtetë bazë, dhe e trajton mospajtimin mes "
             "rishikuesve si të dhënë që raportohet, jo si zhurmë që pastrohet.",
         ],
@@ -304,12 +369,10 @@ CHAPTER_2 = [
             "dyta: jo çdo punim e deklaron qartë si e ndan bashkësinë e vlerësimit, "
             "ndonëse shifra e raportuar varet pikërisht prej saj. E "
             "treta: detektimi dhe refaktorimi trajtohen zakonisht si probleme të "
-            "ndara, ndaj pyetja nëse një smell i detektuar mund edhe të rregullohet "
+            "ndara, ndaj pyetja nëse një erë e detektuar mund edhe të rregullohet "
             "automatikisht mbetet pa përgjigje empirike.",
-            "Ky punim i adreson të tria: dy qasjet vlerësohen mbi të njëjtin korpus me "
-            "të njëjtin kod pikëzimi, ndarja është e grupuar sipas depos dhe e "
-            "deklaruar, dhe motori i refaktorimit raporton se sa nga rastet e "
-            "detektuara arrin t'i transformojë vërtet.",
+            "Kapitulli 3 i kthen këto tri vërejtje në problemin dhe pyetjet e këtij "
+            "punimi.",
         ],
     ),
 ]
@@ -408,8 +471,8 @@ CHAPTER_3 = [
             (
                 "bullet",
                 "Për PK3: verifikim që çdo rishkrim i aplikuar nuk e prish skedarin, "
-                "dhe matje nëse era u hoq. Ruajtja e plotë e sjelljes kërkon "
-                "ekzekutimin e testeve të vetë projekteve (Nënkapitulli 3.4).",
+                "dhe matje nëse era u hoq; ruajtja e sjelljes mbetet pa kriter, për "
+                "arsyen e Nënkapitullit 3.4.",
             ),
         ],
     ),
@@ -660,7 +723,9 @@ CHAPTER_4 = [
             "Katër modele vlerësohen: klasifikuesi i shumicës, regresioni logjistik, "
             "Random Forest (Breiman, 2001) dhe Gradient Boosting (Friedman, 2001), "
             "të zbatuar me scikit-learn (Pedregosa et al., 2011). Veçoritë janë të gjitha "
-            "metrikat e Nënkapitullit 4.4, jo vetëm ato që përdorin strategjitë.",
+            "metrikat e Nënkapitullit 4.4, jo vetëm ato që përdorin strategjitë. Në "
+            "tabela dhe figura, parashtesa «c_» shënon një metrikë të klasës dhe «m_» "
+            "një metrikë të metodës, sepse disa, si ATFD, maten në të dy nivelet.",
             "Klasifikuesi i shumicës, që parashikon gjithmonë «pa erë», raportohet si "
             "model bazë.",
             "Ndarja bëhet me GroupKFold sipas depos, që mostrat e një projekti të mos "
@@ -1198,7 +1263,7 @@ def _reading_of_refactoring() -> list:
     if introduced:
         top = max(introduced, key=lambda name: introduced[name])
         paragraphs.append(
-            f"Erërat e reja janë më shpesh {top}, dhe shkaku është i drejtpërdrejtë: "
+            f"Erërat e reja janë më shpesh {_named(top)}, dhe shkaku është i drejtpërdrejtë: "
             "Extract Method ia kalon metodës së nxjerrë çdo vlerë që blloku lexonte, ndaj "
             "një bllok me gjashtë hyrje prodhon një metodë me gjashtë parametra. "
             "Transformimi është i saktë, por e zhvendos problemin. Prandaj numri i vendeve "
@@ -1238,9 +1303,8 @@ def _literature_comparison(h: dict) -> list:
     paragraphs = [
         "Krahasimi më i drejtpërdrejtë është me Madeyski & Lewowski (2023), të cilët "
         "trajnuan tetë algoritme mbi të njëjtin dataset MLCQ, me metrikat e PMD-së dhe "
-        "të CODEBEAT-it si veçori. Në konfigurimin e tyre DS1 një mostër është "
-        "pozitive kur ashpërsia e saj e agreguar është mbi «none», i njëjti përkufizim "
-        "që përdor ky punim. Tabela vë përballë MCC-në e të dy qasjeve këtu me mesoren "
+        "të CODEBEAT-it si veçori. Konfigurimi i tyre DS1 e quan pozitive një mostër "
+        "me të njëjtin kriter si ky punim (Nënkapitulli 4.9). Tabela vë përballë MCC-në e të dy qasjeve këtu me mesoren "
         "më të mirë të MCC-së që raportojnë ata.",
         ("table", "Krahasimi i MCC-së me Madeyski & Lewowski (2023), mbi MLCQ",
          ["Erë", "Qasja A", "Qasja B", "M&L 2023, DS1"], _literature_rows(h)),
@@ -1342,8 +1406,7 @@ def _answers(h: dict) -> list:
         + f". Fitimi vjen kryesisht nga recall-i, që rritet {of_smells(gained)}. Një "
         "rezervë e vetme: kur rregullit i jepet pragu i tij më i "
         "mirë nga fshirja, dallimi te Long Method nuk ndahet më nga zeroja (Shtojca "
-        "8.10). Përparësia vlen pra përgjithësisht, jo pikërisht te era ku rregulli "
-        "punonte tashmë më mirë.",
+        "8.10).",
     ]
 
     data = _load_if_present("refactoring_evaluation.json")
@@ -1368,6 +1431,35 @@ def _answers(h: dict) -> list:
             "sjelljen."
         )
     return answers
+
+
+def _one_in_how_many() -> str:
+    """«rreth një në pesë vende», nga pjesa e vendeve që motori i transformoi.
+
+    Ishte shtypur me dorë; po të ndryshonte norma, 6.5 do të fliste për një
+    numër tjetër nga ai i Kapitullit 5.
+    """
+    data = _load_if_present("refactoring_evaluation.json")
+    if data is None or not data["applied"]:
+        return "një pjesë të vendeve"
+    return f"rreth një në {_word(round(data['detected'] / data['applied']))} vende"
+
+
+def _strategy_source(title: str) -> str:
+    """Burimi i një strategjie, nga titulli që mban docstring-u i detektorit.
+
+    Titujt janë në anglisht dhe të formave të ndryshme: «God Class (Lanza &
+    Marinescu, p. 80)», «Long Method (Fowler): …», «Deeply nested control flow».
+    Tabela i shkruante copat siç binin, ndaj dilte «Fowler): size alone…». Këtu
+    merret vetëm kllapa, me vitin e referencës dhe «f.» për faqen.
+    """
+    match = re.search(r"\(([^)]*)\)", title)
+    if match is None:
+        return "—"
+    author, _, page = match.group(1).partition(", p. ")
+    year = {"Lanza & Marinescu": 2006, "Fowler": 2018}.get(author)
+    source = f"{author} ({year})" if year else author
+    return f"{source}, f. {page}" if page else source
 
 
 def chapter_6() -> list:
@@ -1456,8 +1548,8 @@ def chapter_6() -> list:
                 "por i besueshëm, i përshtatshëm si paralajmërim që nuk e mbyt "
                 "zhvilluesin me zhurmë. Modeli vlen aty ku ka më shumë rëndësi të mos "
                 "humbasë asnjë rast, dhe kur të dyja pajtohen, sistemi jep sinjalin e "
-                "tij më të sigurt. Rishkrimi automatik mund t'i besohet mjetit për rreth "
-                "një në pesë vende, me kusht që ai të refuzojë çdo gjë që nuk e provon "
+                "tij më të sigurt. Rishkrimi automatik mund t'i besohet mjetit për "
+                f"{_one_in_how_many()}, me kusht që ai të refuzojë çdo gjë që nuk e provon "
                 "dhe ta masë atë që ndodh pas rishkrimit.",
             ],
         ),
@@ -1854,29 +1946,30 @@ def _pmd_balance(data: dict) -> str:
         ""
         if not tied
         else (
-            f" Te {'një' if tied == 1 else tied} prej tyre intervali e përmban zeron, "
+            f" Te {_word(tied)} prej tyre intervali e përmban zeron, "
             "pra dy anët nuk dallohen mbi këtë dëshmi."
         )
     )
     if theirs and not ours:
         return (
-            f"Nga {answered} krahasimet me përgjigje, PMD del përpara te {theirs} dhe "
+            f"Nga {_word(answered)} krahasimet me përgjigje, PMD del përpara te "
+            f"{_word(theirs)} dhe "
             "detektorët e këtij punimi te asnjëri. Ky është rezultat negativ dhe "
             "raportohet si i tillë." + ties
         )
     if ours and not theirs:
         return (
-            f"Nga {answered} krahasimet me përgjigje, detektorët e këtij punimi dalin "
-            f"përpara te {ours} dhe PMD te asnjëri." + ties
+            f"Nga {_word(answered)} krahasimet me përgjigje, detektorët e këtij punimi "
+            f"dalin përpara te {_word(ours)} dhe PMD te asnjëri." + ties
         )
     if not ours and not theirs:
         return (
-            f"Asnjë nga {answered} krahasimet nuk jep ndryshim që e mban riterheqja: "
+            f"Asnjë nga {_word(answered)} krahasimet nuk jep ndryshim që e mban rimostrimi: "
             "mbi këtë korpus dy anët nuk dallohen."
         )
     return (
-        f"Rezultati ndahet: nga {answered} krahasimet me përgjigje, detektorët e këtij "
-        f"punimi dalin përpara te {ours} dhe PMD te {theirs}." + ties
+        f"Rezultati ndahet: nga {_word(answered)} krahasimet me përgjigje, detektorët e "
+        f"këtij punimi dalin përpara te {_word(ours)} dhe PMD te {_word(theirs)}." + ties
     )
 
 def _band(difference: dict) -> str:
@@ -1923,7 +2016,8 @@ def _pmd_comparison_paragraphs() -> list:
         "dhe të njëjtin agregim si Qasja A. Të dyja kolonat rillogariten nga i njëjti "
         "skedar në të njëjtin ekzekutim.",
         ("table", "Detektorët e këtij punimi kundrejt PMD-së, mbi të njëjtat mostra",
-         ["Era", "Mostra", "MCC i PMD-së", "MCC ynë", "Ndryshimi, IB 95%"], rows),  # fmt: skip
+         ["Erë", "Mostra", "MCC i PMD-së", "MCC i punimit", "Ndryshimi, IB 95%"],
+         rows),  # fmt: skip
         _pmd_balance(data),
         "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të; "
         "LawOfDemeter, më i afërti, mat zinxhirë mesazhesh dhe nuk është matje e "
@@ -1936,7 +2030,7 @@ def _pmd_comparison_paragraphs() -> list:
         "Krahasimi e favorizon këtë punim në drejtimin e deklaruar te Nënkapitulli 4.9, "
         "sepse PMD e llogarit ATFD-në vetëm brenda një skedari. Heqja e handikapit do "
         "të kërkonte ndërtimin e çdo depoje në commit-in e vet historik, çka korpusi "
-        "nuk e lejon (Nënkapitulli 6.6).",
+        "nuk e lejon (Nënkapitulli 3.4).",
     ]
 
     if unreadable or failed:
@@ -2094,7 +2188,7 @@ def _confidence_section() -> list:
             SMELL_SQ[smell],
             f"{data['mcc']:.3f}",
             f"{data['accuracy']:.3f}",
-            f"{data['pairs']:,}".replace(",", " "),
+            _count(data["pairs"]),
         ]
         for smell, data in sorted(ceiling["per_smell"].items())
     ]
@@ -2269,7 +2363,7 @@ def _union_against_model(ml: dict, smells: list) -> str:
             continue
         change = f"{SMELL_SQ[smell]} ({best['mcc']:.3f} → {union['mcc']:.3f})"
         (up if union["mcc"] > best["mcc"] else down).append(change)
-    text = f"Bashkimi e ngre recall-in mbi atë të modelit te {raised} nga {len(smells)} erërat"
+    text = f"Bashkimi e ngre recall-in mbi atë të modelit {_among(raised, len(smells))}"
     if up:
         text += f"; MCC-ja rritet te {_joined(up)}"
     if down:
@@ -2289,7 +2383,7 @@ def _intersection_against_model(ml: dict, smells: list) -> str:
     return (
         f"Te prerja, precizioni është të paktën {_intersection_floor(ml)} te çdo erë dhe "
         f"arrin {_intersection_best(ml)} te {SMELL_SQ[top]}, ndërsa recall-i dhe MCC-ja "
-        f"janë nën ato të modelit te {lower} nga {len(smells)} erërat."
+        f"janë nën ato të modelit {_among(lower, len(smells))}."
     )
 
 
@@ -2375,7 +2469,7 @@ def _folds_disagree() -> str:
         return "foldet zgjedhin të njëjtën vlerë te secila erë"
     if split == total:
         return f"foldet nuk pajtohen për të njëjtën vlerë te asnjëra nga {total} erërat"
-    return f"foldet nuk pajtohen për të njëjtën vlerë te {split} nga {total} erërat"
+    return f"foldet nuk pajtohen për të njëjtën vlerë {_among(split, total)}"
 
 
 def _blocking_predicts_calibration() -> list:
@@ -2457,9 +2551,9 @@ def _blocking_section() -> list:
         "Matjet për ta thënë këtë ekzistojnë tashmë te tabela e veçorive, ndaj pyetja "
         "«pse nuk ndezi» ka përgjigje pa asnjë ekzekutim të ri.",
         ("table", "Sa klauzola dështuan te secila mospërputhje",
-         ["Era", "Të humbura", "Shpërndarja"], spread),  # fmt: skip
+         ["Erë", "Të humbura", "Shpërndarja"], spread),  # fmt: skip
         ("table", "Kur një klauzolë e vetme e ndal strategjinë",
-         ["Era", "Klauzola", "Rastet", "Mediana e afrisë"], rows),  # fmt: skip
+         ["Erë", "Klauzola", "Rastet", "Mediana e afrisë"], rows),  # fmt: skip
         "Kolona e fundit është distanca nga pragu si raport: 1.00 do të thoshte "
         "saktësisht mbi prag, 0.50 gjysma e rrugës. Të dy drejtimet lexohen njësoj, "
         "sepse një klauzolë që kërkon vlerë të madhe matet si e matura mbi pragun dhe "
@@ -2571,7 +2665,8 @@ def _blob_agrees_with_the_model() -> list:
         return []
     return [
         "Kjo renditje përputhet me një matje të pavarur: veçoritë që modeli i Qasjes B "
-        f"zgjodhi për Blob-in (Nënkapitulli 5.2) ndajnë {len(shared)} nga katër vendet e "
+        f"zgjodhi për Blob-in (Figura e Nënkapitullit 5.2) ndajnë {_word(len(shared))} "
+        "nga katër vendet e "
         f"para me të: {', '.join(shared)}. As TCC-ja dhe as WMC-ja, kushtet e "
         "strategjisë së botuar, nuk hyjnë te asnjëra listë.",
     ]
@@ -2802,20 +2897,24 @@ def _refactoring_section() -> list:
     detected = data["detected"]
     applied = data["applied"]
     rows = [
-        ["Vende të detektuara", str(detected), "100%"],
-        ["Të transformuara", str(applied), f"{applied / detected:.1%}"],
-        ["Të refuzuara", str(data["refused"]), f"{data['refused'] / detected:.1%}"],
+        ["Vende të detektuara", _count(detected), "100%"],
+        ["Të transformuara", _count(applied), f"{applied / detected:.1%}"],
+        ["Të refuzuara", _count(data["refused"]), f"{data['refused'] / detected:.1%}"],
     ]
     if data.get("unlocatable"):
-        rows.append(["Të palokalizueshme", str(data["unlocatable"]), ""])
+        rows.append(
+            ["Të palokalizueshme", _count(data["unlocatable"]),
+             f"{data['unlocatable'] / detected:.1%}"]
+        )  # fmt: skip
 
     refusals = [
-        [reason.replace("_", " "), str(count), f"{count / detected:.1%}"]
+        [reason.replace("_", " "), _count(count), f"{count / detected:.1%}"]
         for reason, count in sorted(data["refused_by_reason"].items(), key=lambda p: -p[1])
     ]
 
     verdicts = [
-        [verdict.replace("_", " "), str(count), f"{count / applied:.1%}"]
+        [VERDICT_SQ.get(verdict, verdict.replace("_", " ")), _count(count),
+         f"{count / applied:.1%}"]
         for verdict, count in sorted(data["verdicts"].items(), key=lambda p: -p[1])
     ]
 
@@ -2823,8 +2922,8 @@ def _refactoring_section() -> list:
     share = broken / applied if applied else 0.0
 
     return [
-        f"Mbi {data['files']} skedarë të korpusit u detektuan {detected} vende ku motori "
-        f"ka një transformim; prej tyre {applied} u transformuan.",
+        f"Mbi {_count(data['files'])} skedarë të korpusit u detektuan {_count(detected)} "
+        f"vende ku motori ka një transformim; prej tyre {_count(applied)} u transformuan.",
         ("table", "Rezultati i motorit të refaktorimit",
          ["", "Numri", "Pjesa"], rows),
         _applied_by_refactoring(data),
@@ -2834,7 +2933,7 @@ def _refactoring_section() -> list:
          ["Arsyeja", "Numri", "Pjesa e vendeve"], refusals),
         ("table", "Verifikimi i atyre që u aplikuan",
          ["Verdikti", "Numri", "Pjesa e të aplikuarave"], verdicts),
-        f"Nga {applied} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
+        f"Nga {_count(applied)} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
         f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
         "gabimi kundrejt skedarit origjinal.",
         *_resolution_paragraphs(data),
@@ -2855,7 +2954,7 @@ def _applied_by_refactoring(data: dict) -> str:
         return ""
     applied = data["applied"]
     parts = [
-        f"{name} {count} ({count / applied:.1%})"
+        f"{_named(name)} {_count(count)} ({count / applied:.1%})"
         for name, count in sorted(per.items(), key=lambda pair: -pair[1])
     ]
     return "Sipas transformimit, rishkrimet ndahen: " + ", ".join(parts) + "."
@@ -3009,7 +3108,7 @@ def _severity_direction(rules: dict, smells: list) -> str:
         else:
             reverse.append(SMELL_SQ[smell])
     text = (
-        f"Te {higher} nga {higher + len(reverse)} erërat, strategjia e botuar i kap "
+        f"{_opens(_among(higher, higher + len(reverse)))}, strategjia e botuar i kap "
         "rastet major më shpesh se ato minor"
     )
     if reverse:
@@ -3029,7 +3128,7 @@ def _precision_over_recall(rules: dict, smells: list) -> str:
     precision = [row["precision"] for row in rows]
     recall = [row["recall"] for row in rows]
     return (
-        f"Precizioni i strategjive është mbi recall-in te {above} nga {len(rows)} erërat: "
+        f"Precizioni i strategjive është mbi recall-in {_among(above, len(rows))}: "
         f"precizioni shkon nga {min(precision):.3f} deri në {max(precision):.3f}, "
         f"recall-i nga {min(recall):.3f} deri në {max(recall):.3f}."
     )
@@ -3044,8 +3143,8 @@ def _who_is_higher(rules: dict, ml: dict, smells: list) -> str:
         > rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]["mcc"]
     ]
     return (
-        f"Qasja B ka MCC më të lartë se Qasja A te {len(higher)} nga {len(smells)} "
-        "erërat. Pajtimi mes tyre matet me koeficientin kappa dhe me numrin e "
+        f"Qasja B ka MCC më të lartë se Qasja A {_among(len(higher), len(smells))}. "
+        "Pajtimi mes tyre matet me koeficientin kappa dhe me numrin e "
         "mostrave që shënon secila qasje, vetëm ose bashkë me tjetrën."
     )
 
@@ -3056,20 +3155,16 @@ def _only_rules_vs_only_model(ml: dict, smells: list) -> str:
     Fjalia e mëparshme e quante «të krahasueshëm» numrin që rregulli kap vetëm te
     Feature Envy, ndërsa të dhënat japin 13 kundrejt 54 (VD-125).
     """
-    parts = [
-        f"{SMELL_SQ[smell]} {ml['per_smell'][smell]['vs_rules']['only_rules']} me "
-        f"{ml['per_smell'][smell]['vs_rules']['only_model']}"
-        for smell in smells
-    ]
-    widest = max(
-        smells,
-        key=lambda smell: ml["per_smell"][smell]["vs_rules"]["only_rules"]
-        / max(ml["per_smell"][smell]["vs_rules"]["only_model"], 1),
-    )
+    # Numrat vetë janë te kolonat e tabelës; fjalia thotë vetëm modelin që ato
+    # formojnë, që të mos rishtypë tabelën rresht për rresht (VD-129).
+    only = {smell: ml["per_smell"][smell]["vs_rules"] for smell in smells}
+    more = sum(1 for smell in smells if only[smell]["only_model"] > only[smell]["only_rules"])
+    widest = max(smells, key=lambda s: only[s]["only_rules"] / max(only[s]["only_model"], 1))
     return (
-        "Numri i mostrave që shënon vetëm A, kundrejt atyre që shënon vetëm B, është: "
-        + "; ".join(parts)
-        + f". Raporti më i afërt mes të dyjave është te {SMELL_SQ[widest]}."
+        f"{_opens(_among(more, len(smells)))}, mostrat që shënon vetëm B janë më të "
+        "shumta se ato që shënon vetëm A. Raporti më i afërt mes të dyjave është te "
+        f"{SMELL_SQ[widest]}, {only[widest]['only_rules']} me "
+        f"{only[widest]['only_model']}."
     )
 
 
@@ -3136,7 +3231,8 @@ def _project_context_paragraphs() -> list:
     # Emrat e verdikteve mbeten si te tabela ngjitur, që i njëjti verdikt të mos
     # shkruhet në dy mënyra në dy tabela që lexohen bashkë.
     rows = [
-        [name.replace("_", " "), str(alone.get(name, 0)), str(context.get(name, 0))]
+        [VERDICT_SQ.get(name, name.replace("_", " ")), str(alone.get(name, 0)),
+         str(context.get(name, 0))]
         for name in sorted(set(alone) | set(context))
     ]
 
@@ -3156,10 +3252,13 @@ def _project_context_paragraphs() -> list:
         f"{compiles_context / total:.1%}.",
         _overturned(regressions, total)
         + (
-            f" {unchecked} kompilime e kaluan kufirin kohor dhe numërohen si të "
-            "pakontrolluara, kurrë si sukses."
-            if unchecked
-            else ""
+            ""
+            if not unchecked
+            else " Një kompilim e kaloi kufirin kohor dhe numërohet si i pakontrolluar, "
+            "kurrë si sukses."
+            if unchecked == 1
+            else f" {_opens(_word(unchecked))} kompilime e kaluan kufirin kohor dhe "
+            "numërohen si të pakontrolluara, kurrë si sukses."
         )
         + f" Matja zgjati rreth {data['seconds'] / 3600:.0f} orë.",
     ]
@@ -3186,7 +3285,7 @@ def _refusal_severity_paragraphs() -> list:
                 continue
             judged = cell["applied"] + cell["refused"]
             rows.append(
-                [smell, level, str(judged), str(cell["applied"]),
+                [_named(smell), level, _count(judged), _count(cell["applied"]),
                  f"{cell['application_rate']:.1%}"]
             )  # fmt: skip
 
@@ -3215,10 +3314,9 @@ def _refusal_severity_paragraphs() -> list:
         "shpërndahet kështu:",
         ("table", "Norma e transformimit sipas erës dhe ashpërsisë",
          ["Erë", "Ashpërsia", "Vende të gjykuara", "Të transformuara", "Norma"], rows),
-        f"Niveli kritik ka normën më të ulët te {critical_lowest} nga {len(lowest)} "
-        "erërat"
+        f"Niveli kritik ka normën më të ulët {_among(critical_lowest, len(lowest))}"
         + (
-            f", dhe te {' dhe '.join(unmonotone)} niveli i mesëm ka normë më të lartë se "
+            f", dhe te {' dhe '.join(_named(smell) for smell in unmonotone)} niveli i mesëm ka normë më të lartë se "
             "i buti."
             if unmonotone
             else "."
@@ -3265,8 +3363,8 @@ def _pooling_warning(data: dict) -> list:
     return [
         f"E bashkuar mbi erërat, niveli kritik del me {crit[0] / crit[1]:.1%} kundrejt "
         f"{rest[0] / rest[1]:.1%} të niveleve të tjera, renditje e kundërt me atë të "
-        f"erërave veç e veç (paradoksi i Simpson-it): {high[0]} ka normë {high[1]:.1%} "
-        f"dhe {high[2]:.1%} vende kritike, ndërsa {low[0]} ka {low[1]:.1%} dhe "
+        f"erërave veç e veç (paradoksi i Simpson-it): {_named(high[0])} ka normë "
+        f"{high[1]:.1%} dhe {high[2]:.1%} vende kritike, ndërsa {_named(low[0])} ka {low[1]:.1%} dhe "
         f"{low[2]:.1%}. Prandaj tabela nuk bashkohet.",
     ]
 
@@ -3343,16 +3441,11 @@ def _resolution_paragraphs(data: dict) -> list:
         [RESOLUTION_SQ.get(name, name), str(count), f"{count / total:.1%}"]
         for name, count in sorted(counts.items(), key=lambda p: -p[1])
     ]
-    persists = counts.get("persists", 0)
-
-    resolved = counts.get("resolved", 0)
     return [
         "Çdo entitet i rishkruar u mat sërish, për të parë nëse detektori ende ndez "
         "mbi të.",
         ("table", "A u hoq era pas rishkrimit",
          ["Rezultati", "Numri", "Pjesa e të aplikuarave"], rows),
-        f"Era u hoq në {resolved / total:.1%} të rishkrimeve dhe mbeti në "
-        f"{persists / total:.1%} prej tyre.",
         *_metric_shift_paragraphs(data),
         *_introduced_paragraphs(data),
     ]
@@ -3370,10 +3463,10 @@ def _metric_shift_paragraphs(data: dict) -> list:
 
     rows = [
         [
-            smell,
+            _named(smell),
             entry["metric_before"] and f"{entry['metric_before']:g}",
             f"{entry['metric_after']:g}",
-            str(entry["sites"]),
+            _count(entry["sites"]),
         ]
         for smell, entry in sorted(shift.items())
     ]
@@ -3392,7 +3485,9 @@ def _introduced_paragraphs(data: dict) -> list:
         return []
 
     total = sum(introduced.values())
-    listed = ", ".join(f"{name} ({count})" for name, count in sorted(introduced.items()))
+    listed = ", ".join(
+        f"{_named(name)} ({count})" for name, count in sorted(introduced.items())
+    )
     return [
         f"Pas rishkrimit u shfaqën {total} erëra që nuk ishin aty më parë: {listed}.",
     ]
@@ -3486,13 +3581,12 @@ def chapter_8() -> list:
 
     strategy_rows = []
     for entry in reference["strategies"]:
-        name, _, source = entry["title"].partition(" (")
         strategy_rows.append(
             [
-                name,
+                _named(entry["smell"]),
                 "klasë" if entry["scope"] == "class" else "metodë",
                 entry["formula"],
-                source.rstrip(")") or "—",
+                _strategy_source(entry["title"]),
             ]
         )
 
@@ -3513,15 +3607,18 @@ def chapter_8() -> list:
     engine_rows = []
     for entry in reference["strategies"]:
         if entry["automated"]:
-            does = f"aplikohet: {entry['automated']}"
+            does = f"aplikohet: {_named(entry['automated'])}"
         elif entry["advisory_reason"]:
             does = "vetëm propozohet"
         else:
             does = "nuk ka transformim"
-        engine_rows.append([entry["smell"], ", ".join(entry["refactorings"]), does])
+        engine_rows.append(
+            [_named(entry["smell"]), ", ".join(_named(r) for r in entry["refactorings"]), does]
+        )
 
     refusal_rows = [
-        [reason, REFUSAL_SQ.get(reason, "[PLOTËSO: arsye e re, pa shpjegim në shtojcë]")]
+        [reason.replace("_", " "),
+         REFUSAL_SQ.get(reason, "[PLOTËSO: arsye e re, pa shpjegim në shtojcë]")]
         for reason in reference["refusal_reasons"]
     ]
 
@@ -3555,7 +3652,7 @@ def chapter_8() -> list:
             [
                 "Strategjitë janë shkruar në një fjalor kuantifikuesish e jo në numra të "
                 "veçantë. Vlerat numerike pas tyre vijnë nga statistikat e metrikave mbi "
-                "dyzet e pesë sisteme Java dhe C++.",
+                "dyzet e pesë sisteme Java.",
                 (
                     "table",
                     "Kuantifikuesit e përgjithshëm",
@@ -3640,9 +3737,9 @@ def chapter_8() -> list:
                 "eksperimentit dhe rigjenerimi i dokumentit japin gjithmonë të njëjtat "
                 "vlera.",
                 "Ky premtim u vu në provë më 3 shtator 2026. Trembëdhjetë nga pesëmbëdhjetë "
-                "hapat u ri-ekzekutuan mbi të njëjtat hyrje, dhe të gjithë, me një "
+                "hapat që kishte atëherë tabela u ri-ekzekutuan mbi të njëjtat hyrje, dhe të gjithë, me një "
                 "përjashtim, dhanë skedarë identikë me të komituarit, veç commit-it dhe "
-                "kohëzgjatjes që regjistrojnë. Tabela e veçorive, 4.534 rreshta, doli bajt "
+                "kohëzgjatjes që regjistrojnë. Tabela e veçorive, 4534 rreshta, doli bajt "
                 "për bajt identike; po ashtu të katër modelet e stërvitura, dhe asnjë figurë "
                 "nuk ndryshoi.",
                 "Përjashtimi është hapi i dymbëdhjetë. Ai riprodhoi numrat që mbajnë "

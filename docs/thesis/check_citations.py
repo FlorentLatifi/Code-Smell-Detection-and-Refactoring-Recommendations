@@ -47,8 +47,14 @@ from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 # («Di Nucci», «Arcelli Fontana», «Henderson-Sellers»), i lidhur me «&» ose i
 # ndjekur nga «et al.». Apostrofi tipografik hyn si escape sepse ndryshe nuk
 # dallohet nga apostrofi ASCII që qëndron pranë tij në të njëjtën klasë.
+#
+# Hapësira brenda një emri nuk e kalon rreshtin. Vargjet e kapitujve bashkohen me
+# një kthim rreshti, dhe me `\s` një qelizë tabele që mbaron me një kuantifikues
+# («… > FEW») ngjitej me autorin e qelizës pasardhëse, që dilte «FEW Lanza &
+# Marinescu» (VD-129).
+GAP = r"[^\S\n]+"
 WORD = r"[A-ZÇË][\w\u2019'\-]*"
-NAME = rf"{WORD}(?:\s+(?:&\s+)?(?:et\s+al\.|{WORD}))*"
+NAME = rf"{WORD}(?:{GAP}(?:&{GAP})?(?:et{GAP}al\.|{WORD}))*"
 
 # Dy format që lejon shablloni: «Fowler (2018)» dhe «(Fowler, 2018)».
 NARRATIVE = re.compile(rf"({NAME})\s+\((\d{{4}})\)")

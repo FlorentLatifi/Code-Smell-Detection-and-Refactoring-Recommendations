@@ -733,7 +733,8 @@ INTRODUCTION = [
             "një mjedis real duhet të ndryshojë vazhdimisht, përndryshe bëhet "
             "gradualisht më pak i dobishëm. Prandaj lehtësia me të cilën ndryshohet kodi "
             "nuk është çështje estetike, por kosto e përditshme e çdo ekipi.",
-            "Një burim i madh i vështirësisë janë code smells. Termi u prezantua nga Kent "
+            "Një burim i madh i vështirësisë janë code smells, të quajtura në vijim edhe "
+            "erëra të kodit, ose shkurt erëra. Termi u prezantua nga Kent "
             "Beck dhe u popullarizua nga libri Refactoring i Martin Fowler-it, botimi i "
             "dytë i të cilit (Fowler, 2018) përdoret në këtë punim. Një code smell nuk "
             "është gabim: programi kompilohet dhe funksionon saktë. Ai është simptomë e "

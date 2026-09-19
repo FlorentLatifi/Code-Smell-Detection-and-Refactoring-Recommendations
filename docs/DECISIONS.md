@@ -4985,8 +4985,9 @@ gjeti dy lloje përsëritjesh:
 - çiftet e fjalive me ngjashmëri të paktën 0.55 (difflib mbi fjalë);
 - frazat prej gjashtë ose më shumë fjalësh që dalin në më shumë se një fjali.
 
-Skripti nuk është në depo, sepse nuk prodhon asnjë shifër të punimit. Ai nuk i kap
-idetë e rithëna me fjalë të tjera. Ato u gjetën duke e lexuar punimin.
+Skripti fillimisht nuk hyri në depo, sepse nuk prodhon asnjë shifër të punimit;
+më pas hyri si `docs/thesis/check_repetition.py` (VD-129). Ai nuk i kap idetë e
+rithëna me fjalë të tjera. Ato u gjetën duke e lexuar punimin.
 
 **Vendimi.** Asnjë numër nuk ndryshoi dhe asnjë rezultat nuk u rilexua. Rregullat e
 VD-125 mbeten:
@@ -5049,3 +5050,103 @@ i cili i përmbledh rezultatet nga natyra e tij.
 - PDF-ja nuk u shfletua faqe për faqe.
 - Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
   `docs/thesis/`.
+
+### VD-129: Kontrolli i përsëritjeve hyn në depo, dhe çfarë ndreqi leximi i plotë
+
+**Konteksti.** Autori kërkoi që skripti i VD-128 të hynte në depo, dhe që punimi të
+lexohej sërish nga fillimi në fund për përmirësime. Leximi (abstrakti, kapitujt 1–6
+dhe shtojcat) gjeti gjëra që shihen në faqe:
+- **Tabela 17 (8.1).** Kolona «Burimi» ishte prerë nga titujt anglisht të
+  docstring-eve dhe dilte «Fowler): size alone, without the cohesion evidence».
+  Formula e Brain Method-it shkruante «LOC > HIGH/2» dhe «CC >= threshold», ndërsa
+  kodi mat `MLOC > HIGH_METHOD_LOC/2` dhe `CC >= 4`.
+- **I njëjti numër në tri trajta.** «4 534» te abstrakti, «4534» te Kapitulli 5
+  dhe «4.534» te 8.5. E treta lexohet «katër presje pesë», sepse punimi e përdor
+  pikën si presje dhjetore.
+- **Identifikues kodi në tabela.** Tabelat e Kapitullit 5 dhe të 8.4 shtypnin
+  «BrainMethod», «ReplaceNestedConditionalWithGuardClauses» dhe «no new errors».
+  Proza i shkruan «Brain Method» dhe «pa gabim të ri».
+- **Dy terma për të njëjtën gjë.** Kapitulli 2 përdorte «smell/smells», kapitujt
+  3–6 «erë», dhe «erë» nuk ishte prezantuar askund.
+- **Dëshmi që nuk shfaqej.** Figura 4 tregonte veçoritë vetëm për Long Method dhe
+  Feature Envy. Megjithatë 6.2 dhe 8.11 argumentojnë me veçoritë e Blob-it, «të
+  Nënkapitullit 5.2».
+- **Një mospërputhje burimi.** 2.2 thoshte «45 sisteme Java», ndërsa 8.2 dhe
+  `thresholds.py` thoshin «45 sisteme Java dhe C++».
+- **Rithënie që kontrolli i ri i nxori në brezin 0.40–0.55:**
+  - PK2 te 6.4 rithoshte përfundimin e 8.10.
+  - 3.3 rithoshte arsyen e 3.4.
+  - 6.3 rithoshte përkufizimin e pozitivit nga 4.9.
+  - 2.6 rithoshte fokusin e Kapitullit 3.
+  - Proza e 5.3 rishtypte kolonat e Tabelës 6, dhe ajo e 5.4 Tabelën 11.
+
+**Vendimi.**
+- **`docs/thesis/check_repetition.py`** lexon dokumentin e ndërtuar dhe ka dy nivele:
+  - dështon kur dy fjali kanë ngjashmëri 0.55 ose më shumë;
+  - liston për lexim, pa dështuar, çiftet 0.40–0.55 dhe frazat prej gjashtë fjalësh
+    që përsëriten.
+
+  Pragjet u zgjodhën duke lexuar çdo çift mbi 0.40 në këtë punim. Mbi 0.55, secili
+  ishte e njëjta fjali e thënë dy herë. Brezi poshtë tij përzien rithënie me fjali
+  që ndajnë vetëm një hapje. Kontrolli hyn në CI pas ndërtimit të dokumentit.
+- **Numrat** kalojnë nga `_count`:
+  - pesë shifra e lart ndahen me hapësirë të pandashme («17 833»);
+  - katër shifra shkruhen bashkë («4534»), sipas konventës SI;
+  - pika nuk përdoret kurrë si ndarës.
+
+  Numrat e vegjël në prozë shkruhen me fjalë: «te tri nga katër erërat», «te të
+  katër erërat», «Shtatë kompilime».
+- **Emrat e erërave dhe të refaktorimeve** kalojnë nga `_named`, dhe verdiktet nga
+  `VERDICT_SQ`. Arsyet e refuzimit mbeten identifikues, sepse 8.4 i shpjegon. Tani
+  shkruhen njësoj te 5.4 dhe te 8.4 («shape not matched»).
+- **Termi.** Hyrja e prezanton «erë e kodit», dhe Kapitulli 2 e përdor.
+- **Figura 4** ka katër panele. Tabela 5 i mban parashtesat «c_» dhe «m_», dhe 4.6
+  i shpjegon, sepse ATFD matet si në klasë ashtu edhe në metodë.
+- **Tabela 17.**
+  - Emri vjen nga identifikuesi, dhe burimi shkruhet me vit dhe faqe («Lanza &
+    Marinescu (2006), f. 80»).
+  - Docstring-u i `detect_brain_method` u saktësua, dhe `system_reference.json` u
+    rigjenerua me hapin 14. Sjellja e detektorit nuk ndryshoi; ndryshoi vetëm
+    formula që shtojca e lexon nga docstring-u.
+- **45 sisteme Java**, te 8.2 dhe te docstring-u i `thresholds.py`.
+  - `thresholds.py` i quan vetë vlerat «Statistical thresholds for Java systems».
+  - 2.2 thotë po ashtu, dhe një kërkim gjeti «45 Java projects» për të njëjtat
+    pragje.
+  - Një numër sistemesh C++ nuk u verifikua dot, ndaj nuk përmendet.
+- **`check_citations.py`.** Një emër autori nuk kapërcen më në rreshtin tjetër.
+  Me `\s`, qeliza «… > FEW» ngjitej me autorin e qelizës pasardhëse, dhe kontrolli
+  raportonte citimin «few lanza 2006».
+- **Të tjera të vogla.**
+  - «rreth një në pesë» te 6.5 lexohet tani nga të dhënat.
+  - 8.5 thotë «pesëmbëdhjetë hapat që kishte atëherë tabela».
+  - 8.7 i referohet 3.4 e jo 6.6 për ndërtimin e depove.
+  - «MCC ynë» u bë «MCC i punimit», dhe kokat «Era» u bënë «Erë».
+  - Te abstrakti, «hark» u bë «zinxhir» dhe «i njëanshëm nga» u bë «anon nga».
+
+**Matja.**
+- `check_repetition` mbi abstraktin, kapitujt 1–6 dhe shtojcat, 530 fjali:
+  - 0 çifte mbi 0.55;
+  - brezi për lexim ra nga 14 në 9 çifte.
+- Word jep për kapitujt 1–6 9 744 fjalë me tabela dhe 9 081 pa to. Para
+  ndryshimeve ishin 9 732 dhe 9 099.
+- Dokumenti ka 74 faqe; faqja e shtuar vjen nga figura më e lartë.
+- Abstrakti mbetet në një faqe, dhe hyrja zë rreth 1.3 faqe.
+
+**Verifikimi.**
+- `check_format`, `check_citations`, `check_reproduction`, `check_repetition` dhe
+  `check_slides` kalojnë.
+- Backend: 688 teste kaluan dhe 1 u anashkalua.
+- Kalojnë të katër portat e ruff-it dhe të dyja të mypy-t.
+- `build_figures.py` e ndryshoi vetëm figurën e veçorive; të tjerat dolën bajt për
+  bajt të njëjta.
+
+**Çfarë nuk u verifikua, dhe çfarë mbeti.**
+- `system_reference.json` mban commit-in 44edc46, që nuk e ka ende docstring-un e
+  ri. Skripti regjistron `HEAD`, dhe ndryshimi ishte ende i pakomituar kur u
+  ekzekutua; commit-i pasardhës e përmban.
+- PDF-ja nuk u shfletua faqe për faqe; u kontrolluan vetëm faqet e abstraktit dhe
+  të hyrjes.
+- Nëntë çiftet që mbeten në brezin për lexim u lexuan dhe u lanë. Janë jehona të
+  abstraktit, metodë kundrejt rezultatit, dhe dy çifte që ndajnë vetëm hapjen.
+- Citimi i tree-sitter-it mbetet pa vit, sepse shablloni e lejon për burim
+  elektronik (`references.py`, `TOOLS`).
