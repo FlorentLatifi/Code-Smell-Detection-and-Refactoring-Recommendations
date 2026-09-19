@@ -1,5 +1,56 @@
 # Code Smell Detection and Refactoring Recommendations
 
+## English summary
+
+Bachelor thesis in Computer Science and Engineering at UBT, academic year 2025/2026.
+Author: Florent Latifi. Supervisor: Altina Salihu. The rest of this README, the
+thesis and the decision log are in Albanian.
+
+The system analyses **Java** projects, detects *code smells* with three independent
+approaches, and proposes refactorings that are verified before they are offered.
+
+| Approach | How it works |
+|---|---|
+| A. Rules and metrics | Detection strategies from Lanza & Marinescu (2006), thresholds from the literature |
+| B. Machine learning | Random forest and gradient boosting over the metric vector, labelled with the MLCQ dataset |
+| C. Refactoring engine | Deterministic AST transformations from Fowler's catalogue, each verified with `javac` |
+
+Everything runs locally on open-source tools; no paid service is involved.
+
+**Results.** All three approaches are evaluated on 4,534 samples from 512 Java
+repositories, with ground truth from professional reviewers (MLCQ). Splits are grouped
+by repository, never random by row, and the majority-class baseline never fires, so
+every score below is real learning rather than exploited class imbalance.
+
+| Smell | A: MCC | B: MCC | Best model |
+|---|---|---|---|
+| Long Method | 0.580 | **0.713** | random forest |
+| Feature Envy | 0.271 | **0.669** | gradient boosting |
+| Data Class | 0.275 | **0.500** | gradient boosting |
+| Blob | 0.232 | **0.488** | gradient boosting |
+
+The refactoring engine applies Guard Clauses, Extract Method and Introduce Parameter
+Object (for `private` methods). It proposes two more without applying them, because
+they need every reference in the project, which the analysis cannot prove. A refusal
+is a correct result and is reported as one.
+
+**Usage.** From `backend/`, the tool prints findings, or writes the safe rewrites as a
+unified diff that you review before applying:
+
+```bash
+python -m javasmell path/to/project --format patch --out fixes.patch
+git apply --check fixes.patch
+```
+
+As a build gate, `--fail-on major` exits with code 3 when a finding at or above that
+severity remains.
+
+**Stack.** Python 3.13, tree-sitter, scikit-learn, FastAPI, React and TypeScript.
+CI runs ruff, mypy (strict) and pytest on every push, and dependencies are pinned so
+the published numbers can be reproduced.
+
+---
+
 Punim diplome Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
 Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2025/2026 · Dorëzimi: 2026
 
