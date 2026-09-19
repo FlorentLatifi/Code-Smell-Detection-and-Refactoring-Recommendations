@@ -5150,3 +5150,55 @@ dhe shtojcat) gjeti gjëra që shihen në faqe:
   abstraktit, metodë kundrejt rezultatit, dhe dy çifte që ndajnë vetëm hapjen.
 - Citimi i tree-sitter-it mbetet pa vit, sepse shablloni e lejon për burim
   elektronik (`references.py`, `TOOLS`).
+
+### VD-130: Thellësia e ndërfutjes ndjek indentimin, dhe një klasë lokale matet një herë
+
+**Konteksti.** Auditi i 19 shtatorit 2026 e provoi `_max_nesting` mbi kod të shkruar
+enkas. Ai matte pemën sintaksore dhe jo indentimin, ndonëse `NESTING_NODES` e
+deklaron vetë si listë të pohimeve që «open a new indentation level». Pema dhe
+indentimi ndahen në tri vende:
+- **`else if`.** Java nuk ka `elif`: një `else if` është një `if` brenda degës
+  `else` të të parit. Një zinxhir i sheshtë me pesë degë matej MAXNESTING 5 dhe
+  raportohej Deep Nesting, erë që nuk e ka dhe që Guard Clauses nuk e heq dot.
+- **`catch`.** Është fëmijë i `try`-it në pemë, por qëndron pranë bllokut të
+  `try`-it në kod. Kodi brenda një `catch` matej një nivel më thellë se ai brenda
+  `try`-it.
+- **Try-with-resources.** Ka llojin e vet të nyjes, `try_with_resources_statement`,
+  i cili mungonte nga lista. Trupi i tij nuk hapte fare nivel.
+
+I njëjti audit gjeti edhe një numërim të dyfishtë. Një klasë e deklaruar brenda një
+metode raportohet si klasë më vete, me metodat e saj, por kodi i saj numërohej edhe
+te metoda që e përmban: CC, MAXNESTING dhe qasjet në të dhëna.
+
+Asnjë test nuk e kapte asnjërin rast. Fikstura `OrderManager.priceOrder`, me
+thellësi reale 5, matej 6, por testi kontrollonte vetëm që Deep Nesting ndizte.
+
+**Vendimi.**
+- `catch_clause` del nga `NESTING_NODES`, dhe hyn `try_with_resources_statement`.
+- `_opens_level` nuk e numëron një `if` që është dega `else` e një `if`-i tjetër.
+  Një `if` brenda një blloku `else { … }` numërohet, sepse aty indentimi rritet.
+- `_own_children` ndalet te deklarimet e tipeve brenda trupit të metodës, te të
+  tria ecjet e trupit (faktet për metrikat, CC dhe ndërfutja).
+- Klasat anonime mbeten me metodën që i krijon, si lambdat, sepse nuk raportohen
+  askund tjetër. Po të hiqeshin, ai kod nuk do të matej fare.
+- MLOC mbetet shtrirja tekstuale e metodës, sipas përkufizimit të saj.
+
+**Alternativat.**
+- Lënia e matjes si ishte, dhe raportimi i saj si kufizim. U refuzua, sepse matja
+  kundërshtonte përkufizimin e vet të deklaruar.
+- Heqja e klasave anonime nga metoda. U refuzua për arsyen e mësipërme.
+
+**Testet.** Katër teste të reja, me vlerat e derivuara me dorë në koment:
+- zinxhiri `else if` mat 1 dhe nuk ndez Deep Nesting;
+- `else if`, `else { if }`, `catch` dhe try-with-resources në një metodë japin
+  thellësi 2 dhe CC 7;
+- një klasë lokale nuk i shtohet metodës që e përmban;
+- një klasë anonime i mbetet asaj.
+
+Secili test dështon kur ndreqja përkatëse hiqet në memorie. Suita: 692 teste kaluan
+dhe 1 u anashkalua.
+
+**Pasojat.** Ndryshojnë metrikat e metodave me `else if`, `catch`, try-with-resources
+ose klasa lokale, si dhe WMC dhe ATFD e klasave të tyre. Tabela e veçorive dhe të
+gjitha rezultatet që varen prej saj ose nga ecja mbi korpus rigjenerohen, dhe
+ndikimi i matur shënohet më poshtë.

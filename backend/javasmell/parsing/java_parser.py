@@ -43,6 +43,13 @@ IMPLICIT_CONSTANT_MODIFIERS = frozenset({"public", "static", "final"})
 RECORD_COMPONENT_MODIFIERS = frozenset({"private", "final"})
 
 # Statements that open a new indentation level, for max-nesting-depth.
+#
+# The tree does not follow indentation in two places, and both inflated the
+# depth (VD-130). A `catch` is a child of its `try` in the tree but sits beside
+# the `try` block in the source, so it is not listed: its body is one level
+# in, exactly like the `try` body. And `else if` is an `if` nested inside the
+# previous one's alternative, which `_opens_level` handles. A try-with-resources
+# is a node type of its own, and was missing, so its body opened no level at all.
 NESTING_NODES = {
     "if_statement",
     "for_statement",
@@ -51,7 +58,7 @@ NESTING_NODES = {
     "do_statement",
     "switch_expression",
     "try_statement",
-    "catch_clause",
+    "try_with_resources_statement",
     "synchronized_statement",
 }
 
@@ -478,7 +485,7 @@ def _collect_body(body: Node, ctx: _Context, method: MethodInfo) -> None:
         elif kind == "identifier":
             method.bare_names.add(ctx.text(node))
 
-        stack.extend(node.named_children)
+        stack.extend(_own_children(node))
 
 
 def _cyclomatic_complexity(body: Node) -> int:
@@ -505,8 +512,41 @@ def _cyclomatic_complexity(body: Node) -> int:
             operator = node.child_by_field_name("operator")
             if operator is not None and operator.type in {"&&", "||"}:
                 complexity += 1
-        stack.extend(node.named_children)
+        stack.extend(_own_children(node))
     return complexity
+
+
+def _opens_level(node: Node) -> bool:
+    """Whether ``node`` indents the code inside it one level deeper.
+
+    Java has no ``elif``: ``else if`` is an ``if`` in the alternative of the
+    previous one, so the tree nests every branch of a flat chain one step
+    deeper than the last. Counted that way, a five-way ``else if`` read as five
+    levels deep and was reported as Deep Nesting, a smell it does not have and
+    that Guard Clauses cannot remove (VD-130).
+    """
+    if node.type not in NESTING_NODES:
+        return False
+    if node.type != "if_statement":
+        return True
+    parent = node.parent
+    if parent is None or parent.type != "if_statement":
+        return True
+    alternative = parent.child_by_field_name("alternative")
+    return alternative is None or alternative.id != node.id
+
+
+def _own_children(node: Node) -> list[Node]:
+    """The children of ``node`` that belong to the method being measured.
+
+    A class, interface, enum or record declared inside a method body is
+    reported as a class of its own by `_iter_type_declarations`, with its own
+    methods. Walking into it here as well counted its code twice: once for its
+    own methods and once for the method that contains it (VD-130). An anonymous
+    class is not reported anywhere else, so its body stays with the enclosing
+    method, as a lambda's does.
+    """
+    return [child for child in node.named_children if child.type not in TYPE_DECLARATIONS]
 
 
 def _max_nesting(body: Node) -> int:
@@ -514,10 +554,10 @@ def _max_nesting(body: Node) -> int:
     stack: list[tuple[Node, int]] = [(body, 0)]
     while stack:
         node, depth = stack.pop()
-        if node.type in NESTING_NODES:
+        if _opens_level(node):
             depth += 1
             deepest = max(deepest, depth)
-        for child in node.named_children:
+        for child in _own_children(node):
             stack.append((child, depth))
     return deepest
 

@@ -203,6 +203,31 @@ def test_deep_nesting(project):
     assert any(s.method.startswith("priceOrder") for s in flagged)
 
 
+def test_a_flat_else_if_chain_is_not_deep_nesting():
+    """Near miss: five `if`s in one method, but side by side, not inside each other.
+
+    Every branch sits one level in, so MAXNESTING is 1, well under the bound of
+    three. It read 5 while `else if` was counted as a level of its own (VD-130),
+    and the method was reported as Deep Nesting.
+    """
+    source = """
+    class Dispatch {
+        int route(int x) {
+            if (x == 1) { return 1; }
+            else if (x == 2) { return 2; }
+            else if (x == 3) { return 3; }
+            else if (x == 4) { return 4; }
+            else if (x == 5) { return 5; }
+            return 0;
+        }
+    }
+    """
+    project = analyze_source(source)
+    cls = project.classes[0]
+    assert cls.methods[0].metrics["MAXNESTING"] == 1.0
+    assert not [s for s in detect_in_class(cls) if s.smell_type == "DeepNesting"]
+
+
 # ----------------------------------------------------------------------
 # Interfaces and enums
 # ----------------------------------------------------------------------

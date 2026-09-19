@@ -98,6 +98,86 @@ def test_cyclomatic_complexity_counts_every_decision_point():
     assert run.metrics["MAXNESTING"] == 2.0  # if -> for
 
 
+def test_nesting_follows_indentation_not_the_tree():
+    """`else if` and `catch` do not open a level; `else { if }` and try-with-resources do.
+
+    The tree nests an `else if` inside the previous `if`, and a `catch` inside its
+    `try`, though neither is indented further in the source (VD-130).
+    """
+    source = """
+    class Sample {
+        void run() {
+            if (a) { x(); }                     // if: level 1
+            else if (b) { y(); }                // else if: still level 1
+            else { if (c) { z(); } }            // if inside a block: level 2
+            try { p(); }                        // try: level 1
+            catch (E e) { if (d) { q(); } }     // catch: level 1, if: level 2
+            try (var s = open()) {              // try-with-resources: level 1
+                if (e) { t(); }                 // if: level 2
+            }
+        }
+    }
+    """
+    run = find_method(find_class(analyze_source(source), "Sample"), "run")
+    assert run.metrics["MAXNESTING"] == 2.0  # deepest are the three ifs at level 2
+    # Complexity is unaffected: every if is still a decision, and so is the catch.
+    assert run.metrics["CC"] == 7.0  # base 1 + if a, b, c, d, e (5) + catch (1)
+
+
+def test_a_local_class_is_measured_once():
+    """A class declared inside a method is its own class, not part of the method.
+
+    Its method is reported separately, so counting its body again for the
+    enclosing method measured the same code twice (VD-130).
+    """
+    source = """
+    class Outer {
+        void host() {
+            class Helper {
+                void work() {
+                    if (a) {          // level 1, decision 1
+                        if (b) { }    // level 2, decision 2
+                    }
+                }
+            }
+        }
+    }
+    """
+    project = analyze_source(source)
+    host = find_method(find_class(project, "Outer"), "host")
+    work = find_method(find_class(project, "Helper"), "work")
+    assert host.metrics["CC"] == 1.0  # nothing of its own to branch on
+    assert host.metrics["MAXNESTING"] == 0.0
+    assert work.metrics["CC"] == 3.0  # base 1 + two ifs
+    assert work.metrics["MAXNESTING"] == 2.0
+
+
+def test_an_anonymous_class_stays_with_its_method():
+    """Unlike a local class, an anonymous one is reported nowhere else.
+
+    So its body is measured as part of the method that creates it, the same way
+    a lambda's is. Leaving it out would measure that code nowhere at all.
+    """
+    source = """
+    class Outer {
+        void host() {
+            Runnable r = new Runnable() {
+                public void run() {
+                    if (a) {                  // level 1, decision 1
+                        for (;;) { }          // level 2, decision 2
+                    }
+                }
+            };
+        }
+    }
+    """
+    project = analyze_source(source)
+    assert [c.name for c in project.classes] == ["Outer"]
+    host = find_method(find_class(project, "Outer"), "host")
+    assert host.metrics["CC"] == 3.0  # base 1 + if + for
+    assert host.metrics["MAXNESTING"] == 2.0
+
+
 def test_wmc_is_the_sum_of_method_complexity(project):
     item = find_class(project, "Item")
     # Six accessors, each with complexity 1.
