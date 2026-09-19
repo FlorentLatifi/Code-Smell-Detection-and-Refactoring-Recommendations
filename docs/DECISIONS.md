@@ -4951,7 +4951,8 @@ varësitë u kontrolluan kundrejt bazave publike të dobësive.
   një shërbim të përbashkët.
 - **Licenca mungon.** Pa licencë, një depo publike nuk lejon ligjërisht
   përdorim nga të tjerët. Zgjedhja i takon autorit dhe ndoshta rregullave të
-  UBT-së për punimet, ndaj nuk u bë këtu.
+  UBT-së për punimet, ndaj nuk u bë këtu. Më pas autori zgjodhi MIT-in
+  (`LICENSE`, commit-i «Shto licencen MIT»).
 - **Versioni mbetet 0.1.0.** Një version 1.0 është vendim lansimi i autorit.
 
 **Verifikimi.**
