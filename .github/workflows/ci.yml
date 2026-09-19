@@ -114,6 +114,12 @@ jobs:
         working-directory: docs/thesis
         run: python check_format.py
 
+      # A sentence said twice, in two chapters written weeks apart, reads as
+      # padding and is invisible while writing. The mentor asked for none (VD-128).
+      - name: Check for repeated sentences
+        working-directory: docs/thesis
+        run: python check_repetition.py
+
       # The deck reads the same result files as the chapters, so a builder that
       # stops working is a defence with no slides — found on the day, otherwise.
       - name: Build the slides

@@ -539,6 +539,10 @@ saktë dhe jo kërkesë e pavlefshme (VD-36).
   Xplore, Springer) për tetë hyrjet kryesore; të tetë dolën të sakta. Ndarja mes
   të verifikuarave dhe të paverifikuarave mbahet te `references.py` dhe e ruan
   `check_citations.py`, që një hyrje e re me faqe të mos rrijë heshtazi jashtë saj.
+- ✅ Përsëritjet verifikohen nga `docs/thesis/check_repetition.py` mbi dokumentin e
+  ndërtuar. Kontrolli dështon kur dy fjali kanë ngjashmëri 0.55 ose më shumë, dhe
+  liston për lexim çiftet 0.40–0.55 dhe frazat prej gjashtë fjalësh që
+  përsëriten. Hyn në CI (VD-128, VD-129).
 - ⬜ Mbetet: redaktimi i tekstit. Nga vendet e shënuara `[PLOTËSO]`, katër u
   mbushën në sesione të mëparshme (mentorja, data e dorëzimit, data e qasjes te
   tree-sitter, kufizimet e §1.5 — VD-53). Mbeten dy: falënderimet, sepse janë
