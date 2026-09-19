@@ -418,3 +418,58 @@ def test_python_dash_m_runs_the_same_command(monkeypatch, capsys):
 
     assert exited.value.code == 0
     assert "Analysed 2 file(s), 5 class(es)" in capsys.readouterr().out
+
+
+# ----------------------------------------------------------------------
+# --thresholds (VD-131)
+# ----------------------------------------------------------------------
+# A method of one signature line and eleven statements: MLOC = 12, since the
+# closing braces are delimiters and do not count. Under the published bound of
+# 30 it is not a Long Method; under an override of 10 it is.
+TWELVE_LINE_METHOD = "class S {\n    void m() {\n" + "        a++;\n" * 11 + "    }\n}\n"
+
+
+def _long_methods(out: str) -> list[dict]:
+    return [s for s in json.loads(out) if s["smell_type"] == "LongMethod"]
+
+
+def test_a_thresholds_file_moves_the_bound_it_names(tmp_path, capsys):
+    source = tmp_path / "S.java"
+    source.write_text(TWELVE_LINE_METHOD, encoding="utf-8")
+    config = tmp_path / "t.toml"
+    config.write_text("long_method_loc = 10\n", encoding="utf-8")
+
+    assert main([str(source), "--format", "json"]) == 0
+    assert _long_methods(capsys.readouterr().out) == []  # 12 is not over 30
+
+    assert main([str(source), "--format", "json", "--thresholds", str(config)]) == 0
+    captured = capsys.readouterr()
+    assert len(_long_methods(captured.out)) == 1  # 12 is over 10
+    # Said on stderr, so the JSON on stdout still parses (json.loads above).
+    assert "long_method_loc=10 (published 30)" in captured.err
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        ("long_method_lines = 10\n", "Unknown threshold(s): long_method_lines"),
+        ("long_method_loc = true\n", "must be a number"),
+        ("long_method_loc = 0\n", "must be greater than zero"),
+        ('long_method_loc = "ten"\n', "must be a number"),
+        ("long_method_loc = \n", "not valid TOML"),
+    ],
+)
+def test_an_unusable_thresholds_file_stops_before_the_analysis(tmp_path, capsys, content, expected):
+    """Exit 2, like an unusable path: nothing was measured with the wrong bound."""
+    config = tmp_path / "t.toml"
+    config.write_text(content, encoding="utf-8")
+
+    assert main([FIXTURES, "--thresholds", str(config)]) == 2
+    captured = capsys.readouterr()
+    assert expected in captured.err
+    assert captured.out == ""
+
+
+def test_a_missing_thresholds_file_is_refused(tmp_path, capsys):
+    assert main([FIXTURES, "--thresholds", str(tmp_path / "absent.toml")]) == 2
+    assert "Cannot read the thresholds file" in capsys.readouterr().err

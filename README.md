@@ -145,6 +145,23 @@ portë i dallon dot të dyja pa lexuar asnjë rresht dalje (VD-92).
 python -m javasmell path/to/project --fail-on major
 ```
 
+Pragjet e publikuara janë të parazgjedhura. Për t'i lëvizur pa e prekur kodin, një
+skedar TOML emërton vetëm ato që ndryshojnë, me emrat e Shtojcës 8.2 të punimit;
+të tjerat mbeten si janë. Komanda i shkruan te stderr pragjet e ndryshuara, që një
+raport i tillë të mos ngatërrohet me një të matur me vlerat e publikuara. Një emër
+i panjohur, një vlerë jo-numerike ose një vlerë zero a negative e ndalin komandën
+me kod 2, para analizës (VD-131).
+
+```toml
+# pragje.toml
+long_method_loc = 40
+feature_envy_laa = 0.5
+```
+
+```bash
+python -m javasmell path/to/project --thresholds pragje.toml
+```
+
 I njëjti patch shërbehet nga `POST /refactor/patch` dhe nga ndërfaqja, nën
 `JAVASMELL_TIMEOUT_S`: verifikimi ekzekuton `javac` për çdo skedar të rishkruar,
 ndaj koha kufizohet dhe një buxhet i mbaruar jep patch më të shkurtër me numrin e

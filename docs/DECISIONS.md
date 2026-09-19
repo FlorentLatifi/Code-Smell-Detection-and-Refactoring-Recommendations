@@ -5202,3 +5202,35 @@ dhe 1 u anashkalua.
 ose klasa lokale, si dhe WMC dhe ATFD e klasave të tyre. Tabela e veçorive dhe të
 gjitha rezultatet që varen prej saj ose nga ecja mbi korpus rigjenerohen, dhe
 ndikimi i matur shënohet më poshtë.
+
+---
+
+### VD-131: Pragjet lëvizin me një skedar TOML, jo duke ndryshuar kodin
+
+**Konteksti.** Pragjet mund të ndryshoheshin vetëm duke krijuar një `Thresholds` në
+kod. Kjo mjaftonte për fshirjen e Shtojcës 8.6, por jo për një përdorues që do ta
+provojë mjetin mbi projektin e vet me një kufi tjetër.
+
+**Vendimi.**
+- `with_overrides` te `detectors/thresholds.py` merr një hartë emër → vlerë dhe
+  kthen një `Thresholds` të ri. Mbetet i pastër, pa I/O, si pjesa tjetër e
+  detektorëve.
+- CLI-ja merr `--thresholds FILE`, e lexon me `tomllib` (pa varësi të re) dhe i
+  shkruan te stderr pragjet që ndryshuan, bashkë me vlerën e publikuar. Stdout
+  mbetet i pastër për JSON dhe patch.
+- Refuzohen, me kod 2 dhe para analizës: emri i panjohur, vlera boolean, vlera jo
+  numerike, vlera zero ose negative, TOML i pavlefshëm dhe skedari që mungon.
+  - Një emër i shkruar gabim do të injorohej heshtazi, dhe raporti do të matej me
+    vlerën që përdoruesi donte ta ndryshonte.
+  - Një boolean është `int` në Python dhe do të kalonte si 1 ose 0.
+
+**Çfarë nuk ndryshon.** Vlerat e publikuara mbeten të parazgjedhurat, dhe punimi
+prodhohet vetëm me to. API-ja dhe ndërfaqja nuk e marrin këtë opsion. Një prag i
+lëvizur është eksperiment lokal i përdoruesit, jo mënyrë tjetër për të prodhuar
+numrat e punimit.
+
+**Testet.** Pesë raste refuzimi, skedari që mungon, dhe një rast pozitiv i derivuar
+me dorë:
+- metoda ka MLOC 12, një rresht firme dhe njëmbëdhjetë pohime;
+- nuk ndez nën 30, por ndez nën 10;
+- rreshti te stderr e shënon ndryshimin, dhe JSON-i te stdout lexohet i pastër.

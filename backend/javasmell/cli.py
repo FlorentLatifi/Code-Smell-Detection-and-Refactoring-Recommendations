@@ -14,7 +14,8 @@ applying it stays the author's decision (ENGINEERING.md §4).
 
 Exit codes are part of that scriptable contract, so each failure gets its own:
 0 on success, 1 when the path was analysable but held no Java class, 2 when the
-path itself is unusable, 4 when ``--apply`` was asked for and refused. Giving the
+path itself or the ``--thresholds`` file is unusable, 4 when ``--apply`` was
+asked for and refused. Giving the
 first two the same code is what let a mistyped path in an experiment read as a
 project with nothing in it.
 
@@ -38,14 +39,21 @@ import io
 import json
 import shutil
 import sys
+import tomllib
 from collections import Counter
+from dataclasses import fields
 from pathlib import Path
 from typing import TextIO
 
 from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import REFACTORINGS, detect_all
-from javasmell.detectors.thresholds import DEFAULT
+from javasmell.detectors.thresholds import (
+    DEFAULT,
+    ThresholdError,
+    Thresholds,
+    with_overrides,
+)
 from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel, posix
 from javasmell.refactor.apply import Refusal, apply_patches
@@ -99,6 +107,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exit 3 when a finding at or above this severity survives the filters, "
         "so the command can gate a build",
     )
+    parser.add_argument(
+        "--thresholds",
+        metavar="FILE",
+        help="A TOML file of threshold overrides, e.g. long_method_loc = 40. Names not "
+        "listed keep their published value",
+    )
     return parser
 
 
@@ -132,12 +146,21 @@ def main(argv: list[str] | None = None) -> int:
         print(problem, file=sys.stderr)
         return 2
 
+    thresholds = DEFAULT
+    if args.thresholds:
+        loaded = _load_thresholds(args.thresholds)
+        if isinstance(loaded, str):
+            print(loaded, file=sys.stderr)
+            return 2
+        thresholds = loaded
+        _announce_overrides(args.thresholds, thresholds)
+
     project = analyze_path(args.path)
     if not project.classes:
         print(f"No Java classes found under {args.path}", file=sys.stderr)
         return 1
 
-    smells = detect_all(project, DEFAULT)
+    smells = detect_all(project, thresholds)
     cutoff = SEVERITY_ORDER[args.min_severity]
     smells = [s for s in smells if SEVERITY_ORDER[s.severity.value] <= cutoff]
     if args.smell:
@@ -170,6 +193,45 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
     return 0
+
+
+def _load_thresholds(path: str) -> Thresholds | str:
+    """The thresholds a TOML file asks for, or why the file cannot be used.
+
+    Checked before the analysis starts, because a mistake here is cheap to
+    report and expensive to discover: a misspelt name that was ignored would
+    produce a full report measured with the default the user meant to change.
+    """
+    try:
+        with Path(path).open("rb") as handle:
+            values = tomllib.load(handle)
+    except OSError as error:
+        return f"Cannot read the thresholds file {path}: {error.strerror or error}"
+    except tomllib.TOMLDecodeError as error:
+        return f"The thresholds file {path} is not valid TOML: {error}"
+    try:
+        return with_overrides(values)
+    except ThresholdError as error:
+        return f"The thresholds file {path} was not applied: {error}"
+
+
+def _announce_overrides(path: str, thresholds: Thresholds) -> None:
+    """Say which thresholds differ from the published ones.
+
+    On stderr, where the rest of the account goes, so that JSON and patch output
+    stay parseable. A report produced with moved thresholds is not comparable
+    with one produced without them, and it should not be possible to mistake the
+    first for the second (VD-131).
+    """
+    changed = [
+        f"{name}={getattr(thresholds, name):g} (published {getattr(DEFAULT, name):g})"
+        for name in sorted(field.name for field in fields(Thresholds))
+        if getattr(thresholds, name) != getattr(DEFAULT, name)
+    ]
+    if changed:
+        print(f"Thresholds from {path}: " + ", ".join(changed), file=sys.stderr)
+    else:
+        print(f"Thresholds from {path}: all at their published values", file=sys.stderr)
 
 
 def _emit(

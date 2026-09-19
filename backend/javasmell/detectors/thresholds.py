@@ -15,7 +15,8 @@ sensitivity analysis in the Results chapter can sweep them programmatically.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, fields, replace
 
 # ---------------------------------------------------------------------
 # Lanza & Marinescu's generic quantifiers, p. 16.
@@ -92,3 +93,36 @@ class Thresholds:
 
 
 DEFAULT = Thresholds()
+
+
+class ThresholdError(ValueError):
+    """An override that names no threshold, or gives one a value it cannot take."""
+
+
+def with_overrides(values: Mapping[str, object], base: Thresholds = DEFAULT) -> Thresholds:
+    """``base`` with some thresholds replaced, each one checked before it is used.
+
+    Lets a user move a threshold without editing this file (VD-131). The
+    published values stay the default, and the Results chapter is produced only
+    with them; an override is a local experiment, and the caller says so.
+
+    Rejects rather than guesses. A misspelt name would otherwise be ignored and
+    the run would quietly use the default the user meant to change; a boolean
+    is an ``int`` in Python and would pass as 1 or 0; and a threshold of zero or
+    below makes a clause either always or never hold, which is a configuration
+    mistake rather than a stricter strategy.
+    """
+    known = {field.name for field in fields(Thresholds)}
+    unknown = sorted(set(values) - known)
+    if unknown:
+        raise ThresholdError(
+            f"Unknown threshold(s): {', '.join(unknown)}. Known: {', '.join(sorted(known))}"
+        )
+    checked: dict[str, float] = {}
+    for name, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, int | float):
+            raise ThresholdError(f"{name} must be a number, not {value!r}")
+        if value <= 0:
+            raise ThresholdError(f"{name} must be greater than zero, not {value}")
+        checked[name] = float(value)
+    return replace(base, **checked)

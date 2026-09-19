@@ -24,7 +24,7 @@ from javasmell.detectors.rules import (
     detect_large_class,
     god_class_clauses,
 )
-from javasmell.detectors.thresholds import Thresholds
+from javasmell.detectors.thresholds import DEFAULT, Thresholds, with_overrides
 from javasmell.model.entities import ClassInfo
 
 FIXTURES = str(Path(__file__).parent / "fixtures")
@@ -456,3 +456,13 @@ def test_every_condition_a_finding_carries_is_one_that_holds():
     for smell in detect_all(project):
         unmet = [c.describe() for c in smell.conditions if not c.satisfied]
         assert not unmet, f"{smell.smell_type} reports clauses that do not hold: {unmet}"
+
+
+def test_overrides_replace_only_what_they_name():
+    """The rest keep the published values, and the default itself is untouched."""
+    moved = with_overrides({"long_method_loc": 40, "feature_envy_laa": 0.5})
+
+    assert moved.long_method_loc == 40.0
+    assert moved.feature_envy_laa == 0.5
+    assert moved.god_class_wmc == DEFAULT.god_class_wmc
+    assert DEFAULT.long_method_loc == 30  # frozen: the baseline did not move
