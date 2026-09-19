@@ -279,6 +279,7 @@ Skriptet ekzekutohen në këtë radhë; koha është për një laptop pa GPU.
 | 19 | `compare_with_pmd.py` | krahasimi me PMD-në mbi të njëjtat mostra | orë |
 | 20 | `blocking_conditions.py` | cila klauzolë e ndal secilën strategji | sekonda |
 | 21 | `blob_recall.py` | çfarë mbetet pa u kapur te Blob-i | sekonda |
+| 22 | `train_strategy_features.py` | Qasja B vetëm me metrikat e strategjisë | sekonda |
 
 Hapi 3 është kalimi i shtrenjtë që duhet paguar një herë: ai mat çdo entitet, dhe
 hapat 4 deri 6 lexojnë rreshtat e tij. Meqë tabela komitohet, një anëtar komisioni me

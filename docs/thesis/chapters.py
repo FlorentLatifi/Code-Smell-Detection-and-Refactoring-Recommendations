@@ -3565,6 +3565,8 @@ REPRODUCTION = [
     ("19", "compare_with_pmd.py", "krahasimi me PMD-në mbi të njëjtat mostra", "orë"),
     ("20", "blocking_conditions.py", "cila klauzolë e ndal secilën strategji", "sekonda"),
     ("21", "blob_recall.py", "çfarë mbetet pa u kapur te Blob-i", "sekonda"),
+    ("22", "train_strategy_features.py", "Qasja B vetëm me metrikat e strategjisë",
+     "sekonda"),
 ]
 
 REPOSITORY = "https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations"
