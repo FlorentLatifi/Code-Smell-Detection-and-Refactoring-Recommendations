@@ -4964,3 +4964,87 @@ varësitë u kontrolluan kundrejt bazave publike të dobësive.
   mbyllje.
 - `README` thoshte ende «522 depo» në vend të 512 (VD-118), dhe §6 i
   `ENGINEERING.md` e quante ende CSRF-në jashtë fushës. Të dyja u ndreqën.
+
+### VD-128: Punimi pa fjali dhe ide të përsëritura
+
+**Konteksti.** Mentorja kërkoi që punimi ta shmangë sa më shumë përsëritjen e
+fjalive, që lexuesi ta ruajë interesin për atë që vjen më pas. Leximi i plotë
+gjeti dy lloje përsëritjesh:
+- **Sipërfaqësore.** Fjali pothuajse identike në kapituj të ndryshëm, sidomos
+  hapjet «Tabela në vijim jep…» te Kapitulli 5, dhe shablloni i Shtojcës 8.8 që
+  e përsëriste të njëjtin shpjegim për çdo erë, me numra të tjerë.
+- **Të ideve.** E njëjta gjetje, e thënë tri a katër herë:
+  - Pyetjet kërkimore rishkruheshin fjalë për fjalë te 6.4.
+  - Shifrat e PK3 dilnin te 6.1, 6.4 dhe 6.8.
+  - Përfundimi i rithoshte përgjigjet, dhe fjalia e tij e fundit ishte ajo e
+    abstraktit.
+  - Kufizimet e 3.4 rithuheshin te hyrja e Kapitullit 4 dhe te 6.6.
+
+**Metoda.** Një skript ndihmës lexon `.docx`-in e ndërtuar dhe raporton dy gjëra:
+- çiftet e fjalive me ngjashmëri të paktën 0.55 (difflib mbi fjalë);
+- frazat prej gjashtë ose më shumë fjalësh që dalin në më shumë se një fjali.
+
+Skripti nuk është në depo, sepse nuk prodhon asnjë shifër të punimit. Ai nuk i kap
+idetë e rithëna me fjalë të tjera. Ato u gjetën duke e lexuar punimin.
+
+**Vendimi.** Asnjë numër nuk ndryshoi dhe asnjë rezultat nuk u rilexua. Rregullat e
+VD-125 mbeten:
+- hyrja pa nënkapituj;
+- PK-të te Kapitulli 3;
+- metodologjia pa rezultate;
+- Kapitulli 5 pa «pse»;
+- Kapitulli 6 me interpretim, krahasim dhe përgjigje.
+
+Secila gjë thuhet një herë, në vendin ku i takon. Vendet e tjera i referohen:
+- **6.4.** Çdo pyetje merr një etiketë të shkurtër («PK1, saktësia e
+  strategjive») në vend që të rishkruhet. Mbahet vetëm shifra që e mban
+  përgjigjen. Pohimet «precizioni mbi recall» dhe «te çdo erë» lexohen nga të
+  dhënat.
+- **6.1.** Qasja C interpretohet pa i rithënë shifrat e PK3. Leximi i përdorimit
+  praktik (prerja si sinjali më i sigurt) kaloi te 6.5.
+- **6.2.** «Çfarë funksionoi» u shkrua si tri zgjedhje metodologjike. Fjalia e
+  Shtojcës 8.8 për Blob-in u zëvendësua me atë që ajo do të thotë.
+- **6.5.** Teoria nuk e rithotë 6.1. Ajo thotë çfarë mbetet e vlefshme nga
+  strategjitë (njohuria) dhe çfarë jo (kufijtë numerikë).
+- **6.6.** Kufizimet japin pasojën. Arsyeja mbetet te 3.4, dhe numrat e Blob-it te
+  8.11.
+- **6.8.** Përfundimi u rishkrua si sintezë: çfarë mund t'i besohet mjetit, dhe
+  mësimi metodologjik. Ai nuk i rithotë më përgjigjet dhe as abstraktin.
+- **Kapitulli 5.** Hapjet e tabelave u bënë fjali që e çojnë lexuesin te tabela.
+- **Shtojca 8.8.** Shpjegimi jepet vetëm te era e parë; te të tjerat, vetëm
+  numrat.
+- **Riformulime të vogla, ku e njëjta frazë dilte në dy vende:** hyrja, 2.1, 2.6,
+  3, 3.2, 3.3, hyrja e Kapitullit 4, 4.4, 4.6–4.9, 6.3, 8.2, 8.6 dhe 8.10.
+
+**Matja.** Kapitujt 1–6 dhe shtojcat, pa abstraktin:
+
+| | Para | Pas |
+|---|---:|---:|
+| Fjali të analizuara | 530 | 517 |
+| Çifte me ngjashmëri ≥ 0.55 | 10 | 0 |
+| Fraza 6+ fjalësh në më shumë se një fjali | 37 | 3 |
+
+Tri frazat që mbeten janë të pranueshme:
+- një citim (TCC-ja e Bieman & Kang-ut, 1995), te 4.4 dhe 8.11;
+- «rishikuesit e MLCQ-së e quajnë», në dy kontekste të ndryshme;
+- «nuk janë më të mëdha se», ku 6.6 e përmbledh 8.11.
+
+Me abstraktin brenda, frazat bëhen 7. Katër të shtuarat janë jehona të abstraktit,
+i cili i përmbledh rezultatet nga natyra e tij.
+
+**Fjalët.** Word, pas përditësimit të përmbajtjes, jep për kapitujt 1–6:
+- 9 732 me tabela dhe 9 099 pa to (para: 9 922 dhe 9 289);
+- 73 faqe gjithsej.
+
+**Verifikimi.**
+- `check_format`, `check_citations`, `check_reproduction` dhe `check_slides`
+  kalojnë.
+- Teksti i prezantimit doli identik, ndaj `.pptx`-i nuk u rishkrua.
+- Kapitulli 6 u lexua i plotë pas ndryshimeve.
+
+**Çfarë nuk u verifikua.**
+- Kapitujt 1–5 dhe shtojcat u kontrolluan pas ndryshimeve vetëm me skriptin, jo
+  me lexim të plotë.
+- PDF-ja nuk u shfletua faqe për faqe.
+- Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
+  `docs/thesis/`.
