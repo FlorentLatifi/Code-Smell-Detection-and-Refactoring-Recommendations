@@ -552,8 +552,8 @@ def _coverage_sentence() -> str:
 # Gjendja e validimit në verifikimin e fundit, e njëjta me `docs/ROADMAP.md`.
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
-VALIDATION_DATE = "18 shtator 2026"
-BACKEND_TESTS = 688
+VALIDATION_DATE = "22 shtator 2026"
+BACKEND_TESTS = 700
 COVERAGE = "96%"
 FRONTEND_TESTS = 165
 
@@ -579,6 +579,28 @@ TECHNOLOGIES = [
     ["Ruff, mypy", "0.16.4, 2.3.1", "stili i kodit dhe kontrolli strikt i tipave"],
     ["Matplotlib, python-docx", "3.11.1, 1.2.0", "figurat dhe ky dokument"],
 ]  # fmt: skip
+
+def _unsourced_thresholds() -> str:
+    """Cilat pragje nuk vijnë nga një burim, të lexuara nga vlerat e eksportuara.
+
+    Teksti thoshte «çdo numër aty ka citim; një vlerë që nuk i atribuohet dot një
+    burimi nuk përdoret». Katër pragje nuk kanë burim të botuar, dhe auditi i 19
+    shtatorit e gjeti pohimin të pavërtetë (VD-133).
+    """
+    values = _load("system_reference.json")["thresholds"]
+
+    def at(name: str) -> str:
+        return f"{values[name]:g}"
+
+    return (
+        "Katër pragje nuk kanë burim të botuar dhe janë zgjedhje të autorit: kufiri i "
+        f"Long Method ({at('long_method_loc')} rreshta), dy kushte të Brain Method (CC ≥ "
+        f"{at('brain_method_cc')}, ndërfutja ≥ {at('brain_method_nesting')}) dhe kufiri i Deep "
+        f"Nesting (> {at('deep_nesting')}). I pari zhvendoset te Shtojca 8.6; tre të tjerët nuk "
+        "maten dot kundrejt MLCQ-së. Të autorit janë edhe tre pragjet e ashpërsisë (Shtojca "
+        "8.9); të tjerat vijnë nga Lanza & Marinescu (Shtojca 8.2)."
+    )
+
 
 CHAPTER_4 = [
     (
@@ -701,9 +723,8 @@ CHAPTER_4 = [
             "Method zbatohen ashtu siç janë publikuar nga Lanza & Marinescu (2006); Large "
             "Class, Long Method dhe Long Parameter List ndjekin përshkrimet e Fowler-it "
             "(2018), dhe Deep Nesting mat thellësinë e ndërfutjes së blloqeve. Kushtet "
-            "dhe burimi i secilës jepen te Shtojca 8.1. Çdo prag rri i centralizuar në "
-            "një skedar të vetëm dhe çdo numër aty ka citim; një vlerë që nuk i "
-            "atribuohet dot një burimi nuk përdoret.",
+            "dhe burimi i secilës jepen te Shtojca 8.1.",
+            _unsourced_thresholds(),
             "Katër strategji vlerësohen kundrejt MLCQ-së: God Class kundrejt etiketës "
             "«blob», Data Class, Feature Envy dhe Long Method kundrejt etiketave me të "
             "njëjtin emër. Për Blob-in pikëzohet edhe një variant që i bashkon God Class "
@@ -727,7 +748,8 @@ CHAPTER_4 = [
             "tabela dhe figura, parashtesa «c_» shënon një metrikë të klasës dhe «m_» "
             "një metrikë të metodës, sepse disa, si ATFD, maten në të dy nivelet.",
             "Klasifikuesi i shumicës, që parashikon gjithmonë «pa erë», raportohet si "
-            "model bazë.",
+            "model bazë. Të njëjtat modele trajnohen edhe vetëm me metrikat e strategjisë, "
+            "që fitimi të mos ngatërrohet me metrikat shtesë.",
             "Ndarja bëhet me GroupKFold sipas depos, që mostrat e një projekti të mos "
             "jenë njëherësh në trajnim dhe në testim (Nënkapitulli 2.3). Parashikimet "
             "janë jashtë fold-it: çdo mostër parashikohet "
@@ -804,15 +826,11 @@ CHAPTER_4 = [
         "4.8",
         "Ndërfaqja web dhe API",
         [
-            "Shërbimi HTTP ofron njëmbëdhjetë pika hyrjeje. /health jep gjendjen, "
-            "/analyze analizon një projekt ose skedar, /metrics jep metrikat e një "
-            "entiteti, /source kodin e tij, /browse nënndosjet e një shtegu dhe "
-            "/projects/github importon një depo publike. Pesë të tjera janë nën "
-            "/refactor: pamja paraprake e një rishkrimi (preview), diff-i i të gjitha "
-            "rishkrimeve të verifikuara (patch, edhe si rrjedhë progresi), pyetja nëse "
-            "shkrimi lejohet (tree) dhe shkrimi në disk (apply). Çdo pikë e validon "
-            "kërkesën, thërret të njëjtat funksione si rreshti i komandës dhe e kthen "
-            "përgjigjen si JSON.",
+            "Shërbimi HTTP ofron njëmbëdhjetë pika hyrjeje: analizën e një projekti, "
+            "metrikat dhe kodin e një entiteti, shfletimin e dosjeve, importin nga GitHub, "
+            "gjendjen e shërbimit, dhe pesë pika nën /refactor për pamjen paraprake, "
+            "patch-in, kontrollin dhe shkrimin në disk. Çdo pikë e validon kërkesën, "
+            "thërret të njëjtat funksione si rreshti i komandës dhe kthen JSON.",
             "Aplikacioni ka një përdorues dhe dëgjon vetëm në localhost, ndaj rreziqet "
             "që mbrohen nuk janë autentikimi, por shtegu dhe burimet. Shtegu që dërgon "
             "përdoruesi kanonizohet dhe pranohet vetëm nëse bie brenda një rrënje të "
@@ -975,7 +993,7 @@ def _context_conclusion() -> str:
         )
     return (
         "pjesa që kompilon plotësisht rritet ndjeshëm, ndërsa "
-        f"{regressions} rishkrime nga {total} e përmbysin verdiktin në drejtimin e "
+        f"{_word(regressions)} rishkrime nga {total} e përmbysin verdiktin në drejtimin e "
         "kundërt dhe e kufizojnë pretendimin"
     )
 
@@ -1177,9 +1195,7 @@ def _reading_of_detection(h: dict) -> list:
         + ". Një F1 i vetëm do ta fshihte këtë dallim.",
         "**Qasja B.** Modelet e tejkalojnë qasjen me rregulla te çdo erë, dhe meqë "
         "klasifikuesi i shumicës nuk ndez kurrë, fitimi nuk vjen nga çekuilibri i "
-        "klasave. I njëjti informacion, i lexuar pa kufij të fiksuar paraprakisht, jep "
-        "më shumë: strategjive nuk u mungojnë metrikat, u mungon vendi i duhur ku t'i "
-        "presin.",
+        "klasave." + _gain_split(h),
         "Shpjegimi për rast e zbut kundërshtimin standard ndaj mësimit të makinës, se "
         f"modeli fiton por nuk thotë pse. Te {min(shares):.0%} deri në {max(shares):.0%} "
         "të verdikteve një matje e vetme e mban shënimin, dhe matja më e shpeshtë "
@@ -1220,6 +1236,42 @@ def _reading_of_detection(h: dict) -> list:
     ]
 
 
+def _isolation_reading(context: dict) -> str:
+    """Çfarë thotë kompilimi brenda projektit për verdiktin e izoluar, nga të dhënat.
+
+    Fjala që qëndronte këtu, «shumica e rasteve pa gabim të ri kompilojnë
+    plotësisht», nuk ishte e vërtetë: brenda projektit kompilonte plotësisht një
+    pakicë. U fut kur paragrafi u shkurtua (VD-128), dhe shtrembëronte origjinalin,
+    që thoshte se gabimet e mbetura i përkasin izolimit. Pohonte gjithashtu se
+    përmbysja e Ambari-t ishte e vetmja, ndërsa rimatja pas VD-130 nxori dy.
+    """
+    tolerant = context["compiled_alone"].get("no_new_errors", 0)
+    lifted = context.get("moved", {}).get("no_new_errors -> compiles", 0)
+    regressions = context["compiled_in_project"].get("new_errors", 0)
+    if not regressions:
+        overturn = "Asnjë rishkrim nuk shkon në drejtimin e kundërt. "
+    elif regressions == 1:
+        overturn = (
+            "Një rishkrim i vetëm shkon në drejtimin e kundërt: pa gabim të ri i izoluar, "
+            "me gabim të ri brenda projektit. "
+        )
+    else:
+        overturn = (
+            f"{_opens(_word(regressions))} rishkrime shkojnë në drejtimin e kundërt: pa "
+            "gabim të ri të izoluara, me gabim të ri brenda projektit. "
+        )
+    return (
+        "Verdikti i izoluar është më i rreptë se vetë rishkrimi. Brenda projektit të "
+        f"vet (Nënkapitulli 5.4), {lifted} nga {tolerant} rishkrimet «pa gabim të ri» "
+        "kompilojnë plotësisht, pra gabimet e tyre të mëparshme i detyroheshin mungesës "
+        "së fqinjëve dhe jo transformimit. Te pjesa tjetër, gabimet ishin aty edhe para "
+        "rishkrimit: korpusi nuk mban bibliotekat e jashtme. "
+        + overturn
+        + "Toleranca «pa lloj të ri gabimi» mbetet dëshmi e përdorshme ku kompilimi i "
+        "plotë nuk arrihet, por jo garanci."
+    )
+
+
 def _reading_of_refactoring() -> list:
     """Interpretimi i PK3, me çdo numër nga të dhënat."""
     data = _load_if_present("refactoring_evaluation.json")
@@ -1242,15 +1294,7 @@ def _reading_of_refactoring() -> list:
         "metodat ku ndihma do të vlente më shumë.",
     ]
     if context is not None:
-        paragraphs.append(
-            "Verdikti i izoluar është më i rreptë se vetë rishkrimi. Brenda projektit të "
-            "vet (Nënkapitulli 5.4), shumica e rasteve «pa gabim të ri» kompilojnë "
-            "plotësisht, ndaj gabimet e tyre të mëparshme i detyroheshin mungesës së "
-            "fqinjëve dhe jo transformimit. Përmbysja e vetme, te Ambari, shton gabime "
-            "vetëm sepse tipi që kalon te nënshkrimi i metodës së nxjerrë mban anotacione "
-            "nga një bibliotekë që korpusi nuk e ka. Toleranca «pa lloj të ri gabimi» "
-            "mbetet dëshmi e përdorshme ku kompilimi i plotë nuk arrihet, por jo garanci."
-        )
+        paragraphs.append(_isolation_reading(context))
     if resolution:
         paragraphs.append(
             "Që një rishkrim kompilon nuk do të thotë se e heq erën, dhe kur era mbetet, "
@@ -1362,6 +1406,72 @@ def _literature_comparison(h: dict) -> list:
     return paragraphs
 
 
+def _gain_parts(h: dict) -> dict[str, tuple[float, float]] | None:
+    """Fitimi i Qasjes B mbi rregullin, i ndarë në dy pjesë, për çdo erë.
+
+    E para është ajo që modeli fiton kur sheh vetëm metrikat e strategjisë, pra
+    duke mësuar vetëm ku pritet kufiri. E dyta është ajo që shtojnë metrikat e
+    tjera mbi të. Kthen `None` kur ablacioni nuk është ekzekutuar (VD-132).
+    """
+    data = _load_if_present("ml_strategy_features.json")
+    if data is None:
+        return None
+    parts: dict[str, tuple[float, float]] = {}
+    for smell in h["smells"]:
+        entry = data["per_smell"].get(smell)
+        if entry is None:
+            continue
+        restricted = entry["models"][entry["best_model"]]["mcc"]
+        if restricted is None:
+            continue
+        parts[smell] = (
+            restricted - h["strategy"][smell]["mcc"],
+            h["model"][smell]["mcc"] - restricted,
+        )
+    return parts or None
+
+
+def _gain_split(h: dict) -> str:
+    """Nga vjen fitimi i Qasjes B, nga ablacioni i Nënkapitullit 5.2.
+
+    Fjala që qëndronte këtu thoshte se strategjive «nuk u mungojnë metrikat, u
+    mungon vendi ku t'i presin». Asgjë nuk e kishte matur. Modeli shihte 17 ose
+    26 metrika kundrejt një deri në katër të strategjisë, dhe ablacioni tregoi se
+    fitimi vjen nga të dyja anët (VD-132).
+    """
+    parts = _gain_parts(h)
+    if parts is None:
+        return ""
+    cut = {smell: gain for smell, (gain, _) in parts.items()}
+    extra = {smell: gain for smell, (_, gain) in parts.items()}
+    rising = sum(1 for gain in cut.values() if gain > 0)
+    most = max(extra, key=lambda smell: extra[smell])
+    return (
+        " Ablacioni i Nënkapitullit 5.2 e ndan këtë fitim në dy pjesë. Vetëm me "
+        "metrikat e strategjisë, pra duke mësuar vetëm ku pritet kufiri, modeli e ngre "
+        f"MCC-në {_among(rising, len(cut))}, me {_span(list(cut.values()))}. Metrikat e "
+        f"tjera shtojnë edhe {_span(list(extra.values()))}, më së shumti te "
+        f"{SMELL_SQ[most]}. Strategjive u mungojnë pra të dyja: kufiri i duhur dhe një "
+        "pjesë e informacionit."
+    )
+
+
+def _gain_in_answer(h: dict) -> str:
+    """Një fjali për PK2: a mbetet fitimi kur modeli sheh vetëm metrikat e strategjisë."""
+    parts = _gain_parts(h)
+    if parts is None:
+        return ""
+    if all(cut > 0 for cut, _ in parts.values()):
+        return (
+            " Fitimi mbetet, më i vogël, edhe kur modeli sheh vetëm metrikat e "
+            "strategjisë, ndaj nuk vjen vetëm nga metrikat shtesë (Nënkapitulli 5.2)."
+        )
+    return (
+        " Kur modeli sheh vetëm metrikat e strategjisë, fitimi nuk mbetet te çdo erë "
+        "(Nënkapitulli 5.2)."
+    )
+
+
 def _answers(h: dict) -> list:
     """Përgjigjet e qarta ndaj tri pyetjeve kërkimore, nga të dhënat."""
     smells, strategy, model = h["smells"], h["strategy"], h["model"]
@@ -1392,7 +1502,7 @@ def _answers(h: dict) -> list:
         f"dhe më e ulëta te {SMELL_SQ[worst]}. Ashpërsia që derivojnë nuk pajtohet me "
         "atë të rishikuesve.",
         "**PK2, mësimi i makinës.** Po, e përmirëson. Modeli i mësuar mbi "
-        "të njëjtat metrika e ngre MCC-në te të katër erërat: brezi kalon nga "
+        "metrikat e sistemit e ngre MCC-në te të katër erërat: brezi kalon nga "
         f"{min(strategy[s]['mcc'] for s in smells):.3f}–"
         f"{max(strategy[s]['mcc'] for s in smells):.3f} në "
         f"{min(model[s]['mcc'] for s in smells):.3f}–"
@@ -1406,7 +1516,7 @@ def _answers(h: dict) -> list:
         + f". Fitimi vjen kryesisht nga recall-i, që rritet {of_smells(gained)}. Një "
         "rezervë e vetme: kur rregullit i jepet pragu i tij më i "
         "mirë nga fshirja, dallimi te Long Method nuk ndahet më nga zeroja (Shtojca "
-        "8.10).",
+        "8.10)." + _gain_in_answer(h),
     ]
 
     data = _load_if_present("refactoring_evaluation.json")
@@ -1572,7 +1682,10 @@ def chapter_6() -> list:
                 "motorit, ndaj për të nuk ka pajtim mes rishikuesish që të matet.",
                 "Pa zgjidhje simbolesh (Nënkapitulli 3.4), motori ndreq vetëm atë që "
                 "mbyllet brenda një skedari; erërat që kërkojnë "
-                "ndryshime në gjithë projektin mbeten te zhvilluesi. Po ashtu, niveli i "
+                "ndryshime në gjithë projektin mbeten te zhvilluesi. Për të njëjtën arsye, "
+                "ATFD-ja nuk i ndjek marrësit me zinxhir («a.getB().getC()»): matet në "
+                "mënyrë konservative, dhe mund t'i humbasë disa raste të Feature Envy-së e "
+                "të God Class-it. Po ashtu, niveli i "
                 "ashpërsisë që shfaq mjeti është renditje e brendshme e tij dhe jo "
                 "parashikim i gjykimit njerëzor.",
                 *_blob_recall_limits(),
@@ -1653,6 +1766,34 @@ def secondary_results() -> list:
     return [
         (f"8.{FIRST_APPENDIX_FOR_RESULTS + offset}", title, paragraphs)
         for offset, (_, title, paragraphs) in enumerate(moved)
+    ]
+
+
+def _strategy_feature_paragraphs(rules: dict, ml: dict, smells: list) -> list:
+    """Qasja B e kufizuar te metrikat e strategjisë, përballë rregullit dhe modelit të plotë."""
+    data = _load_if_present("ml_strategy_features.json")
+    if data is None:
+        return []
+    rows = []
+    for smell in smells:
+        entry = data["per_smell"].get(smell)
+        if entry is None:
+            continue
+        full = ml["per_smell"][smell]
+        rows.append(
+            [
+                SMELL_SQ[smell],
+                ", ".join(entry["features"]),
+                _mcc(rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]["mcc"]),
+                _mcc(entry["models"][entry["best_model"]]["mcc"]),
+                _mcc(full["models"][full["best_model"]]["mcc"]),
+            ]
+        )
+    return [
+        "Vetëm me metrikat e strategjisë, modelet arrijnë këtë MCC:",
+        ("table", "MCC me metrikat e strategjisë dhe me të gjitha metrikat",
+         ["Erë", "Metrikat e strategjisë", "Rregulli", "Modeli, vetëm ato",
+          "Modeli, të gjitha"], rows),  # fmt: skip
     ]
 
 
@@ -1795,6 +1936,7 @@ def _results_sections() -> list:
                 ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
                  "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
                 *_explanation_paragraphs(ml),
+                *_strategy_feature_paragraphs(rules, ml, smells),
             ],
         ),
         (
@@ -3182,9 +3324,14 @@ def _overturned(regressions: int, total: int) -> str:
             "Asnjë verdikt nuk u përmbys: asnjë rishkrim që nuk shtonte gabim të ri i "
             "izoluar nuk shton brenda projektit të vet."
         )
+    if regressions == 1:
+        return (
+            f"Një rishkrim nga {total} nuk shtonte lloj të ri gabimi i izoluar, por shton "
+            "brenda projektit të vet." + _overturned_case()
+        )
     return (
-        f"{_opens(_rewrites(regressions))} nga {total} nuk shtonte lloj të ri gabimi i "
-        "izoluar, por shton brenda projektit të vet." + _overturned_case()
+        f"{_opens(_word(regressions))} rishkrime nga {total} nuk shtonin lloj të ri gabimi "
+        "të izoluara, por shtojnë brenda projektit të vet." + _overturned_case()
     )
 
 
@@ -3202,16 +3349,46 @@ def _overturned_case() -> str:
     overturned = [
         row for row in rows if row["alone"] == "no_new_errors" and row["in_project"] == "new_errors"
     ]
-    if len(overturned) != 1:
+    if not overturned:
         return ""
-
-    case = overturned[0]
-    where = f"{case['class_name']}.{case['method']}"
+    # Shkaku u veçua vetëm për rastin e Ambari-t, në matjen e parë; për të tjerët
+    # skedari mban verdiktin e jo mesazhin e kompilatorit, ndaj nuk pohohet (VD-130).
+    if len(overturned) == 1 and overturned[0]["class_name"] == "AlertSummaryRenderer":
+        where = f"{overturned[0]['class_name']}.{overturned[0]['method']}"
+        return (
+            f" Rasti është një Extract Method mbi {where} te «AlertSummaryRenderer.java» "
+            "e projektit Ambari, dhe të tria gabimet që shton janë paketa të palëve të "
+            "treta që mungojnë në korpus."
+        )
+    named = [
+        f"{REWRITE_OF_SMELL.get(row['smell'], row['smell'])} mbi "
+        f"{row['class_name']}.{row['method']} në projektin «{_project_of(row['file'])}»"
+        for row in overturned
+    ]
+    noun = "Rasti është" if len(named) == 1 else "Rastet janë"
     return (
-        f" Rasti është një Extract Method mbi {where} te «AlertSummaryRenderer.java» "
-        "e projektit Ambari, dhe të tria gabimet që shton janë paketa të palëve të "
-        "treta që mungojnë në korpus."
+        f" {noun} {_joined(named)}. Skedari i matjes mban verdiktin e jo mesazhin e "
+        "kompilatorit, ndaj shkaku i tyre nuk u veçua."
     )
+
+
+# Transformimi që motori aplikon për secilën erë, për emrat e rasteve.
+REWRITE_OF_SMELL = {
+    "LongMethod": "Extract Method",
+    "BrainMethod": "Extract Method",
+    "DeepNesting": "Guard Clauses",
+    "LongParameterList": "Introduce Parameter Object",
+}
+
+
+def _project_of(file_path: str) -> str:
+    """«apache__hive__2fa22bf36089» te shtegu i korpusit bëhet «hive»."""
+    parts = file_path.replace("\\", "/").split("/")
+    if "corpus" in parts and parts.index("corpus") + 1 < len(parts):
+        folder = parts[parts.index("corpus") + 1]
+        pieces = folder.split("__")
+        return pieces[1] if len(pieces) > 1 else folder
+    return "projekti i vet"
 
 
 def _project_context_paragraphs() -> list:
@@ -3257,10 +3434,9 @@ def _project_context_paragraphs() -> list:
             else " Një kompilim e kaloi kufirin kohor dhe numërohet si i pakontrolluar, "
             "kurrë si sukses."
             if unchecked == 1
-            else f" {_opens(_word(unchecked))} kompilime e kaluan kufirin kohor dhe "
-            "numërohen si të pakontrolluara, kurrë si sukses."
-        )
-        + f" Matja zgjati rreth {data['seconds'] / 3600:.0f} orë.",
+            else f" Kufirin kohor e kaluan {_word(unchecked)} kompilime, dhe numërohen si "
+            "të pakontrolluara, kurrë si sukses."
+        ),
     ]
 
 
@@ -3749,8 +3925,8 @@ def chapter_8() -> list:
                 "por pesë kompilime që herën e parë e kaluan kufirin kohor, herën e dytë "
                 "morën verdikt: ndarja mes «i kontrolluar» dhe «i pakontrolluar» varet nga "
                 "ngarkesa e makinës. Ai riprodhim i përket mostrës së atëhershme prej 30 "
-                "skedarësh; mostra u dyfishua më vonë, dhe dyfishimi nxori përmbysjen e "
-                "vetme që raporton Kapitulli 5.",
+                "skedarësh; mostra u dyfishua më vonë në 60 skedarë, dhe Kapitulli 5 "
+                "raporton matjen e saj më të fundit.",
                 "Hapat 1 dhe 7 mbeten të pariekzekutuar: i pari kërkon rishkarkimin e "
                 "korpusit të plotë, i dyti disa orë ekzekutimi mbi të. Për ta riprodhimi "
                 "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",

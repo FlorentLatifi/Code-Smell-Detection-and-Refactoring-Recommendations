@@ -16,7 +16,7 @@ fshihet; i shtohet një hyrje e re që e zëvendëson, sepse edhe ndryshimi i me
 | VD-04 | Tri qasje të pavarura dhe të krahasueshme | 2026-08-25 | aktiv |
 | VD-05 | MLCQ si e vërtetë bazë | 2026-08-25 | aktiv |
 | VD-06 | Ashpërsia derivohet nga teprica, në shkallën e MLCQ | 2026-08-25 | i rishikuar nga VD-41 |
-| VD-07 | Pragjet të centralizuara dhe të citueshme | 2026-08-25 | aktiv |
+| VD-07 | Pragjet të centralizuara dhe të citueshme | 2026-08-25 | i saktësuar nga VD-133 |
 | VD-08 | Detektorët kthejnë kushtet, jo boolean | 2026-08-25 | aktiv |
 | VD-09 | Large Class e ndarë nga God Class | 2026-08-25 | aktiv |
 | VD-10 | Python për backend-in që analizon Java | 2026-08-25 | aktiv |
@@ -5203,6 +5203,73 @@ ose klasa lokale, si dhe WMC dhe ATFD e klasave të tyre. Tabela e veçorive dhe
 gjitha rezultatet që varen prej saj ose nga ecja mbi korpus rigjenerohen, dhe
 ndikimi i matur shënohet më poshtë.
 
+**Ndikimi i matur (VD-130, rigjenerimi i 19–22 shtatorit 2026).** Rezultatet u
+rigjeneruan nga commit-i `b9db342`. Rigjenerimi kaloi nëpër hapat 3, 4, 5, 6, 7, 8,
+10, 11, 12, 13, 15, 16, 20, 21 dhe 22.
+
+Pjesa e detektimit:
+- **Tabela e veçorive.** 235 nga 4 534 mostra ndryshuan `m_MAXNESTING`, 7 ndryshuan
+  `c_WMC` dhe 3 ndryshuan `c_ATFD` (klasat lokale).
+- **Qasja A.** Asnjë verdikt nuk lëvizi (0 nga 4 534), sepse asnjë strategji e
+  vlerësuar nuk e lexon ndërfutjen. Rregullat, fshirja e pragjeve, kalibrimi,
+  klauzolat bllokuese dhe analiza e Blob-it dolën identike, veç commit-it që
+  regjistrojnë. Krahasimi me PMD (hapi 19) nuk u riekzekutua: ai lexon pikërisht
+  verdiktet e Qasjes A, dhe këto nuk ndryshuan.
+- **Qasja B.** Feature Envy 0.669 → 0.696, Long Method 0.713 → 0.724 dhe Data Class
+  0.500 → 0.498, ku modeli më i mirë u bë random forest; Blob mbeti 0.488.
+  Intervalet bootstrap e mbajnë përparësinë mbi zero te të katër erërat.
+
+| Motori i refaktorimit | Para | Pas |
+|---|---:|---:|
+| Vende Deep Nesting | 5 489 | 3 827 |
+| Vende Brain Method | 3 335 | 2 965 |
+| Vende gjithsej | 17 833 | 15 800 |
+| Të transformuara | 3 633 (20.4%) | 3 532 (22.4%) |
+| Guard Clauses të aplikuara | 111 | 79 |
+| Të refuzuara si `shape_not_matched` | 8 935 | 7 154 |
+| Era u hoq | 64.4% | 64.8% |
+| Erëra të reja pas rishkrimit | 937 | 865 |
+
+Pra 1 662 vende Deep Nesting ishin fantazmë: zinxhirë `else if` dhe blloqe `catch`.
+Nga 2 033 vendet që u zhdukën, 101 ishin rishkruar vërtet (32 me Guard Clauses, 69
+me Extract Method), dhe pjesa tjetër ishte refuzuar, kryesisht si formë që
+transformimi nuk e rishkruan.
+
+**Verifikimi brenda projektit.** E njëjta farë zgjedh tani 60 skedarë të tjerë,
+sepse popullsia e skedarëve me rishkrime ndryshoi.
+
+| | Para | Pas |
+|---|---:|---:|
+| Rishkrime në mostër | 405 | 201 |
+| Kompilojnë të izoluara | 1 | 5 |
+| Kompilojnë brenda projektit | 46 | 66 |
+| Përmbysje (pa gabim të ri → gabim i ri) | 1 | 2 |
+| Të pakontrolluara (kufi kohor) | 7 | 23 |
+
+Tri gjëra të kësaj matjeje duhen thënë.
+- **Kufiri kohor.** Për rreth dhjetë minuta, suitat e testeve u ekzekutuan njëkohësisht
+  me verifikimin. Ndarja «i kontrolluar / i pakontrolluar» varet nga ngarkesa
+  (Shtojca 8.5), ndaj një pjesë e 23 kompilimeve të pakontrolluara mund t'i
+  detyrohet asaj. Ato numërohen si të pakontrolluara, kurrë si sukses.
+- **Kohëzgjatja.** Matja u ndërpre disa herë nga fjetja e makinës dhe vazhdoi nga
+  progresi. Fusha `seconds` mat vetëm segmentin e fundit, ndaj punimi nuk e citon më.
+- **Dy përmbysjet** (Extract Method në Hive dhe në Eclipse JDT) nuk u shpjeguan.
+  Skedari i mostrave mban verdiktin, jo mesazhin e kompilatorit. Teksti i 6.1 dhe
+  i 8.5, që pohonte «përmbysja e vetme, te Ambari», tani e lexon numrin nga të
+  dhënat.
+
+**Një gabim i futur nga VD-128, i ndrequr këtu.** Kur u shkurtua paragrafi i 6.1, fjala
+«shumica e rasteve pa gabim të ri kompilojnë plotësisht» zëvendësoi origjinalin, që
+thoshte se gabimet e mbetura i përkasin izolimit. Nuk ishte e vërtetë as para
+rimatjes (45 nga 404), as pas saj (65 nga 196). Tani paragrafi i lexon të dy numrat
+nga skedari.
+
+**Mbetet i hapur.** `refactoring_sites.csv` dhe `verify_with_project_samples.csv`
+mbajnë shtigje absolute (`C:\Users\…`) që nga vlerësimi i parë i motorit (commit
+`54d667c`). Ato nxjerrin emrin e përdoruesit në një depo publike. Ndreqja kërkon që
+skriptet të shkruajnë shtigje relative ndaj korpusit, dhe që hapat 7, 11, 12 dhe 16 të
+rimaten.
+
 ---
 
 ### VD-131: Pragjet lëvizin me një skedar TOML, jo duke ndryshuar kodin
@@ -5234,3 +5301,72 @@ me dorë:
 - metoda ka MLOC 12, një rresht firme dhe njëmbëdhjetë pohime;
 - nuk ndez nën 30, por ndez nën 10;
 - rreshti te stderr e shënon ndryshimin, dhe JSON-i te stdout lexohet i pastër.
+
+### VD-132: Fitimi i Qasjes B ndahet në dy pjesë, dhe pohimi i vjetër ishte gjysma
+
+**Konteksti.** PK2 pyet nëse një model i trajnuar «mbi të njëjtat metrika» e përmirëson
+detektimin kundrejt pragjeve fikse. Modelet e Nënkapitullit 4.6 shohin çdo metrikë që
+mat sistemi, 17 për një klasë dhe 26 për një metodë, ndërsa një strategji lexon nga një
+deri në katër prej tyre. Fitimi i tyre përziente pra dy gjëra: ku e vendos modeli
+kufirin, dhe çfarë tjetër i lejohet të shohë.
+
+Nënkapitulli 6.1 e pohonte të parën: «strategjive nuk u mungojnë metrikat, u mungon
+vendi i duhur ku t'i presin». Asgjë nuk e kishte matur. Më keq, dëshmia që kishte
+punimi tregonte të kundërtën: veçoritë kryesore të modelit për Blob-in janë CLOC, NOF
+dhe NOAM, dhe asnjëra prej tyre nuk është kusht i God Class-it.
+
+**Vendimi.** `scripts/train_strategy_features.py` (hapi 22) i trajnon të njëjtat modele,
+me të njëjtat folde, farë dhe pikëzim, por vetëm me metrikat që lexon strategjia
+përkatëse. Dallimi mes tre shifrave e ndan fitimin: sa shton kufiri i mësuar mbi të
+njëjtat metrika, dhe sa shtojnë metrikat e tjera mbi të.
+
+| Erë | Rregulli | Vetëm metrikat e strategjisë | Të gjitha | Nga kufiri | Nga metrikat |
+|---|---:|---:|---:|---:|---:|
+| Blob | 0.232 | 0.373 | 0.488 | +0.141 | +0.115 |
+| Data Class | 0.275 | 0.399 | 0.498 | +0.124 | +0.099 |
+| Feature Envy | 0.271 | 0.437 | 0.696 | +0.166 | +0.259 |
+| Long Method | 0.580 | 0.672 | 0.724 | +0.093 | +0.052 |
+
+**Çfarë tregon.** Të dyja pjesët janë reale. Kufiri i mësuar mbi të njëjtat metrika
+shton nga 0.093 te 0.166 MCC, pra pohimi i vjetër nuk ishte i rremë; por metrikat
+shtesë shtojnë nga 0.052 te 0.259, më së shumti te Feature Envy, pra as i plotë nuk
+ishte. Kjo përputhet me kalibrimin e Shtojcës 8.6, ku lëvizja e pragjeve e ngre
+Feature Envy-n dhe Long Method-in, por jo Blob-in.
+
+**Pasojat.** Fjalia e 6.1 u zëvendësua me ndarjen e matur; 5.2 e raporton tabelën; 4.6
+e përshkruan metodën; dhe përgjigjja e PK2 thotë se fitimi mbetet, më i vogël, edhe kur
+modeli sheh vetëm metrikat e strategjisë. Formulimi i vetë pyetjes PK2 nuk u prek, dhe
+kjo mbetet për t'u parë me mentoren: «të njëjtat metrika» aty do të thotë metrikat që
+mat sistemi, jo nënbashkësia e strategjisë.
+
+---
+
+### VD-133: Katër pragje nuk kanë burim, dhe punimi e thotë
+
+**Konteksti.** VD-07 dhe Nënkapitulli 4.5 pohonin se çdo prag ka citim dhe se «një vlerë
+që nuk i atribuohet dot një burimi nuk përdoret». Auditi i 19 shtatorit 2026 e lexoi
+`detectors/thresholds.py` dhe gjeti katër që nuk e kanë:
+
+- `long_method_loc = 30`, kufiri i Long Method-it;
+- `brain_method_cc = 4` dhe `brain_method_nesting = 3`, dy kushte të Brain Method-it;
+- `deep_nesting = 3`, kufiri i Deep Nesting-ut.
+
+Tre pragjet e ashpërsisë e deklarojnë vetë mungesën e burimit në koment, dhe ato nuk e
+prekin nëse një detektor ndez.
+
+**Vendimi.** Pohimi hiqet dhe zëvendësohet me faktin. Nënkapitulli 4.5 i emërton të
+katër, me vlerat e lexuara nga `system_reference.json`, dhe thotë se janë zgjedhje të
+autorit. Thotë gjithashtu çfarë dihet për secilën: kufiri i Long Method-it zhvendoset
+te analiza e ndjeshmërisë dhe kalibrohet jashtë foldit (Shtojcat 8.6), ndërsa tre të
+tjerët nuk maten dot kundrejt MLCQ-së, sepse dataset-i nuk i mbulon ato erëra.
+
+**Alternativat.**
+- Gjetja e një burimi për secilën. Nuk u bë: asnjë nga burimet e përdorura nuk i jep
+  këto vlera, dhe shpikja e një citimi do të ishte më keq se mungesa e tij.
+- Heqja e Brain Method-it dhe e Deep Nesting-ut nga sistemi. U refuzua: Deep Nesting
+  është pikërisht era që Guard Clauses heq, dhe të dyja ushqejnë motorin e
+  refaktorimit.
+
+**Pasojat.** Një pyetje e komisionit për «pse 30» tani ka përgjigje në vetë tekstin:
+sepse e zgjodhi autori, dhe ja sa lëviz rezultati kur ajo vlerë lëviz. Kufizimi mbetet
+i hapur për punën e ardhshme: tri prej tyre nuk kanë as burim, as matje.

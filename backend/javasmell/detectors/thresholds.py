@@ -1,7 +1,9 @@
 """Threshold values used by the rule-based detectors.
 
-Every number here comes from published work rather than intuition, because the
-thesis has to defend each one. Two sources are used:
+The thesis has to defend each number here, so each one says where it comes from.
+Most come from two published sources; four detection thresholds and the three
+severity bounds do not, and are marked as the author's choices where they are
+defined (VD-133). The published sources:
 
 * Lanza, M. & Marinescu, R. (2006), *Object-Oriented Metrics in Practice*:
   the statistical thresholds derived from a corpus of 45 Java systems,
@@ -61,6 +63,10 @@ class Thresholds:
     feature_envy_fdp: float = FEW
 
     # --- Long Method / Brain Method -----------------------------------
+    # No published source gives `long_method_loc`, `brain_method_cc` or
+    # `brain_method_nesting`; they are the author's choices, and the thesis says
+    # so (VD-133). The first is swept and calibrated against MLCQ in the Results
+    # chapter; the other two cannot be, since MLCQ does not label Brain Method.
     long_method_loc: float = 30
     brain_method_loc: float = HIGH_METHOD_LOC / 2
     brain_method_cc: float = 4
@@ -71,6 +77,8 @@ class Thresholds:
     long_parameter_list_np: float = FEW
 
     # --- Deep Nesting --------------------------------------------------
+    # The author's choice as well (VD-133), and unmeasured for the same reason:
+    # MLCQ does not label Deep Nesting either.
     deep_nesting: float = 3
 
     # --- Large Class ---------------------------------------------------
