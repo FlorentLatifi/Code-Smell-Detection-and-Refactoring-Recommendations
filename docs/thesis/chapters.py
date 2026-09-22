@@ -3366,10 +3366,16 @@ def _overturned_case() -> str:
         for row in overturned
     ]
     noun = "Rasti është" if len(named) == 1 else "Rastet janë"
-    return (
-        f" {noun} {_joined(named)}. Skedari i matjes mban verdiktin e jo mesazhin e "
-        "kompilatorit, ndaj shkaku i tyre nuk u veçua."
-    )
+    # Që nga VD-134 rreshti mban edhe gabimet që rishkrimi shtoi brenda projektit.
+    # Një matje e vjetër pa këtë kolonë e thotë hapur që shkaku nuk u veçua.
+    causes = [row.get("new_in_project", "").strip() for row in overturned]
+    if not all(causes):
+        return (
+            f" {noun} {_joined(named)}. Skedari i matjes mban verdiktin e jo mesazhin e "
+            "kompilatorit, ndaj shkaku i tyre nuk u veçua."
+        )
+    quoted = _joined([f"«{cause}»" for cause in dict.fromkeys(causes)])
+    return f" {noun} {_joined(named)}. Kompilatori shton, sipas radhës, {quoted}."
 
 
 # Transformimi që motori aplikon për secilën erë, për emrat e rasteve.
@@ -3382,13 +3388,19 @@ REWRITE_OF_SMELL = {
 
 
 def _project_of(file_path: str) -> str:
-    """«apache__hive__2fa22bf36089» te shtegu i korpusit bëhet «hive»."""
+    """«apache__hive__2fa22bf36089» te shtegu i korpusit bëhet «hive».
+
+    Shtegu është relativ ndaj rrënjës së korpusit që nga VD-134, ndaj dosja e
+    projektit është pjesa e parë. Rezultatet e vjetra mbanin shtegun absolut, dhe
+    aty dosja është ajo pas «corpus».
+    """
     parts = file_path.replace("\\", "/").split("/")
     if "corpus" in parts and parts.index("corpus") + 1 < len(parts):
         folder = parts[parts.index("corpus") + 1]
-        pieces = folder.split("__")
-        return pieces[1] if len(pieces) > 1 else folder
-    return "projekti i vet"
+    else:
+        folder = parts[0]
+    pieces = folder.split("__")
+    return pieces[1] if len(pieces) > 1 else folder
 
 
 def _project_context_paragraphs() -> list:

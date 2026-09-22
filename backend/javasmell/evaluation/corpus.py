@@ -128,6 +128,32 @@ def repo_dirname(sample: Sample) -> str:
     return f"{owner}__{name}__{sample.commit_hash[:SHORT_HASH]}"
 
 
+def corpus_relative(path: str | Path, corpus: str | Path) -> str:
+    """A corpus file as a committed result records it: below the root, with ``/``.
+
+    Results used to carry absolute paths, which put the home directory of the
+    machine that produced them into a public repository, and sorted differently
+    on Windows than on Linux: ``\\`` and ``/`` do not rank the same against
+    letters, so the seeded sample drawn from a sorted list of paths depended on
+    the operating system (VD-134). A path already relative is taken to be below
+    the root; one outside the corpus is kept as it stands, since a relative path
+    would then point somewhere else.
+    """
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        return candidate.as_posix()
+    try:
+        return candidate.resolve().relative_to(Path(corpus).resolve()).as_posix()
+    except (OSError, ValueError):
+        return str(path)
+
+
+def in_corpus(recorded: str, corpus: str | Path) -> Path:
+    """The file a recorded path names, relative or, from older results, absolute."""
+    candidate = Path(recorded)
+    return candidate if candidate.is_absolute() else Path(corpus) / candidate
+
+
 class Corpus:
     """The on-disk corpus rooted at ``root``."""
 

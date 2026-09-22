@@ -34,7 +34,7 @@ from statistics import median
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
-from javasmell.evaluation.corpus import Corpus  # noqa: E402
+from javasmell.evaluation.corpus import Corpus, corpus_relative  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
@@ -112,7 +112,9 @@ def sampled_files(mlcq: Path, corpus: Corpus) -> list[Path]:
             continue
         path = corpus.source_path(sample)
         found.setdefault(str(path), path)
-    return [found[key] for key in sorted(found)]
+    # Ordered by the path with `/`, so that the walk, and with it the row order of
+    # the CSV, is the same on Windows as on Linux (VD-134).
+    return sorted(found.values(), key=lambda path: path.as_posix())
 
 
 def _metric_shift(path: Path) -> dict[str, dict[str, float]]:
@@ -307,7 +309,7 @@ def run(
 
             rows.append(
                 {
-                    "file": str(path),
+                    "file": corpus_relative(path.resolve(), args.corpus),
                     "class_name": class_name,
                     "method": method,
                     "smell": smell_type,

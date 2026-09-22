@@ -62,6 +62,7 @@ sys.path.insert(0, str(BACKEND))
 
 from javasmell.analysis import analyze_source  # noqa: E402
 from javasmell.detectors.rules import detect_in_class  # noqa: E402
+from javasmell.evaluation.corpus import corpus_relative, in_corpus  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 from javasmell.refactor.edits import apply_edits  # noqa: E402
@@ -216,6 +217,26 @@ def verdict_for(before: set[str] | None, after: set[str] | None) -> Verdict:
     return Verdict.NO_NEW_ERRORS if after <= before else Verdict.NEW_ERRORS
 
 
+#: How much of the new errors a sample row keeps. Enough to name the cause of a
+#: regression (a missing package, a symbol that no longer resolves); a full
+#: compiler log per row would make the CSV unreadable.
+MAX_ERROR_TEXT = 300
+
+
+def new_errors(before: set[str] | None, after: set[str] | None) -> str:
+    """The errors a rewrite added in project context, or an empty string.
+
+    Kept because a regression counted without its cause is a claim a reader
+    cannot check. The first project run named its one regression only because
+    somebody went and compiled it again by hand; the rerun after VD-130 found
+    two and nothing recorded why (VD-134).
+    """
+    if before is None or after is None:
+        return ""
+    added = sorted(after - before)
+    return " | ".join(added)[:MAX_ERROR_TEXT]
+
+
 class Rewrite(NamedTuple):
     """One applied rewrite, named well enough to be found again in the source.
 
@@ -273,7 +294,7 @@ def rewrites_in(path: Path, source: bytes) -> list[Rewrite]:
 Rows = dict[str, list[list[str]]]
 
 
-def load_progress(path: Path, resume: bool) -> tuple[Rows, Rows]:
+def load_progress(path: Path, resume: bool) -> tuple[Rows, Rows, float]:
     """Skedarët e mbaruar, dhe rreshtat e atij që u ndërpre në mes.
 
     Formati i vjetër ishte një hartë e vetme skedar -> rreshta, ku çdo hyrje
@@ -282,21 +303,26 @@ def load_progress(path: Path, resume: bool) -> tuple[Rows, Rows]:
     dy emrat e formatit të ri.
     """
     if not resume or not path.is_file():
-        return {}, {}
+        return {}, {}, 0.0
     try:
         stored = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as failure:
         print(f"checkpoint unreadable ({failure}); starting over", file=sys.stderr)
-        return {}, {}
+        return {}, {}, 0.0
     if isinstance(stored, dict) and "done" in stored and "partial" in stored:
-        return stored["done"], stored["partial"]
-    return stored, {}
+        # The time already spent travels with the rows. `seconds` used to time
+        # only the last run, and a measurement resumed three times reported one
+        # hour for most of a day (VD-134).
+        return stored["done"], stored["partial"], float(stored.get("seconds", 0.0))
+    return stored, {}, 0.0
 
 
-def save_progress(path: Path, done: Rows, partial: Rows) -> None:
+def save_progress(path: Path, done: Rows, partial: Rows, seconds: float) -> None:
     """Shkruar te një i përkohshëm dhe zëvendësuar, që ndërprerja të mos e prishë."""
     scratch = path.with_suffix(".tmp")
-    payload = json.dumps({"done": done, "partial": partial}, sort_keys=True)
+    payload = json.dumps(
+        {"done": done, "partial": partial, "seconds": round(seconds, 1)}, sort_keys=True
+    )
     scratch.write_text(payload + NEWLINE, encoding="utf-8")
     scratch.replace(path)
 
@@ -328,7 +354,7 @@ def main() -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     progress_path = args.out / PROGRESS_NAME
-    done, partial = load_progress(progress_path, args.resume)
+    done, partial, carried_seconds = load_progress(progress_path, args.resume)
     if done or partial:
         carried = sum(len(rows) for rows in partial.values())
         note = f", plus {carried} rewrites of one left half-done" if carried else ""
@@ -338,22 +364,25 @@ def main() -> int:
     roots_cache: dict[str, list[str]] = {}
     started = time.perf_counter()
 
+    def elapsed() -> float:
+        return carried_seconds + time.perf_counter() - started
+
     for number, file_path in enumerate(chosen, 1):
         if file_path in done:
             continue
-        path = Path(file_path)
+        path = in_corpus(file_path, corpus)
         try:
             source = path.read_bytes()
             project = corpus / path.resolve().relative_to(corpus).parts[0]
         except (OSError, ValueError):
             done[file_path] = []
-            save_progress(progress_path, done, partial)
+            save_progress(progress_path, done, partial, elapsed())
             continue
 
         rewritten = rewrites_in(path, source)
         if not rewritten:
             done[file_path] = []
-            save_progress(progress_path, done, partial)
+            save_progress(progress_path, done, partial, elapsed())
             continue
 
         if str(project) not in roots_cache:
@@ -383,6 +412,7 @@ def main() -> int:
                     str(rewrite.start_line),
                     verdict_for(alone_before, alone_after).value,
                     verdict_for(context_before, context_after).value,
+                    new_errors(context_before, context_after),
                 ]
             )
             # Pas cdo rishkrimi, jo pas cdo skedari. Nje skedar i vetem i kesaj
@@ -390,12 +420,12 @@ def main() -> int:
             # humbte te gjitha, dhe laptopi ka vdekur ne mes te nje ekzekutimi me
             # shume se nje here.
             partial[file_path] = outcomes
-            save_progress(progress_path, done, partial)
+            save_progress(progress_path, done, partial, elapsed())
             if not args.quiet and len(rewritten) > 20 and len(outcomes) % 20 == 0:
                 print(f"    {len(outcomes)}/{len(rewritten)} in {path.name}", flush=True)
         done[file_path] = outcomes
         partial.pop(file_path, None)
-        save_progress(progress_path, done, partial)
+        save_progress(progress_path, done, partial, elapsed())
         if not args.quiet:
             print(f"  {number}/{len(chosen)} files", flush=True)
 
@@ -403,7 +433,7 @@ def main() -> int:
     context_counts: Counter[str] = Counter()
     moved: Counter[str] = Counter()
     for outcomes in done.values():
-        for *_site, alone, context in outcomes:
+        for *_site, alone, context, _errors in outcomes:
             alone_counts[alone] += 1
             context_counts[context] += 1
             moved[f"{alone} -> {context}"] += 1
@@ -425,7 +455,7 @@ def main() -> int:
         "compiled_in_project": dict(context_counts.most_common()),
         "moved": dict(moved.most_common()),
         "javac_timeout_s": JAVAC_TIMEOUT_S,
-        "seconds": round(time.perf_counter() - started, 1),
+        "seconds": round(elapsed(), 1),
         "environment": environment(),
     }
     result = args.out / RESULT_NAME
@@ -441,11 +471,14 @@ def main() -> int:
     with samples.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle)
         writer.writerow(
-            ["file", "smell", "class_name", "method", "start_line", "alone", "in_project"]
-        )
-        for file_path in sorted(done):
+            [
+                "file", "smell", "class_name", "method", "start_line", "alone",
+                "in_project", "new_in_project",
+            ]
+        )  # fmt: skip
+        for file_path in sorted(done, key=lambda recorded: corpus_relative(recorded, corpus)):
             for row in done[file_path]:
-                writer.writerow([file_path, *row])
+                writer.writerow([corpus_relative(in_corpus(file_path, corpus), corpus), *row])
 
     progress_path.unlink(missing_ok=True)
     print(f"\nWrote {result} and {sum(len(v) for v in done.values())} sample rows")

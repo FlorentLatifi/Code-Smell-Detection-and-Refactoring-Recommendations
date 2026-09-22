@@ -35,6 +35,7 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
 sys.path.insert(0, str(BACKEND))
 
+from javasmell.evaluation.corpus import corpus_relative, in_corpus  # noqa: E402
 from javasmell.evaluation.provenance import environment  # noqa: E402
 from javasmell.evaluation.quality import (  # noqa: E402
     DIMENSIONS,
@@ -87,21 +88,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def within_corpus(file: str, corpus: Path) -> str:
-    """The path as the sheet records it: relative to the corpus root.
-
-    ``refactoring_sites.csv`` stores absolute paths, which name the machine that
-    produced it. A sheet is a committed result that a reader is meant to be able
-    to regenerate byte for byte, and it cannot be if a column carries someone's
-    home directory. Anything outside the corpus is kept as it stands rather than
-    mangled into a relative path that would point somewhere else.
-    """
-    try:
-        return Path(file).resolve().relative_to(corpus.resolve()).as_posix()
-    except (OSError, ValueError):
-        return file
-
-
 def _facts(diff: str, before: bytes, after: bytes, path: str) -> list[str]:
     """Çfarë ka te diff-i, e numëruar, që rishikuesi të mos e numërojë vetë.
 
@@ -122,6 +108,7 @@ def _facts(diff: str, before: bytes, after: bytes, path: str) -> list[str]:
 
 def regenerate(
     labelled: list[tuple[str, Site]],
+    corpus: Path,
 ) -> tuple[dict[str, str], dict[str, list[str]], list[str]]:
     """The diff for each sampled site, by replaying the walk that recorded it.
 
@@ -140,7 +127,8 @@ def regenerate(
     missed: list[str] = []
     for path, by_ordinal in wanted.items():
         try:
-            source = Path(path).read_bytes()
+            # Recorded below the corpus root since VD-134; older rows are absolute.
+            source = in_corpus(path, corpus).read_bytes()
         except OSError:
             missed.extend(review_id for review_id, _ in by_ordinal.values())
             continue
@@ -215,7 +203,7 @@ def write_bundle(
                 f"- rishkrimi: `{site.refactoring}`",
                 f"- era: `{site.smell}`",
                 f"- vendi: `{site.class_name}.{site.method}`",
-                f"- skedari: `{within_corpus(site.file, corpus)}`",
+                f"- skedari: `{corpus_relative(site.file, corpus)}`",
                 *(f"- {fact}" for fact in facts.get(review_id, [])),
                 "",
                 "```diff",
@@ -253,7 +241,7 @@ def do_sample(args: argparse.Namespace) -> int:
         )
         return 1
 
-    diffs, facts, missed = regenerate(labelled)
+    diffs, facts, missed = regenerate(labelled, args.corpus)
     args.out.mkdir(parents=True, exist_ok=True)
     with sheet_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=SHEET_COLUMNS)
@@ -268,7 +256,7 @@ def do_sample(args: argparse.Namespace) -> int:
                     "smell": site.smell,
                     "class_name": site.class_name,
                     "method": site.method,
-                    "file": within_corpus(site.file, args.corpus),
+                    "file": corpus_relative(site.file, args.corpus),
                     "ordinal": site.ordinal,
                     **dict.fromkeys(DIMENSIONS, ""),
                     "note": "",

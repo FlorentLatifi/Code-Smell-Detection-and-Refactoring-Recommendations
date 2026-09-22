@@ -9,6 +9,7 @@ usable ground truth; both produce numbers that look fine and are wrong.
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -17,7 +18,9 @@ from javasmell.evaluation.corpus import (
     Corpus,
     Manifest,
     RepoStatus,
+    corpus_relative,
     download_name,
+    in_corpus,
     repo_dirname,
 )
 from javasmell.evaluation.mlcq import Review, Sample
@@ -190,3 +193,56 @@ def test_every_recorded_move_is_well_formed() -> None:
         assert original.count("/") == 1, original
         assert moved.count("/") == 1, moved
         assert original != moved, original
+
+
+# ----------------------------------------------------------------------
+# Paths in committed results (VD-134)
+# ----------------------------------------------------------------------
+def test_a_corpus_file_is_recorded_below_the_root_with_forward_slashes(tmp_path):
+    corpus = tmp_path / "corpus"
+    source = corpus / "apache__hive__2fa22bf36089" / "ql" / "Plan.java"
+    source.parent.mkdir(parents=True)
+    source.write_text("class Plan {}", encoding="utf-8")
+
+    recorded = corpus_relative(source, corpus)
+
+    # No home directory, no drive letter, and the same separator on every system.
+    assert recorded == "apache__hive__2fa22bf36089/ql/Plan.java"
+    assert in_corpus(recorded, corpus) == corpus / "apache__hive__2fa22bf36089" / "ql" / "Plan.java"
+
+
+def test_an_older_absolute_path_still_names_its_file(tmp_path):
+    """Results written before VD-134 carry absolute paths, and must still be readable."""
+    corpus = tmp_path / "corpus"
+    absolute = str(corpus / "repo" / "A.java")
+
+    assert in_corpus(absolute, corpus) == Path(absolute)
+
+
+def test_a_relative_path_is_taken_as_already_recorded(tmp_path):
+    assert corpus_relative("repo/src/A.java", tmp_path) == "repo/src/A.java"
+
+
+def test_a_file_outside_the_corpus_is_not_rewritten_into_a_wrong_relative_path(tmp_path):
+    outside = tmp_path / "elsewhere" / "B.java"
+    outside.parent.mkdir()
+    outside.write_text("class B {}", encoding="utf-8")
+
+    assert corpus_relative(outside, tmp_path / "corpus") == str(outside)
+
+
+def test_the_separator_is_why_the_order_depended_on_the_system():
+    """Why results record ``/``: the two separators rank differently against a capital.
+
+    Take ``a/x.java`` and ``aB/x.java``, which differ at their second character:
+    the separator in one, ``B`` (0x42) in the other. A forward slash (0x2F) ranks
+    below ``B``, so ``a/x.java`` sorts first; a backslash (0x5C) ranks above it,
+    so on Windows the same two files sort the other way round. A seeded sample
+    drawn from the sorted list therefore picked different files on each system.
+    """
+    backslash = chr(0x5C)
+    forward = ["aB/x.java", "a/x.java"]
+    windows = [name.replace("/", backslash) for name in forward]
+
+    assert sorted(forward) == ["a/x.java", "aB/x.java"]
+    assert sorted(windows) == [f"aB{backslash}x.java", f"a{backslash}x.java"]
