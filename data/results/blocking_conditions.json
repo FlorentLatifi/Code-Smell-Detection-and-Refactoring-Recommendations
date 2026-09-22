@@ -39,7 +39,7 @@
     }
   },
   "environment": {
-    "commit": "1e0e249e67120add570847574db1a6c420c3df24",
+    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },

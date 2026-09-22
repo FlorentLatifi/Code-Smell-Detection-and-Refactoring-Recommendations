@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "fb8c2d41672de611165e2b18623ba44f0e04d8ca",
+    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -36,29 +36,31 @@
       "measurements_compared": 14567
     },
     "data class": {
-      "agree": 14228,
+      "agree": 14334,
       "decisive_file_alone": {
-        "c_AMW": 2,
-        "c_ATFD": 1,
-        "c_CBO": 874,
-        "c_CLOC": 535,
-        "c_LCOM": 72,
-        "c_LCOM3": 7,
+        "c_AMW": 16,
+        "c_ATFD": 5,
+        "c_CBO": 517,
+        "c_CLOC": 322,
+        "c_LCOM": 22,
+        "c_LCOM3": 137,
         "c_MAXCC": 7,
-        "c_NOAM": 41,
-        "c_NOF": 52,
-        "c_RFC": 9,
-        "c_TCC": 8,
-        "c_WMC": 60,
-        "c_WOC": 373
+        "c_NOAM": 149,
+        "c_NOF": 133,
+        "c_NOM": 1,
+        "c_NOPA": 2,
+        "c_RFC": 22,
+        "c_TCC": 6,
+        "c_WMC": 59,
+        "c_WOC": 545
       },
-      "decisive_on_a_moved_measurement": 875,
+      "decisive_on_a_moved_measurement": 522,
       "entities": 14567,
-      "explained_file_alone": 2041,
-      "false_alarm": 187,
-      "flagged_file_alone": 2567,
-      "flagged_with_project": 2532,
-      "lost": 152,
+      "explained_file_alone": 1943,
+      "false_alarm": 184,
+      "flagged_file_alone": 2920,
+      "flagged_with_project": 2785,
+      "lost": 49,
       "measurement_moved": {
         "c_ATFD": 5183,
         "c_CBO": 3056,
@@ -68,19 +70,19 @@
       "measurements_compared": 14567
     },
     "feature envy": {
-      "agree": 83744,
+      "agree": 83751,
       "decisive_file_alone": {
-        "m_CC": 2,
-        "m_MLOC": 3627,
-        "m_NOAV": 51
+        "m_CC": 12,
+        "m_MLOC": 3857,
+        "m_NOAV": 44
       },
-      "decisive_on_a_moved_measurement": 51,
+      "decisive_on_a_moved_measurement": 44,
       "entities": 85753,
-      "explained_file_alone": 3680,
-      "false_alarm": 38,
-      "flagged_file_alone": 3680,
-      "flagged_with_project": 5613,
-      "lost": 1971,
+      "explained_file_alone": 3913,
+      "false_alarm": 46,
+      "flagged_file_alone": 3913,
+      "flagged_with_project": 5823,
+      "lost": 1956,
       "measurement_moved": {
         "c_ATFD": 53169,
         "c_CBO": 36063,
@@ -94,20 +96,22 @@
       "measurements_compared": 85753
     },
     "long method": {
-      "agree": 84989,
+      "agree": 84925,
       "decisive_file_alone": {
-        "c_AMW": 12,
-        "m_CC": 101,
-        "m_CINT": 12,
-        "m_MLOC": 6806
+        "c_AMW": 16,
+        "m_CC": 191,
+        "m_CINT": 9,
+        "m_MAXNESTING": 6,
+        "m_MLOC": 6551,
+        "m_NOAV": 4
       },
-      "decisive_on_a_moved_measurement": 0,
+      "decisive_on_a_moved_measurement": 4,
       "entities": 85753,
-      "explained_file_alone": 6931,
-      "false_alarm": 150,
-      "flagged_file_alone": 6962,
-      "flagged_with_project": 7426,
-      "lost": 614,
+      "explained_file_alone": 6777,
+      "false_alarm": 146,
+      "flagged_file_alone": 6847,
+      "flagged_with_project": 7383,
+      "lost": 682,
       "measurement_moved": {
         "c_ATFD": 53169,
         "c_CBO": 36063,
@@ -143,6 +147,6 @@
       "files": 287
     }
   },
-  "seconds": 91.2,
+  "seconds": 161.1,
   "seed": 20260901
 }

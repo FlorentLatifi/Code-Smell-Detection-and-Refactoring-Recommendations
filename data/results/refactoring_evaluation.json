@@ -1,36 +1,36 @@
 {
-  "applied": 3633,
+  "applied": 3532,
   "applied_by_refactoring": {
-    "ExtractMethod": 3367,
+    "ExtractMethod": 3298,
     "IntroduceParameterObject": 155,
-    "ReplaceNestedConditionalWithGuardClauses": 111
+    "ReplaceNestedConditionalWithGuardClauses": 79
   },
-  "detected": 17833,
+  "detected": 15800,
   "environment": {
-    "commit": "5f62b7b7906d4676c5bf66fce1d08d9cc1aecd3c",
+    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "files": 4409,
   "introduced_smells": {
-    "BrainMethod": 63,
-    "DeepNesting": 146,
+    "BrainMethod": 55,
+    "DeepNesting": 89,
     "FeatureEnvy": 134,
     "GodClass": 47,
     "LargeClass": 8,
-    "LongMethod": 167,
-    "LongParameterList": 372
+    "LongMethod": 165,
+    "LongParameterList": 367
   },
   "metric_shift": {
     "BrainMethod": {
       "metric_after": 19.0,
       "metric_before": 56.0,
-      "sites": 819
+      "sites": 761
     },
     "DeepNesting": {
       "metric_after": 3.0,
       "metric_before": 4.0,
-      "sites": 100
+      "sites": 72
     },
     "LongMethod": {
       "metric_after": 21.0,
@@ -43,26 +43,26 @@
       "sites": 155
     }
   },
-  "refused": 14183,
+  "refused": 12252,
   "refused_by_reason": {
     "ambiguous_overload": 52,
-    "control_flow_escapes": 4185,
-    "multiple_outputs": 368,
-    "not_definitely_assigned": 628,
-    "shape_not_matched": 8935,
+    "control_flow_escapes": 4050,
+    "multiple_outputs": 360,
+    "not_definitely_assigned": 621,
+    "shape_not_matched": 7154,
     "unresolved_name": 15
   },
   "resolution": {
-    "persists": 825,
-    "resolved": 2341,
-    "unknown": 467
+    "persists": 793,
+    "resolved": 2287,
+    "unknown": 452
   },
-  "unlocatable": 17,
+  "unlocatable": 16,
   "verdicts": {
-    "compiles": 13,
+    "compiles": 12,
     "new_errors": 58,
-    "no_new_errors": 3558,
-    "parses": 4
+    "no_new_errors": 3460,
+    "parses": 2
   },
   "verified_with_javac": true
 }

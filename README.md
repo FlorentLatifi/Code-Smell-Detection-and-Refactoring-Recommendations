@@ -24,9 +24,9 @@ every score below is real learning rather than exploited class imbalance.
 
 | Smell | A: MCC | B: MCC | Best model |
 |---|---|---|---|
-| Long Method | 0.580 | **0.713** | random forest |
-| Feature Envy | 0.271 | **0.669** | gradient boosting |
-| Data Class | 0.275 | **0.500** | gradient boosting |
+| Long Method | 0.580 | **0.724** | random forest |
+| Feature Envy | 0.271 | **0.696** | gradient boosting |
+| Data Class | 0.275 | **0.498** | random forest |
 | Blob | 0.232 | **0.488** | gradient boosting |
 
 The refactoring engine applies Guard Clauses, Extract Method and Introduce Parameter
@@ -75,9 +75,9 @@ bazë nga rishikues profesionistë (MLCQ). Numrat rigjenerohen me një komandë.
 
 | Erë | A: MCC | B: MCC | Modeli më i mirë |
 |---|---|---|---|
-| Long Method | 0.580 | **0.713** | random forest |
-| Feature Envy | 0.271 | **0.669** | gradient boosting |
-| Data Class | 0.275 | **0.500** | gradient boosting |
+| Long Method | 0.580 | **0.724** | random forest |
+| Feature Envy | 0.271 | **0.696** | gradient boosting |
+| Data Class | 0.275 | **0.498** | random forest |
 | Blob | 0.232 | **0.488** | gradient boosting |
 
 Modeli i shumicës nuk ndez asnjëherë për asnjë erë, ndaj çdo shifër më sipër është

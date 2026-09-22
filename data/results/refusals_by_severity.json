@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "fb8c2d41672de611165e2b18623ba44f0e04d8ca",
+    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -8,103 +8,103 @@
   "matches_full_evaluation": {
     "agrees": true,
     "committed": {
-      "applied": 3633,
-      "refused": 14183,
-      "unlocatable": 17
+      "applied": 3532,
+      "refused": 12252,
+      "unlocatable": 16
     },
     "here": {
-      "applied": 3633,
-      "refused": 14183,
-      "unlocatable": 17
+      "applied": 3532,
+      "refused": 12252,
+      "unlocatable": 16
     }
   },
   "overall": {
-    "application_rate": 0.2039,
-    "applied": 3633,
-    "detected": 17833,
-    "refused": 14183,
+    "application_rate": 0.2238,
+    "applied": 3532,
+    "detected": 15800,
+    "refused": 12252,
     "refused_by_reason": {
       "ambiguous_overload": 52,
-      "control_flow_escapes": 4185,
-      "multiple_outputs": 368,
-      "not_definitely_assigned": 628,
-      "shape_not_matched": 8935,
+      "control_flow_escapes": 4050,
+      "multiple_outputs": 360,
+      "not_definitely_assigned": 621,
+      "shape_not_matched": 7154,
       "unresolved_name": 15
     },
-    "unlocatable": 17
+    "unlocatable": 16
   },
   "per_smell": {
     "BrainMethod": {
       "critical": {
-        "application_rate": 0.2507,
-        "applied": 381,
-        "detected": 1520,
-        "refused": 1139,
+        "application_rate": 0.2436,
+        "applied": 325,
+        "detected": 1334,
+        "refused": 1009,
         "refused_by_reason": {
-          "control_flow_escapes": 931,
-          "multiple_outputs": 77,
-          "not_definitely_assigned": 65,
-          "shape_not_matched": 66
+          "control_flow_escapes": 819,
+          "multiple_outputs": 70,
+          "not_definitely_assigned": 62,
+          "shape_not_matched": 58
         },
         "unlocatable": 0
       },
       "major": {
-        "application_rate": 0.3411,
-        "applied": 525,
-        "detected": 1540,
-        "refused": 1014,
+        "application_rate": 0.3469,
+        "applied": 519,
+        "detected": 1497,
+        "refused": 977,
         "refused_by_reason": {
-          "control_flow_escapes": 613,
-          "multiple_outputs": 61,
-          "not_definitely_assigned": 146,
-          "shape_not_matched": 194
+          "control_flow_escapes": 590,
+          "multiple_outputs": 60,
+          "not_definitely_assigned": 143,
+          "shape_not_matched": 184
         },
         "unlocatable": 1
       },
       "minor": {
-        "application_rate": 0.2283,
-        "applied": 63,
-        "detected": 276,
-        "refused": 213,
+        "application_rate": 0.4148,
+        "applied": 56,
+        "detected": 135,
+        "refused": 79,
         "refused_by_reason": {
           "control_flow_escapes": 28,
           "multiple_outputs": 1,
-          "not_definitely_assigned": 14,
-          "shape_not_matched": 170
+          "not_definitely_assigned": 13,
+          "shape_not_matched": 37
         },
         "unlocatable": 0
       }
     },
     "DeepNesting": {
       "critical": {
-        "application_rate": 0.0096,
-        "applied": 4,
-        "detected": 416,
-        "refused": 412,
+        "application_rate": 0.0208,
+        "applied": 2,
+        "detected": 96,
+        "refused": 94,
         "refused_by_reason": {
-          "shape_not_matched": 412
+          "shape_not_matched": 94
         },
         "unlocatable": 0
       },
       "major": {
-        "application_rate": 0.0204,
-        "applied": 42,
-        "detected": 2054,
-        "refused": 2012,
+        "application_rate": 0.021,
+        "applied": 29,
+        "detected": 1383,
+        "refused": 1354,
         "refused_by_reason": {
-          "shape_not_matched": 2012
+          "shape_not_matched": 1354
         },
         "unlocatable": 0
       },
       "minor": {
-        "application_rate": 0.0215,
-        "applied": 65,
-        "detected": 3021,
-        "refused": 2954,
+        "application_rate": 0.0204,
+        "applied": 48,
+        "detected": 2349,
+        "refused": 2300,
         "refused_by_reason": {
-          "shape_not_matched": 2954
+          "shape_not_matched": 2300
         },
-        "unlocatable": 2
+        "unlocatable": 1
       }
     },
     "LongMethod": {
@@ -187,5 +187,5 @@
       }
     }
   },
-  "seconds": 144.3
+  "seconds": 243.6
 }

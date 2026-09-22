@@ -1,0 +1,219 @@
+{
+  "environment": {
+    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.1"
+  },
+  "folds": 5,
+  "label": "smelly_mean",
+  "per_smell": {
+    "blob": {
+      "best_model": "gradient_boosting",
+      "features": [
+        "c_WMC",
+        "c_TCC",
+        "c_ATFD"
+      ],
+      "models": {
+        "gradient_boosting": {
+          "f1": 0.5404699738903395,
+          "fn": 143,
+          "fp": 209,
+          "mcc": 0.37295162073173455,
+          "precision": 0.49759615384615385,
+          "recall": 0.5914285714285714,
+          "tn": 848,
+          "tp": 207
+        },
+        "logistic": {
+          "f1": 0.48959608323133413,
+          "fn": 150,
+          "fp": 267,
+          "mcc": 0.2926874239688343,
+          "precision": 0.4282655246252677,
+          "recall": 0.5714285714285714,
+          "tn": 790,
+          "tp": 200
+        },
+        "majority": {
+          "f1": null,
+          "fn": 350,
+          "fp": 0,
+          "mcc": null,
+          "precision": null,
+          "recall": 0.0,
+          "tn": 1057,
+          "tp": 0
+        },
+        "random_forest": {
+          "f1": 0.5285524568393095,
+          "fn": 151,
+          "fp": 204,
+          "mcc": 0.35912511365393973,
+          "precision": 0.49379652605459057,
+          "recall": 0.5685714285714286,
+          "tn": 853,
+          "tp": 199
+        }
+      },
+      "positives": 350,
+      "samples": 1407
+    },
+    "data class": {
+      "best_model": "logistic",
+      "features": [
+        "c_WOC",
+        "c_NOPA",
+        "c_NOAM",
+        "c_WMC"
+      ],
+      "models": {
+        "gradient_boosting": {
+          "f1": 0.5462962962962963,
+          "fn": 68,
+          "fp": 128,
+          "mcc": 0.3955150605405004,
+          "precision": 0.4796747967479675,
+          "recall": 0.6344086021505376,
+          "tn": 507,
+          "tp": 118
+        },
+        "logistic": {
+          "f1": 0.5509761388286334,
+          "fn": 59,
+          "fp": 148,
+          "mcc": 0.3988664753453332,
+          "precision": 0.4618181818181818,
+          "recall": 0.6827956989247311,
+          "tn": 487,
+          "tp": 127
+        },
+        "majority": {
+          "f1": null,
+          "fn": 186,
+          "fp": 0,
+          "mcc": null,
+          "precision": null,
+          "recall": 0.0,
+          "tn": 635,
+          "tp": 0
+        },
+        "random_forest": {
+          "f1": 0.5083135391923991,
+          "fn": 79,
+          "fp": 128,
+          "mcc": 0.3460801870738388,
+          "precision": 0.4553191489361702,
+          "recall": 0.5752688172043011,
+          "tn": 507,
+          "tp": 107
+        }
+      },
+      "positives": 186,
+      "samples": 821
+    },
+    "feature envy": {
+      "best_model": "logistic",
+      "features": [
+        "m_ATFD",
+        "m_LAA",
+        "m_FDP"
+      ],
+      "models": {
+        "gradient_boosting": {
+          "f1": 0.4057971014492754,
+          "fn": 30,
+          "fp": 93,
+          "mcc": 0.3505977791988745,
+          "precision": 0.3111111111111111,
+          "recall": 0.5833333333333334,
+          "tn": 658,
+          "tp": 42
+        },
+        "logistic": {
+          "f1": 0.4800000000000001,
+          "fn": 24,
+          "fp": 80,
+          "mcc": 0.43670382193102736,
+          "precision": 0.375,
+          "recall": 0.6666666666666666,
+          "tn": 671,
+          "tp": 48
+        },
+        "majority": {
+          "f1": null,
+          "fn": 72,
+          "fp": 0,
+          "mcc": null,
+          "precision": null,
+          "recall": 0.0,
+          "tn": 751,
+          "tp": 0
+        },
+        "random_forest": {
+          "f1": 0.3497267759562842,
+          "fn": 40,
+          "fp": 79,
+          "mcc": 0.28061206440360154,
+          "precision": 0.2882882882882883,
+          "recall": 0.4444444444444444,
+          "tn": 672,
+          "tp": 32
+        }
+      },
+      "positives": 72,
+      "samples": 823
+    },
+    "long method": {
+      "best_model": "logistic",
+      "features": [
+        "m_MLOC"
+      ],
+      "models": {
+        "gradient_boosting": {
+          "f1": 0.7054409005628517,
+          "fn": 28,
+          "fp": 129,
+          "mcc": 0.66131939859151,
+          "precision": 0.5930599369085173,
+          "recall": 0.8703703703703703,
+          "tn": 1138,
+          "tp": 188
+        },
+        "logistic": {
+          "f1": 0.7173489278752436,
+          "fn": 32,
+          "fp": 113,
+          "mcc": 0.6722461348834754,
+          "precision": 0.6195286195286195,
+          "recall": 0.8518518518518519,
+          "tn": 1154,
+          "tp": 184
+        },
+        "majority": {
+          "f1": null,
+          "fn": 216,
+          "fp": 0,
+          "mcc": null,
+          "precision": null,
+          "recall": 0.0,
+          "tn": 1267,
+          "tp": 0
+        },
+        "random_forest": {
+          "f1": 0.7096774193548386,
+          "fn": 29,
+          "fp": 124,
+          "mcc": 0.6653648863432879,
+          "precision": 0.6012861736334405,
+          "recall": 0.8657407407407407,
+          "tn": 1143,
+          "tp": 187
+        }
+      },
+      "positives": 216,
+      "samples": 1483
+    }
+  },
+  "seed": 20260826
+}
