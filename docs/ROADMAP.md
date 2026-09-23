@@ -29,7 +29,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Çfarë mbetet pa u kapur te Blob-i | ✅ e plotë | mospërputhjet janë klasa të vogla, jo përmasë e pamatur (VD-88); tavani i TCC-së te klasat statike u raportua e nuk u ndryshua |
 | Auditim si përdorues | ✅ e plotë | dhjetë gjetje nga përdorimi i vetë mjetit mbi një projekt real; nëntë të ndrequra (VD-89 deri VD-97) |
 | Figurat e punimit | ✅ 9 figura | `scripts/build_figures.py`: arkitektura e sistemit dhe tetë figura të gjeneruara nga `data/results/` (VD-125) |
-| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); rindërtuar sipas udhëzimeve të mentores (VD-125): hyrja pa nënkapituj, pyetjet kërkimore te Kapitulli 3, arkitektura/teknologjitë/validimi te Kapitulli 4, interpretimi dhe krahasimi me literaturën te Kapitulli 6; 9 931 fjalë te kapitujt 1–6 me tabela, 9 227 pa to; 32 referenca të verifikuara; mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
+| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); rindërtuar sipas udhëzimeve të mentores (VD-125): hyrja pa nënkapituj, pyetjet kërkimore te Kapitulli 3, arkitektura/teknologjitë/validimi te Kapitulli 4, interpretimi dhe krahasimi me literaturën te Kapitulli 6; kapitujt 1–4 të shkurtuar (VD-134); 9 314 fjalë te kapitujt 1–6 me tabela, 8 610 pa to; 32 referenca të verifikuara; mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
 
 Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
 

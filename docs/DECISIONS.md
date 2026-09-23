@@ -5370,3 +5370,38 @@ tjerët nuk maten dot kundrejt MLCQ-së, sepse dataset-i nuk i mbulon ato erëra
 **Pasojat.** Një pyetje e komisionit për «pse 30» tani ka përgjigje në vetë tekstin:
 sepse e zgjodhi autori, dhe ja sa lëviz rezultati kur ajo vlerë lëviz. Kufizimi mbetet
 i hapur për punën e ardhshme: tri prej tyre nuk kanë as burim, as matje.
+
+### VD-134: Kapitujt 1–4 shkurtohen, dhe figura nuk ndahet nga përshkrimi
+
+**Konteksti.** Kapitujt 1–4 kishin 5 152 fjalë, të numëruara mbi burimin, nga të cilat
+2 901 te Kapitulli 4. Shumë fjali e thoshin një mendim dy herë, ose e hapnin me një
+fjali hyrëse që nuk shtonte asgjë. Mentorja e do metodologjinë të hollësishme, ndaj
+shkurtimi duhej të hiqte fjalë, jo hapa të metodës.
+
+**Vendimi.**
+- Teksti i kapitujve 1–4 u rishkrua më drejtpërdrejt: nga 5 152 në 4 621 fjalë (−531).
+  Kapitulli 4 zbriti nga 2 901 në 2 616. Paragrafët që përsërisnin njëri-tjetrin u
+  bashkuan (4.1, 4.6, 4.8), dhe asnjë hap metode, prag apo citim nuk u hoq.
+- Kapitulli 4 nuk i referohet më Nënkapitullit 6.6. «56 minuta … në matjen e fundit»
+  u bë «afro një orë», sepse metodologjia përshkruan procedurën, jo një ekzekutim të
+  vetëm të saj.
+- Objektivi i tretë thoshte «pragje të justifikuara nga literatura», çka pas VD-133
+  nuk vlen për katër pragje. Tani thotë «me burimin e çdo pragu të deklaruar».
+- Figura mbahet në të njëjtën faqe me përshkrimin (`keep_with_next`), dhe titulli i
+  tabelës me tabelën. Në PDF, Figura 1 dilte në fund të një faqeje dhe përshkrimi i
+  saj në krye të faqes pasardhëse.
+
+**Fjalët.** Word jep për kapitujt 1–6 9 314 fjalë me tabela dhe 8 610 pa to. Kjo
+është rreth 600 fjalë mbi kufirin prej 8 000, ndaj çdo shkurtim tjetër duhet rimatur.
+
+**Verifikimi.** `check_citations` (32/32), `check_reproduction`, `check_format`,
+`check_repetition` dhe `check_slides` kalojnë mbi një ndërtim në dosje të përkohshme.
+Kontrolli i përsëritjeve kapi dy fraza që i futi vetë rishkrimi, dhe ato u ndreqën.
+
+**Çfarë nuk u verifikua.**
+- `Punim_Diplome_Florent_Latifi.docx` nuk u rishkrua në depo, sepse ishte i hapur në
+  Word. Ndërtohet me `python build_thesis.py` pasi të mbyllet.
+- PDF-ja u pa faqe për faqe vetëm pjesërisht: hyrja, Kapitulli 3, faqet e Figurës 1
+  dhe të Tabelës 1, dhe referencat.
+- Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
+  `docs/thesis/`.

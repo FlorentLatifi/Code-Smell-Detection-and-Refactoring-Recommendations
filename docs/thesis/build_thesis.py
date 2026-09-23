@@ -352,6 +352,9 @@ def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
     """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni."""
     holder = doc.add_paragraph()
     holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Pa këtë, një figurë në fund të faqes e linte përshkrimin vetëm në krye të
+    # faqes pasardhëse, siç ndodhi me Figurën 1 (VD-134).
+    holder.paragraph_format.keep_with_next = True
     if os.path.exists(path):
         holder.add_run().add_picture(path, width=Inches(5.6))
     else:
@@ -370,7 +373,8 @@ def table(
     mëdha mes tyre (VD-125). Rregulli i justifikimit i përket tekstit, jo tabelave.
     """
     numbering.table += 1
-    caption(doc, f"Tabela {numbering.table}. {text}")
+    # Titulli qëndron me tabelën, për të njëjtën arsye si figura me përshkrimin.
+    caption(doc, f"Tabela {numbering.table}. {text}").paragraph_format.keep_with_next = True
     grid = doc.add_table(rows=1, cols=len(headers))
     grid.style = "Table Grid"
     for cell, header in zip(grid.rows[0].cells, headers, strict=True):
@@ -386,11 +390,12 @@ def table(
     blank(doc)
 
 
-def caption(doc: Document, text: str) -> None:
+def caption(doc: Document, text: str):
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     paragraph.paragraph_format.line_spacing = 1.0
     _set_font(paragraph.add_run(text), size=CAPTION_SIZE)
+    return paragraph
 
 
 # ----------------------------------------------------------------------
@@ -727,49 +732,47 @@ INTRODUCTION = [
         "",
         [
             "Zhvillimi i një sistemi softuerik nuk përfundon me lëshimin e versionit "
-            "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje dhe evoluim, "
-            "ku kodi lexohet, kuptohet dhe ndryshohet vazhdimisht nga zhvillues të "
-            "ndryshëm. Lehman (1980) e formuloi këtë si ligj: një sistem që përdoret në "
-            "një mjedis real duhet të ndryshojë vazhdimisht, përndryshe bëhet "
-            "gradualisht më pak i dobishëm. Prandaj lehtësia me të cilën ndryshohet kodi "
-            "nuk është çështje estetike, por kosto e përditshme e çdo ekipi.",
-            "Një burim i madh i vështirësisë janë code smells, të quajtura në vijim edhe "
-            "erëra të kodit, ose shkurt erëra. Termi u prezantua nga Kent "
-            "Beck dhe u popullarizua nga libri Refactoring i Martin Fowler-it, botimi i "
-            "dytë i të cilit (Fowler, 2018) përdoret në këtë punim. Një code smell nuk "
-            "është gabim: programi kompilohet dhe funksionon saktë. Ai është simptomë e "
-            "një problemi më të thellë dizajni, si një klasë që mban shumë përgjegjësi "
-            "të palidhura, një metodë që zgjatet për qindra rreshta, ose një klasë që "
-            "mban vetëm të dhëna pa asnjë sjellje. Cunningham (1992) e përshkroi efektin "
-            "e tyre të grumbulluar me metaforën e borxhit teknik: çdo kompromis i vogël "
-            "në strukturë krijon një detyrim që paguhet me interes në çdo ndryshim të "
-            "ardhshëm.",
-            "Kundërpesha ndaj këtij degradimi është refaktorimi, të cilin Fowler (2018) e "
+            "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje, ku kodi "
+            "lexohet dhe ndryshohet vazhdimisht nga zhvillues të ndryshëm. Lehman "
+            "(1980) e formuloi këtë si ligj: një sistem që përdoret në një mjedis "
+            "real duhet të ndryshojë vazhdimisht, përndryshe bëhet gradualisht më pak "
+            "i dobishëm. Prandaj sa lehtë ndryshohet kodi është kosto e përditshme "
+            "për çdo ekip.",
+            "Një burim i madh i kësaj vështirësie janë code smells, që në vijim quhen "
+            "edhe erëra të kodit, ose shkurt erëra. Termi është i Kent Beck-ut dhe u "
+            "përhap me librin Refactoring të Martin Fowler-it, botimi i dytë i të "
+            "cilit (Fowler, 2018) përdoret në këtë punim. Një erë nuk është gabim, "
+            "sepse programi kompilohet dhe punon saktë. Është shenjë e një problemi "
+            "dizajni: një klasë me shumë përgjegjësi të palidhura, një metodë qindra "
+            "rreshta e gjatë, ose një klasë që mban vetëm të dhëna. Cunningham (1992) "
+            "e quajti efektin e tyre të grumbulluar borxh teknik: çdo kompromis i "
+            "vogël në strukturë paguhet me interes në çdo ndryshim të mëvonshëm.",
+            "Zgjidhja e zakonshme është refaktorimi, të cilin Fowler (2018) e "
             "përkufizon si ndryshim të strukturës së brendshme të kodit pa ndryshuar "
-            "sjelljen e tij të jashtme. Refaktorimi kërkon dy gjëra: që problemi të jetë "
-            "gjetur, dhe që të dihet cili transformim e heq pa e prishur programin. Në një "
-            "sistem me qindra klasa asnjëra nuk bëhet dot me dorë në mënyrë sistematike, "
-            "dhe gjykimi se çfarë është problem ndryshon nga një shqyrtues te tjetri.",
-            "Mjetet e analizës statike e automatizojnë pjesërisht këtë punë, por problemi "
-            "mbetet i hapur në tri drejtime. Së pari, strategjitë që kombinojnë metrika, "
-            "si ato të Lanza & Marinescu (2006), përdorin pragje fikse të nxjerra nga një "
-            "korpus tjetër, dhe rrallë dihet sa pajtohen ato me gjykimin e zhvilluesve. "
-            "Së dyti, detektimi me mësim makine premton më shumë, por rezultatet e tij "
-            "varen fort nga mënyra si ndërtohen dhe ndahen të dhënat, dhe rrallë "
-            "vihet përballë rregullave mbi të njëjtat mostra. Së treti, shumica e "
-            "mjeteve ndalen te njoftimi: e thonë çfarë është e gabuar, por jo çfarë duhet "
-            "bërë. Qasjet që propozojnë edhe refaktorimin, si ajo e Tsantalis & "
-            "Chatzigeorgiou (2009) për Move Method, janë më të rralla dhe mbulojnë vetëm "
-            "disa raste.",
-            "Ky punim e trajton hapësirën mes gjetjes së problemit dhe ndreqjes së tij, "
-            "për gjuhën Java. Detektimi bëhet në dy mënyra, me strategji metrikash dhe me "
-            "klasifikues të mësuar mbi të njëjtat metrika; të dyja vlerësohen mbi të "
-            "njëjtin dataset të etiketuar nga zhvillues profesionistë, dhe një motor i "
-            "veçantë e rishkruan kodin vetëm kur e provon se transformimi është i sigurt. "
-            "Kapitulli 2 shqyrton literaturën, Kapitulli 3 "
-            "shtron problemin dhe pyetjet kërkimore, Kapitulli 4 përshkruan metodologjinë "
-            "dhe sistemin, Kapitulli 5 paraqet rezultatet, dhe Kapitulli 6 i diskuton ato "
-            "dhe nxjerr përfundimet.",
+            "sjelljen e tij të jashtme. Por që të refaktorohet, problemi duhet gjetur "
+            "më parë, dhe duhet ditur cili transformim e heq pa e prishur programin. "
+            "Në një sistem me qindra klasa kjo nuk bëhet dot me dorë në mënyrë "
+            "sistematike, dhe dy shqyrtues shpesh nuk pajtohen se çfarë është "
+            "problem.",
+            "Mjetet e analizës statike e automatizojnë një pjesë të kësaj pune, por "
+            "mbeten tri probleme. Strategjitë me metrika, si ato të Lanza & Marinescu "
+            "(2006), përdorin pragje fikse të nxjerra nga një korpus tjetër, dhe "
+            "rrallë dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim "
+            "makine premton më shumë, por rezultatet e tij varen shumë nga mënyra si "
+            "ndërtohen dhe ndahen të dhënat, dhe rrallë krahasohet me rregullat mbi "
+            "të njëjtat mostra. Shumica e mjeteve, për më tepër, ndalen te njoftimi: "
+            "e thonë ku është problemi, por jo çfarë duhet bërë. Qasjet që propozojnë "
+            "edhe refaktorimin, si ajo e Tsantalis & Chatzigeorgiou (2009) për Move "
+            "Method, janë më të rralla dhe mbulojnë pak raste.",
+            "Ky punim merret me hapësirën mes gjetjes së problemit dhe ndreqjes së "
+            "tij, për gjuhën Java. Erërat detektohen në dy mënyra, me strategji "
+            "metrikash dhe me një klasifikues të trajnuar mbi të njëjtat metrika, dhe "
+            "të dyja vlerësohen mbi të njëjtin dataset të etiketuar nga zhvillues "
+            "profesionistë. Një motor i veçantë e rishkruan kodin vetëm kur mund ta "
+            "provojë se transformimi është i sigurt. Kapitulli 2 shqyrton "
+            "literaturën, Kapitulli 3 shtron problemin dhe pyetjet kërkimore, "
+            "Kapitulli 4 përshkruan metodologjinë, ndërsa Kapitujt 5 dhe 6 paraqesin "
+            "dhe diskutojnë rezultatet.",
         ],
     ),
 ]
