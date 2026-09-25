@@ -1,6 +1,6 @@
 {
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "3f55abe1607224c42066531b24d69825cea7f247",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -187,5 +187,5 @@
       }
     }
   },
-  "seconds": 243.6
+  "seconds": 224.7
 }

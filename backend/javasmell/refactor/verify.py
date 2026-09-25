@@ -31,6 +31,8 @@ evidence; reporting only the first would overstate it.
 
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -41,7 +43,8 @@ from javasmell.parsing.java_parser import JavaParser
 
 JAVAC_TIMEOUT_S = 60
 
-# javac prints a trailing summary line; the errors themselves carry this marker.
+# javac prints a trailing summary line; a complaint about the source carries this
+# marker, and a failure of javac's own does not (see `errors_in`).
 ERROR_MARKER = ": error:"
 
 
@@ -85,11 +88,82 @@ def parses_cleanly(source: bytes) -> bool:
     return True
 
 
+def errors_in(returncode: int, stderr: str) -> set[str] | None:
+    """The distinct errors in one ``javac`` run, or None when it did not name any.
+
+    ``javac`` marks a complaint about the source as ``file: error: message``. A
+    failure of its own carries no such marker: a class file it could not write,
+    a source file it could not find, a VM that would not start. Those lines read
+    ``error: ...`` at the start, and the marker deliberately does not match them,
+    because such a failure is not a property of the code under test.
+
+    Returning an empty set for them, which this did until VD-138, awards the
+    most favourable verdict available to a run that failed. It happened: five
+    large files of the 23 September corpus run exited non-zero with no marked
+    line, and 19 rewrites were recorded as fully compiling when the files they
+    live in do not compile at all. An unexplained failure is therefore None --
+    javac was asked and cannot be believed -- which the caller reports as the
+    weakest verdict rather than the strongest.
+    """
+    marked = {
+        line.split(ERROR_MARKER, 1)[1].strip()
+        for line in stderr.splitlines()
+        if ERROR_MARKER in line
+    }
+    if marked:
+        return marked
+    return set() if returncode == 0 else None
+
+
+def javac_command() -> str | None:
+    """The compiler binary, preferring the JDK's own over a launcher that wraps it.
+
+    On Windows the ``javac`` on PATH is usually a shim under
+    ``Common Files/Oracle/Java/javapath`` that starts the real compiler as a
+    child of its own. A timeout then kills the shim and leaves the compiler
+    running, so the limit bounds the wrong process: a stated 180 seconds took
+    50 minutes on one JDK file, because the caller waited for a compile it had
+    already given up on (VD-139). Calling the JDK's binary directly means the
+    process that is killed is the process doing the work.
+    """
+    home = os.environ.get("JAVA_HOME")
+    if home:
+        candidate = Path(home) / "bin" / ("javac.exe" if os.name == "nt" else "javac")
+        if candidate.is_file():
+            return str(candidate)
+    return shutil.which("javac")
+
+
+def run_javac(javac: str, arguments: list[str], work: Path, timeout: int) -> tuple[int, str] | None:
+    """One bounded ``javac`` run: its exit code and output, or None if it ran out of time.
+
+    Output goes to a file rather than a pipe. With pipes, a descendant that
+    outlives the timeout keeps the write end open, and ``subprocess.run`` waits
+    for that handle to close even after killing the child it started -- which is
+    how a bounded call became an unbounded one (VD-139). A file has no such
+    reader, so the call returns as soon as the timeout fires.
+    """
+    log = work / "javac.log"
+    with log.open("w", encoding="utf-8", errors="replace") as handle:
+        try:
+            completed = subprocess.run(
+                [javac, *arguments],
+                stdout=handle,
+                stderr=subprocess.STDOUT,
+                timeout=timeout,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return None
+    return completed.returncode, log.read_text(encoding="utf-8", errors="replace")
+
+
 def error_messages(javac: str, source: bytes, name: str) -> set[str] | None:
     """The distinct errors ``javac`` reports for this file on its own, or None.
 
-    None means javac could not be asked -- it timed out -- which is different
-    from finding no errors and must not be read as success.
+    None means javac could not be believed: it timed out, or it failed without
+    naming a single error in the source. Either is different from finding no
+    errors and must not be read as success.
 
     The file is written to a throwaway directory under its original name,
     because a public class must live in a file that matches it and renaming
@@ -100,23 +174,15 @@ def error_messages(javac: str, source: bytes, name: str) -> set[str] | None:
     with tempfile.TemporaryDirectory() as work:
         path = Path(work) / name
         path.write_bytes(source)
-        try:
-            completed = subprocess.run(
-                [javac, "-nowarn", "-proc:none", "-d", work, str(path)],
-                capture_output=True,
-                text=True,
-                timeout=JAVAC_TIMEOUT_S,
-                check=False,
-            )
-        except subprocess.TimeoutExpired:
-            return None
-    if completed.returncode == 0:
-        return set()
-    return {
-        line.split(ERROR_MARKER, 1)[1].strip()
-        for line in completed.stderr.splitlines()
-        if ERROR_MARKER in line
-    }
+        outcome = run_javac(
+            javac,
+            ["-nowarn", "-proc:none", "-d", work, str(path)],
+            Path(work),
+            JAVAC_TIMEOUT_S,
+        )
+    if outcome is None:
+        return None
+    return errors_in(*outcome)
 
 
 def check(
@@ -143,7 +209,7 @@ def check(
         before_errors = error_messages(javac, before, name)
     after_errors = error_messages(javac, after, name)
     if before_errors is None or after_errors is None:
-        return Check(Verdict.PARSES, detail="javac timed out")
+        return Check(Verdict.PARSES, detail="javac could not be asked")
 
     counts = (len(before_errors), len(after_errors))
     introduced = after_errors - before_errors
