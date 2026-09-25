@@ -5405,3 +5405,50 @@ Kontrolli i përsëritjeve kapi dy fraza që i futi vetë rishkrimi, dhe ato u n
   dhe të Tabelës 1, dhe referencat.
 - Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
   `docs/thesis/`.
+
+---
+
+### VD-135: Rregulli i fjalëve është minimumi 10 000, dhe tri analiza kthehen te Kapitulli 5
+
+**Konteksti.** VD-113 e kishte shënuar rregullin e UBT-së si «8 deri 10 mijë fjalë pa
+shtojca», dhe mbi atë lexim punimi u shkurtua tri herë: gjashtë analiza dytësore kaluan
+te shtojcat (VD-113), teksti u pastrua nga përsëritjet (VD-115), dhe kapitujt 1–4 u
+rishkruan më shkurt (VD-134). Autori e ndreqi rregullin më 25 shtator 2026: kapitujt
+1–6 duhet të kenë **të paktën 10 000 fjalë**, pa kufi të sipërm. Punimi kishte 8 610
+fjalë tekst dhe 9 314 me tabela, pra ishte nën minimum, jo mbi kufi.
+
+**Vendimi.** Asnjë fjali nuk u shtua si mbushje dhe asnjë nuk u hoq. Tri nga gjashtë
+analizat e VD-113 kthehen te Kapitulli 5, të plota, sepse secila e mban drejtpërdrejt
+një shifër të 5.1–5.4:
+
+- 5.5 Ndjeshmëria ndaj pragjeve, me kalibrimin jashtë fold-it (ish Shtojca 8.6);
+- 5.6 Krahasimi me një mjet ekzistues, PMD (ish 8.7);
+- 5.7 Sa peshë mban një shifër e vetme, intervalet e besimit (ish 8.10).
+
+Tri të tjerat mbeten shtojca dhe rinumërohen: 8.6 Pse nuk ndezin strategjitë, 8.7
+Ashpërsia e derivuar, 8.8 Çfarë mbetet pa u kapur te Blob-i. Numrat e seksioneve jepen
+sipas radhës në `chapters.py`, dhe të 16 referencat e kryqëzuara u ndoqën me dorë.
+Hyrja e Kapitullit 5 thotë tani pse tri analizat janë aty, dhe 5.6 nuk flet më për
+«Kapitullin 5» si për një kapitull tjetër.
+
+**Alternativat.** Zgjerimi i Kapitullit 2, që ka vetëm rreth 790 fjalë, do të kërkonte
+tekst të ri që autori duhet ta lexojë e ta mbrojë; kthimi i analizave përdor tekst që
+është shkruar, verifikuar dhe kaluar nga `check_repetition.py`. Kthimi i të gjashtave
+do të jepte rreth 12 000 fjalë, por tri të mbeturat janë shpjegime të një rezultati
+negativ, jo pjesë e përgjigjes, dhe përfitojnë më pak nga të qenit në kapitull.
+
+**Fjalët**, të numëruara mbi `.docx` me python-docx (paragrafët dhe qelizat e tabelave
+të kapitujve 1–6): **9 898 pa tabela, 10 925 me tabela**. E njëjta numërim jepte 8 605
+dhe 9 310 para ndryshimit, ndërsa Word-i 8 610 dhe 9 314, pra dallimi me Word-in është
+rreth katër fjalë.
+
+**Verifikimi.** `check_citations` (32/32), `check_reproduction` (22 hapa),
+`check_format`, `check_repetition` (asnjë fjali e përsëritur, 527 të kontrolluara),
+`build_slides` dhe `check_slides` kalojnë.
+
+**Çfarë nuk u verifikua.**
+- Numërimi me Word nuk u bë, sepse u punua në Linux; duhet konfirmuar te Word-i para
+  dorëzimit.
+- PDF-ja nuk u pa: LibreOffice në mjedisin e punës nuk ngarkonte asnjë `.docx`.
+- VD-113, VD-115 dhe VD-134 mbeten si u shkruan; ky vendim e ndreq premisën e tyre,
+  jo historinë.
