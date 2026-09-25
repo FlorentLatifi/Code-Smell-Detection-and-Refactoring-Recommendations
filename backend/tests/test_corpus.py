@@ -196,7 +196,7 @@ def test_every_recorded_move_is_well_formed() -> None:
 
 
 # ----------------------------------------------------------------------
-# Paths in committed results (VD-134)
+# Paths in committed results (VD-137)
 # ----------------------------------------------------------------------
 def test_a_corpus_file_is_recorded_below_the_root_with_forward_slashes(tmp_path):
     corpus = tmp_path / "corpus"
@@ -212,7 +212,7 @@ def test_a_corpus_file_is_recorded_below_the_root_with_forward_slashes(tmp_path)
 
 
 def test_an_older_absolute_path_still_names_its_file(tmp_path):
-    """Results written before VD-134 carry absolute paths, and must still be readable."""
+    """Results written before VD-137 carry absolute paths, and must still be readable."""
     corpus = tmp_path / "corpus"
     absolute = str(corpus / "repo" / "A.java")
 

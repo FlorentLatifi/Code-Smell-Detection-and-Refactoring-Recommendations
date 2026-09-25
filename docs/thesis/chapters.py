@@ -679,7 +679,7 @@ def _coverage_sentence() -> str:
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
 VALIDATION_DATE = "25 shtator 2026"
-BACKEND_TESTS = 705
+BACKEND_TESTS = 717
 COVERAGE = "96%"
 FRONTEND_TESTS = 165
 
@@ -3696,13 +3696,33 @@ def _refactoring_section() -> list:
         ("table", "Verifikimi i atyre që u aplikuan",
          ["Verdikti", "Numri", "Pjesa e të aplikuarave"], verdicts),
         f"Nga {_count(applied)} rishkrime, {broken} futën një gabim që nuk ishte aty më parë "
-        f"({share:.2%}). Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri "
-        "gabimi kundrejt skedarit origjinal.",
+        f"({share:.2%})."
+        + _unanswered(data)
+        + " Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri gabimi kundrejt "
+        "skedarit origjinal.",
         *_resolution_paragraphs(data),
         *_project_context_paragraphs(),
         *_rewrite_quality_paragraphs(),
         *_refusal_severity_paragraphs(),
     ]
+
+
+def _unanswered(data: dict) -> str:
+    """Rishkrimet për të cilat javac-u nuk dha verdikt, kur ka të tilla.
+
+    Fjalia para kësaj i ndan rishkrimet në «futën gabim» dhe «pjesa tjetër», çka
+    e mbulon korpusin vetëm kur javac-u përgjigjet për të gjithë. Ai nuk
+    përgjigjet gjithmonë: skadon koha, ose dështon pa emërtuar një gabim mbi
+    burimin, dhe atëherë verdikti është vetëm «u parsua» (VD-138). Ato nuk janë
+    as sukses, as dështim, dhe nuk fshihen brenda «pjesës tjetër».
+    """
+    count = data["verdicts"].get("parses", 0)
+    if not count:
+        return ""
+    return (
+        f" Te {_rewrites(count)} javac-u nuk dha verdikt, ndaj për ato dihet vetëm se "
+        "rishkrimi është Java e vlefshme."
+    )
 
 
 def _applied_by_refactoring(data: dict) -> str:
@@ -3986,7 +4006,7 @@ def _overturned_case() -> str:
         for row in overturned
     ]
     noun = "Rasti është" if len(named) == 1 else "Rastet janë"
-    # Që nga VD-134 rreshti mban edhe gabimet që rishkrimi shtoi brenda projektit.
+    # Që nga VD-137 rreshti mban edhe gabimet që rishkrimi shtoi brenda projektit.
     # Një matje e vjetër pa këtë kolonë e thotë hapur që shkaku nuk u veçua.
     causes = [row.get("new_in_project", "").strip() for row in overturned]
     if not all(causes):
@@ -3994,8 +4014,13 @@ def _overturned_case() -> str:
             f" {noun} {_joined(named)}. Skedari i matjes mban verdiktin e jo mesazhin e "
             "kompilatorit, ndaj shkaku i tyre nuk u veçua."
         )
-    quoted = _joined([f"«{cause}»" for cause in dict.fromkeys(causes)])
-    return f" {noun} {_joined(named)}. Kompilatori shton, sipas radhës, {quoted}."
+    # Një rresht mund të mbajë disa gabime, të ndara me «|»; lexuesit i duhen të
+    # veçanta dhe pa përsëritje.
+    messages = dict.fromkeys(
+        message.strip() for cause in causes for message in cause.split("|") if message.strip()
+    )
+    quoted = _joined([f"«{message}»" for message in messages])
+    return f" {noun} {_joined(named)}. Gabimet që shtojnë janë {quoted}."
 
 
 # Transformimi që motori aplikon për secilën erë, për emrat e rasteve.
@@ -4010,7 +4035,7 @@ REWRITE_OF_SMELL = {
 def _project_of(file_path: str) -> str:
     """«apache__hive__2fa22bf36089» te shtegu i korpusit bëhet «hive».
 
-    Shtegu është relativ ndaj rrënjës së korpusit që nga VD-134, ndaj dosja e
+    Shtegu është relativ ndaj rrënjës së korpusit që nga VD-137, ndaj dosja e
     projektit është pjesa e parë. Rezultatet e vjetra mbanin shtegun absolut, dhe
     aty dosja është ajo pas «corpus».
     """
@@ -4059,17 +4084,29 @@ def _project_context_paragraphs() -> list:
         f"Verdikti «kompilon» kalon nga {compiles_alone} te {compiles_context} nga "
         f"{total} rishkrime, pra nga {compiles_alone / total:.1%} në "
         f"{compiles_context / total:.1%}.",
-        _overturned(regressions, total)
-        + (
-            ""
-            if not unchecked
-            else " Një kompilim e kaloi kufirin kohor dhe numërohet si i pakontrolluar, "
-            "kurrë si sukses."
-            if unchecked == 1
-            else f" Kufirin kohor e kaluan {_word(unchecked)} kompilime, dhe numërohen si "
-            "të pakontrolluara, kurrë si sukses."
-        ),
+        _overturned(regressions, total) + _unchecked_sentence(unchecked),
     ]
+
+
+def _unchecked_sentence(unchecked: int) -> str:
+    """Pse një kompilim mbetet pa verdikt, dhe si numërohet.
+
+    Kjo fjali i atribuohej vetëm kufirit kohor. Që nga VD-138 një `javac` që
+    dështon pa emërtuar gabim mbi burimin nuk lexohet më si kompilim i pastër,
+    ndaj edhe ai bie tek «i pakontrolluar», dhe matja nuk i ndan dot të dyja.
+    """
+    if not unchecked:
+        return ""
+    if unchecked == 1:
+        return (
+            " Një kompilim mbeti pa verdikt, nga kufiri kohor ose nga një javac që "
+            "dështoi pa emërtuar gabim, dhe numërohet si i pakontrolluar, kurrë si sukses."
+        )
+    return (
+        f" {_opens(_word(unchecked))} kompilime mbetën pa verdikt, nga kufiri kohor ose "
+        "nga një javac që dështoi pa emërtuar gabim, dhe numërohen si të pakontrolluara, "
+        "kurrë si sukses."
+    )
 
 
 def _refusal_severity_paragraphs() -> list:
@@ -4559,9 +4596,18 @@ def chapter_8() -> list:
                 "ngarkesa e makinës. Ai riprodhim i përket mostrës së atëhershme prej 30 "
                 "skedarësh; mostra u dyfishua më vonë në 60 skedarë, dhe Kapitulli 5 "
                 "raporton matjen e saj më të fundit.",
-                "Hapat 1 dhe 7 mbeten të pariekzekutuar: i pari kërkon rishkarkimin e "
-                "korpusit të plotë, i dyti disa orë ekzekutimi mbi të. Për ta riprodhimi "
-                "mbetet pretendim i pakontrolluar, dhe thuhet këtu si i tillë.",
+                "Hapi 7, motori mbi korpusin, u riekzekutua më vonë dhe dha të njëjtat "
+                "total: po aq vende, po aq rishkrime, po aq refuzime, e njëjta ndarje sipas "
+                "transformimit dhe sipas arsyes. Krahasimi rresht për rresht nxori "
+                "megjithatë 21 verdikte kompilimi të ndryshuara, dhe ato çuan te një defekt "
+                "i vërtetë: një javac që dështon pa emërtuar gabim mbi burimin lexohej si "
+                "kompilim i pastër, pra 19 rishkrime ishin regjistruar si «kompilon» mbi "
+                "skedarë që nuk kompilojnë. Pas ndreqjes, kjo shtojcë dhe Kapitulli 5 "
+                "raportojnë matjen e re. Vlera e riprodhimit qëndron pikërisht këtu: totalet "
+                "përkonin, dhe defekti u pa vetëm sepse u krahasua çdo rresht.",
+                "Hapi 1 mbetet i pariekzekutuar, sepse kërkon rishkarkimin e korpusit të "
+                "plotë; për të riprodhimi mbetet pretendim i pakontrolluar, dhe thuhet këtu "
+                "si i tillë.",
             ],
         ),
     ] + secondary_results()
