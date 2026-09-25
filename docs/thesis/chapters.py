@@ -606,9 +606,9 @@ def _unsourced_thresholds() -> str:
         "Katër pragje nuk kanë burim të botuar dhe i ka zgjedhur autori: kufiri i "
         f"Long Method ({at('long_method_loc')} rreshta), dy kushte të Brain Method (CC ≥ "
         f"{at('brain_method_cc')}, ndërfutja ≥ {at('brain_method_nesting')}) dhe kufiri i Deep "
-        f"Nesting (> {at('deep_nesting')}). Ndjeshmëria ndaj të parit matet te Shtojca 8.6, "
+        f"Nesting (> {at('deep_nesting')}). Ndjeshmëria ndaj të parit matet te Nënkapitulli 5.5, "
         "ndërsa tre të tjerët nuk maten dot kundrejt MLCQ-së. Të autorit janë edhe tre pragjet "
-        "e ashpërsisë (Shtojca 8.9); të tjerat vijnë nga Lanza & Marinescu (Shtojca 8.2)."
+        "e ashpërsisë (Shtojca 8.7); të tjerat vijnë nga Lanza & Marinescu (Shtojca 8.2)."
     )
 
 
@@ -1021,7 +1021,7 @@ def _context_conclusion() -> str:
 
 
 def _blob_recall_limits() -> list:
-    """Dy kufizimet që dalin nga Shtojca 8.11, të lexuara nga i njëjti skedar.
+    """Dy kufizimet që dalin nga Shtojca 8.8, të lexuara nga i njëjti skedar.
 
     Të shtypura me dorë do të ishin dy pohime numerike brenda kapitullit të
     fundit që lexon komisioni, dhe pikërisht ashtu rrëshqiti Kapitulli 6 një
@@ -1034,10 +1034,10 @@ def _blob_recall_limits() -> list:
     strategy = data["per_variant"]["strategy"]
     best = max(float(value) for value in strategy["separation"].values())
 
-    # Numrat e rasteve janë te Shtojca 8.11; këtu jepet vetëm pasoja e tyre, që
+    # Numrat e rasteve janë te Shtojca 8.8; këtu jepet vetëm pasoja e tyre, që
     # e njëjta fjali të mos lexohet dy herë (VD-128).
     return [
-        "Recall-i i Blob-it ka dy tavane që nuk varen nga pragjet (Shtojca 8.11). I "
+        "Recall-i i Blob-it ka dy tavane që nuk varen nga pragjet (Shtojca 8.8). I "
         "pari: një pjesë e rasteve të humbura nuk janë më të mëdha se klasat e pastra, "
         "dhe asnjë metrikë e vetme klase nuk i ndan prej tyre (më e mira arrin "
         f"{best:.3f}); një detektor që mbështetet vetëm te këto metrika e ka të vështirë "
@@ -1068,7 +1068,7 @@ def _blocking_in_discussion() -> list:
     return [
         f"E treta vjen nga vetë mospërputhjet. Nga {missed} raste që rishikuesit i "
         f"quajtën Blob dhe strategjia nuk i ndezi, {many} nuk e kalojnë as dy nga tri "
-        "klauzolat (Shtojca 8.8). Humbja e tyre nuk zgjidhet pra duke lëvizur një "
+        "klauzolat (Shtojca 8.6). Humbja e tyre nuk zgjidhet pra duke lëvizur një "
         "prag: këto klasa dallojnë nga përkufizimi i strategjisë në më shumë se një "
         "dimension.",
     ]
@@ -1123,7 +1123,7 @@ REASON_SHORT_SQ = {
 
 
 def _calibration_verdict() -> str:
-    """Ku ndihmoi kalibrimi jashtë fold-it, nga të dhënat e Shtojcës 8.6."""
+    """Ku ndihmoi kalibrimi jashtë fold-it, nga të dhënat e Nënkapitullit 5.5."""
     data = _load_if_present("threshold_calibration.json")
     if data is None:
         return ""
@@ -1418,7 +1418,7 @@ def _literature_comparison(h: dict) -> list:
         "e nxjerra nga një korpus nuk transferohen lehtë në një tjetër: strategjitë e "
         "Lanza & Marinescu (2006) ruajnë precizion të lartë mbi MLCQ, por humbin "
         "shumicën e rasteve. PMD-ja, që zbaton të njëjtat strategji me pragjet e veta, "
-        "nuk del më mirë në asnjë krahasim (Shtojca 8.7), ndaj recall-i i ulët nuk "
+        "nuk del më mirë në asnjë krahasim (Nënkapitulli 5.6), ndaj recall-i i ulët nuk "
         "është defekt i zbatimit tonë. Te refaktorimi, motori ndjek parimin e Opdyke "
         "(1992): transformimi aplikohet vetëm kur parakushtet provohen. Tsantalis & "
         "Chatzigeorgiou (2009) ia lënë vendimin përfundimtar projektuesit; ky punim e "
@@ -1537,8 +1537,8 @@ def _answers(h: dict) -> list:
         )
         + f". Fitimi vjen kryesisht nga recall-i, që rritet {of_smells(gained)}. Një "
         "rezervë e vetme: kur rregullit i jepet pragu i tij më i "
-        "mirë nga fshirja, dallimi te Long Method nuk ndahet më nga zeroja (Shtojca "
-        "8.10)." + _gain_in_answer(h),
+        "mirë nga fshirja, dallimi te Long Method nuk ndahet më nga zeroja "
+        "(Nënkapitulli 5.7)." + _gain_in_answer(h),
     ]
 
     data = _load_if_present("refactoring_evaluation.json")
@@ -1641,10 +1641,10 @@ def chapter_6() -> list:
                 "autorët e saj thjesht nuk kanë ndër mend saktësisht të njëjtën erë.",
                 "Edhe ashpërsia doli rezultat negativ: e llogaritur nga teprica, ajo u "
                 "pajtua me rishikuesit afërsisht sa rastësia te tri nga katër erërat, "
-                "duke e mbivlerësuar sistematikisht (Shtojca 8.9). "
+                "duke e mbivlerësuar sistematikisht (Shtojca 8.7). "
                 f"{_calibration_verdict()}, dhe {_folds_disagree()}; një prag «optimal» "
                 "që ndryshon me pjesën e korpusit që shihet është veti e bashkësisë, jo "
-                "e gjuhës (Shtojca 8.6).",
+                "e gjuhës (Nënkapitulli 5.5).",
                 "Te refaktorimi, dy transformime të rekomanduara gjerësisht e "
                 "zhvendosin problemin në vend që ta heqin. Encapsulate Field, i "
                 "rekomanduar për Data Class, e përkeqëson matjen sipas vetë përkufizimit "
@@ -1769,21 +1769,32 @@ def chapter_6() -> list:
 # ======================================================================
 # Kapitulli 5: teksti rreth numrave, numrat nga data/results
 # ======================================================================
-# Analizat që nuk i përgjigjen drejtpërdrejt një pyetjeje kërkimore. Rregulli i UBT-së
-# e kufizon punimin në 8 deri 10 mijë fjalë pa shtojca, dhe vetëm Kapitulli 5 kishte
-# 5 553 fjalë tekst me to brenda. Zhvendosen te shtojcat të plota, pa u shkurtuar
-# asnjë fjali (VD-113).
-SECONDARY_RESULTS = ("5.5", "5.6", "5.7", "5.8", "5.9", "5.10")
+# Analizat që nuk i përgjigjen drejtpërdrejt një pyetjeje kërkimore. VD-113 i nxori
+# të gjashta te shtojcat nën një kufi prej 8 deri 10 mijë fjalësh që ishte lexuar gabim;
+# rregulli i UBT-së është minimumi 10 000 fjalë pa shtojca. Tri që e mbajnë një shifër
+# të Kapitullit 5 kthehen në kapitull, të plota, dhe tri të tjerat mbeten shtojca
+# (VD-135). Numrat e seksioneve jepen sipas radhës, që asnjë vrimë të mos mbetet.
+SECONDARY_IN_CHAPTER = ("5.5", "5.6", "5.9")
+SECONDARY_RESULTS = ("5.7", "5.8", "5.10")
+FIRST_SECONDARY_IN_CHAPTER = 5
 FIRST_APPENDIX_FOR_RESULTS = 6
 
 
 def chapter_5() -> list:
-    """Rezultatet që u përgjigjen pyetjeve kërkimore, 5.1 deri 5.4."""
-    return [section for section in _results_sections() if section[0] not in SECONDARY_RESULTS]
+    """Rezultatet që u përgjigjen pyetjeve kërkimore, 5.1 deri 5.4, dhe tri analiza pas tyre."""
+    kept = [section for section in _results_sections() if section[0] not in SECONDARY_RESULTS]
+    renumbered = []
+    offset = 0
+    for number, title, paragraphs in kept:
+        if number in SECONDARY_IN_CHAPTER:
+            number = f"5.{FIRST_SECONDARY_IN_CHAPTER + offset}"
+            offset += 1
+        renumbered.append((number, title, paragraphs))
+    return renumbered
 
 
 def secondary_results() -> list:
-    """Analizat dytësore të rezultateve, të rinumëruara si Shtojcat 8.6 deri 8.11."""
+    """Analizat dytësore që mbeten shtojca, të rinumëruara si Shtojcat 8.6 deri 8.8."""
     moved = [section for section in _results_sections() if section[0] in SECONDARY_RESULTS]
     return [
         (f"8.{FIRST_APPENDIX_FOR_RESULTS + offset}", title, paragraphs)
@@ -1921,8 +1932,10 @@ def _results_sections() -> list:
                 ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
                  "Shpërndarja e mostrave sipas erës"),
                 "Nënkapitujt 5.1 deri 5.4 u përgjigjen pyetjeve kërkimore sipas radhës së "
-                "tyre. Analizat dytësore, që u japin kontekst këtyre përgjigjeve pa iu "
-                "përgjigjur vetë ndonjë pyetjeje, janë te Shtojcat 8.6 deri 8.11.",
+                "tyre. Tri analiza pas tyre tregojnë sa peshë mbajnë ato përgjigje: sa "
+                "varen nga pragjet (5.5), si dalin përballë një mjeti ekzistues (5.6) dhe "
+                "sa të gjera janë intervalet e tyre të besimit (5.7). Analizat e tjera "
+                "dytësore janë te Shtojcat 8.6 deri 8.8.",
             ],
         ),
         (
@@ -2025,7 +2038,7 @@ def _results_sections() -> list:
             "5.6",
             "Krahasimi me një mjet ekzistues",
             [
-                "Kapitulli 5 i vë dy qasjet e këtij punimi përballë "
+                "Nënkapitujt 5.1 deri 5.3 i vënë dy qasjet e këtij punimi përballë "
                 "njëra-tjetrës. Ky i vë përballë një mjeti që zhvilluesi e instalon "
                 "sot, sepse pyetja nuk është vetëm cila prej të dyjave është më e "
                 "mirë, por a ia vlen ndonjëra.",
@@ -2332,7 +2345,7 @@ def _confidence_section() -> list:
         "erërave mes tyre nuk qëndron: dallimi mes Data Class-it dhe Blob-it, për "
         "shembull, humbet brenda tyre.",
         "Krahasimi ndryshon kur Qasjes A i jepet pragu i saj më i mirë nga fshirja e "
-        "Shtojcës 8.6, çka është krahasimi më bujar që mund t'i bëhet:",
+        "Nënkapitullit 5.5, çka është krahasimi më bujar që mund t'i bëhet:",
         ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
          ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
          swept_rows),
@@ -2670,7 +2683,7 @@ def _blocking_predicts_calibration() -> list:
         f"pavarur. Te {SMELL_SQ.get(far[0], far[0])}-i mospërputhjet janë larg pragjeve "
         f"(mediana mesatare {far[1]:.2f}), ndaj kalibrimi nuk duhet të ndihmojë shumë; "
         f"te {SMELL_SQ.get(near[0], near[0])} janë afër ({near[1]:.2f}), ndaj duhet. "
-        f"Kalibrimi jashtë-fold-it i Shtojcës 8.6, i matur veç dhe pa e parë këtë "
+        f"Kalibrimi jashtë-fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
         f"analizë, jep {far[2]:+.3f} MCC për të parin dhe {near[2]:+.3f} për të dytin. "
         "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
         "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
@@ -2913,7 +2926,7 @@ def _blob_saturated(data: dict) -> list:
 def _blob_recall_section() -> list:
     """Si duket klasa që rishikuesi e quan blob kur strategjia nuk pajtohet.
 
-    Shtojca 8.8 thotë cila klauzolë e ndali secilën mospërputhje dhe aty
+    Shtojca 8.6 thotë cila klauzolë e ndali secilën mospërputhje dhe aty
     ndalet. Numri i klauzolave nuk dallon dot mes dy gjendjeve që kërkojnë punë
     të kundërt: strategjia që mat përmasat e gabuara, dhe e vërteta bazë që
     përmban raste të cilat asnjë prag nuk i arrin. Ky nënkapitull e dallon.
@@ -2928,7 +2941,7 @@ def _blob_recall_section() -> list:
     best_metric, best_value = max(strategy["separation"].items(), key=lambda pair: pair[1])
 
     paragraphs: list = [
-        "Shtojca 8.8 numëron klauzolat që ndalën secilën mospërputhje, por nuk thotë si "
+        "Shtojca 8.6 numëron klauzolat që ndalën secilën mospërputhje, por nuk thotë si "
         "duket klasa që rishikuesi e quajti blob ndërsa strategjia jo. Ose klasat e "
         "humbura u ngjajnë atyre të kapura në një përmasë që strategjia nuk e lexon, dhe "
         "asaj i mungon një klauzolë; ose u ngjajnë klasave të pastra në çdo përmasë të "
