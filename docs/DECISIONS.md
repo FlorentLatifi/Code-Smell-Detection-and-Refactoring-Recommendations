@@ -5405,3 +5405,126 @@ Kontrolli i përsëritjeve kapi dy fraza që i futi vetë rishkrimi, dhe ato u n
   dhe të Tabelës 1, dhe referencat.
 - Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
   `docs/thesis/`.
+
+---
+
+### VD-135: Rregulli i fjalëve është minimumi 10 000, dhe tri analiza kthehen te Kapitulli 5
+
+**Konteksti.** VD-113 e kishte shënuar rregullin e UBT-së si «8 deri 10 mijë fjalë pa
+shtojca», dhe mbi atë lexim punimi u shkurtua tri herë: gjashtë analiza dytësore kaluan
+te shtojcat (VD-113), teksti u pastrua nga përsëritjet (VD-115), dhe kapitujt 1–4 u
+rishkruan më shkurt (VD-134). Autori e ndreqi rregullin më 25 shtator 2026: kapitujt
+1–6 duhet të kenë **të paktën 10 000 fjalë**, pa kufi të sipërm. Punimi kishte 8 610
+fjalë tekst dhe 9 314 me tabela, pra ishte nën minimum, jo mbi kufi.
+
+**Vendimi.** Asnjë fjali nuk u shtua si mbushje dhe asnjë nuk u hoq. Tri nga gjashtë
+analizat e VD-113 kthehen te Kapitulli 5, të plota, sepse secila e mban drejtpërdrejt
+një shifër të 5.1–5.4:
+
+- 5.5 Ndjeshmëria ndaj pragjeve, me kalibrimin jashtë fold-it (ish Shtojca 8.6);
+- 5.6 Krahasimi me një mjet ekzistues, PMD (ish 8.7);
+- 5.7 Sa peshë mban një shifër e vetme, intervalet e besimit (ish 8.10).
+
+Tri të tjerat mbeten shtojca dhe rinumërohen: 8.6 Pse nuk ndezin strategjitë, 8.7
+Ashpërsia e derivuar, 8.8 Çfarë mbetet pa u kapur te Blob-i. Numrat e seksioneve jepen
+sipas radhës në `chapters.py`, dhe të 16 referencat e kryqëzuara u ndoqën me dorë.
+Hyrja e Kapitullit 5 thotë tani pse tri analizat janë aty, dhe 5.6 nuk flet më për
+«Kapitullin 5» si për një kapitull tjetër.
+
+**Alternativat.** Zgjerimi i Kapitullit 2, që ka vetëm rreth 790 fjalë, do të kërkonte
+tekst të ri që autori duhet ta lexojë e ta mbrojë; kthimi i analizave përdor tekst që
+është shkruar, verifikuar dhe kaluar nga `check_repetition.py`. Kthimi i të gjashtave
+do të jepte rreth 12 000 fjalë, por tri të mbeturat janë shpjegime të një rezultati
+negativ, jo pjesë e përgjigjes, dhe përfitojnë më pak nga të qenit në kapitull.
+
+**Fjalët**, të numëruara mbi `.docx` me python-docx (paragrafët dhe qelizat e tabelave
+të kapitujve 1–6): **9 898 pa tabela, 10 925 me tabela**. E njëjta numërim jepte 8 605
+dhe 9 310 para ndryshimit, ndërsa Word-i 8 610 dhe 9 314, pra dallimi me Word-in është
+rreth katër fjalë.
+
+**Verifikimi.** `check_citations` (32/32), `check_reproduction` (22 hapa),
+`check_format`, `check_repetition` (asnjë fjali e përsëritur, 527 të kontrolluara),
+`build_slides` dhe `check_slides` kalojnë.
+
+**Çfarë nuk u verifikua.**
+- Numërimi me Word nuk u bë, sepse u punua në Linux; duhet konfirmuar te Word-i para
+  dorëzimit.
+- PDF-ja nuk u pa: LibreOffice në mjedisin e punës nuk ngarkonte asnjë `.docx`.
+- VD-113, VD-115 dhe VD-134 mbeten si u shkruan; ky vendim e ndreq premisën e tyre,
+  jo historinë.
+
+---
+
+### VD-136: Punimi rishikohet kundrejt katër dokumenteve: mentores, udhëzuesit, shabllonit dhe një teme të pranuar
+
+**Konteksti.** Autori dha katër dokumente: shënimet e mentores, udhëzuesin e UBT-së për
+anën përmbajtësore të temës, shabllonin «UBT_Instruksione_per_teme» dhe një temë diplome
+të pranuar nga një koleg. Mentorja kërkoi: hyrje 1–1.5 faqe pa nënkapituj që e shpjegon
+më shumë problemin në përgjithësi; Kapitulli 3 me pyetjet kërkimore; metodologjia si
+kapitulli më i rëndësishëm, e hollësishme, pa rezultate; rezultatet me tabela e figura
+por pa shpjeguar pse doli një rezultat; diskutimi që interpreton, krahason me
+literaturën dhe u përgjigjet pyetjeve; dhe, e shënuar si kritike, kontrollin nëse
+referencat ekzistojnë.
+
+**Çfarë u gjet.**
+- Kapitulli 5 përmbante interpretim, sidomos te 5.5–5.7 (të kthyera nga shtojcat te
+  VD-135): «pragu del konservativ», «klauzola nuk e bën punën», «nuk është artefakt i
+  korpusit». Përmbante edhe përshkrim metode (si bëhet fshirja, kalibrimi, bootstrap-i).
+- Te kalibrimi i Data Class-it teksti thoshte se «dy» folde zgjodhën një prag tjetër nga
+  «tre» të tjerët; skedari tregon një kundrejt katër.
+- Kapitulli 2 kishte rreth 790 fjalë, kundrejt rreth 4 100 te tema e pranuar, dhe
+  metodologjia rreth 2 600 kundrejt rreth 5 500.
+- Shablloni kërkon që ekuacionet të numërohen; punimi nuk kishte asnjë ekuacion, edhe pse
+  përdor P, R, F1, MCC, kappa dhe një formulë ashpërsie.
+
+**Vendimi.**
+- **Referencat.** Të 32 hyrjet u kontrolluan një nga një te botuesi ose te një indeks
+  akademik; të gjitha ekzistojnë dhe autorët, viti, titulli, vëllimi e faqet përputhen.
+  `PAGES_UNVERIFIED` u zbraz. U shtuan dymbëdhjetë burime, secili vetëm pasi u
+  verifikua ekzistenca dhe gjetja që i atribuohet: Khomh et al. 2012, Palomba et al.
+  2018, Sjøberg et al. 2013, Tufano et al. 2015, Yamashita & Moonen 2013, Mens & Tourwé
+  2004, Bavota et al. 2015 (literatura), dhe Chicco & Jurman 2020, Kaufman et al. 2012,
+  Strobl et al. 2007, Efron & Tibshirani 1993, Wohlin et al. 2012 (metodologjia).
+  Gjithsej 44.
+- **Kapitulli 5** mban vetëm vlera. Fjalitë e 5.5–5.7 ndërtohen nga skedarët
+  (`_sweep_facts`, `_calibration_facts`, `_swept_summary`), përfshirë fjalinë e
+  ndrequr për foldet e Data Class-it. Hyrja e kapitullit i lidh 5.1–5.4 me PK1–PK3 dhe i
+  shënon 5.5–5.7 si vëzhgime dytësore, siç e kërkon udhëzuesi.
+- **Kapitulli 6** merr interpretimin e hequr (`_sensitivity_reading`,
+  `_intervals_reading`), krahasimin me Sjøberg et al. dhe Bavota et al. te 6.3, dhe
+  mungesën e mjeteve të lira për Feature Envy te 6.5.
+- **Kapitulli 4** u rishkrua me hollësi: dizajni dhe hipoteza e PK2, tetë hapat e
+  studimit, modeli i të dhënave dhe rreshti i komandës, arsyet e teknologjive, MLCQ-ja
+  me numrat e saj të botuar, materializimi, përputhja dhe agregimi i etiketave,
+  përkufizimet e metrikave ashtu si i llogarit kodi, strategjitë me pragjet e lexuara nga
+  `system_reference.json`, formula e ashpërsisë, konfigurimi i modeleve, algoritmi i
+  secilit transformim, metodat e fshirjes, kalibrimit, bootstrap-it, pajtimit dhe
+  krahasimit me PMD-në, mjedisi eksperimental, dhe një nënkapitull i ri 4.13 për
+  kërcënimet ndaj vlefshmërisë. Tetë ekuacione të numëruara; `build_thesis.equation` i
+  vendos në mes me numrin në të djathtë, dhe paragrafi mbetet i justifikuar që kontrolli i
+  formatit të mos ketë përjashtim.
+- **Kapitulli 2** u zgjerua dhe u organizua sipas ideve: ndikimi i erërave (2.1), matja
+  (2.2), rregullat (2.3), mësimi i makinës (2.4), e vërteta bazë (2.5), refaktorimi (2.6),
+  hendeku (2.7). Referencat e kryqëzuara 2.2→2.3, 2.3→2.4 dhe 2.6→2.7 u ndoqën.
+- **Hyrja** mbetet pa nënkapituj dhe shpjegon më shumë problemin në përgjithësi (ligji i
+  Lehman-it për kompleksitetin, kosto e matur e erërave, pse gjetja me dorë nuk
+  shkallëzohet), brenda rreth 1.2 faqeve.
+
+**Çfarë nuk u ndoq nga tema e kolegut.** Ajo e vendos deklarimin e problemit para
+literaturës; shablloni i UBT-së e do literaturën te Kapitulli 2 dhe problemin te 3, ndaj
+u mbajt radha e shabllonit. Hyrja e saj ka rreth 1 600 fjalë, çka bie ndesh me udhëzimin e
+mentores për 1–1.5 faqe.
+
+**Fjalët.** Kapitujt 1–6: 13 952 pa tabela, 14 979 me tabela (python-docx). Kapitulli 4
+ka 5 502 fjalë tekst.
+
+**Verifikimi.** `check_citations` (44/44), `check_reproduction`, `check_format`,
+`check_repetition` (694 fjali, asnjë e përsëritur), `build_slides` dhe `check_slides`
+kalojnë.
+
+**Çfarë nuk u verifikua.**
+- PDF-ja nuk u pa, sepse LibreOffice nuk punonte në mjedisin e punës. Duhet parë në Word
+  sidomos se si dalin ekuacionet dhe se asnjë figurë nuk ndahet nga përshkrimi.
+- Numri i fjalëve me Word nuk u mat.
+- Gjetjet që u atribuohen burimeve të reja u kontrolluan kundrejt përmbledhjeve të tyre
+  të publikuara, jo kundrejt tekstit të plotë.
