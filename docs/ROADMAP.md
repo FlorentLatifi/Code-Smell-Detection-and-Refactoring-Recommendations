@@ -4,7 +4,7 @@
 Rregullat se *si* punojmë janë në [`ENGINEERING.md`](ENGINEERING.md); arsyet e vendimeve
 janë në [`DECISIONS.md`](DECISIONS.md).
 
-## Gjendja aktuale (verifikuar më 2026-09-22)
+## Gjendja aktuale (verifikuar më 2026-09-25)
 
 | Komponenti | Gjendja | Vërejtje |
 |---|---|---|
@@ -16,7 +16,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
-| Testet | ✅ 700 kalojnë, mbulim 96% | vlera të derivuara me dorë; 1 anashkalohet pa symlink; asnjë modul nën 90% (VD-64), kufi i rikthyer me testet e `--apply` dhe të dështimeve të `git`-it (VD-123) |
+| Testet | ✅ 705 kalojnë, mbulim 96% | vlera të derivuara me dorë; 1 anashkalohet pa symlink; asnjë modul nën 90% (VD-64), kufi i rikthyer me testet e `--apply` dhe të dështimeve të `git`-it (VD-123) |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
 | Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55); përmbysja e parë u veçua (VD-82), dhe rimatja pas ndreqjes së ndërfutjes nxori dy (VD-130); çdo refuzim ka kod të përkthyeshëm (VD-123) |
@@ -29,7 +29,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Çfarë mbetet pa u kapur te Blob-i | ✅ e plotë | mospërputhjet janë klasa të vogla, jo përmasë e pamatur (VD-88); tavani i TCC-së te klasat statike u raportua e nuk u ndryshua |
 | Auditim si përdorues | ✅ e plotë | dhjetë gjetje nga përdorimi i vetë mjetit mbi një projekt real; nëntë të ndrequra (VD-89 deri VD-97) |
 | Figurat e punimit | ✅ 9 figura | `scripts/build_figures.py`: arkitektura e sistemit dhe tetë figura të gjeneruara nga `data/results/` (VD-125) |
-| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); rindërtuar sipas udhëzimeve të mentores (VD-125): hyrja pa nënkapituj, pyetjet kërkimore te Kapitulli 3, arkitektura/teknologjitë/validimi te Kapitulli 4, interpretimi dhe krahasimi me literaturën te Kapitulli 6; kapitujt 1–4 të shkurtuar (VD-134); 9 314 fjalë te kapitujt 1–6 me tabela, 8 610 pa to; 32 referenca të verifikuara; mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
+| Punimi | 🟡 kapitujt 1–6 dhe 8 të shkruar | formatimi UBT i verifikuar kundrejt shabllonit (VD-62); rindërtuar sipas udhëzimeve të mentores (VD-125): hyrja pa nënkapituj, pyetjet kërkimore te Kapitulli 3, arkitektura/teknologjitë/validimi te Kapitulli 4, interpretimi dhe krahasimi me literaturën te Kapitulli 6; kapitujt 1–4 të shkurtuar (VD-134); rregulli është minimumi 10 000 fjalë, ndaj ndjeshmëria, PMD-ja dhe intervalet u kthyen te Kapitulli 5 si 5.5–5.7 (VD-135); rishikuar kundrejt mentores, udhëzuesit, shabllonit dhe një teme të pranuar: rezultatet pa interpretim, metodologjia e hollësishme me ekuacione të numëruara dhe 4.13 për vlefshmërinë, literatura sipas ideve (VD-136); 14 979 fjalë te kapitujt 1–6 me tabela, 13 952 pa to; 44 referenca, të gjitha të verifikuara se ekzistojnë; mbeten dy `[PLOTËSO]`: falënderimet dhe fleta e cilësisë |
 
 Afati: ~11 javë deri te dorëzimi (~nëntor 2026).
 

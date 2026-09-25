@@ -20,10 +20,10 @@ from dataclasses import dataclass
 from docx import Document
 from docx.enum.section import WD_SECTION
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt
+from docx.shared import Emu, Inches, Pt
 
 from ubt_format import (
     BODY_SIZE,
@@ -346,6 +346,7 @@ class Numbering:
 
     figure: int = 0
     table: int = 0
+    equation: int = 0
 
 
 def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
@@ -361,6 +362,27 @@ def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
         _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
     numbering.figure += 1
     caption(doc, f"Figura {numbering.figure}. {text}")
+
+
+def equation(doc: Document, text: str, numbering: Numbering) -> None:
+    """Një ekuacion i numëruar, në mes të rreshtit dhe me numrin në të djathtë.
+
+    Shablloni: «Të gjithë ekuacionet apo modelet duhet të numërohen», me numrin
+    në kllapa në skajin e djathtë. Dy ndalesa tabulatori e bëjnë këtë pa tabelë
+    të padukshme. Paragrafi mbetet i justifikuar si teksti rrjedhës: në Word
+    rreshti i fundit i një paragrafi të justifikuar nuk shtrihet, ndaj
+    tabulatorët punojnë, dhe kontrolli i formatit nuk ka përjashtim për të.
+    """
+    numbering.equation += 1
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    paragraph.paragraph_format.line_spacing = LINE_SPACING
+    paragraph.paragraph_format.keep_together = True
+    width = PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT
+    stops = paragraph.paragraph_format.tab_stops
+    stops.add_tab_stop(Emu(width // 2), WD_TAB_ALIGNMENT.CENTER)
+    stops.add_tab_stop(Emu(width), WD_TAB_ALIGNMENT.RIGHT)
+    _set_font(paragraph.add_run(f"\t{text}\t({numbering.equation})"))
 
 
 def table(
@@ -549,6 +571,8 @@ def render_sections(doc: Document, sections: list, numbering: Numbering) -> None
                 bullet(doc, item[1])
             elif item[0] == "figure":
                 figure(doc, item[1], item[2], numbering)
+            elif item[0] == "equation":
+                equation(doc, item[1], numbering)
             elif item[0] == "table":
                 table(doc, item[1], item[2], item[3], numbering)
             else:
@@ -733,11 +757,14 @@ INTRODUCTION = [
         [
             "Zhvillimi i një sistemi softuerik nuk përfundon me lëshimin e versionit "
             "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje, ku kodi "
-            "lexohet dhe ndryshohet vazhdimisht nga zhvillues të ndryshëm. Lehman "
-            "(1980) e formuloi këtë si ligj: një sistem që përdoret në një mjedis "
-            "real duhet të ndryshojë vazhdimisht, përndryshe bëhet gradualisht më pak "
-            "i dobishëm. Prandaj sa lehtë ndryshohet kodi është kosto e përditshme "
-            "për çdo ekip.",
+            "lexohet dhe ndryshohet vazhdimisht nga zhvillues të ndryshëm, shpesh vite "
+            "pasi u shkrua dhe nga njerëz që nuk e shkruan vetë. Lehman (1980) e "
+            "formuloi këtë si ligj: një sistem që përdoret në një mjedis real duhet të "
+            "ndryshojë vazhdimisht, përndryshe bëhet gradualisht më pak i dobishëm. Po "
+            "ai vuri re se me çdo ndryshim kompleksiteti i sistemit rritet, përveç kur "
+            "dikush punon qëllimisht për ta ulur. Prandaj sa lehtë ndryshohet kodi "
+            "është kosto e përditshme për çdo ekip, dhe ajo kosto rritet me moshën e "
+            "sistemit.",
             "Një burim i madh i kësaj vështirësie janë code smells, që në vijim quhen "
             "edhe erëra të kodit, ose shkurt erëra. Termi është i Kent Beck-ut dhe u "
             "përhap me librin Refactoring të Martin Fowler-it, botimi i dytë i të "
@@ -746,14 +773,21 @@ INTRODUCTION = [
             "dizajni: një klasë me shumë përgjegjësi të palidhura, një metodë qindra "
             "rreshta e gjatë, ose një klasë që mban vetëm të dhëna. Cunningham (1992) "
             "e quajti efektin e tyre të grumbulluar borxh teknik: çdo kompromis i "
-            "vogël në strukturë paguhet me interes në çdo ndryshim të mëvonshëm.",
+            "vogël në strukturë paguhet me interes në çdo ndryshim të mëvonshëm. "
+            "Studimet empirike e lidhin këtë metaforë me kosto reale, sepse kodi me "
+            "erëra ka më shumë gjasë të ndryshojë dhe të përmbajë defekte (Palomba et "
+            "al., 2018).",
             "Zgjidhja e zakonshme është refaktorimi, të cilin Fowler (2018) e "
             "përkufizon si ndryshim të strukturës së brendshme të kodit pa ndryshuar "
             "sjelljen e tij të jashtme. Por që të refaktorohet, problemi duhet gjetur "
             "më parë, dhe duhet ditur cili transformim e heq pa e prishur programin. "
             "Në një sistem me qindra klasa kjo nuk bëhet dot me dorë në mënyrë "
-            "sistematike, dhe dy shqyrtues shpesh nuk pajtohen se çfarë është "
-            "problem.",
+            "sistematike. Rishikimi i kodit e kap një erë vetëm kur dikush e sheh dhe "
+            "ka kohë ta ndreqë, dy shqyrtues shpesh nuk pajtohen se çfarë është "
+            "problem, dhe një rishkrim me dorë mund ta prishë programin pikërisht aty "
+            "ku synonte ta përmirësonte. Problemi pra nuk është mungesa e një "
+            "përkufizimi, por mungesa e një mënyre të përsëritshme për ta zbatuar atë "
+            "mbi kod real.",
             "Mjetet e analizës statike e automatizojnë një pjesë të kësaj pune, por "
             "mbeten tri probleme. Strategjitë me metrika, si ato të Lanza & Marinescu "
             "(2006), përdorin pragje fikse të nxjerra nga një korpus tjetër, dhe "
