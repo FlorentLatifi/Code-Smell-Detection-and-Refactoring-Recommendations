@@ -562,8 +562,8 @@ def _coverage_sentence() -> str:
 # Gjendja e validimit në verifikimin e fundit, e njëjta me `docs/ROADMAP.md`.
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
-VALIDATION_DATE = "22 shtator 2026"
-BACKEND_TESTS = 700
+VALIDATION_DATE = "25 shtator 2026"
+BACKEND_TESTS = 705
 COVERAGE = "96%"
 FRONTEND_TESTS = 165
 
