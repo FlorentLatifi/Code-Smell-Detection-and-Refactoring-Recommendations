@@ -5236,7 +5236,9 @@ me Extract Method), dhe pjesa tjetër ishte refuzuar, kryesisht si formë që
 transformimi nuk e rishkruan.
 
 **Verifikimi brenda projektit.** E njëjta farë zgjedh tani 60 skedarë të tjerë,
-sepse popullsia e skedarëve me rishkrime ndryshoi.
+sepse popullsia e skedarëve me rishkrime ndryshoi. Kolona «Pas» është matja e 22
+shtatorit; ajo u rimat dy herë pas kësaj (VD-135 dhe VD-136), dhe numrat që raporton
+punimi janë te VD-136.
 
 | | Para | Pas |
 |---|---:|---:|
@@ -5252,11 +5254,12 @@ Tri gjëra të kësaj matjeje duhen thënë.
   (Shtojca 8.5), ndaj një pjesë e 23 kompilimeve të pakontrolluara mund t'i
   detyrohet asaj. Ato numërohen si të pakontrolluara, kurrë si sukses.
 - **Kohëzgjatja.** Matja u ndërpre disa herë nga fjetja e makinës dhe vazhdoi nga
-  progresi. Fusha `seconds` mat vetëm segmentin e fundit, ndaj punimi nuk e citon më.
-- **Dy përmbysjet** (Extract Method në Hive dhe në Eclipse JDT) nuk u shpjeguan.
-  Skedari i mostrave mban verdiktin, jo mesazhin e kompilatorit. Teksti i 6.1 dhe
-  i 8.5, që pohonte «përmbysja e vetme, te Ambari», tani e lexon numrin nga të
-  dhënat.
+  progresi. Fusha `seconds` matte vetëm segmentin e fundit, ndaj punimi nuk e citon
+  më; te VD-135 ajo u bë kumulative, por mospërmendja mbeti.
+- **Dy përmbysjet** (Extract Method në Hive dhe në Eclipse JDT) nuk u shpjeguan
+  këtu: skedari i mostrave mbante verdiktin, jo mesazhin e kompilatorit. Teksti i 6.1
+  dhe i 8.5, që pohonte «përmbysja e vetme, te Ambari», tani e lexon numrin nga të
+  dhënat, dhe VD-135 e ruan edhe shkakun.
 
 **Një gabim i futur nga VD-128, i ndrequr këtu.** Kur u shkurtua paragrafi i 6.1, fjala
 «shumica e rasteve pa gabim të ri kompilojnë plotësisht» zëvendësoi origjinalin, që
@@ -5264,11 +5267,11 @@ thoshte se gabimet e mbetura i përkasin izolimit. Nuk ishte e vërtetë as para
 rimatjes (45 nga 404), as pas saj (65 nga 196). Tani paragrafi i lexon të dy numrat
 nga skedari.
 
-**Mbetet i hapur.** `refactoring_sites.csv` dhe `verify_with_project_samples.csv`
-mbajnë shtigje absolute (`C:\Users\…`) që nga vlerësimi i parë i motorit (commit
-`54d667c`). Ato nxjerrin emrin e përdoruesit në një depo publike. Ndreqja kërkon që
-skriptet të shkruajnë shtigje relative ndaj korpusit, dhe që hapat 7, 11, 12 dhe 16 të
-rimaten.
+**Mbetur i hapur, i zgjidhur te VD-135.** `refactoring_sites.csv` dhe
+`verify_with_project_samples.csv` mbanin shtigje absolute (`C:\Users\…`) që nga
+vlerësimi i parë i motorit (commit `54d667c`), pra nxirrnin emrin e përdoruesit në një
+depo publike. Kaluan në shtigje relative ndaj korpusit, dhe hapat 7, 11, 12 e 16 u
+rimatën.
 
 ---
 
@@ -5405,3 +5408,61 @@ Kontrolli i përsëritjeve kapi dy fraza që i futi vetë rishkrimi, dhe ato u n
   dhe të Tabelës 1, dhe referencat.
 - Testet e sistemit nuk u ekzekutuan, sepse ndryshimi nuk prek kod jashtë
   `docs/thesis/`.
+---
+
+### VD-135: Rezultatet mbajnë shtigje relative, dhe përmbysjet mbajnë shkakun
+
+**Konteksti.** Auditi i sistemit (19–23 shtator 2026) gjeti tri mangësi te matja e
+refaktorimit, të gjitha të dukshme vetëm kur dikush i hap skedarët e rezultateve:
+
+- **Shtigjet.** `refactoring_sites.csv` dhe `verify_with_project_samples.csv` mbanin
+  shtigje absolute që nga vlerësimi i parë i motorit (commit `54d667c`). Ato e nxjerrin
+  emrin e përdoruesit në një depo publike. Më keq për riprodhimin: mostra e verifikimit
+  merret nga një listë e renditur shtegjesh, dhe `\` e `/` nuk renditen njësoj kundrejt
+  shkronjave, ndaj e njëjta farë mund të jepte mostra të ndryshme në Windows dhe në
+  Linux.
+- **Shkaku i përmbysjeve.** Kur një rishkrim shtonte gabim brenda projektit, matja
+  ruante vetëm verdiktin. Rasti i parë u shpjegua sepse u kompilua sërish me dorë
+  (VD-82); rimatja e VD-130 nxori dy dhe nuk kishte si t'i shpjegonte.
+- **Kohëzgjatja.** `seconds` matte vetëm thirrjen e fundit, ndaj një matje e ndërprerë
+  disa herë raportonte një orë për punën e një dite.
+
+**Vendimi.**
+- `corpus_relative` dhe `in_corpus` te `evaluation/corpus.py` janë i vetmi vend ku
+  shkruhet e lexohet shtegu i një skedari korpusi. Të tre skriptet e motorit (hapat 7,
+  12 dhe 16) i përdorin, dhe ecja renditet sipas shtegut me `/`. Rezultatet e vjetra me
+  shtigje absolute lexohen ende, që krahasimi me matjet e mëparshme të mbetet i mundshëm.
+- `verify_with_project.py` ruan te çdo rresht edhe gabimet që rishkrimi shtoi brenda
+  projektit, deri në 300 shenja, te kolona `new_in_project`.
+- Kohëzgjatja mblidhet nëpër rinisje, te vetë pika e kontrollit. Punimi vazhdon të mos
+  e citojë: numri nuk e ndan kohën e fjetjes së makinës nga koha e punës, ndaj është
+  kufi i sipërm, jo matje.
+- Pika e kontrollit provohet pesë herë para se të dorëzohet. Në Windows `os.replace`
+  dështon me `PermissionError` kur skedari është i hapur për lexim nga dikush tjetër,
+  dhe pikërisht kjo e rrëzoi një matje te skedari i 40-të prej 60: monitorimi i
+  ekzekutimit e lexonte skedarin e progresit çdo pesë minuta. Monitorimi tani lexon
+  vetëm daljen e skriptit.
+
+**Matja.** Motori u rimat i plotë. Krahasimi rresht për rresht me matjen e mëparshme
+(15 311 rreshta të përbashkët) nxori të njëjtat total: 15 800 vende, 3 532 rishkrime,
+12 252 refuzime, 865 erëra të reja, e njëjta ndarje sipas transformimit dhe sipas
+arsyes së refuzimit. Mostra e verifikimit mbeti e njëjta, sepse renditja sipas shtegut
+relativ dhe sipas atij absolut përkon për këtë korpus; ndryshimi i preku shtigjet, jo
+matjet.
+
+Ndryshuan 21 verdikte kompilimi, dhe pikërisht ai ndryshim, i pashpjegueshëm nga
+ngarkesa, nxori një defekt te leximi i daljes së `javac`-ut. Ai defekt, çfarë ndreqi
+dhe numrat përfundimtarë janë te VD-136; kjo rimatje nuk është ajo që raporton punimi.
+
+**Çfarë shtoi kjo te punimi.** Të dyja përmbysjet kanë tani shkak të thënë, dhe të
+dyja e kanë të njëjtin: paketa të palëve të treta që korpusi nuk i mban. Te Hive
+mungon `ImmutableMap` i Guava-s, te Eclipse JDT mungojnë `org.eclipse.jface.text` dhe
+`org.eclipse.text.edits`. Kjo e mbështet leximin e Nënkapitullit 6.1: verdikti i
+izoluar është më i rreptë se vetë rishkrimi, dhe mungesa e bibliotekave, jo
+transformimi, është ajo që prodhon gabimet. Nënkapitulli 5.4 i emërton rastet dhe i
+citon mesazhet e kompilatorit, pa i ngatërruar kur një rresht mban më shumë se një.
+
+**Çfarë nuk u bë.** Rezultatet e komituara para kësaj date mbeten me shtigje absolute
+në historikun e git-it; vetëm gjendja e tanishme është e pastër. Korpusi nuk u
+rifreskua, ndaj mungesa e bibliotekave të jashtme mbetet kufizim i deklaruar (VD-53),
+jo problem i ndrequr.

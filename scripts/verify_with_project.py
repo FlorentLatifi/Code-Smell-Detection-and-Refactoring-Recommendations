@@ -48,8 +48,6 @@ import json
 import os
 import random
 import re
-import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -63,12 +61,17 @@ sys.path.insert(0, str(BACKEND))
 from javasmell.analysis import analyze_source  # noqa: E402
 from javasmell.detectors.rules import detect_in_class  # noqa: E402
 from javasmell.evaluation.corpus import corpus_relative, in_corpus  # noqa: E402
-from javasmell.evaluation.provenance import environment  # noqa: E402
+from javasmell.evaluation.provenance import environment, javac_version  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
 from javasmell.refactor.edits import apply_edits  # noqa: E402
 from javasmell.refactor.locate import FileIndex  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
-from javasmell.refactor.verify import ERROR_MARKER, Verdict  # noqa: E402
+from javasmell.refactor.verify import (  # noqa: E402
+    Verdict,
+    errors_in,
+    javac_command,
+    run_javac,
+)
 
 DEFAULT_SITES = Path("data/results/refactoring_sites.csv")
 DEFAULT_CORPUS = Path("data/corpus")
@@ -94,11 +97,16 @@ DEFAULT_SAMPLE = 60
 SEED = 20260902
 
 # Generous, because a context compile pulls in a dependency closure rather than
-# one file. A timeout is counted, never read as success -- the same distinction
-# `verify.error_messages` makes.
+# one file. A timeout is counted, never read as success, and so is a javac that
+# failed without naming an error: both go through `verify.errors_in` (VD-136).
 NEWLINE = chr(10)
 
 JAVAC_TIMEOUT_S = 180
+
+#: How often the checkpoint move is retried, and how long between attempts. A
+#: Windows lock lasts as long as the read that holds it, which is an instant.
+SAVE_ATTEMPTS = 5
+SAVE_RETRY_S = 0.5
 
 PACKAGE = re.compile(rb"^\s*package\s+([\w.]+)\s*;", re.M)
 
@@ -137,23 +145,10 @@ def javac_errors(javac: str, arguments: list[str], work: Path) -> set[str] | Non
     """
     argfile = work / "args.txt"
     argfile.write_text("\n".join(arguments).replace("\\", "/") + "\n", encoding="utf-8")
-    try:
-        done = subprocess.run(
-            [javac, f"@{argfile}"],
-            capture_output=True,
-            text=True,
-            timeout=JAVAC_TIMEOUT_S,
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
+    outcome = run_javac(javac, [f"@{argfile}"], work, JAVAC_TIMEOUT_S)
+    if outcome is None:
         return None
-    if done.returncode == 0:
-        return set()
-    return {
-        line.split(ERROR_MARKER, 1)[1].strip()
-        for line in done.stderr.splitlines()
-        if ERROR_MARKER in line
-    }
+    return errors_in(*outcome)
 
 
 def compile_alone(javac: str, name: str, source: bytes, work: Path) -> set[str] | None:
@@ -229,7 +224,7 @@ def new_errors(before: set[str] | None, after: set[str] | None) -> str:
     Kept because a regression counted without its cause is a claim a reader
     cannot check. The first project run named its one regression only because
     somebody went and compiled it again by hand; the rerun after VD-130 found
-    two and nothing recorded why (VD-134).
+    two and nothing recorded why (VD-135).
     """
     if before is None or after is None:
         return ""
@@ -312,19 +307,34 @@ def load_progress(path: Path, resume: bool) -> tuple[Rows, Rows, float]:
     if isinstance(stored, dict) and "done" in stored and "partial" in stored:
         # The time already spent travels with the rows. `seconds` used to time
         # only the last run, and a measurement resumed three times reported one
-        # hour for most of a day (VD-134).
+        # hour for most of a day (VD-135).
         return stored["done"], stored["partial"], float(stored.get("seconds", 0.0))
     return stored, {}, 0.0
 
 
 def save_progress(path: Path, done: Rows, partial: Rows, seconds: float) -> None:
-    """Shkruar te një i përkohshëm dhe zëvendësuar, që ndërprerja të mos e prishë."""
+    """Written to a scratch file and moved into place, so a kill cannot corrupt it.
+
+    The move is retried. On Windows it fails with `PermissionError` while anyone
+    else holds the file open for reading: a folder sync, an antivirus, or simply
+    somebody looking at how far the measurement has come. That is what happened,
+    and a three-hour run died on file 40 of 60 because a read of the checkpoint
+    coincided with a save (VD-135). The work lives in the rows, so a second
+    attempt half a second later loses nothing.
+    """
     scratch = path.with_suffix(".tmp")
     payload = json.dumps(
         {"done": done, "partial": partial, "seconds": round(seconds, 1)}, sort_keys=True
     )
     scratch.write_text(payload + NEWLINE, encoding="utf-8")
-    scratch.replace(path)
+    for attempt in range(SAVE_ATTEMPTS):
+        try:
+            scratch.replace(path)
+            return
+        except PermissionError:
+            if attempt == SAVE_ATTEMPTS - 1:
+                raise
+            time.sleep(SAVE_RETRY_S)
 
 
 def main() -> int:
@@ -338,7 +348,7 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
 
-    javac = shutil.which("javac")
+    javac = javac_command()
     if javac is None:
         print("javac not found; this measurement is only about compilation", file=sys.stderr)
         return 1
@@ -457,6 +467,7 @@ def main() -> int:
         "javac_timeout_s": JAVAC_TIMEOUT_S,
         "seconds": round(elapsed(), 1),
         "environment": environment(),
+        "javac": javac_version(),
     }
     result = args.out / RESULT_NAME
     result.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

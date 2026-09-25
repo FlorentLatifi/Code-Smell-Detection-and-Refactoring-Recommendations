@@ -127,7 +127,7 @@ def regenerate(
     missed: list[str] = []
     for path, by_ordinal in wanted.items():
         try:
-            # Recorded below the corpus root since VD-134; older rows are absolute.
+            # Recorded below the corpus root since VD-135; older rows are absolute.
             source = in_corpus(path, corpus).read_bytes()
         except OSError:
             missed.extend(review_id for review_id, _ in by_ordinal.values())

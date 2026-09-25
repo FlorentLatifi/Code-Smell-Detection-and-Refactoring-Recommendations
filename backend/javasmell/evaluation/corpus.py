@@ -135,7 +135,7 @@ def corpus_relative(path: str | Path, corpus: str | Path) -> str:
     machine that produced them into a public repository, and sorted differently
     on Windows than on Linux: ``\\`` and ``/`` do not rank the same against
     letters, so the seeded sample drawn from a sorted list of paths depended on
-    the operating system (VD-134). A path already relative is taken to be below
+    the operating system (VD-135). A path already relative is taken to be below
     the root; one outside the corpus is kept as it stands, since a relative path
     would then point somewhere else.
     """

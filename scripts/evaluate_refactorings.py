@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -36,7 +35,7 @@ sys.path.insert(0, str(BACKEND))
 
 from javasmell.evaluation.corpus import Corpus, corpus_relative  # noqa: E402
 from javasmell.evaluation.mlcq import load_samples  # noqa: E402
-from javasmell.evaluation.provenance import environment  # noqa: E402
+from javasmell.evaluation.provenance import environment, javac_version  # noqa: E402
 from javasmell.evaluation.scoring import VARIANTS  # noqa: E402
 from javasmell.evaluation.sites import sites_in  # noqa: E402
 from javasmell.parsing.java_parser import JavaParser  # noqa: E402
@@ -45,7 +44,12 @@ from javasmell.refactor.edits import EditConflict, apply_edits  # noqa: E402
 from javasmell.refactor.locate import FileIndex  # noqa: E402
 from javasmell.refactor.registry import for_smell  # noqa: E402
 from javasmell.refactor.resolution import compare  # noqa: E402
-from javasmell.refactor.verify import Verdict, check, error_messages  # noqa: E402
+from javasmell.refactor.verify import (  # noqa: E402
+    Verdict,
+    check,
+    error_messages,
+    javac_command,
+)
 
 DEFAULT_MLCQ = Path("data/raw/MLCQCodeSmellSamples.csv")
 DEFAULT_CORPUS = Path("data/corpus")
@@ -113,7 +117,7 @@ def sampled_files(mlcq: Path, corpus: Corpus) -> list[Path]:
         path = corpus.source_path(sample)
         found.setdefault(str(path), path)
     # Ordered by the path with `/`, so that the walk, and with it the row order of
-    # the CSV, is the same on Windows as on Linux (VD-134).
+    # the CSV, is the same on Windows as on Linux (VD-135).
     return sorted(found.values(), key=lambda path: path.as_posix())
 
 
@@ -232,7 +236,7 @@ def run(
     if done:
         print(f"Resuming: {len(done)} files already written", flush=True)
 
-    javac = shutil.which("javac") if args.verify else None
+    javac = javac_command() if args.verify else None
     if done and offset:
         # Drop anything written after the last checkpoint: those rows belong to a
         # file that is not marked done and is about to be measured again.
@@ -381,6 +385,7 @@ def main(argv: list[str] | None = None) -> int:
         "metric_shift": _metric_shift(sites_path),
         "verified_with_javac": args.verify,
         "environment": environment(),
+        "javac": javac_version() if args.verify else "",
     }
     result_path = args.out / RESULT_NAME
     result_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")

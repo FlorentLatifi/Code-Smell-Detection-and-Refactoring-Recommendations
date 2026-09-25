@@ -19,7 +19,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Testet | ✅ 700 kalojnë, mbulim 96% | vlera të derivuara me dorë; 1 anashkalohet pa symlink; asnjë modul nën 90% (VD-64), kufi i rikthyer me testet e `--apply` dhe të dështimeve të `git`-it (VD-123) |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
-| Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55); përmbysja e parë u veçua (VD-82), dhe rimatja pas ndreqjes së ndërfutjes nxori dy (VD-130); çdo refuzim ka kod të përkthyeshëm (VD-123) |
+| Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55); përmbysja e parë u veçua (VD-82), dhe rimatja pas ndreqjes së ndërfutjes nxori dy (VD-130) me shkakun e secilës të regjistruar (VD-135); një dështim i javac-ut pa gabim të emërtuar nuk lexohet më si kompilim i pastër (VD-136); çdo refuzim ka kod të përkthyeshëm (VD-123) |
 | API | ✅ e plotë | `/analyze` (me `include_model`), `/metrics`, `/source`, `/refactor/preview`, `/refactor/patch` (VD-50), `/health`; pa gjendje (VD-35) |
 | Frontend | ✅ e plotë | React + TypeScript + Vite; panel me Tailwind, Recharts dhe lucide (VD-106); një paletë, fonte lokale dhe matësi i klauzolës (VD-119); dy pamje; të dy qasjet përballë njëra-tjetrës (VD-48); 165 teste me vitest plus 12 end-to-end mbi paketën e ndërtuar, nga të cilat 4 me axe mbi shfletues (VD-87, VD-108); erërat para dhe pas shkrimit, dhe grafiku i ngarkuar kur duhet (VD-123); auditim i plotë (VD-85, VD-86); lista grupuar sipas vendit (VD-68); projekti zgjidhet me shfletim dosjesh ose import nga GitHub, dhe nisja behet me nje skedar te vetem (VD-126); nje proces i vetem, roje lokale kunder DNS rebinding, kerkesave nder-faqe dhe mbeshtjelljes, auditim i varesive pa asnje dobesi te njohur (VD-127) |
 | Analiza e ndjeshmërisë | ✅ e plotë | `scripts/sweep_thresholds.py`; qëndrueshmëri, jo kalibrim (VD-34) |
@@ -415,17 +415,19 @@ synuar, pa aplikim automatik. Vendoset kur të arrijmë aty, dhe regjistrohet.
 
 **3.3 Verifikimi** ✅ e përfunduar
 
-**Rezultati mbi 4 409 skedarë:** 15 991 vende të detektuara, **3 478 të
-transformuara (21.7%)**. Nga to, 3 409 nuk shtuan asnjë lloj të ri gabimi dhe 13
-kompiluan plotësisht; 56 shënuan gabim të ri, dhe 55 prej tyre janë `package X
-does not exist` — artefakt i kompilimit pa classpath, jo prishje e vërtetë.
+**Rezultati mbi 4 409 skedarë** (matja e 24 shtatorit 2026, pas VD-130, VD-135 dhe
+VD-136)**:** 15 800 vende të detektuara, **3 532 të transformuara (22.4%)**. Nga to,
+3 459 nuk shtuan asnjë lloj të ri gabimi dhe 12 kompiluan plotësisht; 58 shënuan gabim
+të ri, dhe 56 prej tyre janë `package X does not exist` — artefakt i kompilimit pa
+classpath, jo prishje e vërtetë. Te tri rishkrime `javac` nuk dha verdikt fare, dhe
+numërohen veçmas.
 
 | Arsyeja e refuzimit | Numri | Pjesa |
 |---|---|---|
-| forma e kodit nuk përputhet | 7 315 | 45.7% |
-| rrjedha e kontrollit del nga blloku | 4 185 | 26.2% |
-| vlerë hyrëse e pacaktuar ende | 628 | 3.9% |
-| më shumë se një vlerë dalëse | 368 | 2.3% |
+| forma e kodit nuk përputhet | 7 154 | 45.3% |
+| rrjedha e kontrollit del nga blloku | 4 050 | 25.6% |
+| vlerë hyrëse e pacaktuar ende | 621 | 3.9% |
+| më shumë se një vlerë dalëse | 360 | 2.3% |
 
 Verifikimi gjeti **tri defekte të vërteta** në motor, asnjëri prej të cilëve nuk u
 kap nga njëzet e katër testet e shkruara me dorë: deklarimet brenda një cikli të
