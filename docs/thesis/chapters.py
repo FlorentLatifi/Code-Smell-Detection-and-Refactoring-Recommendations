@@ -247,57 +247,140 @@ CHAPTER_2 = [
         "",
         [
             "Detektimi automatik i code smells dhe refaktorimi studiohen prej më "
-            "shumë se dy dekadash. Kapitulli i grupon burimet sipas temës dhe mbyllet "
-            "me hendekun që adreson ky punim.",
+            "shumë se dy dekadash. Shqyrtimi mbështetet te artikuj në revista dhe "
+            "konferenca me rishikim nga kolegët, te librat që e themeluan fushën dhe "
+            "te dy shqyrtime sistematike, ai i Sharma & Spinellis (2018) dhe ai i "
+            "Azeem et al. (2019), të cilat shërbyen edhe si pikënisje për burime të "
+            "tjera. Burimet u kërkuan kryesisht në IEEE Xplore, ACM Digital Library "
+            "dhe Springer, dhe grupohen sipas idesë që trajtojnë, jo sipas autorit. "
+            "Kapitulli nis me atë që është një erë dhe pse ka rëndësi, kalon te "
+            "mënyrat si matet dhe si detektohet, dhe mbyllet me hendekun që adreson "
+            "ky punim.",
         ],
     ),
     (
         "2.1",
-        "Përkufizimi dhe matja",
+        "Code smells dhe ndikimi i tyre",
         [
             "Katalogun kanonik e jep Fowler (2018): njëzet e katër erëra, secila me "
             "refaktorimet që e adresojnë. Përkufizimi është qëllimisht cilësor. Një "
             "erë është simptomë, jo gabim, dhe nëse diçka është problem apo jo varet "
-            "nga konteksti.",
-            "Matja sasiore u bë e mundur me suitën e Chidamber & Kemerer (1994), "
-            "gjashtë metrika për sistemet e orientuara nga objektet: WMC, DIT, NOC, "
-            "CBO, RFC dhe LCOM. Henderson-Sellers (1996) propozoi një variant të "
-            "normalizuar të LCOM-it, ndërsa Bieman & Kang (1995) prezantuan TCC-në, "
-            "që e mat kohezionin me çiftet e metodave që ndajnë të paktën një fushë. "
-            "Mbi këto metrika ndërtohet pothuajse çdo detektim sasior i mëvonshëm.",
-            "Sharma & Spinellis (2018), në një shqyrtim sistematik të fushës, vërejnë "
-            "se përkufizimet e erërave në literaturë nuk janë konsistente, dhe as "
-            "rezultatet e metodave të detektimit, ndaj mjetet krahasohen me "
-            "vështirësi.",
+            "nga konteksti. Edhe erërat që duken sasiore, si metoda e gjatë apo klasa "
+            "e madhe, nuk thonë sa rreshta janë shumë; pikërisht ky boshllëk e detyron "
+            "çdo mjet të vendosë kufijtë e vet.",
+            "A kanë erërat pasoja të matshme? Khomh et al. (2012) detektuan "
+            "trembëdhjetë antimodele në 54 versione të katër sistemeve Java, ArgoUML, "
+            "Eclipse, Mylyn dhe Rhino, dhe gjetën se klasat që marrin pjesë në to "
+            "ndryshojnë dhe përmbajnë defekte më shpesh se klasat e tjera. Palomba et "
+            "al. (2018) e përsëritën pyetjen në shkallë shumë më të madhe, mbi 395 "
+            "versione të 30 projekteve me burim të hapur dhe 17 350 raste të "
+            "validuara me dorë të trembëdhjetë erërave. Erërat që lidhen me kod të "
+            "gjatë ose të ndërlikuar dolën më të përhapurat, dhe klasat e prekura "
+            "dolën më të prirura ndaj ndryshimeve dhe defekteve se klasat pa erë.",
+            "Efekti nuk është i njëjtë në çdo kontekst. Sjøberg et al. (2013) matën "
+            "me saktësi kohën që gjashtë zhvillues shpenzuan për të mirëmbajtur katër "
+            "sisteme Java me funksionalitet të njëjtë, dhe gjetën se efekti i "
+            "dymbëdhjetë erërave mbi përpjekjen ishte i kufizuar; sipas tyre, "
+            "zvogëlimi i madhësisë së kodit dhe i numrit të ndryshimeve premtonte më "
+            "shumë se refaktorimi i erërave. Kjo nuk i bën erërat të "
+            "parëndësishme, por tregon se madhësia duhet ndarë prej tyre në çdo "
+            "analizë: një klasë e madhe ndryshon më shpesh edhe kur nuk ka asnjë erë "
+            "tjetër.",
+            "Tufano et al. (2015) ndoqën historikun e 200 projekteve me burim të "
+            "hapur për të parë kur lindin erërat. Shumica e tyre futen që kur krijohet "
+            "klasa ose metoda, jo gradualisht gjatë evolucionit, dhe rreth katër të "
+            "pestat mbijetojnë në sistem. Nëse një erë lind bashkë me kodin, mjeti "
+            "që e gjen ka më shumë vlerë kur vepron herët, para se kodi të rritet mbi "
+            "të.",
+            "Mbetet pyetja nëse zhvilluesit i shohin erërat si probleme reale. "
+            "Yamashita & Moonen (2013) anketuan 85 zhvillues profesionistë për "
+            "njohjen, interesin dhe rëndësinë që u japin erërave, duke nisur nga "
+            "vërejtja se vlera e tyre si koncept i cilësisë mbetej e diskutueshme nga "
+            "pikëpamja e zhvilluesit. Pyetja ka rëndësi për çdo detektor: ai vlen aq "
+            "sa zhvilluesi e njeh gjetjen e tij si problem.",
         ],
     ),
     (
         "2.2",
-        "Detektimi me rregulla mbi metrika",
+        "Matja e cilësisë së dizajnit",
         [
-            "Marinescu (2004) prezantoi strategjitë e detektimit: rregulla që "
-            "kombinojnë disa metrika me pragje, në vend që të mbështeten te një "
-            "metrikë e vetme. Lanza & Marinescu (2006) e zgjeruan idenë në një "
-            "katalog të plotë, ku çdo erë shprehet si kombinim kushtesh mbi metrika, "
-            "me pragje të nxjerra statistikisht nga dyzet e pesë sisteme Java.",
-            "Moha et al. (2010) propozuan DECOR-in, një metodë ku erërat përshkruhen "
-            "në një gjuhë specifikimi dhe detektorët gjenerohen nga përshkrimet. "
-            "Avantazhi i qasjeve me rregulla është se arsyeja e çdo detektimi lexohet "
-            "qartë. Dobësia është ndjeshmëria ndaj pragjeve, që kalibrohen me "
-            "vështirësi jashtë korpusit ku u nxorën.",
-            "Palomba et al. (2015) i detektojnë erërat me HIST nga historiku i "
-            "ndryshimeve, jo nga një pamje e vetme e kodit. Kështu kapin diçka që "
-            "metrikat statike nuk e shohin, por u duhet historiku i plotë i depos.",
+            "Matja sasiore e sistemeve me objekte u bë e mundur me suitën e "
+            "Chidamber & Kemerer (1994), gjashtë metrika për klasën: WMC, DIT, NOC, "
+            "CBO, RFC dhe LCOM. WMC e peshon klasën me kompleksitetin e metodave të "
+            "saj, DIT dhe NOC e vendosin në hierarkinë e trashëgimisë, CBO dhe RFC "
+            "matin sa varet nga klasat e tjera, dhe LCOM mat sa pak i ndajnë metodat "
+            "fushat e saj. Kompleksiteti i një metode matet zakonisht me numrin "
+            "ciklomatik të McCabe (1976), pra me numrin e shtigjeve të pavarura në "
+            "grafin e saj të kontrollit.",
+            "LCOM-i origjinal rritet me katrorin e numrit të metodave dhe nuk "
+            "krahason dot klasa me madhësi të ndryshme. Henderson-Sellers (1996) "
+            "propozoi një variant të normalizuar mes 0 dhe 1, ndërsa Bieman & Kang "
+            "(1995) prezantuan TCC-në, që e mat kohezionin me pjesën e çifteve të "
+            "metodave që ndajnë të paktën një fushë. Mbi këto metrika ndërtohet "
+            "pothuajse çdo detektim sasior i mëvonshëm.",
+            "Lanza & Marinescu (2006) i organizojnë metrikat në tri përmasa: madhësinë "
+            "dhe kompleksitetin, lidhjen me klasat e tjera, dhe trashëgiminë. Ata u "
+            "shtuan edhe metrika të reja, si ATFD, LAA dhe FDP, që nuk matin madhësinë "
+            "e një entiteti por marrëdhënien e tij me të dhënat e klasave të tjera. "
+            "Këto janë metrikat që u duhen erërave të bashkëpunimit, si Feature Envy, "
+            "të cilat nuk i kap dot asnjë metrikë madhësie.",
+            "Sharma & Spinellis (2018), në një shqyrtim sistematik të fushës, vërejnë "
+            "se përkufizimet e erërave në literaturë nuk janë konsistente, dhe as "
+            "rezultatet e metodave të detektimit, ndaj mjetet krahasohen me "
+            "vështirësi. Ata i ndajnë metodat e detektimit në disa familje, ndër të "
+            "cilat ato që mbështeten te metrikat, te rregullat, te historiku i "
+            "ndryshimeve dhe te mësimi i makinës; nënkapitujt që vijnë ndjekin këtë "
+            "ndarje.",
         ],
     ),
     (
         "2.3",
+        "Detektimi me rregulla mbi metrika",
+        [
+            "Marinescu (2004) prezantoi strategjitë e detektimit: rregulla që "
+            "kombinojnë disa metrika me pragje, në vend që të mbështeten te një "
+            "metrikë e vetme. Një strategji filtron fillimisht entitetet që e kalojnë "
+            "secilin prag dhe pastaj i kombinon filtrat me «dhe» dhe «ose», ndaj "
+            "arsyeja e çdo detektimi mbetet e lexueshme si kusht. Lanza & Marinescu "
+            "(2006) e zgjeruan idenë në një katalog të plotë, ku çdo erë shprehet si "
+            "kombinim kushtesh mbi metrika, me pragje të nxjerra statistikisht nga "
+            "dyzet e pesë sisteme Java.",
+            "Pragjet e tyre janë dy llojesh. Ato statistikore, si «i lartë» dhe "
+            "«shumë i lartë», nxirren nga mesatarja dhe devijimi standard i metrikës "
+            "në korpusin e tyre. Ato me kuptim të zakonshëm, si «pak» ose «një e "
+            "treta», vijnë nga mënyra si njerëzit i përdorin këto fjalë. Të parat "
+            "varen pra nga korpusi ku u matën, dhe kjo i bën pyetje të hapur për çdo "
+            "korpus tjetër.",
+            "Moha et al. (2010) propozuan DECOR-in, një metodë ku erërat përshkruhen "
+            "në një gjuhë specifikimi dhe detektorët gjenerohen nga përshkrimet; "
+            "zbatimi i saj u vlerësua me precizion dhe recall mbi sisteme me burim të "
+            "hapur. Avantazhi i qasjeve me rregulla është se arsyeja e çdo detektimi "
+            "lexohet qartë. Dobësia është ndjeshmëria ndaj pragjeve, që kalibrohen me "
+            "vështirësi jashtë korpusit ku u nxorën.",
+            "Palomba et al. (2015) i detektojnë erërat me HIST nga historiku i "
+            "ndryshimeve, jo nga një pamje e vetme e kodit. Për pesë erëra, ndër to "
+            "Blob dhe Feature Envy, ata treguan se historiku kap raste që analiza e "
+            "kodit nuk i sheh, por qasja kërkon historikun e plotë të depos, që jo "
+            "çdo projekt e ka dhe jo çdo dataset e ruan.",
+            "Mjetet që përdoren në praktikë, si PMD (PMD Team, 2026), zbatojnë "
+            "kryesisht këtë familje: rregulla me pragje të fiksuara, që zhvilluesi mund "
+            "t'i ndryshojë por rrallë i ndryshon. Rezultati i tyre mbetet pra aq i "
+            "mirë sa janë pragjet e parazgjedhura për kodin ku zbatohen.",
+        ],
+    ),
+    (
+        "2.4",
         "Detektimi me mësim të makinës",
         [
-            "Arcelli Fontana et al. (2016) krahasuan gjashtëmbëdhjetë algoritme të "
-            "mësimit të makinës mbi katër erëra dhe raportuan performancë të lartë "
-            "për të gjitha në validimin e kryqëzuar, me J48 dhe Random Forest si më "
-            "të mirat. Studimi u bë pikë referimi për shumë punime pasuese.",
+            "Ideja e mësimit të makinës është që pragjet t'i mësojë modeli nga "
+            "shembuj të etiketuar, në vend që t'i vendosë njeriu. Arcelli Fontana et "
+            "al. (2016) kryen një nga eksperimentet më të mëdha të këtij lloji: "
+            "gjashtëmbëdhjetë algoritme mbi katër erëra (Data Class, Large Class, "
+            "Feature Envy dhe Long Method), me 1 986 raste të validuara me dorë nga 74 "
+            "sisteme. Ata raportuan performancë të lartë për shumicën e algoritmeve në "
+            "validimin e kryqëzuar, me J48 dhe Random Forest si më të mirat dhe "
+            "makinat me vektorë mbështetës si më të dobëtat. Studimi u bë pikë "
+            "referimi për shumë punime pasuese.",
             "Di Nucci et al. (2018) vunë re megjithatë se aty çdo dataset kishte "
             "raste të një lloji të vetëm ere. Kur e përsëritën eksperimentin me "
             "dataset-e ku bashkëjetojnë disa erëra, performanca ra ndjeshëm. Pra "
@@ -311,32 +394,56 @@ CHAPTER_2 = [
             "Azeem et al. (2019), në një shqyrtim sistematik me meta-analizë, gjetën "
             "vetëm pesëmbëdhjetë studime që përdorin mësimin e makinës për këtë "
             "qëllim, nga mbi dy mijë punime fillestare, dhe përfundojnë se fusha ka "
-            "ende vend për përmirësim.",
-        ],
-    ),
-    (
-        "2.4",
-        "E vërteta bazë dhe subjektiviteti",
-        [
-            "Çdo vlerësim i detektimit ka nevojë për një të vërtetë bazë, dhe këtu "
-            "del një problem themelor. Mäntylä & Lassenius (2006) treguan se "
-            "vlerësimi i zhvilluesve për praninë e një ere është subjektiv dhe se ata "
-            "shpesh nuk pajtohen.",
-            "Madeyski & Lewowski (2020) ndërtuan MLCQ-në, një bashkësi mostrash Java "
-            "të etiketuara nga zhvillues profesionistë për katër erëra, me ashpërsi "
-            "në shkallën none/minor/major/critical. Ky punim e përdor MLCQ-në si të "
-            "vërtetë bazë, dhe mospajtimin mes rishikuesve e raporton si të dhënë, në "
-            "vend që ta pastrojë si zhurmë.",
+            "ende vend për përmirësim. Ata e vendosin mësimin e makinës si përgjigje "
+            "ndaj tri kufizimeve të detektorëve me rregulla: subjektivitetit të "
+            "zhvilluesve, pajtimit të ulët mes detektorëve të ndryshëm dhe "
+            "vështirësisë për të gjetur pragje të mira.",
+            "Madeyski & Lewowski (2023) trajnuan klasifikues mbi MLCQ-në, me metrikat "
+            "e mjeteve të përgjithshme të analizës statike si veçori, dhe raportuan "
+            "koeficientin e Matthews-it në vend të saktësisë. Punimi i tyre është "
+            "krahasimi më i afërt me këtë punim, sepse përdor të njëjtën të vërtetë "
+            "bazë, dhe Kapitulli 6 i vë rezultatet përballë.",
+            "Një kundërshtim i përsëritur ndaj modeleve është se nuk e shpjegojnë "
+            "vendimin e tyre. Rëndësia e veçorive jep një përgjigje për tërë "
+            "bashkësinë, por mënyra si llogaritet ka rëndësi: Strobl et al. (2007) "
+            "treguan se rëndësia e bazuar te papastërtia në pyjet e rastësishme "
+            "anon nga veçoritë me shumë vlera të mundshme, dhe propozuan matje që e "
+            "shmangin këtë anim.",
         ],
     ),
     (
         "2.5",
+        "E vërteta bazë dhe subjektiviteti",
+        [
+            "Çdo vlerësim i detektimit ka nevojë për një të vërtetë bazë, dhe këtu "
+            "del një problem themelor. Mäntylä & Lassenius (2006), në një studim "
+            "rasti në një kompani finlandeze produktesh softuerike, treguan se "
+            "vlerësimi i zhvilluesve për praninë e një ere është subjektiv dhe se "
+            "vlerësues të ndryshëm shpesh nuk pajtohen për të njëjtin modul.",
+            "Madeyski & Lewowski (2020) ndërtuan MLCQ-në, një bashkësi mostrash Java "
+            "të etiketuara nga zhvillues profesionistë për katër erëra, me ashpërsi "
+            "në shkallën none/minor/major/critical. Mostrat vijnë nga projekte me "
+            "burim të hapur të zgjedhura për rëndësi industriale, dhe për çdo "
+            "rishikues publikohet edhe profili i përvojës së tij, ndaj çdo gjykim "
+            "mund të lidhet me atë që e dha. Ky punim e përdor MLCQ-në si të vërtetë "
+            "bazë, dhe mospajtimin mes rishikuesve e raporton si të dhënë, në vend që "
+            "ta pastrojë si zhurmë.",
+        ],
+    ),
+    (
+        "2.6",
         "Refaktorimi i automatizuar",
         [
             "Opdyke (1992), në tezën e doktoratës, e formalizoi refaktorimin me "
             "nocionin e parakushteve: një transformim është i sigurt vetëm nëse disa "
             "kushte vërtetohen para se të aplikohet. Mbi këtë nocion mbështetet çdo "
             "motor refaktorimi që pretendon se e ruan sjelljen.",
+            "Mens & Tourwé (2004), në shqyrtimin e tyre të fushës, e ndajnë procesin "
+            "e refaktorimit në disa veprimtari: gjetja e vendit që duhet refaktoruar, "
+            "zgjedhja e transformimit, garantimi që sjellja ruhet, aplikimi, "
+            "vlerësimi i efektit mbi cilësinë, dhe ruajtja e përputhjes me artefaktet "
+            "e tjera. Mjetet zakonisht mbulojnë vetëm aplikimin; ky punim synon të "
+            "lidhë gjetjen, aplikimin dhe matjen e efektit në një zinxhir të vetëm.",
             "Tsantalis & Chatzigeorgiou (2009) propozuan një metodë për gjetjen e "
             "rasteve të Move Method si zgjidhje për Feature Envy. Algoritmi mat "
             "distancën mes entiteteve dhe klasave, propozon vetëm lëvizje që kalojnë "
@@ -347,10 +454,18 @@ CHAPTER_2 = [
             "nga historiku. Silva et al. (2016) i pyetën zhvilluesit pse refaktorojnë "
             "dhe gjetën se arsyet janë kryesisht praktike, të lidhura me një ndryshim "
             "konkret që duhet bërë.",
+            "Lidhja mes refaktorimit dhe erërave është më e dobët nga sa pritet. "
+            "Bavota et al. (2015), duke ndjekur refaktorimet në historikun e sistemeve "
+            "me burim të hapur, gjetën se vetëm 42% "
+            "e refaktorimeve prekin entitete me erë, dhe vetëm 7% e tyre e heqin "
+            "erën nga klasa. Refaktorimi që bëjnë zhvilluesit, pra, nuk është në "
+            "shumicën e rasteve ndreqje e një ere, dhe as ndreqja e një ere nuk është "
+            "domosdoshmërisht e suksesshme; kjo e bën të nevojshme që çdo rishkrim "
+            "automatik të matet pas aplikimit.",
         ],
     ),
     (
-        "2.6",
+        "2.7",
         "Hendeku",
         [
             "Nga ky shqyrtim dalin tri vërejtje. Qasja me rregulla dhe ajo me mësim "
@@ -359,8 +474,9 @@ CHAPTER_2 = [
             "thotë qartë si e ndan bashkësinë e vlerësimit, edhe pse shifra e "
             "raportuar varet pikërisht prej saj. Detektimi dhe refaktorimi, nga ana "
             "tjetër, trajtohen zakonisht veç e veç, ndaj mbetet pa përgjigje empirike "
-            "nëse një erë e gjetur mund të ndreqet edhe automatikisht. Kapitulli 3 i "
-            "kthen këto vërejtje në problemin dhe pyetjet e punimit.",
+            "nëse një erë e gjetur mund të ndreqet edhe automatikisht, dhe nëse ndreqja "
+            "e heq vërtet. Kapitulli 3 i kthen këto vërejtje në problemin dhe pyetjet "
+            "e punimit.",
         ],
     ),
 ]
@@ -381,7 +497,7 @@ CHAPTER_3 = [
             "ekzistuese zakonisht vetëm njoftojnë, me pragje të kalibruara në "
             "projekte të tjera (Kapitulli 1). Studimet rrallë i vënë dy qasjet "
             "përballë njëra-tjetrës, dhe nuk matin sa nga erërat e gjetura ndreqen "
-            "dot automatikisht (Nënkapitulli 2.6).",
+            "dot automatikisht (Nënkapitulli 2.7).",
             "**Fokusi i punës.** Ky punim i krahason dy qasjet e detektimit mbi të "
             "njëjtin korpus të etiketuar nga profesionistë, me ndarje sipas depos dhe "
             "me të njëjtën mënyrë pikëzimi, dhe mat sa nga vendet e detektuara mund "
@@ -612,14 +728,50 @@ def _unsourced_thresholds() -> str:
     )
 
 
+def _reference_value(name: str) -> str:
+    """Një prag i sistemit, i lexuar nga vlerat e eksportuara e jo i shtypur."""
+    value = _load("system_reference.json")["thresholds"][name]
+    if abs(value - 1 / 3) < 1e-9:
+        return "1/3"
+    return f"{value:g}"
+
+
+def _experiment_setup() -> dict[str, str]:
+    """Konfigurimi i eksperimentit, siç e regjistrojnë vetë skedarët e rezultateve.
+
+    Fara, numri i foldeve dhe i rimostrimeve dhe mjedisi i ekzekutimit ruhen nga
+    skriptet në çdo skedar rezultati. Të shtypura këtu, do të ndaheshin nga ata
+    skedarë në rigjenerimin e parë me një konfigurim tjetër.
+    """
+    ml = _load("ml_evaluation.json")
+    boot = _load("bootstrap_intervals.json")
+    sweep = _load("threshold_sweep.json")
+    platform = ml["environment"]["platform"].split("-")
+    return {
+        "seed": str(ml["seed"]),
+        "folds": _word(int(ml["folds"])),
+        "resamples": _count(int(boot["resamples"])),
+        "factors": ", ".join(f"{factor:g}" for factor in sweep["factors"]),
+        "system": " ".join(platform[:2]),
+        "python": ml["environment"]["python"],
+    }
+
+
+_SETUP = _experiment_setup()
+
+
 CHAPTER_4 = [
     (
         None,
         "",
         [
-            "Ky kapitull përshkruan çfarë u ndërtua dhe si matet: sistemin (4.1–4.2), "
-            "hapat e eksperimentit sipas radhës (4.3–4.9), dhe validimin, "
-            "riprodhueshmërinë e etikën (4.10–4.12).",
+            "Ky kapitull përshkruan si u ndërtua sistemi dhe si u krye eksperimenti, me "
+            "aq hollësi sa një lexues tjetër ta përsërisë. Radha ndjek rrugën e të "
+            "dhënave: arkitektura dhe teknologjitë (4.1–4.2), korpusi dhe matja "
+            "(4.3–4.4), tri qasjet (4.5–4.7), ndërfaqja (4.8), mënyra e vlerësimit "
+            "(4.9), validimi i sistemit (4.10), riprodhueshmëria dhe mjedisi (4.11), "
+            "etika (4.12) dhe kërcënimet ndaj vlefshmërisë (4.13). Rezultatet nuk "
+            "jepen këtu; ato janë te Kapitulli 5.",
             "**Qasja e kërkimit.** Kërkimi është sasior dhe eksperimental. Pyetjet "
             "kërkimore pyesin «sa» dhe «a e përmirëson», dhe përgjigjen e marrin nga "
             "matje të përsëritshme mbi të njëjtin korpus: metrikat e kodit, etiketat "
@@ -627,9 +779,27 @@ CHAPTER_4 = [
             "cilësore është vlerësimi me rubrikë i një mostre rishkrimesh "
             "(Nënkapitulli 4.7), sepse vlera e një rishkrimi për zhvilluesin nuk "
             "matet vetëm me kompilim.",
-            "**Kufizimet metodologjike.** Kapitulli formësohet nga kufizimet e "
-            "Nënkapitullit 3.4, sidomos nga mungesa e zgjidhjes së simboleve dhe e "
-            "testeve të projekteve, si dhe nga mbështetja te një dataset i vetëm.",
+            "**Dizajni.** Çdo mostër e MLCQ-së gjykohet nga të dyja qasjet e "
+            "detektimit, ndaj dallimi mes tyre nuk ngatërrohet me dallimin mes "
+            "mostrave. Variabla e pavarur është qasja e detektimit, dhe te refaktorimi "
+            "lloji i transformimit; variablat e varura janë treguesit e Nënkapitullit "
+            "4.9. Për PK2 hipoteza zero është se MCC-ja e Qasjes B nuk ndryshon nga ajo "
+            "e Qasjes A. Ajo hidhet poshtë për një erë kur intervali 95% i dallimit "
+            "B − A, i llogaritur me bootstrap sipas depos, nuk e përmban zeron.",
+            "**Hapat e studimit.** Eksperimenti kryhet në tetë hapa, secili me skriptin "
+            "e vet, sipas radhës së Shtojcës 8.5:",
+            ("bullet", "materializimi i korpusit: çdo depo e MLCQ-së shkarkohet në "
+                       "commit-in që panë rishikuesit;"),
+            ("bullet", "përputhja e çdo mostre me entitetin që prodhon analizuesi;"),
+            ("bullet", "matja e çdo entiteti dhe ruajtja e tabelës së veçorive;"),
+            ("bullet", "pikëzimi i strategjive të Qasjes A kundrejt etiketave;"),
+            ("bullet", "trajnimi i modeleve të Qasjes B dhe pikëzimi i tyre jashtë "
+                       "fold-it, bashkë me ablacionin mbi metrikat e strategjive;"),
+            ("bullet", "krahasimi i dy qasjeve mostër për mostër, me intervale besimi;"),
+            ("bullet", "ekzekutimi i motorit të refaktorimit mbi korpus, me verifikim "
+                       "dhe rimatje;"),
+            ("bullet", "analizat dytësore: ndjeshmëria dhe kalibrimi i pragjeve, "
+                       "krahasimi me PMD-në dhe pajtimi mes rishikuesve."),
         ],
     ),
     (
@@ -688,6 +858,24 @@ CHAPTER_4 = [
             "Skriptet e eksperimenteve, te evaluation dhe scripts/, përdorin po këto "
             "shtresa mbi korpusin, ndaj çdo numër i punimit vjen nga i njëjti kod që "
             "përdor zhvilluesi.",
+            "**Modeli i të dhënave.** Për çdo skedar, parser-i ndërton një njësi me "
+            "paketën, importet dhe klasat e saj. Një klasë mban llojin (class, "
+            "interface, enum ose record), emrin, modifikuesit, superklasën, "
+            "ndërfaqet, fushat, metodat dhe rangun e rreshtave. Një metodë mban "
+            "tipin që kthen, parametrat me tipet e tyre, variablat lokale që "
+            "deklaron, emrat e thjeshtë që lexon, qasjet e formës «this.x» dhe "
+            "«marrësi.anëtari», thirrjet me marrës dhe pa marrës, dhe tipet që "
+            "përmend. Këto janë të gjitha fakte që lexohen drejtpërdrejt nga pema; "
+            "asnjëra nuk kërkon të dihet se çfarë tipi ka një shprehje e ndërlikuar.",
+            "**Rreshti i komandës.** Analiza nis me «python -m javasmell» dhe dosjen e "
+            "projektit. Gjetjet dalin si tekst, JSON ose CSV, metrikat e çdo entiteti "
+            "si tabelë, dhe rishkrimet e sigurta si patch i unifikuar që autori e "
+            "lexon para se ta aplikojë. Si portë ndërtimi, opsioni «--fail-on» e mbyll "
+            "komandën me kod 3 kur mbetet një gjetje në ashpërsinë e kërkuar ose mbi "
+            "të, ndërsa kodet 1 dhe 2 i mbeten dështimit të vetë mjetit. Opsioni "
+            "«--thresholds» lexon nga një skedar TOML vetëm pragjet që ndryshojnë, dhe "
+            "i shkruan ato në dalje, që një raport me pragje të lëvizura të mos "
+            "ngatërrohet me një të matur me vlerat e botuara.",
         ],
     ),
     (
@@ -699,27 +887,63 @@ CHAPTER_4 = [
             "fiksuar, që një rezultat të mund të riprodhohet me të njëjtat versione.",
             ("table", "Teknologjitë e përdorura dhe roli i tyre",
              ["Teknologjia", "Versioni", "Roli"], TECHNOLOGIES),
-            "tree-sitter jep pemë sintaksore të plotë edhe për kod që nuk kompilon, "
-            "pa ndërtuar projektin, dhe scikit-learn ofron ndarjen e grupuar, "
-            "ansamblet e pemëve dhe rëndësinë me permutim. Sistemi nuk përdor asnjë "
-            "model gjuhësor apo shërbim me pagesë.",
+            "Zgjedhjet kryesore kanë arsye konkrete. tree-sitter u preferua ndaj një "
+            "analizuesi që kërkon ndërtimin e projektit, sepse korpusi nuk mban "
+            "skedarë ndërtimi dhe shumica e skedarëve të tij nuk kompilojnë të vetëm; "
+            "një analizues që toleron gabimet jep pemë të plotë edhe për ta. "
+            "scikit-learn ofron në një vend ndarjen e grupuar, dy ansamblet e pemëve "
+            "dhe rëndësinë me permutim, ndaj asnjëra prej tyre nuk u shkrua nga e "
+            "para. FastAPI dhe Pydantic e validojnë çdo kërkesë nga tipet e "
+            "deklaruara, dhe TypeScript e bën kontratën me ndërfaqen të kontrollueshme "
+            "që gjatë ndërtimit. JDK 21 është versioni me mbështetje afatgjatë, ndaj "
+            "javac-u i tij është kompilatori i verifikimit. PMD zgjidhet si mjet i "
+            "jashtëm krahasimi, sepse zbaton dy nga strategjitë e Lanza & Marinescu "
+            "(2006) dhe është i lirë. Sistemi nuk përdor asnjë model gjuhësor apo "
+            "shërbim me pagesë.",
         ],
     ),
     (
         "4.3",
         "Korpusi dhe e vërteta bazë",
         [
-            "MLCQ (Madeyski & Lewowski, 2020) përmban rishikimet e zhvilluesve "
-            "profesionistë, por jo vetë kodin: çdo rresht tregon depon, commit-in dhe "
-            "entitetin. Prandaj çdo depo u shkarkua në commit-in e saktë të "
-            "regjistruar.",
+            "MLCQ (Madeyski & Lewowski, 2020) përmban 14 739 rishikime të 4 770 "
+            "mostrave kodi, të bëra nga 26 zhvillues profesionistë për katër erëra: "
+            "Blob dhe Data Class në nivel klase, Feature Envy dhe Long Method në nivel "
+            "metode. Çdo rishikim i jep mostrës një ashpërsi në shkallën none, minor, "
+            "major dhe critical, ku «none» do të thotë se rishikuesi nuk e sheh erën. "
+            "Mostrat vijnë nga projekte me burim të hapur, por vetë kodi nuk është "
+            "pjesë e dataset-it: çdo rresht tregon depon, commit-in, skedarin dhe "
+            "rangun e rreshtave të entitetit.",
+            "**Materializimi.** Për çdo depo u shkarkua arkivi i commit-it të "
+            "rishikuar, dhe prej tij u mbajtën vetëm skedarët «.java». Merret depoja e "
+            "plotë e jo vetëm skedari i mostrës, sepse ATFD, CBO, DIT dhe NOC "
+            "përkufizohen kundrejt tipave të tjerë të projektit, dhe një skedar i "
+            "vetëm do të dukej pothuajse pa qasje në të dhëna të huaja. Shkarkimi është "
+            "inkremental dhe mund të ndërpritet: depot e përfunduara kapërcehen, "
+            "dështimet riprovohen, dhe një manifest e ruan gjendjen e secilës depo pas "
+            "çdo hapi.",
             "Nëse një depo ishte zhvendosur, ajo u ndoq vetëm kur commit-i gjendej "
             "edhe te vendi i ri. Meqë SHA-ja e git-it është hash i përmbajtjes, një "
             "commit i gjetur garanton se kodi është i njëjti që panë rishikuesit. Kur "
             "nuk gjendet, depoja nuk zëvendësohet me hamendje.",
-            "Një mostër e MLCQ-së lidhet me entitetin përkatës sipas rangut të "
-            "rreshtave, dhe lidhja verifikohet me emrin. Vetëm emri nuk mjafton si "
-            "ankorim, sepse në dataset shfaqet në katër formate të ndryshme.",
+            "**Përputhja.** Një mostër e MLCQ-së lidhet me entitetin përkatës sipas "
+            "rangut të rreshtave, dhe lidhja verifikohet me emrin. Renditja e kundërt "
+            "nuk do të punonte, sepse emri i entitetit në dataset shfaqet në katër "
+            "formate të ndryshme, ndërsa rangu i rreshtave përputhet pothuajse "
+            "gjithmonë me atë të parser-it. Ky ankorim zgjidh pa asnjë zgjidhës "
+            "simbolesh dy rastet që dukeshin të vështira: dy mbingarkesa të një "
+            "metode nuk nisin në të njëjtin rresht, dhe as një klasë e brendshme me "
+            "klasën që e përmban. Një mostër që nuk lidhet nuk detyrohet të lidhet: "
+            "shkaku regjistrohet (skedari mungon, ka gabim sintakse, ose te rreshtat e "
+            "dhënë nuk ka entitet me atë emër) dhe mostra del nga vlerësimi.",
+            "**Etiketa.** Ashpërsitë e rishikuesve kthehen në numra nga 0 (none) te 3 "
+            "(critical), dhe për çdo mostër merret mesatarja e tyre, e rrumbullakosur "
+            "te numri i plotë më i afërt me gjysmën drejt lart. Mostra quhet pozitive "
+            "kur rezultati është mbi zero; te dy rishikues, pra, mjafton që njëri ta "
+            "shohë erën. Si analizë ndjeshmërie përdoren edhe maksimumi, minimumi dhe "
+            "unanimiteti, ku mostrat me mospajtim hidhen. Çdo mostër pikëzohet vetëm "
+            "për erën për të cilën u rishikua, ndaj një mostër e Blob-it nuk hyn si "
+            "negative në vlerësimin e Data Class-it.",
         ],
     ),
     (
@@ -736,9 +960,28 @@ CHAPTER_4 = [
             "Rreshtat e kodit numërohen si rreshta logjikë, sipas dallimit të Park "
             "(1992) mes rreshtave fizikë dhe logjikë: rreshtat bosh, komentet dhe "
             "rreshtat që kanë vetëm shenja si «}» ose «});» nuk numërohen.",
+            "**Metrikat e metodës.** ATFD numëron atributet e klasave të tjera të "
+            "projektit që metoda i lexon, drejtpërdrejt ose përmes një akses-metode, "
+            "që njihet nga parashtesa «get», «set», «is» ose «has». FDP numëron "
+            "klasat nga vijnë këto atribute. LAA është pjesa e qasjeve në atribute që "
+            "bien mbi klasën e vet, dhe merr vlerën 1 kur metoda nuk prek asnjë "
+            "atribut. NOAV numëron variablat lokale dhe atributet që metoda prek, "
+            "ndërsa CINT mat sa operacione të ndryshme thërret ajo. Një thirrje me "
+            "sjellje mbi një objekt tjetër është lidhje, jo qasje në të dhëna, ndaj "
+            "hyn te CINT dhe CBO por jo te ATFD.",
+            "**Metrikat e klasës.** WMC është shuma e kompleksitetit ciklomatik të "
+            "metodave, ndërsa AMW mesatarja e tij. TCC është pjesa e çifteve të "
+            "metodave publike që ndajnë të paktën një fushë; konstruktorët "
+            "përjashtohen, sepse prekin çdo fushë, dhe kur klasa ka më pak se dy metoda "
+            "publike, TCC merr vlerën 1. WOC është pjesa e anëtarëve publikë që nuk "
+            "janë akses-metoda, NOPA numri i fushave publike që nuk janë konstante, "
+            "dhe NOAM numri i akses-metodave.",
             "Metrikat ATFD, CBO, DIT dhe TCC varen nga tipat e tjerë të projektit, "
-            "ndaj çdo depo analizohet e plotë. Një klasë e matur veçmas do të jepte "
-            "vlera të gabuara.",
+            "ndaj çdo depo analizohet e plotë. Si «e huaj» numërohet vetëm një klasë "
+            "që i përket projektit, që thirrjet në bibliotekën standarde të mos e "
+            "fryjnë ATFD-në. Tipi i marrësit gjendet vetëm kur marrësi është një "
+            "identifikues i vetëm; një shprehje si «a.getB().getC()» lihet jashtë në "
+            "vend që të hamendësohet, ndaj matja anon nga vlera më e ulët.",
         ],
     ),
     (
@@ -750,6 +993,19 @@ CHAPTER_4 = [
             "Large Class, Long Method dhe Long Parameter List ndjekin përshkrimet e "
             "Fowler-it (2018), ndërsa Deep Nesting mat sa thellë janë futur blloqet "
             "brenda njëri-tjetrit. Kushtet dhe burimi i secilës janë te Shtojca 8.1.",
+            "**Si shprehen strategjitë.** Secila strategji është kombinim kushtesh mbi "
+            "metrika, jo një metrikë e vetme. God Class kërkon njëkohësisht "
+            f"kompleksitet të lartë (WMC ≥ {_reference_value('god_class_wmc')}), "
+            f"kohezion të ulët (TCC < {_reference_value('god_class_tcc')}) dhe qasje "
+            f"në të dhëna të huaja (ATFD > {_reference_value('god_class_atfd')}). "
+            "Feature Envy kërkon që metoda të lexojë shumë atribute të huaja (ATFD > "
+            f"{_reference_value('feature_envy_atfd')}), më shumë të huaja se të vetat "
+            f"(LAA < {_reference_value('feature_envy_laa')}), por nga pak klasa (FDP ≤ "
+            f"{_reference_value('feature_envy_fdp')}). Data Class kërkon një "
+            "sipërfaqe publike pothuajse pa sjellje (WOC < "
+            f"{_reference_value('data_class_woc')}), me shumë fusha publike ose "
+            "akses-metoda dhe me kompleksitet të ulët. Long Method kërkon vetëm që "
+            f"rreshtat efektivë të kalojnë {_reference_value('long_method_loc')}.",
             _unsourced_thresholds(),
             "Kundrejt MLCQ-së vlerësohen katër strategji: God Class kundrejt etiketës "
             "«blob», dhe Data Class, Feature Envy e Long Method kundrejt etiketave me "
@@ -757,10 +1013,25 @@ CHAPTER_4 = [
             "Class me Large Class, detektorin që shikon vetëm madhësinë.",
             "Një detektor nuk kthen thjesht po ose jo, por kushtet që vlerësoi me "
             "vlerat e matura. Kjo i lejon ndërfaqes të shpjegojë pse u shënua diçka "
-            "dhe punimit të raportojë cili kusht e mbajti detektimin, ndërsa "
-            "ashpërsia llogaritet nga sa larg pragut është matja, jo me dorë. "
-            "Ashpërsia përdor shkallën e MLCQ-së, ndaj krahasohet drejtpërdrejt me "
-            "etiketat e rishikuesve.",
+            "dhe punimit të raportojë cili kusht e mbajti detektimin.",
+            "**Ashpërsia.** Për çdo kusht të plotësuar llogaritet teprica e, raporti "
+            "mes matjes v dhe pragut t. Kur kushti kërkon që matja të jetë mbi prag, "
+            "teprica është:",
+            ("equation", "e = v / t"),
+            "Kur kushti kërkon që matja të jetë nën prag, si te TCC-ja, raporti "
+            "përmbyset, që teprica të jetë përsëri së paku 1 dhe kushtet me drejtim të "
+            "kundërt të mesatarizohen bashkë:",
+            ("equation", "e = t / v"),
+            "Rezultati i gjetjes është mesatarja e tepricave të saj, ku secila "
+            f"kufizohet te {_reference_value('excess_cap')}, që një metrikë e vetme "
+            "ekstreme të mos e shtyjë një rast të butë te niveli më i lartë; shuma "
+            "merret mbi të n kushtet e strategjisë:",
+            ("equation", f"s = (1 / n) · Σ min(e, {_reference_value('excess_cap')})"),
+            f"Gjetja quhet minor kur s < {_reference_value('severity_major')}, major "
+            f"kur {_reference_value('severity_major')} ≤ s < "
+            f"{_reference_value('severity_critical')}, dhe critical përndryshe. "
+            "Shkalla është ajo e MLCQ-së, ndaj ashpërsia e derivuar krahasohet "
+            "drejtpërdrejt me atë të rishikuesve.",
         ],
     ),
     (
@@ -770,23 +1041,42 @@ CHAPTER_4 = [
             "Vlerësohen katër modele: klasifikuesi i shumicës, regresioni logjistik, "
             "Random Forest (Breiman, 2001) dhe Gradient Boosting (Friedman, 2001), të "
             "gjitha me scikit-learn (Pedregosa et al., 2011). Si veçori përdoren të "
-            "gjitha metrikat e Nënkapitullit 4.4, jo vetëm ato të strategjive. "
-            "Parashtesa «c_» shënon një metrikë klase dhe «m_» një metrikë metode, "
-            "sepse disa metrika, si ATFD, maten në të dy nivelet.",
-            "Klasifikuesi i shumicës parashikon gjithmonë «pa erë» dhe shërben si "
-            "model bazë. Modelet trajnohen edhe vetëm me metrikat e strategjive, që "
-            "të dallohet sa nga fitimi vjen nga metrikat shtesë.",
-            "Ndarja bëhet me GroupKFold sipas depos, që mostrat e një projekti të mos "
-            "jenë njëkohësisht në trajnim dhe në testim (Nënkapitulli 2.3). Çdo "
-            "mostër parashikohet një herë, nga një model që nuk e ka parë projektin e "
-            "saj. Kështu modeli jep dalje të së njëjtës formë si detektorët, dhe të "
-            "dy krahasohen mostër për mostër.",
+            "gjitha metrikat e Nënkapitullit 4.4, jo vetëm ato të strategjive. Për "
+            "erërat e klasës vektori ka shtatëmbëdhjetë metrika klase; për erërat e "
+            "metodës ka nëntë metrika metode bashkë me metrikat e klasës që e "
+            "përmban, gjithsej 26. Parashtesa «c_» shënon një metrikë klase dhe «m_» "
+            "një metrikë metode, sepse disa metrika, si ATFD, maten në të dy nivelet.",
+            "**Konfigurimi.** Klasifikuesi i shumicës parashikon gjithmonë «pa erë» "
+            "dhe shërben si model bazë. Regresioni logjistik përdoret pas "
+            "standardizimit të veçorive, sepse vetëm ai është i ndjeshëm ndaj "
+            "shkallës: pa të, LCOM-i, që arrin mijëra, do ta mbulonte TCC-në, që "
+            "qëndron mes 0 dhe 1. Random Forest ndërtohet me 300 pemë, ndërsa "
+            "Gradient Boosting përdor variantin me histograma të scikit-learn me "
+            "parametrat e parazgjedhur. Hiperparametrat nuk akordohen: akordimi do të "
+            "kërkonte një ndarje të dytë brenda çdo fold-i, dhe pa të do të rridhte "
+            f"informacion nga bashkësia e testimit. Të gjitha modelet përdorin farën "
+            f"{_SETUP['seed']}.",
+            "**Ndarja.** Ndarja bëhet me GroupKFold në "
+            f"{_SETUP['folds']} folde sipas depos, që mostrat e një projekti të mos "
+            "jenë njëkohësisht në trajnim dhe në testim (Nënkapitulli 2.4). Një ndarje "
+            "e rastësishme sipas rreshtave do të ishte rast i asaj që Kaufman et al. "
+            "(2012) e quajnë rrjedhje: modeli do të mësonte nga të dhëna që në "
+            "përdorim real nuk i ka. Çdo mostër parashikohet një herë, nga një model "
+            "që nuk e ka parë projektin e saj. Kështu modeli jep dalje të së njëjtës "
+            "formë si detektorët, dhe të dy krahasohen mostër për mostër.",
             "Çekuilibri i klasave trajtohet me pesha, jo me mbi-mostrim, sepse "
             "mbi-mostrimi do t'i kopjonte rreshtat përtej kufirit të fold-it dhe do "
             "ta prishte grupimin. Bashkësia e testimit nuk ribalancohet.",
-            "Rëndësia e veçorive matet me permutation importance mbi fold-in e "
-            "testimit, sepse rëndësia e bazuar te papastërtia favorizon veçoritë me "
-            "shumë vlera të ndryshme. Kjo tregon cila metrikë ka peshë në tërë "
+            "**Ablacioni.** Modelet trajnohen edhe vetëm me metrikat që lexon "
+            "strategjia përkatëse: te Blob WMC, TCC dhe ATFD e klasës, te Feature Envy "
+            "ATFD, LAA dhe FDP e metodës, te Data Class WOC, NOPA, NOAM dhe WMC, dhe te "
+            "Long Method vetëm MLOC. Foldet, fara dhe pikëzimi mbeten të njëjta, ndaj "
+            "dallimi me modelin e plotë tregon sa nga fitimi vjen nga kufiri i mësuar "
+            "dhe sa nga metrikat shtesë.",
+            "**Rëndësia dhe shpjegimi.** Rëndësia e veçorive matet me permutation "
+            "importance mbi fold-in e testimit, me dhjetë përsëritje, sepse rëndësia e "
+            "bazuar te papastërtia favorizon veçoritë me shumë vlera të ndryshme "
+            "(Strobl et al., 2007). Kjo tregon cila metrikë ka peshë në tërë "
             "korpusin, por jo pse u shënua një entitet i caktuar. Prandaj çdo verdikt "
             "pozitiv shpjegohet veç: çdo metrikë, një nga një, zëvendësohet me "
             "mesoren e bashkësisë së trajnimit dhe modeli pyetet sërish. Nëse ky "
@@ -796,9 +1086,12 @@ CHAPTER_4 = [
             "shikon një metrikë në një kohë: kur dy metrika mbajnë të njëjtin "
             "informacion, ndryshimi i njërës mund të mos lëvizë asgjë, dhe rasti "
             "mbetet pa shpjegim. Edhe shpjegimet llogariten jashtë fold-it.",
-            "Në ndërfaqe, modeli lexohet nga disku me manifestin e tij dhe pyetet "
-            "vetëm kur përdoruesi e kërkon; nëse mungon, analiza me rregulla vazhdon "
-            "dhe shërbimi e njofton me një kod gabimi të veçantë.",
+            "Për ndërfaqen, modeli më i mirë i secilës erë trajnohet sërish mbi të "
+            "gjitha mostrat dhe ruhet në disk me një manifest që mban veçoritë, "
+            "versionet dhe farën. Ai pyetet vetëm kur përdoruesi e kërkon; nëse "
+            "mungon, analiza me rregulla vazhdon dhe shërbimi e njofton me një kod "
+            "gabimi të veçantë. Shifrat e punimit vijnë vetëm nga parashikimet jashtë "
+            "fold-it, kurrë nga ky model.",
         ],
     ),
     (
@@ -812,38 +1105,75 @@ CHAPTER_4 = [
             "refaktorimi vetëm propozohet (Shtojca 8.4).",
             "Çdo transformim ka parakushtet e veta. Nëse ndonjë prej tyre nuk mund të "
             "provohet nga pema sintaksore, transformimi kthen «e paaplikueshme» "
-            "bashkë me arsyen, dhe ky refuzim numërohet si rezultat. Te Extract "
-            "Method, një analizë e rrjedhës së të dhënave kontrollon që blloku i "
-            "nxjerrë të ketë një dalje të vetme, që asnjë return, break ose continue "
-            "të mos dalë prej tij, dhe që çdo variabël që lexon të ketë vlerë me "
-            "siguri.",
+            "bashkë me arsyen, dhe ky refuzim numërohet si rezultat.",
+            "**Extract Method.** Nga trupi i metodës zgjidhet deklarata e përbërë më e "
+            "madhe e nivelit të parë (një if, for, while, do, try ose switch), e matur "
+            "në rreshta. Zgjedhja është mekanike, që e njëjta hyrje të japë gjithmonë "
+            "të njëjtin rishkrim. Një analizë e rrjedhës së të dhënave i ndan "
+            "variablat e bllokut në tri grupe: ato që blloku i lexon dhe që janë "
+            "deklaruar para tij bëhen parametra; ajo që blloku e shkruan dhe që "
+            "lexohet pas tij bëhet vlera që kthehet, dhe mund të jetë vetëm një; ato "
+            "që deklarohen brenda tij mbeten brenda. Blloku refuzohet kur prej tij del "
+            "një return, break ose continue, kur ka më shumë se një dalje, kur një "
+            "variabël që lexon nuk ka vlerë me siguri, ose kur tipi i një variable "
+            "nuk duket në skedar. Metoda e re është private, statike kur edhe metoda "
+            "burimore është statike, dhe e trashëgon klauzolën «throws». Ajo quhet "
+            "«extracted»: një emër sipas qëllimit kërkon të kuptosh për çfarë shërben "
+            "kodi, gjë që pema sintaksore nuk e jep, ndaj emërtimi i lihet autorit.",
+            "**Replace Nested Conditional with Guard Clauses.** Transformimi pranon "
+            "vetëm një formë: metodë void, trupi i së cilës është një if i vetëm pa "
+            "else. Kushti mbështillet si «!(kushti)», metoda del menjëherë kur ai "
+            "vlen, dhe trupi i if-it zbret një nivel. Mbështjellja, në vend të "
+            "përmbysjes së operatorit, e ruan kuptimin edhe për numrat me presje "
+            "lëvizëse, ku «a > b» dhe «a <= b» mund të jenë të dy të rremë, dhe e "
+            "vlerëson kushtin saktësisht një herë. Çdo formë tjetër refuzohet, sepse "
+            "një degë else apo një vlerë kthyese do të kërkonin një vendim që sintaksa "
+            "nuk e jep.",
+            "**Introduce Parameter Object.** Zbatohet vetëm te metodat private, sepse "
+            "Java i kufizon thirrjet e tyre brenda klasës së nivelit të lartë, pra "
+            "brenda skedarit që rishkruhet. Parametrat mblidhen në një klasë të "
+            "brendshme statike me fusha finale dhe konstruktor, metoda merr një "
+            "parametër të vetëm, dhe çdo thirrje në skedar e ndërton objektin. Trupi "
+            "i metodës nuk preket: në krye të tij parametrat e vjetër rideklarohen si "
+            "variabla lokale me të njëjtin emër e tip, ndaj as fshehja e një emri as "
+            "caktimi i një parametri nuk e ndryshojnë kuptimin. Refuzohen mbingarkesat, "
+            "referencat ndaj metodës, parametrat me numër të ndryshueshëm, tipet "
+            "gjenerike, parametrat me anotime dhe klasat që nuk mund të mbajnë një "
+            "klasë të brendshme statike.",
+            "**Gjetja e vendit dhe editimi.** Para rishkrimit skedari parsohet sërish, "
+            "dhe entiteti gjendet me të njëjtin parim si mostrat e MLCQ-së: rreshti i "
+            "fillimit si ankor, emri si kontroll. Kur skedari ka ndryshuar dhe rreshti "
+            "mban diçka tjetër, vendi numërohet si i palokalizueshëm dhe nuk preket. "
             "Rishkrimi bëhet mbi pozicione bajtash, sepse tree-sitter jep pozicionet "
             "në bajta të tekstit UTF-8. Editimet aplikohen nga fundi i skedarit drejt "
             "fillimit, që pozicionet e të tjerave të mbeten të sakta, dhe dy editime "
             "që mbivendosen refuzohen.",
-            "Verifikimi ka tri nivele, sepse një skedar nga një depo reale varet nga "
-            "fqinjët e tij dhe shpesh nuk kompilon i vetëm: skedari i rishkruar duhet "
-            "të parsohet; javac, i ekzekutuar para dhe pas, nuk duhet të japë lloj të "
-            "ri gabimi; dhe nëse skedari kompilonte i vetëm, duhet të kompilojë ende. "
-            "Kompilatori thirret me argumente të fiksuara, me kufi kohe dhe në një "
-            "dosje të përkohshme. Ndikimi i izolimit matet veç: mbi një mostër "
-            "skedarësh të zgjedhur me farë, i njëjti rishkrim kompilohet një herë i "
-            "vetëm dhe një herë me burimet e projektit, dhe verdiktet krahasohen.",
+            "**Verifikimi.** Verifikimi ka tri nivele, sepse një skedar nga një depo "
+            "reale varet nga fqinjët e tij dhe shpesh nuk kompilon i vetëm: skedari i "
+            "rishkruar duhet të parsohet; javac, i ekzekutuar para dhe pas, nuk duhet "
+            "të japë lloj të ri gabimi; dhe nëse skedari kompilonte i vetëm, duhet të "
+            "kompilojë ende. Krahasohen llojet e mesazheve dhe jo numri i tyre, sepse "
+            "një parametër i ri me tip të importuar shton një «cannot find symbol» që "
+            "vjen nga izolimi e jo nga rishkrimi. Kompilatori thirret me argumente të "
+            "fiksuara, me kufi kohe prej 60 sekondash dhe në një dosje të përkohshme. "
+            "Ndikimi i izolimit matet veç: mbi një mostër skedarësh të zgjedhur me "
+            "farë, i njëjti rishkrim kompilohet një herë i vetëm dhe një herë me "
+            "burimet e projektit, dhe verdiktet krahasohen.",
             "Pas verifikimit, çdo entitet i rishkruar matet sërish me të njëjtët "
             "detektorë. Matet e gjithë klasa, para dhe pas, sepse Extract Method "
             "shton një metodë të re. Kështu shihet nëse era u hoq, sa ndryshoi "
             "metrika që e ndez detektorin, dhe nëse rishkrimi solli një erë të re.",
-            "Kompilimi mbulon vetëm gjysmën e përkufizimit të Fowler-it (2018), "
-            "ruajtjen e sjelljes. Nëse struktura u përmirësua e gjykon një njeri, mbi "
-            "një mostër diff-esh, me një rubrikë me tri përmasa: **sjellja** (e "
-            "ruajtur, e paqartë, e ndryshuar), **përfitimi** (përmirëson, asnjanës, "
-            "përkeqëson) dhe **pranueshmëria** (ashtu si është, pas një ndreqjeje, e "
-            "refuzuar). Mostra zgjidhet me farë, e shtresuar sipas transformimit, dhe "
-            "shifra e përgjithshme ripeshohet sipas madhësisë së shtresave. "
-            "Vlerësuesi nuk e sheh verdiktin e kompilatorit. Intervalet janë ato të "
-            "Wilson (1927), sepse përafrimi normal me pak vëzhgime jep kufij jashtë "
-            "[0, 1] (Brown et al., 2001). Vlerësuesi është vetë autori, çka është "
-            "kufizim i deklaruar.",
+            "**Cilësia e rishkrimeve.** Kompilimi mbulon vetëm gjysmën e përkufizimit "
+            "të Fowler-it (2018), ruajtjen e sjelljes. Nëse struktura u përmirësua e "
+            "gjykon një njeri, mbi një mostër diff-esh, me një rubrikë me tri përmasa: "
+            "**sjellja** (e ruajtur, e paqartë, e ndryshuar), **përfitimi** "
+            "(përmirëson, asnjanës, përkeqëson) dhe **pranueshmëria** (ashtu si është, "
+            "pas një ndreqjeje, e refuzuar). Mostra zgjidhet me farë, e shtresuar "
+            "sipas transformimit, dhe shifra e përgjithshme ripeshohet sipas madhësisë "
+            "së shtresave. Vlerësuesi nuk e sheh verdiktin e kompilatorit. Intervalet "
+            "janë ato të Wilson (1927), sepse përafrimi normal me pak vëzhgime jep "
+            "kufij jashtë [0, 1] (Brown et al., 2001). Vlerësuesi është vetë autori, "
+            "çka është kufizim i deklaruar.",
         ],
     ),
     (
@@ -883,36 +1213,74 @@ CHAPTER_4 = [
         "4.9",
         "Matja e performancës",
         [
-            "Një mostër quhet pozitive kur ashpërsia mesatare e rishikuesve është mbi "
-            "«none». Maksimumi, minimumi dhe unanimiteti përdoren si analizë "
-            "ndjeshmërie, sepse rishikuesit e MLCQ-së nuk pajtohen në rreth një të "
-            "katërtën e mostrave, dhe një shifër e vetme do ta fshihte këtë.",
-            "Mbi këtë përkufizim maten precizioni, recall-i dhe F1, si dhe "
-            "koeficienti i korrelacionit i Matthews-it (Matthews, 1975), që i merr "
-            "parasysh të katër qelizat e matricës konfuze. Kjo ka rëndësi kur shumica "
-            "e etiketave janë negative: një detektor që nuk ndez kurrë del i "
-            "papërcaktuar sipas tij, ndërsa saktësia e përgjithshme do t'i jepte "
-            "shifër të lartë. Recall-i raportohet edhe sipas ashpërsisë që caktuan "
-            "rishikuesit.",
-            "Pajtimi mes dy qasjeve matet me koeficientin kappa (Cohen, 1960), sepse "
-            f"kur {_negative_share()} e etiketave janë negative, dy detektorë që "
-            "ndezin rrallë pajtohen shumë edhe rastësisht. Raportohen edhe të katër "
-            "qelizat, bashkimi i dy qasjeve (mostra shënohet nëse e shënon njëra) dhe "
-            "prerja e tyre (nëse e shënojnë të dyja).",
-            "Pasiguria matet me intervale besimi bootstrap, ku rimostrohen depo të "
-            "plota e jo mostra të veçanta, që një projekt të mos ndahet. Pajtimi mes "
-            "vetë rishikuesve të MLCQ-së matet mbi çdo çift rishikimesh të së njëjtës "
-            "mostër, dhe shërben si tavan për shifrat e detektorëve.",
+            "Detektimi vlerësohet si klasifikim binar mbi etiketën e Nënkapitullit "
+            "4.3. Te matrica konfuze, TP janë mostrat pozitive që detektori i shënon, "
+            "FP negativet që shënon, FN pozitivet që i humbet dhe TN negativet që i "
+            "lë. Prej saj llogariten precizioni, recall-i dhe F1:",
+            ("equation", "P = TP / (TP + FP)"),
+            ("equation", "R = TP / (TP + FN)"),
+            ("equation", "F1 = 2 · P · R / (P + R)"),
+            "Treguesi kryesor është koeficienti i korrelacionit i Matthews-it "
+            "(Matthews, 1975), që i merr parasysh të katër qelizat:",
+            ("equation", "MCC = (TP·TN − FP·FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN))"),
+            "Kjo ka rëndësi kur shumica e etiketave janë negative: një detektor që nuk "
+            "ndez kurrë del i papërcaktuar sipas MCC-së, ndërsa saktësia e "
+            "përgjithshme do t'i jepte shifër të lartë. Chicco & Jurman (2020) "
+            "tregojnë se MCC-ja del e lartë vetëm kur parashikimi është i mirë në të "
+            "katër qelizat, ndërsa saktësia dhe F1 mund të dalin tepër optimiste mbi "
+            "bashkësi të çekuilibruara. Recall-i raportohet edhe sipas ashpërsisë që "
+            "caktuan rishikuesit.",
+            "Pajtimi mes dy qasjeve matet me koeficientin kappa (Cohen, 1960), ku A "
+            "është pjesa e mostrave ku dy qasjet japin të njëjtin verdikt dhe E "
+            "pajtimi që pritet rastësisht nga shpeshtësia me të cilën ndez secila:",
+            ("equation", "κ = (A − E) / (1 − E)"),
+            f"Kappa zgjidhet sepse kur {_negative_share()} e etiketave janë negative, "
+            "dy detektorë që ndezin rrallë pajtohen shumë edhe rastësisht. Raportohen "
+            "edhe të katër qelizat, bashkimi i dy qasjeve (mostra shënohet nëse e "
+            "shënon njëra) dhe prerja e tyre (nëse e shënojnë të dyja).",
+            "**Ndjeshmëria ndaj pragjeve.** Secili prag i katër strategjive të "
+            f"vlerësuara shumëzohet me faktorët {_SETUP['factors']}, një prag në një "
+            "kohë dhe me të tjerët te vlerat e botuara, dhe strategjia pikëzohet "
+            "sërish. Pragjet nuk hyjnë në matje, ndaj kjo bëhet mbi tabelën e ruajtur "
+            "të veçorive. Vlera që jep MCC-në më të lartë nuk adoptohet: e zgjedhur mbi "
+            "të njëjtën bashkësi mbi të cilën raportohet, ajo do të matte sa mirë u "
+            "përshtat pragu, jo sa mirë detekton strategjia.",
+            "**Kalibrimi jashtë fold-it.** Për një shifër të ndershme me pragje të "
+            f"lëvizura, korpusi ndahet në {_SETUP['folds']} folde sipas depos, si te "
+            "Qasja B. Për secilin fold, nga i njëjti rrjet faktorësh zgjidhet pragu "
+            "me MCC-në më të lartë mbi foldet e tjera, dhe ai zbatohet mbi foldin e "
+            "mbajtur jashtë. Parashikimet e të gjitha foldeve bashkohen dhe pikëzohen "
+            "një herë, ndaj shifra është jashtë fold-it në të njëjtin kuptim me atë "
+            "të modeleve.",
+            "**Intervalet e besimit.** Çdo tregues rillogaritet mbi "
+            f"{_SETUP['resamples']} rimostrime me kthim (Efron & Tibshirani, 1993). "
+            "Njësia e rimostrimit është depoja e jo mostra, që mostrat e një projekti "
+            "të mbeten bashkë, dhe intervali 95% merret nga percentilet 2.5 dhe 97.5. "
+            "Për dallimin B − A raportohet edhe pjesa e rimostrimeve ku ai ruan "
+            "shenjën pozitive, dhe dallimi rillogaritet edhe kur Qasja A merr pragun e "
+            "saj më të mirë nga fshirja.",
+            "**Pajtimi mes rishikuesve.** Për çdo mostër me dy rishikime ose më shumë, "
+            "çdo çift rishikimesh kalon nëpër të njëjtën matricë konfuze: njëri "
+            "rishikues merret si e vërtetë, tjetri si parashikim. MCC-ja që del "
+            "shërben si tavan orientues për detektorët dhe jo si kufi i rreptë, sepse "
+            "etiketa e agreguar e zbut zhurmën e një rishikuesi të vetëm.",
             "Motori i refaktorimit matet ndryshe: numërohen vendet e detektuara, të "
             "transformuara dhe të refuzuara sipas arsyes, me verdiktin e verifikimit "
             "për çdo rishkrim.",
-            "Si krahasim i jashtëm, i njëjti vlerësim zbatohet te PMD (PMD Team, "
-            "2026), versioni 7.27.0, rregullat GodClass dhe DataClass të të cilit "
-            "bazohen te strategjitë e Lanza & Marinescu (2006). PMD ekzekutohet me "
-            "pragjet e veta, pikëzohet njësoj si Qasja A, dhe shkeljet lidhen me "
-            "entitetet sipas emrit të klasës dhe të metodës. Meqë analizon një skedar "
-            "në një kohë, ATFD-në e llogarit vetëm brenda skedarit, gjë që e vë në "
-            "disavantazh; rregull për Feature Envy nuk ka.",
+            "**Krahasimi me PMD-në.** Si krahasim i jashtëm, i njëjti vlerësim "
+            "zbatohet te PMD (PMD Team, 2026), versioni 7.27.0, rregullat GodClass dhe "
+            "DataClass të të cilit bazohen te strategjitë e Lanza & Marinescu (2006). "
+            "PMD ekzekutohet me pragjet e veta, pikëzohet njësoj si Qasja A, dhe "
+            "shkeljet lidhen me entitetet sipas emrit të klasës dhe të metodës. Meqë "
+            "analizon një skedar në një kohë, ATFD-në e llogarit vetëm brenda "
+            "skedarit, gjë që e vë në disavantazh; heqja e këtij handikapi do të "
+            "kërkonte ndërtimin e çdo depoje në commit-in e vet historik. Rregull për "
+            "Feature Envy PMD nuk ka, ndaj LawOfDemeter, që mat zinxhirët e thirrjeve, "
+            "raportohet vetëm si referencë. Skedarët që PMD nuk i lexon dhe depot që "
+            "nuk i përpunon hiqen nga të dyja anët, që dështimi i mjetit të mos "
+            "lexohet si mosgjetje, dhe një raport XML i pavlefshëm lexohet me një "
+            "rrugë rikuperimi që jep të njëjtat fusha. Dallimi i MCC-së ka interval të "
+            "çiftuar, me të njëjtat rimostrime depo për të dyja anët.",
         ],
     ),
     (
@@ -953,11 +1321,15 @@ CHAPTER_4 = [
             "gjendet më parë cili është i gabuar. Në verifikimin e fundit, më "
             f"{VALIDATION_DATE}, kaluan {BACKEND_TESTS} teste të backend-it, me mbulim "
             f"{COVERAGE} të kodit, dhe {FRONTEND_TESTS} teste të ndërfaqes.",
+            "Edhe vetë ky dokument kontrollohet automatikisht: çdo citim duhet të ketë "
+            "referencë dhe anasjelltas, formati krahasohet me rregullat e shabllonit, "
+            "tabela e riprodhimit krahasohet me skriptet që ekzistojnë, dhe fjalitë e "
+            "përsëritura mes kapitujve raportohen.",
         ],
     ),
     (
         "4.11",
-        "Riprodhueshmëria",
+        "Riprodhueshmëria dhe mjedisi",
         [
             "Çdo numër në punim prodhohet nga një skript dhe ruhet si CSV ose JSON në "
             "depo. Farat e rastësisë dhe versionet e varësive janë të fiksuara, dhe "
@@ -967,6 +1339,14 @@ CHAPTER_4 = [
             "në këtë kalim, ndaj analiza e ndjeshmërisë i riekzekuton detektorët mbi "
             "rreshtat e ruajtur brenda sekondash. Radha e plotë e skripteve është te "
             "Shtojca 8.5.",
+            "**Mjedisi eksperimental.** Eksperimentet u ekzekutuan në një laptop pa "
+            f"kartë grafike të dedikuar, me {_SETUP['system']}, Python "
+            f"{_SETUP['python']} dhe JDK 21. Çdo skedar rezultati mban commit-in e "
+            "kodit që e prodhoi, platformën dhe versionin e Python-it, ndaj një "
+            "shifër lidhet gjithmonë me kodin e saktë që e nxori. Trajnimi i modeleve "
+            "zgjat disa minuta, ndërsa ekzekutimi i motorit të refaktorimit mbi tërë "
+            "korpusin disa orë, sepse javac thirret dy herë për çdo skedar të "
+            "rishkruar. Asnjë hap nuk kërkon shërbim në re apo me pagesë.",
         ],
     ),
     (
@@ -983,6 +1363,42 @@ CHAPTER_4 = [
             "Korpusi nuk shpërndahet me punimin; kush do t'i riprodhojë rezultatet e "
             "shkarkon nga burimet origjinale me skriptin e parë të Shtojcës 8.5. "
             "Rezultatet negative raportohen njësoj si ato pozitive.",
+            "Dataset-i MLCQ dhe depot e korpusit mbeten nën licencat e veta. Kodi i "
+            "sistemit publikohet nën licencën MIT, ndërsa asnjë pjesë e kodit të huaj "
+            "nuk shpërndahet bashkë me të.",
+        ],
+    ),
+    (
+        "4.13",
+        "Kërcënimet ndaj vlefshmërisë",
+        [
+            "Kërcënimet grupohen sipas katër llojeve të vlefshmërisë që përdor "
+            "literatura e eksperimenteve në inxhinierinë softuerike (Wohlin et al., "
+            "2012), secili me masën që e zbut.",
+            "**Vlefshmëria e konstruktit.** Pyetja është nëse shifra mat atë që "
+            "pretendon. Etiketat e MLCQ-së janë gjykime njerëzore, dhe mënyra si "
+            "bashkohen i ndryshon pozitivët; prandaj çdo agregim alternativ "
+            "raportohet veç (Nënkapitulli 4.3). Numërimi i rreshtave dhe njohja e "
+            "akses-metodave nga parashtesa janë zgjedhje që prekin disa metrika, dhe "
+            "të dyja janë deklaruar te Nënkapitulli 4.4. Te refaktorimi, kompilimi "
+            "provon se forma e kodit mbetet e ligjshme, jo se sjellja mbetet e njëjtë.",
+            "**Vlefshmëria e brendshme.** Një lidhje e gabuar mes mostrës dhe "
+            "entitetit do t'i prishte të gjitha shifrat pa u vënë re; prandaj "
+            "përputhja ankorohet te rreshtat, kontrollohet me emrin, dhe çdo mostër e "
+            "palidhur raportohet me shkakun. Rrjedhja mes trajnimit dhe testimit "
+            "pengohet nga ndarja sipas depos, dhe peshat në vend të mbi-mostrimit e "
+            "ruajnë atë ndarje. Pragjet pa burim të botuar janë emërtuar te "
+            "Nënkapitulli 4.5.",
+            "**Vlefshmëria e jashtme.** Rezultatet mbështeten te kod Java me burim të "
+            "hapur, katër erëra dhe një dataset të vetëm, dhe asgjë këtu nuk provon se "
+            "transferohen te gjuhë të tjera apo te kodi i mbyllur industrial. Humbja e "
+            "disa depove mund ta anojë mostrën, dhe ky rrezik nuk matet dot pa kodin e "
+            "tyre.",
+            "**Vlefshmëria e përfundimeve.** Çdo model trajnohet një herë, me "
+            "parametra të fiksuar dhe pa akordim. Pasiguria që vjen nga korpusi matet "
+            "me bootstrap sipas depos, por ajo që vjen nga ndryshimi i farës nuk "
+            "matet. Një dallim, intervali i të cilit përfshin zeron, raportohet si i "
+            "padallueshëm dhe jo si fitore e njërës anë.",
         ],
     ),
 ]
@@ -1215,9 +1631,11 @@ def _reading_of_detection(h: dict) -> list:
             else ""
         )
         + ". Një F1 i vetëm do ta fshihte këtë dallim.",
+        *_sensitivity_reading(),
         "**Qasja B.** Modelet e tejkalojnë qasjen me rregulla te çdo erë, dhe meqë "
         "klasifikuesi i shumicës nuk ndez kurrë, fitimi nuk vjen nga çekuilibri i "
         "klasave." + _gain_split(h),
+        *_intervals_reading(),
         "Shpjegimi për rast e zbut kundërshtimin standard ndaj mësimit të makinës, se "
         f"modeli fiton por nuk thotë pse. Te {min(shares):.0%} deri në {max(shares):.0%} "
         "të verdikteve një matje e vetme e mban shënimin, dhe matja më e shpeshtë "
@@ -1256,6 +1674,103 @@ def _reading_of_detection(h: dict) -> list:
         + "kur dy qasje të pavarura pajtohen, precizioni del mbi secilën veç, sepse "
         "gabimet e tyre rrallë bien mbi të njëjtat mostra.",
     ]
+
+
+def _sensitivity_reading() -> list:
+    """Çfarë do të thotë ndjeshmëria ndaj pragjeve, e zhvendosur nga Kapitulli 5.
+
+    Kapitulli 5 i jep vetëm vlerat (VD-136). Shpjegimi, që më parë qëndronte
+    pranë tabelës, vjen këtu, i ndërtuar mbi të njëjtat skedarë.
+    """
+    sweep = _load("threshold_sweep.json")
+    calibration = _load_if_present("threshold_calibration.json")
+
+    def amplitude(smell: str) -> float:
+        return max(
+            max(point["mcc"] for point in points) - min(point["mcc"] for point in points)
+            for points in sweep["per_smell"][smell].values()
+        )
+
+    wide = [s for s in sorted(sweep["per_smell"]) if amplitude(s) >= 0.2]
+    narrow = [s for s in sorted(sweep["per_smell"]) if amplitude(s) < 0.2]
+    paragraphs = []
+    if wide and narrow:
+        paragraphs.append(
+            "Sa varet ky përfundim nga pragjet? Te "
+            f"{_joined([SMELL_SQ[s] for s in narrow])} zhvendosja e çdo pragu mezi e "
+            "lëviz MCC-në (Nënkapitulli 5.5), ndaj shifrat e tyre flasin për kodin dhe jo "
+            f"për pragun. Te {_joined([SMELL_SQ[s] for s in wide])} amplituda është e "
+            "madhe, pra shifra e raportuar flet po aq për pragun sa për kodin. Kjo vlen "
+            "sa herë krahasohen mjete detektimi që përdorin pragje të ndryshme: dallimi "
+            "mes tyre mund të jetë dallim pragjesh e jo metodash."
+        )
+    envy = sweep["per_smell"].get("feature envy", {}).get("feature_envy_fdp")
+    method = sweep["per_smell"].get("long method", {}).get("long_method_loc")
+    if method:
+        published = next(p for p in method if p["factor"] == 1.0)
+        top = max(method, key=lambda p: p["mcc"])
+        if top["value"] < published["value"] and top["recall"] > published["recall"]:
+            paragraphs.append(
+                f"Te {SMELL_SQ['long method']}, pragu i botuar del konservativ për këtë "
+                "korpus: me një prag më të ulët recall-i rritet shumë më tepër se sa bie "
+                "precizioni, çka sugjeron se rishikuesit e MLCQ-së e quajnë një metodë të "
+                "gjatë më herët se sa e vendos pragu. Fitimi megjithatë paguhet me "
+                "precizion, dhe foldet e kalibrimit nuk bien dakord për vlerën."
+            )
+    if envy:
+        published = next(p for p in envy if p["factor"] == 1.0)
+        top = max(envy, key=lambda p: p["mcc"])
+        both = top["precision"] > published["precision"] and top["recall"] > published["recall"]
+        unanimous = (
+            calibration is not None
+            and sum(len(v) for v in calibration["per_smell"]["feature envy"]["chosen"].values())
+            == 1
+        )
+        if both:
+            paragraphs.append(
+                f"Te {SMELL_SQ['feature envy']} vërehet diçka më e veçantë. Klauzola që "
+                "kërkon që klasat-burim të jenë pak, kur relaksohet, i përmirëson "
+                "njëkohësisht precizionin dhe recall-in"
+                + (", dhe kalibrimi jashtë fold-it e zgjedh të njëjtën vlerë në çdo fold"
+                   if unanimous else "")
+                + ". Një kufizim që heq pozitivë të vërtetë pa hequr të rremë nuk e ndan "
+                "sinjalin nga zhurma; mbi këtë korpus, pra, ajo klauzolë nuk e bën punën "
+                "për të cilën u vendos."
+            )
+    if calibration is not None:
+        paragraphs.append(
+            f"Te {SMELL_SQ['long method']}, dallimi mes fshirjes dhe kalibrimit (Nënkapitulli "
+            "5.5) është pikërisht ajo që fitohet kur zgjedhjes "
+            "i lejohet ta shohë bashkësinë mbi të cilën do të raportohet, dhe arsyeja pse "
+            "u raportua shifra e kalibruar."
+        )
+    return paragraphs
+
+
+def _intervals_reading() -> list:
+    """Çfarë do të thonë intervalet e besimit për krahasimin A↔B."""
+    intervals = _load("bootstrap_intervals.json")
+    per = intervals["per_smell"]
+    above = [s for s in per if per[s]["intervals"]["difference_model_minus_rules"]["low"] > 0]
+    lost = [
+        SMELL_SQ[s]
+        for s in sorted(per)
+        if per[s]["intervals"]["difference_model_minus_rules_swept"]["low"] <= 0
+    ]
+    text = (
+        "Intervalet e besimit e forcojnë këtë lexim (Nënkapitulli 5.7). Përparësia e "
+        f"modelit mbetet mbi zero {_among(len(above), len(per))} kur korpusi rimostrohet "
+        "sipas depos, pra nuk është artefakt i një korpusi të veçantë. Por intervalet "
+        "janë të gjera, ndaj renditja e erërave mes tyre nuk qëndron: dallimi mes Data "
+        "Class-it dhe Blob-it, për shembull, humbet brenda tyre."
+    )
+    if lost:
+        text += (
+            f" Kur rregullit i jepet pragu i tij më i mirë, përparësia zhduket te "
+            f"{_joined(lost)}, pikërisht aty ku rregulli punonte më mirë; ky është "
+            "kufizimi i vetëm i rëndësishëm i krahasimit mes dy qasjeve."
+        )
+    return [text]
 
 
 def _isolation_reading(context: dict) -> str:
@@ -1414,7 +1929,7 @@ def _literature_comparison(h: dict) -> list:
             "duhen lexuar kundrejt një tavani të ulët."
         )
     paragraphs.append(
-        "Te rregullat, rezultati përputhet me vërejtjen e Nënkapitullit 2.2 se pragjet "
+        "Te rregullat, rezultati përputhet me vërejtjen e Nënkapitullit 2.3 se pragjet "
         "e nxjerra nga një korpus nuk transferohen lehtë në një tjetër: strategjitë e "
         "Lanza & Marinescu (2006) ruajnë precizion të lartë mbi MLCQ, por humbin "
         "shumicën e rasteve. PMD-ja, që zbaton të njëjtat strategji me pragjet e veta, "
@@ -1424,6 +1939,19 @@ def _literature_comparison(h: dict) -> list:
         "Chatzigeorgiou (2009) ia lënë vendimin përfundimtar projektuesit; ky punim e "
         "aplikon rishkrimin, por vetëm pas verifikimit me kompilator dhe vetëm aty ku "
         "kthimi është një komandë."
+    )
+    refactoring = _load("refactoring_evaluation.json")
+    resolved = refactoring["resolution"]["resolved"] / refactoring["applied"]
+    paragraphs.append(
+        "Dy gjetje të tjera lidhen me literaturën për ndikimin e erërave. Roli i "
+        "madhësisë te Blob-i, i diskutuar te Nënkapitulli 6.2, ka një paralel te "
+        "Sjøberg et al. (2013): edhe atje madhësia e kodit peshonte më shumë se "
+        "erërat vetë në përpjekjen e mirëmbajtjes. Te refaktorimi, Bavota et al. (2015) gjetën se vetëm 7% e "
+        "refaktorimeve të zhvilluesve e heqin erën nga klasa; motori i këtij punimi e "
+        f"heq atë te {resolved:.1%} e rishkrimeve që aplikon. Krahasimi nuk është i "
+        "drejtpërdrejtë, sepse zhvilluesit shpesh refaktorojnë për arsye që nuk kanë "
+        "lidhje me një erë (Silva et al., 2016), por tregon vlerën e një transformimi "
+        "që zgjidhet për erën e gjetur dhe matet pas aplikimit."
     )
     return paragraphs
 
@@ -1683,6 +2211,16 @@ def chapter_6() -> list:
                 "tij më të sigurt. Rishkrimi automatik mund t'i besohet mjetit për "
                 f"{_one_in_how_many()}, me kusht që ai të refuzojë çdo gjë që nuk e provon "
                 "dhe ta masë atë që ndodh pas rishkrimit.",
+                "Meqë shumica e erërave lindin bashkë me kodin (Tufano et al., 2015), "
+                "mjeti ka më shumë vlerë kur vepron herët, si portë në integrimin e "
+                "vazhdueshëm, sesa si auditim i rrallë mbi një sistem të pjekur. Për "
+                "Feature Envy, erën që literatura e trajton më shpesh si objektiv "
+                "refaktorimi, mjetet e lira të përhapura ofrojnë pak: PMD nuk ka rregull "
+                "për të, DesigniteJava nuk e përfshin mes erërave që dokumenton, dhe "
+                "JDeodorant, që e gjen përmes mundësive për Move Method (Tsantalis & "
+                "Chatzigeorgiou, 2009), punon si shtojcë e mjedisit të zhvillimit, ndërsa "
+                "varianti i tij në rresht komande nuk mban licencë. Një detektor i lirë "
+                "që punon nga rreshti i komandës e mbush pjesërisht këtë boshllëk.",
             ],
         ),
         (
@@ -1931,11 +2469,11 @@ def _results_sections() -> list:
                 _coverage_sentence(),
                 ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
                  "Shpërndarja e mostrave sipas erës"),
-                "Nënkapitujt 5.1 deri 5.4 u përgjigjen pyetjeve kërkimore sipas radhës së "
-                "tyre. Tri analiza pas tyre tregojnë sa peshë mbajnë ato përgjigje: sa "
-                "varen nga pragjet (5.5), si dalin përballë një mjeti ekzistues (5.6) dhe "
-                "sa të gjera janë intervalet e tyre të besimit (5.7). Analizat e tjera "
-                "dytësore janë te Shtojcat 8.6 deri 8.8.",
+                "Rezultatet kryesore ndjekin pyetjet kërkimore: 5.1 i përgjigjet PK1, "
+                "5.2 dhe 5.3 PK2, dhe 5.4 PK3. Vëzhgimet dytësore vijnë pas tyre: "
+                "ndjeshmëria ndaj pragjeve (5.5), krahasimi me një mjet ekzistues (5.6), "
+                "dhe intervalet e besimit bashkë me pajtimin mes rishikuesve (5.7). "
+                "Analizat e tjera dytësore janë te Shtojcat 8.6 deri 8.8.",
             ],
         ),
         (
@@ -2005,32 +2543,15 @@ def _results_sections() -> list:
             "5.5",
             "Ndjeshmëria ndaj pragjeve",
             [
-                "Pragjet e përdorura janë ato të botuara (Shtojca 8.2), dhe pyetja e "
-                "natyrshme është sa varet rezultati prej tyre. Secili prag u zhvendos veç, mes gjysmës dhe dyfishit të vlerës "
-                "së vet, me të tjerët të mbajtur fiks.",
+                "Secili prag i strategjive u zhvendos veç me faktorët e Nënkapitullit "
+                "4.9, ndërsa të tjerët mbetën te vlerat e botuara. Rreshtat renditen "
+                "sipas amplitudës, pra dallimit mes MCC-së më të lartë dhe më të ulët "
+                "që jep pragu:",
                 ("table", "Sa lëviz MCC-ja kur zhvendoset një prag",
                  ["Erë", "Pragu", "Te vlera e botuar", "Brezi", "Amplituda"], sweep_rows),
                 ("figure", str(FIGURES / "ndjeshmeria_e_pragjeve.png"),
                  "Ndjeshmëria e MCC-së ndaj zhvendosjes së pragjeve"),
-                "Ndarja është e qartë. Për Blob dhe Data Class rezultati mezi lëviz, "
-                "pra shifrat e raportuara për to flasin për kodin. Për Long Method dhe "
-                "Feature Envy amplituda është e madhe, dhe kjo do të thotë se shifra e "
-                "raportuar flet po aq për pragun sa për kodin — vërejtje që duhet mbajtur "
-                "parasysh sa herë krahasohen mjete të ndryshme detektimi.",
-                "Te Long Method pragu i botuar rezulton konservativ për këtë korpus: "
-                "ulja e tij e rrit ndjeshëm recall-in me kosto të vogël precizioni, "
-                "çka sugjeron se rishikuesit e MLCQ-së e quajnë një metodë të gjatë më "
-                "herët se sa e vendos pragu.",
-                "Te Feature Envy vërehet diçka më e veçantë. Klauzola që kërkon që "
-                "numri i klasave-burim të jetë i vogël, kur relaksohet, i përmirëson "
-                "njëkohësisht edhe precizionin edhe recall-in. Një kufizim që heq "
-                "pozitivë të vërtetë pa hequr të rremë nuk po e ndan sinjalin nga "
-                "zhurma; pra ajo klauzolë, të paktën mbi këtë korpus, nuk e bën punën "
-                "për të cilën është vendosur.",
-                "Këto vlera nuk adoptohen: një prag i zgjedhur sepse jep shifrën më të mirë "
-                "mbi bashkësinë e vlerësimit do të matte sa mirë u zgjodh pragu, jo sa mirë "
-                "funksionon detektimi. Kalibrimi i ndershëm kërkon bashkësi të ndara, dhe "
-                "kjo bëhet më poshtë.",
+                *_sweep_facts(sweep, sweep_rows),
                 *_calibration_paragraphs(),
             ],
         ),
@@ -2038,10 +2559,6 @@ def _results_sections() -> list:
             "5.6",
             "Krahasimi me një mjet ekzistues",
             [
-                "Nënkapitujt 5.1 deri 5.3 i vënë dy qasjet e këtij punimi përballë "
-                "njëra-tjetrës. Ky i vë përballë një mjeti që zhvilluesi e instalon "
-                "sot, sepse pyetja nuk është vetëm cila prej të dyjave është më e "
-                "mirë, por a ia vlen ndonjëra.",
                 *_pmd_comparison_paragraphs(),
             ],
         ),
@@ -2196,18 +2713,8 @@ def _pmd_comparison_paragraphs() -> list:
          ["Erë", "Mostra", "MCC i PMD-së", "MCC i punimit", "Ndryshimi, IB 95%"],
          rows),  # fmt: skip
         _pmd_balance(data),
-        "Feature Envy nuk ka rresht krahasimi sepse PMD nuk ka rregull për të; "
-        "LawOfDemeter, më i afërti, mat zinxhirë mesazhesh dhe nuk është matje e "
-        "Feature Envy-së. Mungesa nuk është vetëm e PMD-së: as DesigniteJava nuk e "
-        "përfshin mes erërave që dokumenton. JDeodorant e zbulon, sepse ndërtohet mbi "
-        "identifikimin e mundësive për Move Method (Tsantalis & Chatzigeorgiou, 2009), "
-        "por është shtojcë e mjedisit të zhvillimit dhe varianti i tij në rresht "
-        "komande nuk mban licencë. Pra erës që literatura e trajton më shpesh si "
-        "objektiv refaktorimi i mungon mbështetja në mjetet e lira të përhapura.",
-        "Krahasimi e favorizon këtë punim në drejtimin e deklaruar te Nënkapitulli 4.9, "
-        "sepse PMD e llogarit ATFD-në vetëm brenda një skedari. Heqja e handikapit do "
-        "të kërkonte ndërtimin e çdo depoje në commit-in e vet historik, çka korpusi "
-        "nuk e lejon (Nënkapitulli 3.4).",
+        "Për Feature Envy PMD nuk ka rregull, ndaj rreshti i saj ka vetëm MCC-në e "
+        "LawOfDemeter-it, rregullit më të afërt, dhe nuk ka kolonë krahasimi.",
     ]
 
     if unreadable or failed:
@@ -2223,12 +2730,9 @@ def _pmd_comparison_paragraphs() -> list:
         )
         total = int(str(_load("rules_evaluation.json")["scored"]))
         paragraphs.append(
-            f"Nga ekzekutimi, {files} dhe {repos}. Këto numërohen këtu dhe nuk lexohen "
-            "si «PMD nuk gjeti asgjë»: dështimi dhe mosgjetja janë pohime të kundërta. "
-            "Mostrat e atyre depove dalin nga tabela e mësipërme, dhe dalin nga të dyja "
-            "kolonat njësoj, ndaj dy anët mbeten të krahasueshme. Emëruesi që mbetet "
-            f"është ai i tabelës; Qasja A vlerësoi {total} mostra, dhe krahasimi mbulon "
-            "ato që u përpunuan."
+            f"Nga ekzekutimi, {files} dhe {repos}. Mostrat e atyre depove janë hequr "
+            "nga të dyja kolonat e tabelës, ndaj emëruesi i saj është më i vogël se "
+            f"ai i Qasjes A, e cila vlerësoi {total} mostra."
         )
     recovered = len(data.get("reports_recovered", []))
     if recovered:
@@ -2238,10 +2742,8 @@ def _pmd_comparison_paragraphs() -> list:
             else f"Për {recovered} depo raportet e PMD-së dolën"
         )
         paragraphs.append(
-            f"{which} XML i pavlefshëm — një defekt i njohur i renderuesit të tij kur "
-            "një skedar dështon — dhe u lexua me një rrugë rikuperimi që prodhon të "
-            "njëjtat çelësa. Pa të, ato do të hynin në tabelë sikur PMD të mos kishte "
-            "gjetur asgjë."
+            f"{which} XML i pavlefshëm dhe u lexua me rrugën e rikuperimit të "
+            "Nënkapitullit 4.9."
         )
     return paragraphs
 
@@ -2328,37 +2830,38 @@ def _confidence_section() -> list:
             f"{swept['share_positive']:.1%}",
         ])
 
+    widths = {
+        SMELL_SQ[smell]: entry["intervals"]["difference_model_minus_rules"]["high"]
+        - entry["intervals"]["difference_model_minus_rules"]["low"]
+        for smell, entry in intervals["per_smell"].items()
+    }
+    widest = max(widths, key=lambda name: widths[name])
+    above = sum(
+        entry["intervals"]["difference_model_minus_rules"]["low"] > 0
+        for entry in intervals["per_smell"].values()
+    )
     paragraphs: list = [
-        f"Çdo shifër e Kapitullit 5 është një vlerësim i vetëm mbi një korpus të "
-        f"caktuar. Për të matur sa varet ajo nga korpusi, çdo tregues u riprodhua me "
-        f"bootstrap mbi {intervals['resamples']} rimostrime, duke rimostruar "
-        f"**depo** e jo rreshta, për arsyen që e bën edhe ndarjen e trajnimit të "
-        f"grupuar (Nënkapitulli 2.3): rimostrimi i rreshtave do të jepte intervale "
-        f"artificialisht të ngushta.",
+        f"Me bootstrap sipas depos ({intervals['resamples']} rimostrime, Nënkapitulli "
+        "4.9), MCC-ja e secilës qasje dhe dallimi mes tyre kanë këto intervale besimi "
+        "95%:",
         ("table", "Intervale besimi 95% për MCC-në",
          ["Erë", "A: rregullat", "B: modeli", "B − A", "E kalon zeron"], rows),
         ("figure", str(FIGURES / "intervalet_e_besimit.png"),
          "MCC me interval besimi 95% për të dyja qasjet"),
-        "Përparësia e Qasjes B ndaj Qasjes A e kalon zeron te të katër erërat, pra nuk "
-        "është artefakt i korpusit. Por intervalet janë të gjera — për Feature Envy-n "
-        "gjerësia i kalon njëzet e pesë pikët — prandaj renditja e "
-        "erërave mes tyre nuk qëndron: dallimi mes Data Class-it dhe Blob-it, për "
-        "shembull, humbet brenda tyre.",
-        "Krahasimi ndryshon kur Qasjes A i jepet pragu i saj më i mirë nga fshirja e "
-        "Nënkapitullit 5.5, çka është krahasimi më bujar që mund t'i bëhet:",
+        f"Kufiri i poshtëm i dallimit B − A është mbi zero {_among(above, len(widths))}. "
+        f"Intervali më i gjerë i dallimit është te {widest}, "
+        f"{widths[widest]:.3f} pikë MCC.",
+        "Kur Qasja A merr pragun e saj më të mirë nga fshirja e Nënkapitullit 5.5, "
+        "dallimi ka këto intervale:",
         ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
          ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
          swept_rows),
-        "Për tri erërat e para përparësia mbetet. Për Long Method-in ajo zhduket: "
-        f"intervali e përfshin zeron dhe shenja ruhet vetëm në {_crossing_share(intervals)} "
-        "të rimostrimeve. "
-        "Pra pretendimi «modeli e tejkalon rregullin» qëndron përgjithësisht, por jo "
-        "për erën ku rregulli tashmë punonte më mirë, sapo atij rregulli i lejohet të "
-        "kalibrohet. Ky është kufizimi i vetëm i rëndësishëm i krahasimit A↔B.",
+        f"{_swept_summary(intervals)} Te Long Method intervali e përfshin zeron, dhe "
+        f"shenja pozitive ruhet në {_crossing_share(intervals)} të rimostrimeve.",
     ]
 
     if ceiling is None:
-        return [("5.9", "Sa peshë mban një shifër e vetme", paragraphs)]
+        return [("5.9", "Intervalet e besimit dhe pajtimi mes rishikuesve", paragraphs)]
 
     ceiling_rows = [
         [
@@ -2372,22 +2875,27 @@ def _confidence_section() -> list:
     best = max(data["mcc"] for data in ceiling["per_smell"].values())
 
     paragraphs += [
-        "Mbetet pyetja e dytë: kundrejt çfarë etikete maten këto shifra. Etiketa është "
-        "ndërtuar duke bashkuar rishikime njerëzore, dhe ata rishikues nuk pajtohen me "
-        "njëri-tjetrin. Tabela më poshtë e mat atë mospajtim me të njëjtin tregues dhe "
-        "të njëjtin kod: një rishikues merret si e vërtetë, tjetri si parashikim, dhe "
-        "çifti kalon nëpër të njëjtën matricë konfuze.",
+        "Pajtimi mes vetë rishikuesve të MLCQ-së, i matur me të njëjtin tregues mbi "
+        "çdo çift rishikimesh të së njëjtës mostër (Nënkapitulli 4.9), jep këto "
+        "vlera:",
         ("table", "Sa pajtohen rishikuesit me njëri-tjetrin",
          ["Erë", "MCC mes rishikuesve", "Saktësia", "Çifte"], ceiling_rows),
-        f"Asnjë erë nuk e kalon {best:.3f}. Kjo nuk do të thotë se sistemi i tejkalon "
-        "njerëzit: shifrat e kapitullit maten kundrejt etiketës së agreguar, e cila e "
-        "heq një pjesë të zhurmës së një individi, ndaj të dy numrat nuk vendosen në "
-        "një renditje. Ajo që tregon është sa e vështirë është vetë detyra: kur ekspertët "
-        "ndahen kaq shumë, një pjesë e gabimit mbetet te paqartësia e erës, sido që të "
-        "ndërtohet detektori, dhe çdo shifër e Kapitullit 5 duhet lexuar mbi këtë sfond.",
+        f"MCC-ja mes rishikuesve nuk e kalon {best:.3f} te asnjë erë.",
     ]
 
-    return [("5.9", "Sa peshë mban një shifër e vetme", paragraphs)]
+    return [("5.9", "Intervalet e besimit dhe pajtimi mes rishikuesve", paragraphs)]
+
+
+def _swept_summary(intervals: dict) -> str:
+    """Te sa erëra dallimi mbetet mbi zero kur rregullat marrin pragun më të mirë."""
+    kept = [
+        SMELL_SQ[smell]
+        for smell, entry in sorted(intervals["per_smell"].items())
+        if entry["intervals"]["difference_model_minus_rules_swept"]["low"] > 0
+    ]
+    if not kept:
+        return "Te asnjë erë kufiri i poshtëm nuk mbetet mbi zero."
+    return f"Kufiri i poshtëm mbetet mbi zero te {_joined(kept)}."
 
 
 def _explanation_paragraphs(ml: dict) -> list:
@@ -2462,32 +2970,109 @@ def _calibration_paragraphs() -> list:
         ])
 
     return [
-        f"Kalibrimi u bë me {data['folds']} folde të ndara sipas depos, si te Qasja B. "
-        f"Për secilin fold pragu u zgjodh duke parë vetëm foldet e trajnimit dhe u "
-        f"pikëzua mbi foldin e mbajtur jashtë; parashikimet u bashkuan dhe u pikëzuan "
-        f"një herë, ndaj shifra është jashtë-fold-it në të njëjtin kuptim me atë të "
-        f"modeleve.",
+        f"Me kalibrimin jashtë fold-it ({data['folds']} folde sipas depos, Nënkapitulli "
+        "4.9), rregullat arrijnë këto vlera; kolona e fundit jep pragun që zgjodhi "
+        "secili fold dhe sa herë u zgjodh:",
         ("table", "Rregullat me pragje të kalibruara, të pikëzuara jashtë fold-it",
          ["Erë", "E botuar", "E kalibruar", "Recall", "Precizion", "Vlerat e zgjedhura"],
          rows),
-        "Rezultati ndahet në dy pjesë. Për Feature Envy kalibrimi jep fitimin më të "
-        "madh dhe më të besueshmin: **të pesë foldet zgjodhën të njëjtën vlerë**, dhe "
-        "përmirësohen njëkohësisht edhe precizioni edhe recall-i, çka e forcon "
-        "dyshimin e mësipërm për klauzolën e numrit të klasave-burim. Për Long Method "
-        "fitimi është gjithashtu i "
-        "qartë, por foldet ndahen mes dy vlerave dhe blihet me precizion.",
-        "Për Blob dhe Data Class kalibrimi nuk ndihmon: te e para lëvizja është e "
-        "vogël, te e dyta rezultati bie nën atë të pragjeve të botuara. Dhe foldet e "
-        "Data Class-it nuk pajtohen as për cilin prag të lëvizin — dy prej tyre "
-        "zgjedhin një prag krejt tjetër nga tre të tjerët. Kur zgjedhja varet kaq "
-        "shumë nga cila pjesë e korpusit shihet, «pragu optimal» është veti e "
-        "bashkësisë dhe jo e gjuhës.",
-        f"Vlen të vihet re edhe dallimi me fshirjen. Ajo sugjeronte {_swept_best()} për Long "
-        f"Method; kalibrimi i ndershëm jep {data['per_smell']['long method']['calibrated']['mcc']:.3f}. "
-        "Diferenca është pikërisht ajo që "
-        "fitohet kur zgjedhjes i lejohet ta shohë bashkësinë mbi të cilën do të "
-        "raportohet, dhe arsyeja pse shifra e fshirjes nuk u adoptua.",
+        *_calibration_facts(data),
+        f"Për Long Method, vlera më e mirë e fshirjes mbi tërë korpusin është "
+        f"{_swept_best()}, ndërsa kalibrimi jashtë fold-it jep "
+        f"{data['per_smell']['long method']['calibrated']['mcc']:.3f}.",
     ]
+
+
+def _sweep_facts(sweep: dict, sweep_rows: list) -> list:
+    """Çfarë tregon fshirja, si fakte të lexuara nga skedari e jo si shpjegim.
+
+    Mentorja e do Kapitullin 5 pa «pse» (VD-125); shpjegimi i këtyre shifrave është
+    te Nënkapitulli 6.1. Këtu mbeten vetëm vlerat, që të lëvizin bashkë me
+    tabelën kur rigjenerohet fshirja.
+    """
+    amplitude: dict[str, float] = {}
+    for row in sweep_rows:
+        amplitude[row[0]] = max(amplitude.get(row[0], 0.0), float(row[4]))
+    ordered = sorted(amplitude.items(), key=lambda item: -item[1])
+    wide = [name for name, value in ordered if value >= 0.2]
+    narrow = [name for name, value in ordered if value < 0.2]
+    facts = []
+    if wide and narrow:
+        facts.append(
+            f"Amplituda kalon 0.2 vetëm te {_joined(wide)}; te {_joined(narrow)} asnjë "
+            f"prag nuk e lëviz MCC-në më shumë se {max(amplitude[n] for n in narrow):.3f}."
+        )
+
+    def at(smell: str, threshold: str, factor: float) -> dict:
+        return next(
+            point for point in sweep["per_smell"][smell][threshold] if point["factor"] == factor
+        )
+
+    def best(smell: str, threshold: str) -> dict:
+        return max(sweep["per_smell"][smell][threshold], key=lambda point: point["mcc"])
+
+    moved = []
+    for smell, threshold in (("long method", "long_method_loc"), ("feature envy", "feature_envy_fdp")):
+        if threshold not in sweep["per_smell"].get(smell, {}):
+            continue
+        published, top = at(smell, threshold, 1.0), best(smell, threshold)
+        if top["factor"] == 1.0:
+            continue
+        moved.append(
+            f"{threshold} = {top['value']:g} në vend të {published['value']:g} te "
+            f"{SMELL_SQ[smell]} (MCC {top['mcc']:.3f}; recall {published['recall']:.3f} → "
+            f"{top['recall']:.3f}, precizion {published['precision']:.3f} → "
+            f"{top['precision']:.3f})"
+        )
+    if moved:
+        facts.append(f"Vlera me MCC-në më të lartë është {_joined(moved)}.")
+    return facts
+
+
+def _calibration_facts(data: dict) -> list:
+    """Sa pajtohen foldet dhe nga shkon precizioni, për secilën erë.
+
+    Teksti i mëparshëm thoshte për Data Class-in se «dy» folde zgjodhën një prag
+    tjetër nga «tre» të tjerët; skedari tregon një kundrejt katër. Fjalia tani
+    ndërtohet nga numrat e zgjedhjeve, që të mos ndahet më prej tyre.
+    """
+    unanimous, same_knob, split = [], [], []
+    for smell in sorted(data["per_smell"]):
+        chosen = data["per_smell"][smell]["chosen"]
+        values = sum(len(counts) for counts in chosen.values())
+        if values == 1:
+            unanimous.append(SMELL_SQ[smell])
+        elif len(chosen) == 1:
+            same_knob.append(SMELL_SQ[smell])
+        else:
+            parts = []
+            for name, counts in sorted(chosen.items(), key=lambda item: -sum(item[1].values())):
+                count = sum(counts.values())
+                moved = "fold lëvizi" if count == 1 else "folde lëvizën"
+                parts.append(f"{_word(count)} {moved} {name}")
+            split.append(f"te {SMELL_SQ[smell]} {' dhe '.join(parts)}")
+    clauses = []
+    if unanimous:
+        clauses.append(f"Të gjitha foldet zgjodhën të njëjtën vlerë vetëm te {_joined(unanimous)}")
+    if same_knob:
+        clauses.append(f"te {_joined(same_knob)} ranë dakord për pragun, por jo për vlerën")
+    clauses.extend(split)
+    facts = ["; ".join(clauses) + "."] if clauses else []
+
+    def moved_up(key: str) -> list[str]:
+        return [
+            SMELL_SQ[smell]
+            for smell, entry in sorted(data["per_smell"].items())
+            if entry["calibrated"][key] > entry["published"][key]
+        ]
+
+    total = len(data["per_smell"])
+    recall_up, precision_up, mcc_up = moved_up("recall"), moved_up("precision"), moved_up("mcc")
+    facts.append(
+        f"Recall-i u rrit {_among(len(recall_up), total)}, precizioni vetëm te "
+        f"{_joined(precision_up) or 'asnjëra'}, dhe MCC-ja {_among(len(mcc_up), total)}."
+    )
+    return facts
 
 
 def _combined_paragraphs(ml: dict) -> list:
