@@ -68,3 +68,31 @@ def test_a_hanging_git_is_given_up_on(monkeypatch):
     monkeypatch.setattr(subprocess, "run", hangs)
 
     assert provenance.git_commit() == ""
+
+
+def test_the_compiler_is_reported_from_whichever_stream_it_uses(monkeypatch):
+    """JDK 9 and later answer on stdout; 8 and earlier on stderr. Both are read."""
+
+    def modern(*_args, **_kwargs):
+        return subprocess.CompletedProcess(args=[], returncode=0, stdout="javac 21\n", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", modern)
+    assert provenance.javac_version() == "javac 21"
+
+    def ancient(*_args, **_kwargs):
+        return subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr="javac 1.8.0_382\n"
+        )
+
+    monkeypatch.setattr(subprocess, "run", ancient)
+    assert provenance.javac_version() == "javac 1.8.0_382"
+
+
+def test_a_missing_compiler_is_recorded_as_empty(monkeypatch):
+    """A run without javac still writes its result; the field says javac was absent."""
+
+    def absent(*_args, **_kwargs):
+        raise OSError("javac not found")
+
+    monkeypatch.setattr(subprocess, "run", absent)
+    assert provenance.javac_version() == ""

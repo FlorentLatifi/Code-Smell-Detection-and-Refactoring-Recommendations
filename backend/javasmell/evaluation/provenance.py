@@ -29,6 +29,29 @@ def git_commit() -> str:
     return completed.stdout.strip()
 
 
+def javac_version() -> str:
+    """The compiler behind a compile verdict, or "" when javac could not be asked.
+
+    "It compiles" is a statement about a compiler as much as about the code: a
+    file one release accepts, the next can reject. The two measurements that run
+    javac therefore record which one answered, so a reader who obtains different
+    counts can see whether they even compared the same compiler (VD-138).
+    """
+    try:
+        completed = subprocess.run(
+            ["javac", "-version"],
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_S,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    # Up to JDK 8 the version went to stderr, from JDK 9 to stdout.
+    reported = completed.stdout.strip() or completed.stderr.strip()
+    return reported.splitlines()[0].strip() if reported else ""
+
+
 def environment() -> dict[str, str]:
     return {
         "python": platform.python_version(),

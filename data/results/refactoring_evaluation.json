@@ -7,7 +7,7 @@
   },
   "detected": 15800,
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "3f55abe1607224c42066531b24d69825cea7f247",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -21,6 +21,7 @@
     "LongMethod": 165,
     "LongParameterList": 367
   },
+  "javac": "javac 21",
   "metric_shift": {
     "BrainMethod": {
       "metric_after": 19.0,
@@ -61,8 +62,8 @@
   "verdicts": {
     "compiles": 12,
     "new_errors": 58,
-    "no_new_errors": 3460,
-    "parses": 2
+    "no_new_errors": 3459,
+    "parses": 3
   },
   "verified_with_javac": true
 }
