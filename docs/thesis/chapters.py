@@ -319,7 +319,7 @@ CHAPTER_2 = [
             "metodave që ndajnë të paktën një fushë. Mbi këto metrika ndërtohet "
             "pothuajse çdo detektim sasior i mëvonshëm.",
             "Lanza & Marinescu (2006) i organizojnë metrikat në tri përmasa: madhësinë "
-            "dhe kompleksitetin, lidhjen me klasat e tjera, dhe trashëgiminë. Ata u "
+            "dhe kompleksitetin, lidhjen me klasat e tjera, dhe trashëgiminë. Ata "
             "shtuan edhe metrika të reja, si ATFD, LAA dhe FDP, që nuk matin madhësinë "
             "e një entiteti por marrëdhënien e tij me të dhënat e klasave të tjera. "
             "Këto janë metrikat që u duhen erërave të bashkëpunimit, si Feature Envy, "
@@ -349,8 +349,8 @@ CHAPTER_2 = [
             "«shumë i lartë», nxirren nga mesatarja dhe devijimi standard i metrikës "
             "në korpusin e tyre. Ato me kuptim të zakonshëm, si «pak» ose «një e "
             "treta», vijnë nga mënyra si njerëzit i përdorin këto fjalë. Të parat "
-            "varen pra nga korpusi ku u matën, dhe kjo i bën pyetje të hapur për çdo "
-            "korpus tjetër.",
+            "varen pra nga korpusi ku u matën, ndaj vlefshmëria e tyre në një korpus "
+            "tjetër mbetet pyetje e hapur.",
             "Moha et al. (2010) propozuan DECOR-in, një metodë ku erërat përshkruhen "
             "në një gjuhë specifikimi dhe detektorët gjenerohen nga përshkrimet; "
             "zbatimi i saj u vlerësua me precizion dhe recall mbi sisteme me burim të "
@@ -376,7 +376,7 @@ CHAPTER_2 = [
             "shembuj të etiketuar, në vend që t'i vendosë njeriu. Arcelli Fontana et "
             "al. (2016) kryen një nga eksperimentet më të mëdha të këtij lloji: "
             "gjashtëmbëdhjetë algoritme mbi katër erëra (Data Class, Large Class, "
-            "Feature Envy dhe Long Method), me 1 986 raste të validuara me dorë nga 74 "
+            "Feature Envy dhe Long Method), me 1986 raste të validuara me dorë nga 74 "
             "sisteme. Ata raportuan performancë të lartë për shumicën e algoritmeve në "
             "validimin e kryqëzuar, me J48 dhe Random Forest si më të mirat dhe "
             "makinat me vektorë mbështetës si më të dobëtat. Studimi u bë pikë "
@@ -906,7 +906,7 @@ CHAPTER_4 = [
         "4.3",
         "Korpusi dhe e vërteta bazë",
         [
-            "MLCQ (Madeyski & Lewowski, 2020) përmban 14 739 rishikime të 4 770 "
+            "MLCQ (Madeyski & Lewowski, 2020) përmban 14 739 rishikime të 4770 "
             "mostrave kodi, të bëra nga 26 zhvillues profesionistë për katër erëra: "
             "Blob dhe Data Class në nivel klase, Feature Envy dhe Long Method në nivel "
             "metode. Çdo rishikim i jep mostrës një ashpërsi në shkallën none, minor, "
@@ -1163,9 +1163,9 @@ CHAPTER_4 = [
             "detektorë. Matet e gjithë klasa, para dhe pas, sepse Extract Method "
             "shton një metodë të re. Kështu shihet nëse era u hoq, sa ndryshoi "
             "metrika që e ndez detektorin, dhe nëse rishkrimi solli një erë të re.",
-            "**Cilësia e rishkrimeve.** Kompilimi mbulon vetëm gjysmën e përkufizimit "
-            "të Fowler-it (2018), ruajtjen e sjelljes. Nëse struktura u përmirësua e "
-            "gjykon një njeri, mbi një mostër diff-esh, me një rubrikë me tri përmasa: "
+            "**Cilësia e rishkrimeve.** Kompilimi dëshmon vetëm se rishkrimi mbetet kod i "
+            "vlefshëm. Përkufizimi i Fowler-it (2018) kërkon edhe që struktura të "
+            "përmirësohet, dhe nëse u përmirësua e gjykon një njeri, mbi një mostër diff-esh, me një rubrikë me tri përmasa: "
             "**sjellja** (e ruajtur, e paqartë, e ndryshuar), **përfitimi** "
             "(përmirëson, asnjanës, përkeqëson) dhe **pranueshmëria** (ashtu si është, "
             "pas një ndreqjeje, e refuzuar). Mostra zgjidhet me farë, e shtresuar "
@@ -1215,7 +1215,7 @@ CHAPTER_4 = [
         [
             "Detektimi vlerësohet si klasifikim binar mbi etiketën e Nënkapitullit "
             "4.3. Te matrica konfuze, TP janë mostrat pozitive që detektori i shënon, "
-            "FP negativet që shënon, FN pozitivet që i humbet dhe TN negativet që i "
+            "FP negativët që shënon, FN pozitivët që i humbet dhe TN negativët që i "
             "lë. Prej saj llogariten precizioni, recall-i dhe F1:",
             ("equation", "P = TP / (TP + FP)"),
             ("equation", "R = TP / (TP + FN)"),
@@ -1712,9 +1712,9 @@ def _sensitivity_reading() -> list:
         if top["value"] < published["value"] and top["recall"] > published["recall"]:
             paragraphs.append(
                 f"Te {SMELL_SQ['long method']}, pragu i botuar del konservativ për këtë "
-                "korpus: me një prag më të ulët recall-i rritet shumë më tepër se sa bie "
+                "korpus: me një prag më të ulët recall-i rritet shumë më tepër sesa bie "
                 "precizioni, çka sugjeron se rishikuesit e MLCQ-së e quajnë një metodë të "
-                "gjatë më herët se sa e vendos pragu. Fitimi megjithatë paguhet me "
+                "gjatë më herët sesa e vendos pragu. Fitimi megjithatë paguhet me "
                 "precizion, dhe foldet e kalibrimit nuk bien dakord për vlerën."
             )
     if envy:
@@ -1900,7 +1900,7 @@ def _literature_comparison(h: dict) -> list:
         "grupuar sipas projektit, ndaj e njëjta depo mund ta ushqejë trajnimin dhe të "
         "vlerësohet në të njëjtën kohë, pikërisht rrjedhja që ky punim e shmang me "
         "GroupKFold. Ata raportojnë edhe mesoren e 120 ekzekutimeve me hiperparametra "
-        "të optimizuar për MCC, ndërsa këtu modelet kanë parametra fiksë dhe një "
+        "të optimizuar për MCC, ndërsa këtu modelet kanë parametra të fiksuar dhe një "
         "ekzekutim të vetëm jashtë fold-it. Me një ndarje më të rreptë dhe pa akordim, "
         "rezultatet e këtij punimi janë në të njëjtin brez.",
         f"Te Feature Envy drejtimi është i kundërt: {model['feature envy']['mcc']:.2f} "
@@ -1924,7 +1924,7 @@ def _literature_comparison(h: dict) -> list:
             "është subjektiv, dhe ky punim e mat këtë mbi MLCQ: dy rishikues të së "
             f"njëjtës mostër pajtohen me MCC nga {_span(values, 2)}. Etiketa e agreguar "
             "është mesatare e disa gjykimeve dhe e zbut zhurmën e secilit, ndaj modelet "
-            "mund të pajtohen me të më shumë se sa pajtohen dy rishikues mes tyre. Kjo "
+            "mund të pajtohen me të më shumë sesa pajtohen dy rishikues mes tyre. Kjo "
             "nuk e bën modelin më të mirë se njeriun, por tregon se shifrat e fushës "
             "duhen lexuar kundrejt një tavani të ulët."
         )
@@ -2464,7 +2464,7 @@ def _results_sections() -> list:
             [
                 f"Të gjitha shifrat e këtij kapitulli janë prodhuar mbi {scored} mostra "
                 f"nga {_repositories_in_dataset()} depo, dhe rigjenerohen me një komandë. "
-                "Agregimi i etiketave është mesatarja e rrumbullakosur lart, përveç "
+                "Etiketa është mesatarja e rrumbullakosur e Nënkapitullit 4.3, përveç "
                 "aty ku thuhet ndryshe.",
                 _coverage_sentence(),
                 ("figure", str(FIGURES / "shperndarja_e_mostrave.png"),
@@ -2970,7 +2970,7 @@ def _calibration_paragraphs() -> list:
         ])
 
     return [
-        f"Me kalibrimin jashtë fold-it ({data['folds']} folde sipas depos, Nënkapitulli "
+        f"Me kalibrimin jashtë fold-it ({_word(int(data['folds']))} folde sipas depos, Nënkapitulli "
         "4.9), rregullat arrijnë këto vlera; kolona e fundit jep pragun që zgjodhi "
         "secili fold dhe sa herë u zgjodh:",
         ("table", "Rregullat me pragje të kalibruara, të pikëzuara jashtë fold-it",
@@ -3268,7 +3268,7 @@ def _blocking_predicts_calibration() -> list:
         f"pavarur. Te {SMELL_SQ.get(far[0], far[0])}-i mospërputhjet janë larg pragjeve "
         f"(mediana mesatare {far[1]:.2f}), ndaj kalibrimi nuk duhet të ndihmojë shumë; "
         f"te {SMELL_SQ.get(near[0], near[0])} janë afër ({near[1]:.2f}), ndaj duhet. "
-        f"Kalibrimi jashtë-fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
+        f"Kalibrimi jashtë fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
         f"analizë, jep {far[2]:+.3f} MCC për të parin dhe {near[2]:+.3f} për të dytin. "
         "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
         "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
@@ -3466,7 +3466,7 @@ def _blob_gradient(data: dict) -> str:
         f"Te strategjia e botuar recall-i ngjitet nga {lightest:.3f} te rastet që vetëm "
         f"një rishikues i quajti të lehta, në {worst:.3f} te ato që dikush i quajti "
         f"kritike, pra rreth {worst / lightest:.0f} herë më i lartë. Mospërputhja nuk "
-        "është e rastësishme: strategjia nuk pajton me rishikuesit pikërisht atje ku "
+        "është e rastësishme: strategjia nuk pajtohet me rishikuesit pikërisht atje ku "
         "rishikuesit vetë ishin më pak të bindur."
     )
 
@@ -3720,7 +3720,7 @@ def _unanswered(data: dict) -> str:
     if not count:
         return ""
     return (
-        f" Te {_rewrites(count)} javac-u nuk dha verdikt, ndaj për ato dihet vetëm se "
+        f" Te {'një rishkrim' if count == 1 else _word(count) + ' rishkrime'} javac-u nuk dha verdikt, ndaj për ato dihet vetëm se "
         "rishkrimi është Java e vlefshme."
     )
 
@@ -3966,12 +3966,13 @@ def _overturned(regressions: int, total: int) -> str:
         )
     if regressions == 1:
         return (
-            f"Një rishkrim nga {total} nuk shtonte lloj të ri gabimi i izoluar, por shton "
-            "brenda projektit të vet." + _overturned_case()
+            f"Një nga {total} rishkrimet nuk shtonte lloj të ri gabimi kur kompilohej i "
+            "izoluar, por shton kur kompilohet brenda projektit të vet." + _overturned_case()
         )
     return (
-        f"{_opens(_word(regressions))} rishkrime nga {total} nuk shtonin lloj të ri gabimi "
-        "të izoluara, por shtojnë brenda projektit të vet." + _overturned_case()
+        f"{_opens(_word(regressions))} nga {total} rishkrimet nuk shtonin lloj të ri gabimi "
+        "kur kompiloheshin të izoluara, por shtojnë kur kompilohen brenda projektit të "
+        "vet." + _overturned_case()
     )
 
 
@@ -4103,7 +4104,7 @@ def _unchecked_sentence(unchecked: int) -> str:
             "dështoi pa emërtuar gabim, dhe numërohet si i pakontrolluar, kurrë si sukses."
         )
     return (
-        f" {_opens(_word(unchecked))} kompilime mbetën pa verdikt, nga kufiri kohor ose "
+        f" Pa verdikt mbetën {_word(unchecked)} kompilime, nga kufiri kohor ose "
         "nga një javac që dështoi pa emërtuar gabim, dhe numërohen si të pakontrolluara, "
         "kurrë si sukses."
     )
@@ -4571,7 +4572,7 @@ def chapter_8() -> list:
                 ),
                 "Çdo skript shkruan rezultatin si CSV ose JSON në data/results/, bashkë me "
                 "commit-in, versionin e Python-it dhe platformën që e prodhuan. Interpretuesi "
-                f"dhe platforma janë të njëjtët për të gjithë: Python {python_version}, "
+                f"dhe platforma janë të njëjtë për të gjithë: Python {python_version}, "
                 f"{platform}. Commit-i jo: eksperimentet u ekzekutuan njëri pas tjetrit, ndaj "
                 "secili skedar mban commit-in e vet, dhe ai duhet përdorur për ta riprodhuar.",
                 (
@@ -4587,7 +4588,7 @@ def chapter_8() -> list:
                 "hapat që kishte atëherë tabela u ri-ekzekutuan mbi të njëjtat hyrje, dhe të gjithë, me një "
                 "përjashtim, dhanë skedarë identikë me të komituarit, veç commit-it dhe "
                 "kohëzgjatjes që regjistrojnë. Tabela e veçorive, 4534 rreshta, doli bajt "
-                "për bajt identike; po ashtu të katër modelet e stërvitura, dhe asnjë figurë "
+                "për bajt identike; po ashtu të katër modelet e trajnuara, dhe asnjë figurë "
                 "nuk ndryshoi.",
                 "Përjashtimi është hapi i dymbëdhjetë. Ai riprodhoi numrat që mbajnë "
                 "pretendimin — po aq rishkrime, po aq verdikte «kompilon», asnjë përmbysje — "
@@ -4597,7 +4598,7 @@ def chapter_8() -> list:
                 "skedarësh; mostra u dyfishua më vonë në 60 skedarë, dhe Kapitulli 5 "
                 "raporton matjen e saj më të fundit.",
                 "Hapi 7, motori mbi korpusin, u riekzekutua më vonë dhe dha të njëjtat "
-                "total: po aq vende, po aq rishkrime, po aq refuzime, e njëjta ndarje sipas "
+                "totale: po aq vende, po aq rishkrime, po aq refuzime, e njëjta ndarje sipas "
                 "transformimit dhe sipas arsyes. Krahasimi rresht për rresht nxori "
                 "megjithatë 21 verdikte kompilimi të ndryshuara, dhe ato çuan te një defekt "
                 "i vërtetë: një javac që dështon pa emërtuar gabim mbi burimin lexohej si "

@@ -442,7 +442,7 @@ def build_cover(doc: Document) -> None:
     14 and the rest at body size until VD-113.
     """
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
     blank(doc, 8)
     centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
     blank(doc, 2)
@@ -458,7 +458,7 @@ def build_inner_page(doc: Document) -> None:
     """Page 2: adds the academic year, the supervisor and the degree statement."""
     doc.add_page_break()
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
     blank(doc, 2)
     centered(doc, "Punim Diplome", size=TITLE_SIZE, bold=True)
     centered(doc, f"Viti akademik {ACADEMIC_YEAR}", size=TITLE_SIZE)
@@ -745,6 +745,18 @@ GLOSSARY = [
     "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
     "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al.",
     "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
+    # Termat e huaj që teksti i përdor pa i përkthyer, dhe dy shkurtesat e vetë
+    # punimit. Një lexues që nuk i njeh duhet t'i gjejë këtu, jo t'i hamendësojë.
+    "Bootstrap - rimostrim me kthim për të vlerësuar pasigurinë e një treguesi",
+    "Commit - një gjendje e ruajtur e kodit në historikun e git-it",
+    "Dataset - bashkësi të dhënash e etiketuar",
+    "Diff / patch - dallimi mes kodit para dhe pas një rishkrimi",
+    "Fold - njëra nga pjesët në të cilat ndahet bashkësia për validim të kryqëzuar",
+    "IB - interval besimi",
+    "JDK - Java Development Kit, që përmban kompilatorin javac",
+    "PK - pyetje kërkimore",
+    "Precizion - pjesa e rasteve të shënuara që janë vërtet pozitive",
+    "Recall - pjesa e rasteve pozitive që detektori i gjen",
 ]
 
 # Hyrja është një tekst i vetëm, pa nënkapituj, 1 deri 1.5 faqe, dhe e shtron

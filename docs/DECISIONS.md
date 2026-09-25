@@ -5659,3 +5659,25 @@ i deklaruar prej 180 sekondash zgjati 50 minuta mbi një skedar të JDK-së.
 ndërkohë që VD-135 dhe VD-136 u përdorën te `main` për rregullin e fjalëve dhe
 rishikimin e punimit. Gjatë bashkimit u rinumëruan në VD-137, VD-138 dhe VD-139, në
 kod, në skripte, në punim dhe këtu.
+
+### VD-140: Korrektura gjuhësore e punimit
+
+**Konteksti.** Pas rishikimit sipas dokumenteve të UBT-së dhe mentores, punimi u lexua
+i tëri, fjali për fjali, për drejtshkrim, përshtatje gramatikore dhe qartësi.
+
+**Vendimi.** U korrigjuan: përshtatja në numër dhe gjini («Ata shtuan», «modelet e
+trajnuara», «parametra të fiksuar», «janë të njëjtë», «dha të njëjtat totale»);
+«sesa» si një fjalë; numrat e vegjël me fjalë në fjalitë e gjeneruara nga të dhënat
+(«një rishkrim», «tri rishkrime»); fjalitë e gjata ose të paqarta (përkufizimi i
+Fowler-it për cilësinë e rishkrimeve, pragjet e Lanza-s dhe Marinescu-t, rishkrimet që
+ndryshojnë verdikt brenda projektit); emri i programit në kopertinë («Programi për
+Shkenca Kompjuterike dhe Inxhinierisë»); data e qasjes te referenca e PMD-së. Fjalori
+i termave mori dhjetë terma që përdoren në tekst pa u shpjeguar (Bootstrap, Commit,
+Dataset, Diff, Fold, IB, JDK, PK, Precizion, Recall).
+
+**Çfarë nuk ndryshoi.** Pika dhjetore mbetet, si te punimi i pranuar që u përdor si
+shembull, dhe si te tabelat e gjeneruara nga kodi. Kodet angleze të refuzimit te
+tabelat mbeten, sepse janë vlerat e sakta të kodit dhe shpjegohen në Shtojcë.
+
+**Pasojat.** Gjithë kontrollet e punimit kalojnë (citimet, riprodhimi, formati,
+përsëritja, prezantimi).
