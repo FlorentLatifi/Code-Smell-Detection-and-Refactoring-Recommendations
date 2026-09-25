@@ -79,12 +79,26 @@ METHODOLOGY = [
         "Binomial Proportion.” Statistical Science, 16(2), pp. 101-133."
     ),
     (
+        "Chicco, D. & Jurman, G. 2020. “The advantages of the Matthews correlation "
+        "coefficient (MCC) over F1 score and accuracy in binary classification "
+        "evaluation.” BMC Genomics, 21, 6."
+    ),
+    (
         "Cohen, J. 1960. “A Coefficient of Agreement for Nominal Scales.” Educational "
         "and Psychological Measurement, 20(1), pp. 37-46."
     ),
     (
+        "Efron, B. & Tibshirani, R. J. 1993. An Introduction to the Bootstrap. New "
+        "York: Chapman & Hall."
+    ),
+    (
         "Friedman, J. H. 2001. “Greedy Function Approximation: A Gradient Boosting "
         "Machine.” The Annals of Statistics, 29(5), pp. 1189-1232."
+    ),
+    (
+        "Kaufman, S., Rosset, S., Perlich, C. & Stitelman, O. 2012. “Leakage in Data "
+        "Mining: Formulation, Detection, and Avoidance.” ACM Transactions on Knowledge "
+        "Discovery from Data, 6(4), 15."
     ),
     (
         "Matthews, B. W. 1975. “Comparison of the predicted and observed secondary "
@@ -101,9 +115,18 @@ METHODOLOGY = [
         "Machine Learning Research, 12, pp. 2825-2830."
     ),
     (
+        "Strobl, C., Boulesteix, A.-L., Zeileis, A. & Hothorn, T. 2007. “Bias in random "
+        "forest variable importance measures: Illustrations, sources and a solution.” "
+        "BMC Bioinformatics, 8, 25."
+    ),
+    (
         "Wilson, E. B. 1927. “Probable Inference, the Law of Succession, and "
         "Statistical Inference.” Journal of the American Statistical Association, "
         "22(158), pp. 209-212."
+    ),
+    (
+        "Wohlin, C., Runeson, P., Höst, M., Ohlsson, M. C., Regnell, B. & Wesslén, A. "
+        "2012. Experimentation in Software Engineering. Berlin: Springer."
     ),
 ]
 
@@ -122,6 +145,11 @@ RELATED_WORK = [
         "meta-analysis.” Information and Software Technology, 108, pp. 115-138."
     ),
     (
+        "Bavota, G., De Lucia, A., Di Penta, M., Oliveto, R. & Palomba, F. 2015. “An "
+        "experimental investigation on the innate relationship between quality and "
+        "refactoring.” Journal of Systems and Software, 107, pp. 1-14."
+    ),
+    (
         "Cunningham, W. 1992. “The WyCash Portfolio Management System.” OOPSLA ’92 "
         "Experience Report. Addendum to the Proceedings on Object-Oriented "
         "Programming Systems, Languages, and Applications, pp. 29-30."
@@ -131,6 +159,11 @@ RELATED_WORK = [
         "2018. “Detecting code smells using machine learning techniques: Are we there "
         "yet?” Proceedings of the 25th IEEE International Conference on Software "
         "Analysis, Evolution and Reengineering (SANER ’18), pp. 612-621."
+    ),
+    (
+        "Khomh, F., Di Penta, M., Guéhéneuc, Y.-G. & Antoniol, G. 2012. “An "
+        "exploratory study of the impact of antipatterns on class change- and "
+        "fault-proneness.” Empirical Software Engineering, 17(3), pp. 243-275."
     ),
     (
         "Lehman, M. M. 1980. “Programs, Life Cycles, and Laws of Software Evolution.” "
@@ -151,6 +184,10 @@ RELATED_WORK = [
         "Software Maintenance (ICSM ’04), pp. 350-359."
     ),
     (
+        "Mens, T. & Tourwé, T. 2004. “A Survey of Software Refactoring.” IEEE "
+        "Transactions on Software Engineering, 30(2), pp. 126-139."
+    ),
+    (
         "Moha, N., Guéhéneuc, Y.-G., Duchien, L. & Le Meur, A.-F. 2010. “DECOR: A "
         "Method for the Specification and Detection of Code and Design Smells.” IEEE "
         "Transactions on Software Engineering, 36(1), pp. 20-36."
@@ -169,6 +206,12 @@ RELATED_WORK = [
         "Transactions on Software Engineering, 41(5), pp. 462-489."
     ),
     (
+        "Palomba, F., Bavota, G., Di Penta, M., Fasano, F., Oliveto, R. & De Lucia, A. "
+        "2018. “On the diffuseness and the impact on maintainability of code smells: a "
+        "large scale empirical investigation.” Empirical Software Engineering, 23, "
+        "pp. 1188-1221."
+    ),
+    (
         "Sharma, T. & Spinellis, D. 2018. “A survey on software smells.” Journal of "
         "Systems and Software, 138, pp. 158-173."
     ),
@@ -178,9 +221,25 @@ RELATED_WORK = [
         "Symposium on Foundations of Software Engineering (FSE ’16), pp. 858-870."
     ),
     (
+        "Sjøberg, D. I. K., Yamashita, A., Anda, B. C. D., Mockus, A. & Dybå, T. 2013. "
+        "“Quantifying the Effect of Code Smells on Maintenance Effort.” IEEE "
+        "Transactions on Software Engineering, 39(8), pp. 1144-1156."
+    ),
+    (
         "Tsantalis, N. & Chatzigeorgiou, A. 2009. “Identification of Move Method "
         "Refactoring Opportunities.” IEEE Transactions on Software Engineering, 35(3), "
         "pp. 347-367."
+    ),
+    (
+        "Tufano, M., Palomba, F., Bavota, G., Oliveto, R., Di Penta, M., De Lucia, A. & "
+        "Poshyvanyk, D. 2015. “When and Why Your Code Starts to Smell Bad.” Proceedings "
+        "of the 37th IEEE/ACM International Conference on Software Engineering (ICSE "
+        "’15), pp. 403-414."
+    ),
+    (
+        "Yamashita, A. & Moonen, L. 2013. “Do developers care about code smells? An "
+        "exploratory survey.” Proceedings of the 20th Working Conference on Reverse "
+        "Engineering (WCRE ’13), pp. 242-251."
     ),
 ]
 
@@ -220,37 +279,52 @@ def all_references() -> list[str]:
 # Lewowski 2023 u shtua me DOI 10.1016/j.infsof.2022.107112, dhe numri i artikullit
 # 107112 është ai i botuesit. Librat, teza e Opdyke-s dhe dy mjetet u konfirmuan te
 # botuesi, universiteti ose faqja e projektit (VD-125).
+#
+# Më 2026-09-25, me kërkesë të mentores («kontrollo referencat a ekzistojnë»), çdo
+# hyrje u rikontrollua një nga një te faqja e botuesit ose te një indeks akademik
+# (IEEE Xplore, ACM DL, Springer, ScienceDirect, Project Euclid, JSTOR, DBLP), dhe
+# autorët, viti, titulli, vëllimi dhe faqet dolën si janë shkruar. Me këtë, hyrjet
+# që ishin «të transkriptuara por jo të rikontrolluara» kaluan te lista e
+# verifikuar. Dymbëdhjetë burimet e shtuara atë ditë (VD-136) u shtuan vetëm pasi
+# kaloi i njëjti kontroll, dhe për Palomba et al. 2018 numri i fashikullit mungon me
+# qëllim, sepse burimi e jep vetëm vëllimin dhe faqet.
 PAGES_VERIFIED = (
     "Arcelli Fontana et al. 2016",
-    "Bieman & Kang 1995",
-    "Chidamber & Kemerer 1994",
-    "Cunningham 1992",
-    "Di Nucci et al. 2018",
-    "Madeyski & Lewowski 2020",
-    "Madeyski & Lewowski 2023",
-    "Marinescu 2004",
-    "McCabe 1976",
-)
-
-# Hyrjet me numra faqesh që nuk janë kontrolluar nga një burim i dytë. Janë
-# transkriptuar nga vetë botimi dhe s'ka arsye të dyshohen, por «e patestuar» dhe
-# «e saktë» nuk shkruhen njësoj. Librat dhe raportet nuk hyjnë as këtu as më lart,
-# sepse nuk kanë numra faqesh për t'u kontrolluar.
-PAGES_UNVERIFIED = (
     "Azeem et al. 2019",
+    "Bavota et al. 2015",
+    "Bieman & Kang 1995",
     "Breiman 2001",
     "Brown et al. 2001",
+    "Chidamber & Kemerer 1994",
     "Cohen 1960",
+    "Cunningham 1992",
+    "Di Nucci et al. 2018",
     "Friedman 2001",
+    "Khomh et al. 2012",
     "Lehman 1980",
+    "Madeyski & Lewowski 2020",
+    "Madeyski & Lewowski 2023",
     "Mäntylä & Lassenius 2006",
+    "Marinescu 2004",
     "Matthews 1975",
+    "McCabe 1976",
+    "Mens & Tourwé 2004",
     "Moha et al. 2010",
     "Murphy-Hill et al. 2012",
     "Palomba et al. 2015",
+    "Palomba et al. 2018",
     "Pedregosa et al. 2011",
     "Sharma & Spinellis 2018",
     "Silva et al. 2016",
+    "Sjøberg et al. 2013",
     "Tsantalis & Chatzigeorgiou 2009",
+    "Tufano et al. 2015",
     "Wilson 1927",
+    "Yamashita & Moonen 2013",
 )
+
+# Hyrjet me numra faqesh që nuk janë kontrolluar nga një burim i dytë. Pas
+# kontrollit të 2026-09-25 nuk mbetet asnjë; lista mbahet që një hyrje e re me faqe
+# të ketë vend ku të shkojë derisa të kontrollohet, në vend që të kalojë heshtazi
+# si e verifikuar.
+PAGES_UNVERIFIED: tuple[str, ...] = ()
