@@ -874,7 +874,7 @@ INTRODUCTION = [
             "Method, janë më të rralla dhe mbulojnë pak raste.",
             "Ky punim merret me hapësirën mes gjetjes së problemit dhe ndreqjes së "
             "tij, për gjuhën Java. Kontributi i tij kryesor është një zinxhir i "
-            "vetëm që i lidh tri hapa që literatura zakonisht i trajton veç e veç: "
+            "vetëm që i lidh tre hapa që literatura zakonisht i trajton veç e veç: "
             "detektimin e erës, rishkrimin e kodit dhe verifikimin e rishkrimit. "
             "Konkretisht, punimi sjell tri gjëra. E para, një krahasim të "
             "drejtpërdrejtë të dy qasjeve të detektimit, strategjive me metrika dhe "
@@ -896,8 +896,8 @@ INTRODUCTION = [
             "duhet të japë asnjë lloj të ri gabimi krahasuar me versionin para "
             "rishkrimit, dhe klasa matet sërish me të njëjtët detektorë për të parë "
             "nëse era u hoq. Siguria në këtë punim do të thotë pra se kodi mbetet "
-            "i vlefshëm dhe se era hiqet. Që programi sillet njësoj edhe kur "
-            "ekzekutohet është garanci më e fortë, të cilën ky punim nuk e jep "
+            "i vlefshëm dhe se era hiqet. Që programi të sillet njësoj edhe kur "
+            "ekzekutohet do të ishte garanci më e fortë, por ky punim nuk e jep "
             "(Nënkapitulli 3.4).",
             "Kapitulli 2 shqyrton literaturën, Kapitulli 3 shtron problemin dhe "
             "pyetjet kërkimore, Kapitulli 4 përshkruan metodologjinë, ndërsa "

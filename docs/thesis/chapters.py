@@ -476,7 +476,7 @@ CHAPTER_2 = [
             "tjetër, trajtohen zakonisht veç e veç, ndaj mbetet pa përgjigje empirike "
             "nëse një erë e gjetur mund të ndreqet edhe automatikisht, dhe nëse ndreqja "
             "e heq vërtet.",
-            "Ky punim u përgjigjet të treve, dhe pikërisht kjo e dallon nga studimet "
+            "Ky punim u përgjigjet të triave, dhe pikërisht kjo e dallon nga studimet "
             "e përmendura. Ndryshe nga Lanza & Marinescu (2006), pragjet e "
             "strategjive nuk merren si të sakta, por maten kundrejt gjykimit të "
             "zhvilluesve profesionistë të MLCQ-së. Ndryshe nga Arcelli Fontana et "
@@ -485,8 +485,8 @@ CHAPTER_2 = [
             "ndaj shifra nuk fryhet nga mostra të të njëjtit projekt në trajnim dhe "
             "në testim. Ndryshe nga Madeyski & Lewowski (2023), që përdorën metrikat "
             "e mjeteve të përgjithshme të analizës statike, modeli trajnohet mbi "
-            "metrikat që lexojnë vetë strategjitë, dhe një ablacion me vetëm ato "
-            "metrika tregon sa nga dallimi vjen nga kufiri i mësuar. Ndryshe nga "
+            "metrikat e vetë sistemit, përfshirë ato që lexojnë strategjitë, dhe një "
+            "ablacion me vetëm metrikat e strategjisë tregon sa nga dallimi vjen nga kufiri i mësuar. Ndryshe nga "
             "Tsantalis & Chatzigeorgiou (2009), që propozojnë një transformim dhe "
             "vendimin ia lënë projektuesit, këtu transformimi aplikohet, "
             "verifikohet me kompilator dhe matet nëse e hoqi erën, sepse Bavota et "
@@ -538,8 +538,8 @@ CHAPTER_3 = [
             (
                 "bullet",
                 "PK3: A mund të aplikohen automatikisht refaktorimet e propozuara pa "
-                "shtuar gabime të reja kompilimi, dhe a e heqin ato erën që i "
-                "shkaktoi, sipas rimatjes me të njëjtat metrika?",
+                "shtuar gabime të reja kompilimi, dhe a e heqin ato erën për të cilën "
+                "u propozuan, sipas rimatjes me të njëjtat metrika?",
             ),
             "PK1 e vë gjykimin e pragjeve fikse përballë atij njerëzor. PK2 pyet nëse "
             "të njëjtat metrika, të përdorura ndryshe, japin më shumë. PK3 pyet nëse "

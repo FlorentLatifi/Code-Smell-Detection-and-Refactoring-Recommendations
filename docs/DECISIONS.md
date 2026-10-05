@@ -5702,8 +5702,8 @@ të UBT-së, dhe la tre komente:
 - Hendeku merr një paragraf që e dallon punimin, një nga një, nga Lanza & Marinescu,
   Arcelli Fontana et al., Madeyski & Lewowski dhe Tsantalis & Chatzigeorgiou.
 - PK3 bëhet: «A mund të aplikohen automatikisht refaktorimet e propozuara pa shtuar
-  gabime të reja kompilimi, dhe a e heqin ato erën që i shkaktoi, sipas rimatjes me të
-  njëjtat metrika?» Kjo e zëvendëson pjesën e VD-53 që e mbante PK3 të pandryshuar.
+  gabime të reja kompilimi, dhe a e heqin ato erën për të cilën u propozuan, sipas
+  rimatjes me të njëjtat metrika?» Kjo e zëvendëson pjesën e VD-53 që e mbante PK3 të pandryshuar.
   Frika atje ishte që ngushtimi ta fshihte boshllëkun. Boshllëku nuk fshihet: 3.4, 6.4
   dhe prezantimi thonë ende hapur që sjellja nuk u mat.
 - Numërimi: dokumenti që komentoi mentorja ishte shablloni i UBT-së me kapitujt e
