@@ -236,11 +236,15 @@ def build() -> str:
             "etiketimet e zhvilluesve profesionistë?",
             "PK2 — A e përmirëson një model i mësimit të makinës, i trajnuar mbi të "
             "njëjtat metrika, saktësinë krahasuar me pragjet fikse?",
-            "PK3 — A i përmirësojnë refaktorimet e propozuara karakteristikat "
-            "strukturore, duke ruajtur kompilueshmërinë dhe sjelljen?",
+            "PK3 — A mund të aplikohen automatikisht refaktorimet pa shtuar gabime "
+            "të reja kompilimi, dhe a e heqin erën sipas rimatjes?",
         ],
     )
-    _note(slide, "PK3 ka dy gjysma. Vetëm njëra u mat, dhe kjo thuhet hapur më vonë.")
+    _note(
+        slide,
+        "PK3 pyet vetëm për atë që matet: kompilimin dhe heqjen e erës. Ruajtja e "
+        "sjelljes nuk matet, dhe kjo thuhet hapur më vonë.",
+    )
 
     # --- 4. çka u ndërtua ---
     slide = _blank(deck)
@@ -388,7 +392,7 @@ def build() -> str:
 
     # --- 11. verifikimi ---
     slide = _blank(deck)
-    _title(slide, "Verifikimi, dhe ku ndalet", "Gjysma e dytë e PK3 nuk u mat")
+    _title(slide, "Verifikimi, dhe ku ndalet", "Sjellja nuk matet, ndaj nuk është pjesë e PK3")
     _bullets(
         slide,
         [
@@ -418,11 +422,11 @@ def build() -> str:
             "PK1 — Strategjitë janë të sakta kur ndezin, por e humbin shumicën e rasteve.",
             "PK2 — Po. Modeli i tejkalon pragjet fikse te të katër erërat, mbi të njëjtën "
             "ndarje dhe me të njëjtin kod pikëzimi.",
-            "PK3 — Pjesërisht. Kompilueshmëria u verifikua; sjellja jo, dhe kjo thuhet "
-            "hapur në vend që pyetja të ngushtohej.",
+            "PK3 — Pjesërisht. Rishkrimet e aplikuara u verifikuan me kompilator dhe "
+            "u rimatën; ruajtja e sjelljes mbetet jashtë pyetjes dhe thuhet si kufizim.",
         ],
     )
-    _note(slide, "Përgjigjja e ndarë për PK3 është e qëllimshme dhe e regjistruar te DECISIONS.md.")
+    _note(slide, "Formulimi i PK3 u ngushtua me kërkesë të mentores; arsyeja është te DECISIONS.md.")
 
     # --- 13. kufizimet ---
     slide = _blank(deck)

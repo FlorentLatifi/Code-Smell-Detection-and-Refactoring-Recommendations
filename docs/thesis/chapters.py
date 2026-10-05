@@ -475,8 +475,23 @@ CHAPTER_2 = [
             "raportuar varet pikërisht prej saj. Detektimi dhe refaktorimi, nga ana "
             "tjetër, trajtohen zakonisht veç e veç, ndaj mbetet pa përgjigje empirike "
             "nëse një erë e gjetur mund të ndreqet edhe automatikisht, dhe nëse ndreqja "
-            "e heq vërtet. Kapitulli 3 i kthen këto vërejtje në problemin dhe pyetjet "
-            "e punimit.",
+            "e heq vërtet.",
+            "Ky punim u përgjigjet të treve, dhe pikërisht kjo e dallon nga studimet "
+            "e përmendura. Ndryshe nga Lanza & Marinescu (2006), pragjet e "
+            "strategjive nuk merren si të sakta, por maten kundrejt gjykimit të "
+            "zhvilluesve profesionistë të MLCQ-së. Ndryshe nga Arcelli Fontana et "
+            "al. (2016), rregullat dhe modelet vlerësohen mbi të njëjtat mostra, me "
+            "të njëjtin kod pikëzimi, dhe ndarja e të dhënave bëhet sipas depos, "
+            "ndaj shifra nuk fryhet nga mostra të të njëjtit projekt në trajnim dhe "
+            "në testim. Ndryshe nga Madeyski & Lewowski (2023), që përdorën metrikat "
+            "e mjeteve të përgjithshme të analizës statike, modeli trajnohet mbi "
+            "metrikat që lexojnë vetë strategjitë, dhe një ablacion me vetëm ato "
+            "metrika tregon sa nga dallimi vjen nga kufiri i mësuar. Ndryshe nga "
+            "Tsantalis & Chatzigeorgiou (2009), që propozojnë një transformim dhe "
+            "vendimin ia lënë projektuesit, këtu transformimi aplikohet, "
+            "verifikohet me kompilator dhe matet nëse e hoqi erën, sepse Bavota et "
+            "al. (2015) treguan se refaktorimi rrallë e heq erën vetvetiu. Kapitulli "
+            "3 i kthen këto vërejtje në problemin dhe pyetjet e punimit.",
         ],
     ),
 ]
@@ -522,9 +537,9 @@ CHAPTER_3 = [
             ),
             (
                 "bullet",
-                "PK3: A i përmirësojnë objektivisht refaktorimet e propozuara "
-                "karakteristikat strukturore të kodit, duke ruajtur kompilueshmërinë "
-                "dhe sjelljen e tij?",
+                "PK3: A mund të aplikohen automatikisht refaktorimet e propozuara pa "
+                "shtuar gabime të reja kompilimi, dhe a e heqin ato erën që i "
+                "shkaktoi, sipas rimatjes me të njëjtat metrika?",
             ),
             "PK1 e vë gjykimin e pragjeve fikse përballë atij njerëzor. PK2 pyet nëse "
             "të njëjtat metrika, të përdorura ndryshe, japin më shumë. PK3 pyet nëse "
@@ -598,8 +613,7 @@ CHAPTER_3 = [
             (
                 "bullet",
                 "Për PK3: çdo rishkrim i aplikuar verifikohet se nuk e prish "
-                "skedarin, dhe matet nëse era u hoq. Për ruajtjen e sjelljes nuk ka "
-                "kriter, për arsyen që jepet te Nënkapitulli 3.4.",
+                "skedarin, dhe matet nëse era u hoq.",
             ),
         ],
     ),
@@ -624,7 +638,8 @@ CHAPTER_3 = [
             "Korpusi mban nga depot e MLCQ-së vetëm skedarët «.java», pa skedarë "
             "ndërtimi dhe pa varësi, dhe disa depo nuk gjenden më. Prandaj çdo "
             "rishkrim kontrollohet vetëm me kompilator: nëse kompilon, ose të paktën "
-            "nëse nuk shton lloj të ri gabimi. Ruajtja e sjelljes, që përmend PK3, "
+            "nëse nuk shton lloj të ri gabimi. Ruajtja e sjelljes, prandaj, nuk është "
+            "pjesë e PK3 dhe "
             "**nuk verifikohet empirikisht në këtë punim**, sepse do të kërkonte "
             "ekzekutimin e testeve të projekteve, gjë që korpusi nuk e lejon.",
         ],
@@ -2086,9 +2101,9 @@ def _answers(h: dict) -> list:
             "objektivisht në shumicën e rasteve, me koston e "
             f"{sum((data.get('introduced_smells') or {}).values())} erërave të reja. Kur "
             f"skedari kompilohet brenda projektit të vet, {_context_conclusion()}. "
-            "Ruajtja e sjelljes **nuk u mat** (Nënkapitulli 3.4). Përgjigjja është pra po "
-            "për strukturën dhe kompilueshmërinë, me kosto të matur, dhe e hapur për "
-            "sjelljen."
+            "Ruajtja e sjelljes nuk është pjesë e PK3 dhe **nuk u mat** (Nënkapitulli "
+            "3.4). Përgjigjja është pra po për kompilueshmërinë dhe për strukturën, "
+            "me kosto të matur, ndërsa sjellja mbetet pyetje e hapur."
         )
     return answers
 

@@ -5681,3 +5681,36 @@ tabelat mbeten, sepse janë vlerat e sakta të kodit dhe shpjegohen në Shtojcë
 
 **Pasojat.** Gjithë kontrollet e punimit kalojnë (citimet, riprodhimi, formati,
 përsëritja, prezantimi).
+
+### VD-141: Komentet e mentores te kapitujt 1–3, dhe PK3 sipas asaj që matet
+
+**Konteksti.** Mentorja e lexoi punimin deri te Kapitulli 4, në dokumentin e shabllonit
+të UBT-së, dhe la tre komente:
+1. Hyrja: «qartëso pak më shumë çka është kontributi kryesor i punimit», dhe «shpjego
+   shkurt çka nënkupton me ‘transformim të sigurt’ dhe si do të kontrollohet kjo».
+2. Kapitulli 2: «rregullo numerimin e nënkapitujve» dhe «në fund te ‘Hendeku’ qartëso
+   edhe pak më shumë çka po e dallon konkretisht këtë punim nga studimet e përmendura».
+3. Kapitulli 3: «rishiko PK3, sepse aty thuhet se ruhet sjellja e programit, ndërsa më
+   poshtë sqarohet që kjo nuk verifikohet empirikisht. Formuloje pyetjen në përputhje
+   me atë që realisht matet», dhe rregullo numërimin e nënkapitujve.
+
+**Vendimi.**
+- Hyrja merr dy paragrafë: kontributi si një zinxhir detektim–rishkrim–verifikim, në
+  tri pika; dhe përkufizimi i transformimit të sigurt (parakushtet e Opdyke-s mbi
+  pemën sintaksore para aplikimit; parsimi, javac pa lloj të ri gabimi dhe rimatja
+  pas tij), bashkë me atë që nuk garantohet.
+- Hendeku merr një paragraf që e dallon punimin, një nga një, nga Lanza & Marinescu,
+  Arcelli Fontana et al., Madeyski & Lewowski dhe Tsantalis & Chatzigeorgiou.
+- PK3 bëhet: «A mund të aplikohen automatikisht refaktorimet e propozuara pa shtuar
+  gabime të reja kompilimi, dhe a e heqin ato erën që i shkaktoi, sipas rimatjes me të
+  njëjtat metrika?» Kjo e zëvendëson pjesën e VD-53 që e mbante PK3 të pandryshuar.
+  Frika atje ishte që ngushtimi ta fshihte boshllëkun. Boshllëku nuk fshihet: 3.4, 6.4
+  dhe prezantimi thonë ende hapur që sjellja nuk u mat.
+- Numërimi: dokumenti që komentoi mentorja ishte shablloni i UBT-së me kapitujt e
+  ngjitur brenda. Përmbajtja e tij mbante ende nënkapitujt shembull të shabllonit
+  («2.1 Studimet që për bazë kanë marrë…»), dhe pas Kapitullit 4 vinin titujt e
+  shabllonit «5 Metodologjia», «6 Rezultatet». Dokumenti i gjeneruar e ndërton
+  përmbajtjen nga titujt e vet, ndaj numrat përputhen. Titujt dilnin me Cambria,
+  sepse stilet e python-docx e marrin shkronjën nga tema; atributet e temës hiqen.
+- `build_thesis.py --deri 4` jep `Punim_Diplome_Florent_Latifi_Kapitujt_1-4.docx`:
+  kapitujt 1–4 dhe vetëm referencat e cituara në to, pa numër kapitulli.
