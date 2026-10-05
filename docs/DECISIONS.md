@@ -5714,3 +5714,39 @@ të UBT-së, dhe la tre komente:
   sepse stilet e python-docx e marrin shkronjën nga tema; atributet e temës hiqen.
 - `build_thesis.py --deri 4` jep `Punim_Diplome_Florent_Latifi_Kapitujt_1-4.docx`:
   kapitujt 1–4 dhe vetëm referencat e cituara në to, pa numër kapitulli.
+
+### VD-142: Mjeti shpërndahet si imazh Docker
+
+**Konteksti.** Importi nga një lidhje GitHub ekzistonte që nga VD-126, por për ta
+përdorur mjetin duheshin ende Python 3.13, Node 22, `npm install`, `npm run build`,
+`train_models.py` dhe një JDK. Për një zhvillues që thjesht do ta provojë, këto janë
+gjashtë hapa para faqes së parë. Autori kërkoi që mjeti të jetë «më i lehtë për
+përdoruesit».
+
+**Vendimi.**
+- Një `Dockerfile` me katër faza: ndërtimi i ndërfaqes me Node, varësitë Python,
+  trajnimi i modeleve nga `data/results/mlcq_dataset.csv`, dhe imazhi përfundimtar.
+  Node-i dhe vlerësimi i trajnimit nuk hyjnë te imazhi përfundimtar; modelet po.
+- JDK-ja merret nga `eclipse-temurin:21-jdk` dhe jo nga `apt`, që versioni i
+  kompilatorit të jetë i njëjtë kudo. `JAVA_HOME` vendoset, ndaj `javac_command` e
+  merr drejtpërdrejt (VD-139).
+- Modelet trajnohen gjatë ndërtimit, me të njëjtat pina që i lexojnë. Kështu
+  imazhi nuk mbart një pickle të ndërtuar me një version tjetër të scikit-learn-it,
+  arsyeja pse `data/models/` nuk komitohet.
+- Procesi punon si përdorues pa privilegje (uid 1000). Projektet montohen te
+  `/projekte`, që bëhet `JAVASMELL_ROOT`.
+- Modeli i sigurisë nuk ndryshon. Brenda kontejnerit serveri dëgjon në `0.0.0.0`,
+  sepse ndryshe porti nuk arrihet, por çdo komandë e dokumentuar e publikon portin
+  vetëm te `127.0.0.1`. Roja e VD-127 vazhdon të pranojë vetëm emrat localhost.
+  U provua në imazh: `Host: evil.com` dhe `Origin: http://evil.com` kthejnë 403.
+- `.github/workflows/docker.yml` e ndërton imazhin te çdo pull request dhe e
+  publikon te `ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations`
+  te çdo push në `main`. `compose.yaml` jep të njëjtën nisje me `docker compose up`.
+
+**Verifikimi.** Imazhi u ndërtua dhe u nis. Faqja, `/api/health`, `/api/analyze` me
+model, `/api/refactor/patch` (verifikuar me javac 21) dhe importi i `jhy/jsoup` nga
+GitHub (205 skedarë) u përgjigjën saktë.
+
+**Çfarë nuk bën.** Nuk e bën mjetin shërbim publik në internet. Ai do të kërkonte
+autentikim ose një mënyrë pa shkrim në disk, kufij për përdorues dhe një model tjetër
+kërcënimesh; është hapi i dytë i mundshëm, dhe vendoset veç.

@@ -1,0 +1,15 @@
+# Konteksti i imazhit mban vetëm atë që Dockerfile kopjon. Pa këtë, `docker build`
+# do të dërgonte korpusin, node_modules dhe punimin te daemon-i.
+*
+!backend/javasmell/
+!backend/requirements.txt
+!frontend/
+!scripts/train_models.py
+!data/results/mlcq_dataset.csv
+!data/results/*.json
+!data/results/rules_evaluation_samples.csv
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+**/__pycache__/
