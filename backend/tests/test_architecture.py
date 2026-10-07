@@ -63,6 +63,15 @@ def test_the_model_is_plain_data_and_depends_on_nothing():
     assert imports().get("model", set()) == set()
 
 
+def test_the_glossary_is_plain_data_and_depends_on_nothing():
+    """«`glossary/`: ... plain data, read by the CLI and by the interface.»
+
+    The interface imports its JSON at build time, so anything the glossary
+    imported from the package would be something the frontend could not follow.
+    """
+    assert imports().get("glossary", set()) == set()
+
+
 def test_the_two_consumers_of_detection_do_not_import_each_other():
     """«`ml/` and `refactor/` ... They do not import each other.»
 
