@@ -1,0 +1,52 @@
+name: Docker
+
+# Imazhi publikohet te GitHub Container Registry, që përdoruesi ta nisë me një
+# komandë pa ndërtuar asgjë (VD-142). Te pull request-et vetëm ndërtohet: kështu
+# një Dockerfile i prishur kapet para se të bashkohet, pa publikuar asgjë.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    name: Ndërto dhe publiko imazhin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Hyrja te ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Emri i imazhit në ghcr.io duhet me shkronja të vogla, ndërsa emri i depos
+      # nuk është; metadata-action e bën këtë dhe shton etiketat `latest` dhe vN.
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha,format=short
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
