@@ -465,7 +465,9 @@ export const APPLY_REFUSAL_SQ: Record<string, string> = {
   not_requested: "Shkrimi nuk u konfirmua.",
   not_a_repository:
     "Ky shteg nuk është brenda një depoje git. Motori shkruan vetëm aty ku një «git restore .» " +
-    "mund ta kthejë gjithçka.",
+    "mund ta kthejë gjithçka. Shkarko patch-in dhe aplikoje vetë, ose ktheje dosjen në depo " +
+    "me «git init», «git add -A» dhe «git commit». Depot e importuara nga GitHub mbajnë vetëm " +
+    "skedarët .java, ndaj për to patch-i është e vetmja rrugë.",
   tree_not_clean:
     "Pema e punës ka ndryshime të paruajtura. Komito ose hidhi ato së pari, që kthimi të prekë " +
     "vetëm atë që shkruan mjeti.",

@@ -44,6 +44,17 @@ COPY --from=eclipse-temurin:21-jdk /opt/java/openjdk /opt/java/openjdk
 ENV JAVA_HOME=/opt/java/openjdk \
     PATH=/opt/java/openjdk/bin:$PATH
 
+# «Apliko» shkruan vetëm brenda një depoje git të pastër, sepse `git restore .` është
+# zhbërja (VD-111). Pa git-in në imazh, çdo shkrim refuzohej si «nuk është depo git»,
+# edhe kur projekti i montuar ishte depo e pastër (VD-143). `safe.directory`: dosja
+# e montuar i përket përdoruesit të kompjuterit dhe jo atij të kontejnerit, dhe git-i
+# e refuzon një depo me pronar tjetër. Kontejneri prek vetëm atë që montohet, ndaj
+# pronësia këtu nuk mbron asgjë.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && git config --system --add safe.directory '*'
+
 COPY backend/javasmell backend/javasmell
 COPY data/results/mlcq_dataset.csv data/results/mlcq_dataset.csv
 COPY --from=models /app/data/models data/models
