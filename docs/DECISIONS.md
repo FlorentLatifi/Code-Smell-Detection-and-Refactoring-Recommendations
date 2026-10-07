@@ -5750,3 +5750,28 @@ GitHub (205 skedarë) u përgjigjën saktë.
 **Çfarë nuk bën.** Nuk e bën mjetin shërbim publik në internet. Ai do të kërkonte
 autentikim ose një mënyrë pa shkrim në disk, kufij për përdorues dhe një model tjetër
 kërcënimesh; është hapi i dytë i mundshëm, dhe vendoset veç.
+
+### VD-143: Imazhi Docker mban git-in, që «Apliko» të ketë zhbërje
+
+**Konteksti.** Në përdorimin e parë të imazhit, «Apliko» u refuzua me «Ky shteg nuk
+është brenda një depoje git». Imazhi `python:3.13-slim` nuk e ka git-in, ndaj
+`apply.working_tree_state` ktheu gjithmonë `not_a_repository`, edhe për një projekt
+të montuar që ishte depo e pastër. Provat e VD-142 e kishin mbuluar analizën dhe
+patch-in, por jo shkrimin.
+
+**Vendimi.**
+- Git-i instalohet në imazh me `apt`.
+- `safe.directory = *` në konfigurimin e sistemit të kontejnerit. Dosja e montuar i
+  përket përdoruesit të kompjuterit, jo uid 1000 të kontejnerit, dhe pa këtë git-i
+  ndalet me «dubious ownership». Kontrolli i pronësisë mbron një përdorues nga depot e
+  përdoruesve të tjerë në të njëjtën makinë; kontejneri sheh vetëm atë që montohet,
+  ndaj këtu nuk mbron asgjë.
+- Mesazhi i refuzimit tani thotë çfarë të bëhet: shkarko patch-in, ose ktheje dosjen
+  në depo git. Depot e importuara nga GitHub mbajnë vetëm `.java`, pa `.git`, ndaj
+  për to patch-i është e vetmja rrugë, dhe kjo thuhet shprehimisht.
+
+**Verifikimi.** Mbi imazhin e VD-142, me git të montuar: pa `safe.directory` git-i
+kthen «detected dubious ownership» për një depo me pronar 4242; me të, `/api/refactor/apply`
+shkruan `OrderManager.java`, verifikuar me javac, dhe `git status` e tregon të ndryshuar.
+Hapi `apt` nuk u provua në mjedisin e zhvillimit, ku repo-të e Debian-it janë të
+bllokuara; provohet nga ndërtimi i imazhit në CI.
