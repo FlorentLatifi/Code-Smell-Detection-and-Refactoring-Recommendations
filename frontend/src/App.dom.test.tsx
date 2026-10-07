@@ -76,6 +76,9 @@ function many(count: number): Analysis {
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
   window.localStorage.clear();
+  // Këto teste u shkruan për emrat teknikë dhe i mbrojnë ata. Mënyra e thjeshtë,
+  // që një vizitor i ri e gjen vetë, ka testet e veta në fund (VD-144).
+  window.localStorage.setItem("javasmell.mode", "technical");
 });
 
 afterEach(() => {
@@ -1110,5 +1113,78 @@ describe("shifrat që nuk gënjejnë", () => {
 
     expect(within(row("DeepNesting")).getByText("<1%")).toBeDefined();
     expect(within(row("LongMethod")).getByText(">99%")).toBeDefined();
+  });
+});
+
+describe("mënyra e thjeshtë", () => {
+  beforeEach(() => {
+    window.localStorage.removeItem("javasmell.mode");
+  });
+
+  it("është ajo që gjen një vizitor i ri", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    expect(screen.getByRole("button", { name: "Thjeshtë" }).getAttribute("aria-pressed")).toBe("true");
+    await analyse();
+
+    const row = screen.getAllByRole("button", { name: ROW })[0];
+    // Emri dhe ashpërsia me fjalë, jo `LongMethod` dhe `critical`.
+    expect(within(row).getByText("Metodë shumë e gjatë")).toBeDefined();
+    expect(within(row).getByText("E rëndë")).toBeDefined();
+    expect(within(row).queryByText("LongMethod")).toBeNull();
+  });
+
+  it("e shpjegon gjetjen me fjalë, me emrin teknik pranë", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+    fireEvent.click(screen.getAllByRole("button", { name: ROW })[0]);
+
+    const meaning = await screen.findByRole("region", { name: "Çfarë do të thotë" });
+    expect(within(meaning).getByText(/Metoda ka shumë rreshta kodi/)).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Metodë shumë e gjatë" })).toBeDefined();
+    expect(screen.getAllByText("LongMethod").length).toBeGreaterThan(0);
+    // Klauzola si fjali, me emrin e matjes e jo me shkurtimin.
+    expect(
+      screen.getAllByText("Rreshtat e kodit të metodës: 50 (problem kur është mbi 30)").length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Si mund të ndreqet" })).toBeDefined();
+    expect(screen.getAllByText("Nxirr një metodë").length).toBeGreaterThan(0);
+  });
+
+  it("kalon te emrat teknikë me një klikim dhe e mban mend", async () => {
+    serve(analysis([smell({ method: "m0(int)" })]));
+    render(<App />);
+    await analyse();
+
+    fireEvent.click(screen.getByRole("button", { name: "Teknike" }));
+    const row = screen.getAllByRole("button", { name: ROW })[0];
+    expect(within(row).getByText("LongMethod")).toBeDefined();
+    expect(within(row).getByText("critical")).toBeDefined();
+    expect(window.localStorage.getItem("javasmell.mode")).toBe("technical");
+  });
+
+  it("e gjen një vend edhe kur kërkohet me emrin e thjeshtë", async () => {
+    serve(
+      analysis([
+        smell({ method: "m0(int)" }),
+        smell({ method: "m1(int)", start_line: 200, smell_type: "DeepNesting" }),
+      ]),
+    );
+    render(<App />);
+    await analyse();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "shumë e gjatë" } });
+
+    expect(screen.getAllByRole("button", { name: ROW })).toHaveLength(1);
+  });
+
+  it("nuk ndryshon asnjë numër, vetëm fjalët", async () => {
+    serve(analysis([smell({ method: "m0(int)" }), smell({ method: "m1(int)", start_line: 200 })]));
+    render(<App />);
+    await analyse();
+    const count = () => document.querySelector("p.count")?.textContent;
+    const simple = count();
+    fireEvent.click(screen.getByRole("button", { name: "Teknike" }));
+    expect(count()).toBe(simple);
   });
 });

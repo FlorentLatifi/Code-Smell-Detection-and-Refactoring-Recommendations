@@ -1825,3 +1825,140 @@ select:hover {
   font-size: var(--t-small);
   color: var(--ink-soft);
 }
+
+/* ---------- mënyra e thjeshtë (VD-144) ---------- */
+/* Shpjegimi i erës hap panelin, para kodit dhe matjeve: lexuesi duhet ta dijë
+   çfarë po kërkon te to. Sfondi i theksit e ndan nga pjesa tjetër pa e bërë
+   paralajmërim, sepse nuk është i tillë. */
+.meaning {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-line);
+  border-radius: var(--r-sm);
+  background: var(--accent-wash);
+  font-size: 0.88rem;
+}
+
+.meaning p {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--ink);
+}
+
+.meaning p + p {
+  margin-top: 6px;
+}
+
+.plain-conditions {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.87rem;
+}
+
+.plain-conditions li + li {
+  margin-top: 6px;
+}
+
+.plain-conditions .hint {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+/* Matjet mbeten, por të mbyllura: për lexuesin e thjeshtë janë hollësi, jo
+   përgjigje. Kush do t'i shohë, i hap me një klikim. */
+.all-metrics {
+  margin-top: 18px;
+  font-size: 0.85rem;
+}
+
+.all-metrics summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.all-metrics .metrics {
+  margin-top: 8px;
+}
+
+.all-metrics .metrics th {
+  font-family: var(--sans);
+}
+
+.all-metrics .metrics th code {
+  font-size: 0.72rem;
+}
+
+.refactorings.plain li + li {
+  margin-top: 6px;
+}
+
+/* Tre hapat e ekranit të parë në mënyrën e thjeshtë: çfarë bëhet, me radhë. */
+.landing .lead .steps {
+  margin: 0 0 var(--s-4);
+  padding-left: 20px;
+  font-size: var(--t-lead);
+  line-height: 1.6;
+}
+
+/* E njëjta tabelë si te qasjet, këtu e vetme nën «Sa i besueshëm është». */
+.evidence .mcc {
+  width: 100%;
+  max-width: 420px;
+  margin: var(--s-3) 0 0;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+}
+
+.evidence .mcc caption {
+  margin: 0 0 4px;
+  text-align: left;
+}
+
+.evidence .mcc th {
+  padding: 3px 0;
+  font-weight: 400;
+  text-align: left;
+}
+
+.evidence .mcc td {
+  padding: 3px 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Matjet e modelit me emrat e thjeshtë: e njëjta kuti si `code`, me shkronjë teksti. */
+.features .feature-plain {
+  padding: 2px 7px;
+  border: 1px solid var(--rule-soft);
+  background: var(--surface);
+  font-size: 0.8rem;
+}
+
+/* Udhëzuesi i leximit te vlerësimi: çfarë do të thotë secila shifër, para tabelave. */
+.guide p {
+  max-width: 72ch;
+  margin: 0 0 12px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.guide dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px 22px;
+  margin: 0;
+}
+
+.guide dt {
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.guide dd {
+  margin: 2px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.83rem;
+  line-height: 1.5;
+}

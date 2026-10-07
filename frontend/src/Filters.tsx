@@ -1,3 +1,5 @@
+import { useSimple } from "./mode";
+import { severityName, smellName } from "./plain";
 import type { Analysis, Severity } from "./types";
 
 /** Si renditet lista. Ashpërsia e para është ajo që një lexues pret. */
@@ -7,6 +9,13 @@ export const ORDER_LABELS: Record<Order, string> = {
   severity: "ashpërsia",
   score: "teprica",
   file: "skedari",
+};
+
+/** Të njëjtat renditje, me fjalë që nuk kërkojnë të dish si derivohet ashpërsia. */
+const ORDER_PLAIN: Record<Order, string> = {
+  severity: "më të rëndat së pari",
+  score: "sa e kalojnë kufirin",
+  file: "sipas skedarit",
 };
 
 export function Filters({
@@ -36,15 +45,19 @@ export function Filters({
   onQuery: (value: string) => void;
   onAgreed: (value: boolean) => void;
 }) {
+  const simple = useSimple();
+  const severities: Severity[] = ["critical", "major", "minor"];
   return (
     <div className="filters">
       <label>
         Ashpërsia
         <select value={severity} onChange={(e) => onSeverity(e.target.value as Severity | "all")}>
           <option value="all">të gjitha</option>
-          <option value="critical">critical</option>
-          <option value="major">major</option>
-          <option value="minor">minor</option>
+          {severities.map((level) => (
+            <option key={level} value={level}>
+              {simple ? severityName(level) : level}
+            </option>
+          ))}
         </select>
       </label>
       <label>
@@ -53,7 +66,7 @@ export function Filters({
           <option value="all">të gjitha</option>
           {Object.keys(analysis.summary.by_type).map((name) => (
             <option key={name} value={name}>
-              {name}
+              {simple ? smellName(name) : name}
             </option>
           ))}
         </select>
@@ -63,7 +76,7 @@ export function Filters({
         <select value={order} onChange={(e) => onOrder(e.target.value as Order)}>
           {(Object.keys(ORDER_LABELS) as Order[]).map((name) => (
             <option key={name} value={name}>
-              {ORDER_LABELS[name]}
+              {simple ? ORDER_PLAIN[name] : ORDER_LABELS[name]}
             </option>
           ))}
         </select>
@@ -78,7 +91,14 @@ export function Filters({
         />
       </label>
       {hasModel && (
-        <label className="only-agreed" title="Prerja e dy qasjeve — sinjali më i fortë i matur">
+        <label
+          className="only-agreed"
+          title={
+            simple
+              ? "Vetëm vendet ku edhe rregullat, edhe modeli thonë se ka problem"
+              : "Prerja e dy qasjeve — sinjali më i fortë i matur"
+          }
+        >
           <input
             type="checkbox"
             checked={agreed}

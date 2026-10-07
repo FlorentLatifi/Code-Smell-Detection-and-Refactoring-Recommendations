@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { explanationText, noteText, preview, source } from "./api";
 import { Diff } from "./Diff";
 import { REFUSAL_SQ } from "./evaluation";
+import { useSimple } from "./mode";
+import {
+  conditionSentence,
+  metricEntry,
+  metricName,
+  reading,
+  refactoringEntry,
+  severityEntry,
+  smellEntry,
+} from "./plain";
 import type { Prediction, Preview, Smell, Source, Summary } from "./types";
 
 /**
@@ -31,6 +41,8 @@ export function Detail({
   const [result, setResult] = useState<Preview | null>(null);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const simple = useSimple();
+  const plain = smellEntry(smell.smell_type);
 
   async function ask() {
     setBusy(true);
@@ -47,7 +59,16 @@ export function Detail({
 
   return (
     <article>
-      <h2>{smell.smell_type}</h2>
+      {simple && plain ? (
+        <>
+          <h2>{plain.name}</h2>
+          <p className="caption">
+            Emri teknik: <code>{smell.smell_type}</code>
+          </p>
+        </>
+      ) : (
+        <h2 title={plain?.name}>{smell.smell_type}</h2>
+      )}
       <p className="where">
         {smell.package ? `${smell.package}.` : ""}
         {smell.class_name}
@@ -57,38 +78,78 @@ export function Detail({
         {smell.file_path}:{smell.start_line}–{smell.end_line}
       </p>
 
+      {simple && plain && <Meaning smell={smell} what={plain.what} why={plain.why} />}
+
       <h3>Kodi</h3>
       <SourceView smell={smell} path={path} scope={scope} />
 
       <h3>Pse u shënua</h3>
-      <Conditions smell={smell} />
-      {smell.conditions.length > 0 && <p className="caption">{EXCESS_NOTE}</p>}
+      {simple ? (
+        <PlainConditions smell={smell} />
+      ) : (
+        <>
+          <Conditions smell={smell} />
+          {smell.conditions.length > 0 && <p className="caption">{EXCESS_NOTE}</p>}
+        </>
+      )}
 
-      {asked && <ModelVerdict prediction={prediction} />}
+      {asked && (simple ? <PlainVerdict prediction={prediction} /> : <ModelVerdict prediction={prediction} />)}
 
-      <h3>Metrikat e matura</h3>
-      <table className="metrics">
-        <tbody>
-          {Object.entries(smell.metrics).map(([name, value]) => (
-            <tr key={name}>
-              <th>{name}</th>
-              <td>{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {simple ? (
+        <details className="all-metrics">
+          <summary>Të gjitha matjet e këtij vendi</summary>
+          <Metrics metrics={smell.metrics} simple />
+        </details>
+      ) : (
+        <>
+          <h3>Metrikat e matura</h3>
+          <Metrics metrics={smell.metrics} simple={false} />
+        </>
+      )}
 
-      <h3>Refaktorimet e propozuara</h3>
-      <ul className="refactorings">
-        {smell.refactorings.map((name) => (
-          <li key={name}>{name}</li>
-        ))}
-      </ul>
+      {simple ? (
+        <>
+          <h3>Si mund të ndreqet</h3>
+          {plain && <p>{plain.fix}</p>}
+          <ul className="refactorings plain">
+            {smell.refactorings.map((name) => {
+              const step = refactoringEntry(name);
+              return (
+                <li key={name}>
+                  <b>{step?.name ?? name}</b>
+                  {step && <> — {step.what}</>}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h3>Refaktorimet e propozuara</h3>
+          <ul className="refactorings">
+            {smell.refactorings.map((name) => (
+              <li key={name} title={refactoringEntry(name)?.name}>
+                {name}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       {smell.automated ? (
         <button className="primary" onClick={ask} disabled={busy}>
-          {busy ? "Duke përgatitur…" : "Shfaq ndryshimin e propozuar"}
+          {busy
+            ? "Duke përgatitur…"
+            : simple
+              ? "Shiko si do ta ndreqte mjeti"
+              : "Shfaq ndryshimin e propozuar"}
         </button>
+      ) : simple ? (
+        <p className="note">
+          Mjeti nuk e ndreq dot vetë këtë problem: do t'i duhej të gjente çdo vend në projekt ku
+          përdoret kjo pjesë kodi, dhe këtë nuk e provon dot. Ndreqja mbetet për ty, me hapat më
+          sipër.
+        </p>
       ) : (
         <p className="note">
           Motori nuk e aplikon automatikisht këtë refaktorim: ai kërkon gjetjen e çdo reference
@@ -102,7 +163,7 @@ export function Detail({
         </p>
       )}
 
-      {result && !result.applied && <Refused result={result} />}
+      {result && !result.applied && <Refused result={result} simple={simple} />}
 
       {result?.applied && result.notes?.length ? (
         <ul className="note rewrite-notes">
@@ -126,8 +187,17 @@ export function Detail({
  * nuk njihet, ekrani bie te arsyeja e përgjithshme dhe te fjalia anglisht e
  * motorit, e shënuar si e tillë e jo si pjesë e fjalisë (VD-122).
  */
-function Refused({ result }: { result: Preview }) {
+function Refused({ result, simple }: { result: Preview; simple: boolean }) {
   const explained = explanationText(result.explanation);
+  if (simple) {
+    const reason = explained ?? `${REFUSAL_SQ[result.refusal ?? ""] ?? result.refusal}.`;
+    return (
+      <p className="note">
+        Mjeti nuk e ndreqi këtë vend: {reason} Kjo është e qëllimshme: mjeti e prek kodin vetëm
+        kur është i sigurt që ndreqja nuk e prish programin.
+      </p>
+    );
+  }
   if (explained) {
     return (
       <p className="note">
@@ -149,6 +219,127 @@ function Refused({ result }: { result: Preview }) {
         </>
       )}
     </p>
+  );
+}
+
+/**
+ * Çfarë do të thotë era, pse ka rëndësi dhe sa e rëndë është, para çdo numri.
+ *
+ * Në mënyrën teknike këto i jep vetë emri, për atë që e njeh literaturën. Për një
+ * lexues tjetër emri nuk thotë asgjë, dhe pa këtë seksion paneli fillon me kod dhe
+ * matje pa i thënë çfarë po kërkon te to (VD-144).
+ */
+function Meaning({ smell, what, why }: { smell: Smell; what: string; why: string }) {
+  const grade = severityEntry(smell.severity);
+  return (
+    <section className="meaning" aria-label="Çfarë do të thotë">
+      <p>
+        <b>Çfarë do të thotë.</b> {what}
+      </p>
+      <p>
+        <b>Pse ka rëndësi.</b> {why}
+      </p>
+      {grade && (
+        <p>
+          <b>Ashpërsia: {grade.name.toLowerCase()}.</b> {grade.what}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** Çdo klauzolë si fjali: emri i matjes, vlera dhe kufiri. */
+function PlainConditions({ smell }: { smell: Smell }) {
+  if (smell.conditions.length === 0) {
+    return <p className="empty">{smell.rationale}</p>;
+  }
+  return (
+    <>
+      <p className="caption">
+        Mjeti e mat kodin dhe e shënon kur matjet kalojnë kufijtë e botuar në literaturë. Këtu i
+        kaloi të gjithë këta:
+      </p>
+      <ul className="plain-conditions">
+        {smell.conditions.map((condition) => {
+          const entry = metricEntry(condition.metric);
+          return (
+            <li key={`${condition.metric}${condition.operator}`}>
+              {conditionSentence(condition)}
+              {entry && <span className="hint"> {entry.what}</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
+/**
+ * Matjet e entitetit, me emrin e thjeshtë ose me atë teknik.
+ *
+ * Në mënyrën teknike emri i thjeshtë rri te `title`, që edhe dikush që i njeh
+ * shkurtimet ta gjejë kuptimin e një metrike të rrallë pa dalë nga paneli.
+ */
+function Metrics({ metrics, simple }: { metrics: Record<string, number>; simple: boolean }) {
+  return (
+    <table className="metrics">
+      <tbody>
+        {Object.entries(metrics).map(([name, value]) => {
+          const entry = metricEntry(name);
+          return (
+            <tr key={name}>
+              {simple ? (
+                <th title={entry?.what}>
+                  {entry?.name ?? name} <code className="quiet">{name}</code>
+                </th>
+              ) : (
+                <th title={entry ? `${entry.name}. ${entry.what}` : undefined}>{name}</th>
+              )}
+              <td>{simple ? reading(value) : value}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+/**
+ * Mendimi i modelit, si fjali e jo si tabelë me rënie gjasash.
+ *
+ * Mbetet i njëjti verdikt dhe e njëjta matje vendimtare si te `ModelVerdict`;
+ * vetëm thuhet me fjalë.
+ */
+function PlainVerdict({ prediction }: { prediction: Prediction | null }) {
+  if (!prediction) {
+    return (
+      <>
+        <h3>Mendimi i modelit</h3>
+        <p className="note">
+          Modeli, që ka mësuar nga gjykimet e zhvilluesve me përvojë, nuk e shënoi këtë vend.
+          Problemi mbështetet vetëm te rregullat, ndaj mund të jetë më pak i sigurt.
+        </p>
+      </>
+    );
+  }
+  const decisive = prediction.contributions.find((c) => c.decisive) ?? null;
+  return (
+    <>
+      <h3>Mendimi i modelit</h3>
+      <p className="verdict">
+        Edhe modeli e shënon këtë vend: sipas tij, gjasa që këtu të ketë problem është{" "}
+        <b>{(prediction.probability * 100).toFixed(0)}%</b>. Kur rregullat dhe modeli pajtohen,
+        gjetja është më e besueshme.
+      </p>
+      <p className="caption">
+        {decisive
+          ? `Arsyeja kryesore: ${metricName(decisive.feature).toLowerCase()} është ` +
+            `${reading(decisive.value)}, ndërsa zakonisht është ${reading(decisive.typical)}. ` +
+            `Po të ishte e zakonshme, modeli nuk do ta shënonte.`
+          : "Asnjë matje e vetme nuk e shpjegon vendimin e modelit: disa matje që thonë të " +
+            "njëjtën gjë e mbajnë atë së bashku."}
+      </p>
+    </>
   );
 }
 

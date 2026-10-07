@@ -40,6 +40,18 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4173",
     trace: "retain-on-failure",
+    // Testet u shkruan për emrat teknikë. Një shfletues i ri hap mënyrën e thjeshtë
+    // (VD-144), ndaj këtu fillohet nga teknikja; mënyra e thjeshtë provohet veç te
+    // `a11y.spec.ts`, me gjendjen e vet.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://127.0.0.1:4173",
+          localStorage: [{ name: "javasmell.mode", value: "technical" }],
+        },
+      ],
+    },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

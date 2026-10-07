@@ -16,6 +16,9 @@ import { OverviewMetrics } from "./design/OverviewMetrics";
 import { PerformanceCharts, SmellyFilesTable } from "./design/Panels";
 import { PatchActions, RefactoringActionList } from "./design/RefactoringActionList";
 import { Waiting } from "./Waiting";
+import { ModeContext, REMEMBERED_MODE, storedMode } from "./mode";
+import { severityName, smellName } from "./plain";
+import type { Mode } from "./mode";
 import { PatchOutput, usePatch } from "./Patch";
 import { Results } from "./Results";
 import { ModelBar, NoSmells, Unparsed } from "./Summary";
@@ -190,6 +193,12 @@ export function App() {
   const [tree, setTree] = useState<TreeState | null>(null);
   // Tema mbahet te shfletuesi: është zgjedhje e lexuesit e jo e projektit.
   const [dark, setDark] = useState(() => remembered(REMEMBERED_THEME) !== "light");
+  // Mënyra e shpjegimit, si tema: zgjedhje e lexuesit, e mbajtur te shfletuesi.
+  // Një vizitor i ri e gjen të thjeshtën, sepse ai është lexuesi që i duhet (VD-144).
+  const [mode, setMode] = useState<Mode>(() => storedMode(remembered));
+  const simple = mode === "simple";
+  /** Emri i erës ashtu si e kërkon mënyra: i thjeshtë, ose ai i literaturës. */
+  const named = (type: string) => (simple ? smellName(type) : type);
   // Çfarë ka shkuar te disku në këtë seancë. Serveri nuk e mban: ai është pa
   // gjendje me qëllim, dhe kjo listë i përket kësaj dritareje.
   const [applied, setApplied] = useState<{ file: string; when: string }[]>([]);
@@ -301,6 +310,8 @@ export function App() {
     remember(REMEMBERED_THEME, dark ? "dark" : "light");
   }, [dark]);
 
+  useEffect(() => remember(REMEMBERED_MODE, mode), [mode]);
+
   useEffect(() => writeAddress(view, path, query, kind), [view, path, query, kind]);
 
   // Ndërrimi i pamjes e nis lexuesin nga kreu i saj. Pa këtë, dikush që kalon te
@@ -350,8 +361,10 @@ export function App() {
       // case, so a filter left checked from an earlier run would empty the
       // list with nothing on screen to switch it back off.
       (!agreed || model === null || agreementOn(model, smell) !== null) &&
+      // Emri i thjeshtë kërkohet bashkë me atë teknik, në të dyja mënyrat: kush e
+      // lexoi «Metodë shumë e gjatë» në ekran, kërkon me ato fjalë (VD-144).
       (needle === "" ||
-        `${smell.class_name} ${smell.method ?? ""} ${smell.file_path} ${smell.smell_type}`
+        `${smell.class_name} ${smell.method ?? ""} ${smell.file_path} ${smell.smell_type} ${smellName(smell.smell_type)}`
           .toLowerCase()
           .includes(needle));
   }, [severity, kind, query, agreed, model]);
@@ -504,11 +517,14 @@ export function App() {
   }, []);
 
   return (
+    <ModeContext.Provider value={mode}>
     <DashboardLayout
       view={view === "results" ? "metrics" : "overview"}
       onView={(next) => show(next === "metrics" ? "results" : "analysis")}
       dark={dark}
       onTheme={() => setDark((was) => !was)}
+      mode={mode}
+      onMode={setMode}
       busy={screen.state === "loading"}
       onScan={() => void rerun()}
       onStop={stop}
@@ -542,7 +558,11 @@ export function App() {
           />
           <label
             className="flex shrink-0 items-center gap-1.5 text-xs text-ink-500 dark:text-ink-400"
-            title="Kërkon modele të trajnuara dhe matje mbi tërë projektin"
+            title={
+              simple
+                ? "Një mendim i dytë nga një model që ka mësuar nga gjykimet e zhvilluesve me përvojë"
+                : "Kërkon modele të trajnuara dhe matje mbi tërë projektin"
+            }
           >
             <input
               type="checkbox"
@@ -675,6 +695,12 @@ export function App() {
                   {", "}
                   {shown.reduce((total, site) => total + site.smells.length, 0)} erëra
                 </p>
+                {simple && (
+                  <p className="caption">
+                    Çdo rresht është një klasë ose metodë me të paktën një problem. Kliko mbi të për
+                    të parë kodin, pse u shënua dhe si mund të ndreqet.
+                  </p>
+                )}
                 {shown.length === 0 && (
                   <p className="empty">
                     Asnjë vend nuk i plotëson filtrat.{" "}
@@ -700,18 +726,24 @@ export function App() {
                             </span>
                             <span className="grade">
                               {site.smells.some((s) => agreementOn(model, s)) && (
-                                <span className="both">
-                                  <span aria-hidden="true">A∩B</span>
+                                <span
+                                  className="both"
+                                  title={simple ? "Edhe rregullat, edhe modeli e shënuan" : undefined}
+                                >
+                                  <span aria-hidden="true">{simple ? "të dyja" : "A∩B"}</span>
                                   <span className="sr-only">Modeli e shënoi po ashtu.</span>
                                 </span>
                               )}
                               {site.automated && (
-                                <span className="auto">
+                                <span
+                                  className="auto"
+                                  title={simple ? "Mjeti mund ta ndreqë vetë" : undefined}
+                                >
                                   <span aria-hidden="true">✎</span>
                                   <span className="sr-only">Motori e rishkruan vetë.</span>
                                 </span>
                               )}
-                              {site.worst}
+                              {simple ? severityName(site.worst) : site.worst}
                             </span>
                           </span>
                           <span className="kinds">
@@ -723,7 +755,7 @@ export function App() {
                                 key={s.smell_type}
                                 className={filtering && matches(s) ? "kind hit" : "kind"}
                               >
-                                {s.smell_type}
+                                {named(s.smell_type)}
                               </span>
                             ))}
                           </span>
@@ -759,7 +791,7 @@ export function App() {
                             onClick={() => setShownSmell(s)}
                             aria-pressed={s.smell_type === shownSmell.smell_type}
                           >
-                            {s.smell_type}
+                            {named(s.smell_type)}
                           </button>
                         ))}
                       </nav>
@@ -784,5 +816,6 @@ export function App() {
       </>
       )}
     </DashboardLayout>
+    </ModeContext.Provider>
   );
 }

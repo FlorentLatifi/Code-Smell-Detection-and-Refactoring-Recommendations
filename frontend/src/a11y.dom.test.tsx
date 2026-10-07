@@ -83,6 +83,7 @@ const sample: Analysis = {
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
   window.localStorage.clear();
+  window.localStorage.setItem("javasmell.mode", "technical");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
@@ -155,6 +156,38 @@ describe("axe", () => {
     fireEvent.change(screen.getByLabelText("Shtegu i projektit"), { target: { value: "x" } });
     fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
     await screen.findByRole("alert");
+
+    expect(await violations(container)).toEqual([]);
+  });
+});
+
+describe("axe në mënyrën e thjeshtë", () => {
+  beforeEach(() => {
+    window.localStorage.setItem("javasmell.mode", "simple");
+  });
+
+  it("nuk gjen shkelje te ekrani i parë", async () => {
+    const { container } = render(<App />);
+    await screen.findByRole("heading", { name: /Gjej dhe ndreq/ });
+
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it("nuk gjen shkelje te lista dhe te paneli i një gjetjeje", async () => {
+    const { container } = render(<App />);
+    fireEvent.change(screen.getByLabelText("Shtegu i projektit"), { target: { value: "src" } });
+    fireEvent.click(screen.getByRole("button", { name: "Analizo" }));
+    const rows = await screen.findAllByRole("button", { name: /^Ledger\.post/ });
+    fireEvent.click(rows[0]);
+    await screen.findByRole("heading", { name: "Metodë shumë e gjatë" });
+
+    expect(await violations(container)).toEqual([]);
+  });
+
+  it("nuk gjen shkelje te paneli i rezultateve", async () => {
+    const { container } = render(<App />);
+    fireEvent.click(screen.getByRole("tab", { name: /Rezultatet/ }));
+    await screen.findByRole("heading", { name: "Si t'i lexosh këto shifra" });
 
     expect(await violations(container)).toEqual([]);
   });

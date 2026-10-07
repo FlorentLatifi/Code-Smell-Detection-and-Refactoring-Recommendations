@@ -12,6 +12,8 @@
 // është pikërisht gjëja që ky projekt nuk e bën.
 
 import { useState } from "react";
+import { useSimple } from "./mode";
+import { metricName, reading, smellName } from "./plain";
 import type { Prediction } from "./types";
 
 /** Sa rreshta shfaqen para se lista të kërkojë zgjerim. */
@@ -19,30 +21,39 @@ const PAGE = 20;
 
 export function ModelOnly({ predictions }: { predictions: Prediction[] }) {
   const [limit, setLimit] = useState(PAGE);
+  const simple = useSimple();
   if (predictions.length === 0) return null;
 
   const visible = predictions.slice(0, limit);
   return (
     <section className="panel model-only" aria-label="Gjetjet vetëm të modelit">
-      <h2>Vetëm modeli i shënoi</h2>
-      <p className="caption">
-        {predictions.length} {predictions.length === 1 ? "entitet" : "entitete"} që asnjë strategji
-        nuk i gjeti. Nuk kanë ashpërsi, sepse ashpërsia derivohet nga teprica mbi një prag dhe këtu
-        asnjë prag nuk u tejkalua. Renditur sipas gjasës që jep modeli.
-      </p>
+      <h2>{simple ? "Probleme që i gjeti vetëm modeli" : "Vetëm modeli i shënoi"}</h2>
+      {simple ? (
+        <p className="caption">
+          {predictions.length} {predictions.length === 1 ? "vend" : "vende"} që rregullat nuk i
+          shënuan, por modeli po. Janë më pak të sigurta, sepse asnjë matje nuk e kalon kufirin e
+          botuar. Renditur nga ai për të cilin modeli është më i sigurt.
+        </p>
+      ) : (
+        <p className="caption">
+          {predictions.length} {predictions.length === 1 ? "entitet" : "entitete"} që asnjë
+          strategji nuk i gjeti. Nuk kanë ashpërsi, sepse ashpërsia derivohet nga teprica mbi një
+          prag dhe këtu asnjë prag nuk u tejkalua. Renditur sipas gjasës që jep modeli.
+        </p>
+      )}
       <table className="predictions">
         <thead>
           <tr>
-            <th scope="col">Entiteti</th>
-            <th scope="col">Era</th>
+            <th scope="col">{simple ? "Vendi" : "Entiteti"}</th>
+            <th scope="col">{simple ? "Problemi" : "Era"}</th>
             <th scope="col">Gjasa</th>
-            <th scope="col">Matja vendimtare</th>
-            <th scope="col">Vendi</th>
+            <th scope="col">{simple ? "Arsyeja kryesore" : "Matja vendimtare"}</th>
+            <th scope="col">{simple ? "Skedari" : "Vendi"}</th>
           </tr>
         </thead>
         <tbody>
           {visible.map((prediction) => (
-            <Row key={rowKey(prediction)} prediction={prediction} />
+            <Row key={rowKey(prediction)} prediction={prediction} simple={simple} />
           ))}
         </tbody>
       </table>
@@ -66,7 +77,7 @@ function rowKey(prediction: Prediction): string {
   ]);
 }
 
-function Row({ prediction }: { prediction: Prediction }) {
+function Row({ prediction, simple }: { prediction: Prediction; simple: boolean }) {
   // E njëjta matje që paneli i detajit e quan vendimtare: ajo që vetëm ajo e ul
   // gjasën nën kufirin e vendimit. Kur asnjë s'është e tillë, thuhet ashtu e nuk
   // zgjidhet një e afërt në vend të saj.
@@ -79,11 +90,15 @@ function Row({ prediction }: { prediction: Prediction }) {
           {prediction.method ? `.${prediction.method}` : ""}
         </span>
       </th>
-      <td>{prediction.smell}</td>
+      <td>{simple ? smellName(prediction.smell) : prediction.smell}</td>
       <td className="number">{(prediction.probability * 100).toFixed(0)}%</td>
       <td>
         {decisive ? (
-          `${decisive.feature} = ${decisive.value}`
+          simple ? (
+            `${metricName(decisive.feature)}: ${reading(decisive.value)}`
+          ) : (
+            `${decisive.feature} = ${decisive.value}`
+          )
         ) : (
           <span className="quiet">asnjë e vetme</span>
         )}

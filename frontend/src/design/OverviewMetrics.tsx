@@ -11,6 +11,8 @@
 // numrin e vendeve, dhe klikimi nga paneli te lista nuk ndryshon njësi në rrugë.
 
 import { memo } from "react";
+import { useSimple } from "../mode";
+import { smellName, term } from "../plain";
 import { Card } from "./DashboardLayout";
 
 export interface Slice {
@@ -55,14 +57,46 @@ export function slicesOf(counts: Record<string, number>): Slice[] {
 
 /** Tri nivelet, nga më i rëndi. Fjala e MLCQ-së rri pranë emrit shqip. */
 const LEVELS = [
-  { key: "high", label: "E rëndë", word: "critical", bar: "bg-high", ink: "text-high-ink" },
-  { key: "medium", label: "E mesme", word: "major", bar: "bg-medium", ink: "text-medium-ink" },
-  { key: "low", label: "E lehtë", word: "minor", bar: "bg-low", ink: "text-low-ink" },
+  {
+    key: "high",
+    label: "E rëndë",
+    word: "critical",
+    hint: "ndreqi së pari",
+    bar: "bg-high",
+    ink: "text-high-ink",
+  },
+  {
+    key: "medium",
+    label: "E mesme",
+    word: "major",
+    hint: "kur të punosh me to",
+    bar: "bg-medium",
+    ink: "text-medium-ink",
+  },
+  {
+    key: "low",
+    label: "E lehtë",
+    word: "minor",
+    hint: "mund të presin",
+    bar: "bg-low",
+    ink: "text-low-ink",
+  },
 ] as const;
 
 /** Nuk varet nga filtrat; `memo` e mban jashtë çdo shkronje të kërkimit. */
 export const OverviewMetrics = memo(function OverviewMetrics({ data }: { data: Overview }) {
+  const simple = useSimple();
   return (
+    <>
+    {simple && (
+      <p className="m-0 mb-4 max-w-[80ch] rounded-lg border border-ink-200 bg-white px-4 py-3 text-sm text-ink-700 dark:border-ink-800 dark:bg-ink-900 dark:text-ink-200">
+        <b className="font-semibold text-ink-900 dark:text-white">
+          Çfarë është një «{term("smell").name.toLowerCase()}»?
+        </b>{" "}
+        {term("smell").what} Më poshtë sheh sa u gjetën, sa të rënda janë, cilat mund t'i ndreqë
+        mjeti vetë dhe cilat mbeten për ty.
+      </p>
+    )}
     <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
       {/* Kolonë me hapësirën mes dy blloqeve: rreshti i rrjetit e shtrin kartën
           sa lista e llojeve, dhe vizorja e ashpërsisë i përket fundit të saj e jo
@@ -77,18 +111,21 @@ export const OverviewMetrics = memo(function OverviewMetrics({ data }: { data: O
               {data.sites.toLocaleString("sq")}
             </span>
             <span className="mt-2 block text-sm text-ink-600 dark:text-ink-300">
-              vende me erëra, {data.smells.toLocaleString("sq")} erëra gjithsej
+              {simple
+                ? `klasa ose metoda me probleme, ${data.smells.toLocaleString("sq")} probleme gjithsej`
+                : `vende me erëra, ${data.smells.toLocaleString("sq")} erëra gjithsej`}
             </span>
           </p>
-          <Automation data={data} />
+          <Automation data={data} simple={simple} />
         </div>
-        <SeverityRuler data={data} />
+        <SeverityRuler data={data} simple={simple} />
       </section>
 
-      <Card title="Sipas llojit">
-        <TypeBars slices={data.byType} total={data.smells} />
+      <Card title={simple ? "Çfarë problemesh u gjetën" : "Sipas llojit"}>
+        <TypeBars slices={data.byType} total={data.smells} simple={simple} />
       </Card>
     </div>
+    </>
   );
 });
 
@@ -98,7 +135,7 @@ export const OverviewMetrics = memo(function OverviewMetrics({ data }: { data: O
  * Tri kutiza me numra kërkonin që lexuesi t'i mblidhte vetë për të parë
  * përpjesën; një shirit i ndarë e jep përpjesën dhe numrat nën të japin sasinë.
  */
-function SeverityRuler({ data }: { data: Overview }) {
+function SeverityRuler({ data, simple }: { data: Overview; simple: boolean }) {
   const total = data.high + data.medium + data.low;
   return (
     <div>
@@ -126,7 +163,11 @@ function SeverityRuler({ data }: { data: Overview }) {
             </p>
             <p className="m-0 mt-0.5 text-sm text-ink-700 dark:text-ink-200">
               {level.label}{" "}
-              <span className="font-mono text-xs text-ink-500 dark:text-ink-400">{level.word}</span>
+              {simple ? (
+                <span className="block text-xs text-ink-500 dark:text-ink-400">{level.hint}</span>
+              ) : (
+                <span className="font-mono text-xs text-ink-500 dark:text-ink-400">{level.word}</span>
+              )}
             </p>
           </section>
         ))}
@@ -142,7 +183,7 @@ function SeverityRuler({ data }: { data: Overview }) {
  * ekrani. «Aplikuar» numëron vetëm atë që ka shkuar te disku në këtë seancë, dhe
  * është i vetmi numër i ekranit që merr jeshilen.
  */
-function Automation({ data }: { data: Overview }) {
+function Automation({ data, simple }: { data: Overview; simple: boolean }) {
   const width = data.sites ? (data.automated / data.sites) * 100 : 0;
   // Pa «në pritje»: ai numër zbriste rishkrime nga vende, dhe pas një skanimi të
   // ri vendet e ndrequra nuk janë më te lista, ndaj zbritja i numëronte dy herë
@@ -153,7 +194,9 @@ function Automation({ data }: { data: Overview }) {
         <b className="text-lg font-semibold tabular-nums text-ink-900 dark:text-white">
           {data.automated.toLocaleString("sq")}
         </b>{" "}
-        nga {data.sites.toLocaleString("sq")} vende i rishkruan motori vetë
+        {simple
+          ? `nga ${data.sites.toLocaleString("sq")} mund t'i ndreqë mjeti vetë`
+          : `nga ${data.sites.toLocaleString("sq")} vende i rishkruan motori vetë`}
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-sm bg-ink-100 dark:bg-ink-800" aria-hidden="true">
         <div className="h-full bg-brand-500 dark:bg-brand-400" style={{ width: `${width}%` }} />
@@ -184,9 +227,10 @@ function Automation({ data }: { data: Overview }) {
  * Te ekranet e ngushta emri merr pjesën që mbetet dhe shiriti mban një gjerësi të
  * fiksuar: me kolonën e emrit të fiksuar, te 390 piksela shiriti tkurrej në zero.
  */
-function TypeBars({ slices, total }: { slices: Slice[]; total: number }) {
+function TypeBars({ slices, total, simple }: { slices: Slice[]; total: number; simple: boolean }) {
   if (total <= 0 || slices.length === 0) return null;
-  const label = `${total} erëra gjithsej: ${slices.map((s) => `${s.name} ${s.value}`).join(", ")}`;
+  const shown = (name: string) => (simple ? smellName(name) : name);
+  const label = `${total} erëra gjithsej: ${slices.map((s) => `${shown(s.name)} ${s.value}`).join(", ")}`;
   const most = slices[0].value;
 
   return (
@@ -200,8 +244,15 @@ function TypeBars({ slices, total }: { slices: Slice[]; total: number }) {
             key={slice.name}
             className="grid grid-cols-[minmax(0,1fr)_4.5rem_2rem_2.5rem] items-center gap-3 text-sm sm:grid-cols-[minmax(0,10.5rem)_minmax(0,1fr)_2.5rem_2.75rem]"
           >
-            <span className="truncate font-mono text-[13px] text-ink-800 dark:text-ink-100">
-              {slice.name}
+            <span
+              className={
+                simple
+                  ? "truncate text-[13px] text-ink-800 dark:text-ink-100"
+                  : "truncate font-mono text-[13px] text-ink-800 dark:text-ink-100"
+              }
+              title={simple ? slice.name : smellName(slice.name)}
+            >
+              {shown(slice.name)}
             </span>
             <span className="h-2 rounded-sm bg-ink-100 dark:bg-ink-800" aria-hidden="true">
               <span
