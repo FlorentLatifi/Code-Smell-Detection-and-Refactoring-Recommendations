@@ -53,6 +53,12 @@ Concretely:
   import each other.
 - `api/`: transport only, meaning validation, serialisation and error mapping. No
   detection or refactoring logic in a route handler.
+- `glossary/`: the plain-language vocabulary (Albanian) for every smell, metric,
+  threshold, severity and refactoring the system can show. Plain data in one JSON
+  file, read by the CLI (`--thjeshte`) and imported by the frontend at build time,
+  so the two never explain a term differently. Depends on nothing. A new detector,
+  metric or refactoring is not finished until it has an entry here; the tests in
+  `test_glossary.py` fail until it does.
 
 Invariants that hold today and must keep holding:
 

@@ -105,3 +105,51 @@ test("pamja e vlerësimit nuk ka shkelje", async ({ page }) => {
 
   expect(await violations(page)).toEqual([]);
 });
+
+/**
+ * Mënyra e thjeshtë ka elemente që teknikja nuk i ka: shpjegimin me sfond theksi,
+ * çelësin e mënyrës dhe udhëzuesin e leximit. Kontrasti i tyre matet vetëm këtu,
+ * mbi ngjyrat e llogaritura të shfletuesit, dhe në të dyja temat (VD-144).
+ */
+test.describe("mënyra e thjeshtë", () => {
+  test.use({
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: "http://127.0.0.1:4173",
+          localStorage: [{ name: "javasmell.mode", value: "simple" }],
+        },
+      ],
+    },
+  });
+
+  test("ekrani i parë nuk ka shkelje", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /Gjej dhe ndreq/ })).toBeVisible();
+
+    expect(await violations(page)).toEqual([]);
+  });
+
+  test("paneli me gjetje nuk ka shkelje në asnjërën temë", async ({ page }) => {
+    await page.goto("/");
+    await analyse(page);
+    await page.locator("button.row").first().click();
+    await expect(page.getByRole("region", { name: "Çfarë do të thotë" })).toBeVisible();
+
+    expect(await violations(page)).toEqual([]);
+
+    await page.getByRole("button", { name: /tema e çelët/ }).click();
+    await expect(page.getByRole("button", { name: /tema e errët/ })).toBeVisible();
+
+    expect(await violations(page)).toEqual([]);
+  });
+
+  test("pamja e vlerësimit nuk ka shkelje", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("tab", { name: /Rezultatet/ }).click();
+    await expect(page.getByRole("heading", { name: "Si t'i lexosh këto shifra" })).toBeVisible();
+
+    expect(await violations(page)).toEqual([]);
+  });
+});

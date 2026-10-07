@@ -5775,3 +5775,54 @@ kthen «detected dubious ownership» për një depo me pronar 4242; me të, `/ap
 shkruan `OrderManager.java`, verifikuar me javac, dhe `git status` e tregon të ndryshuar.
 Hapi `apt` nuk u provua në mjedisin e zhvillimit, ku repo-të e Debian-it janë të
 bllokuara; provohet nga ndërtimi i imazhit në CI.
+
+### VD-144: Mënyra e thjeshtë, me një fjalor të vetëm për ndërfaqen dhe CLI-në
+
+**Konteksti.** Autori e provoi mjetin si përdorues dhe kërkoi që analizat të kuptohen
+edhe nga dikush pa formim teknik: «perdoren terma qe jo gjithkush i dine». Ekrani
+fliste me emrat e literaturës (`FeatureEnvy`, `WOC < 0.333`, `ExtractSubclass`,
+`critical`, MCC, κ). Ata janë të saktë dhe e lidhin çdo gjetje me burimin e saj, por
+një zhvillues që nuk e ka lexuar Lanza & Marinescu-n nuk merr vesh prej tyre çfarë
+nuk shkon me kodin e vet.
+
+**Vendimi.**
+- **Dy mënyra, jo një zëvendësim.** Çelësi «Thjeshtë / Teknike» te koka e faqes.
+  Teknikja mbetet ajo që ishte, sepse ajo është gjuha e punimit dhe e skripteve.
+  E thjeshta i shpjegon të njëjtat gjetje me fjalë. Asnjë numër dhe asnjë gjetje nuk
+  ndryshon, vetëm emërtimi, dhe kjo provohet nga një test.
+- **E thjeshta për vizitorin e ri.** Ai është lexuesi për të cilin u bë. Zgjedhja
+  mbahet te shfletuesi, si tema. Kush e njeh literaturën kalon te teknikja me një
+  klikim.
+- **Një fjalor i vetëm**, `backend/javasmell/glossary/plain_sq.json`: për çdo erë
+  emri, çfarë do të thotë, pse ka rëndësi dhe çfarë mund të bëhet; për çdo metrikë,
+  prag, ashpërsi, refaktorim dhe term vlerësimi një emër dhe një fjali. E lexojnë
+  CLI-ja dhe ndërfaqja, që e importon gjatë ndërtimit si rezultatet e `data/results/`.
+  Me dy kopje, një shpjegim do të ndreqej te njëra dhe do të mbetej i vjetër te tjetra.
+- **Plotësia testohet kundrejt sistemit**, jo kundrejt një liste: `test_glossary.py`
+  kontrollon çdo erë te `REFACTORINGS`, çdo refaktorim të propozuar, çdo metrikë që
+  raportohet ose që përdor modeli, çdo metrikë që përmend një klauzolë detektori, çdo
+  prag te `Thresholds` dhe çdo operator. Një detektor ose metrikë e re pa shpjegim e
+  prish testin.
+- **Klauzola si fjali**: «Rreshtat e kodit të metodës: 77 (problem kur është mbi 35)».
+  E njëjta fjali te ndërfaqja dhe te CLI-ja.
+- **Çfarë ndryshon në mënyrën e thjeshtë.** Faqja hyrëse thotë çfarë bën mjeti në tre
+  hapa; përmbledhja shpjegon çfarë është një erë; lista dhe rekomandimet përdorin emrat
+  e thjeshtë; paneli i gjetjes hapet me «Çfarë do të thotë / Pse ka rëndësi /
+  Ashpërsia», klauzolat si fjali, mendimi i modelit si fjali, matjet e mbyllura nën një
+  `details`, dhe «Si mund të ndreqet» me hapat e refaktorimit; vlerësimi hapet me një
+  udhëzues leximi, me fjalinë përmbledhëse të llogaritur nga të dhënat. Refuzimet e
+  shkrimit thuhen pa fjalorin e git-it.
+- **Në mënyrën teknike** emri i thjeshtë shfaqet si `title` mbi emrin teknik të erës,
+  të metrikës dhe të refaktorimit.
+- **CLI:** `--thjeshte` jep raportin tekst shqip me çdo term të shpjeguar. Vlen vetëm me
+  `--format text`; me format tjetër komanda del me kod 2.
+
+**Verifikimi.** 173 teste të frontend-it, përfshirë pesë për mënyrën e thjeshtë dhe
+axe mbi të; 797 teste të backend-it, përfshirë testet e fjalorit; 15 teste end-to-end
+me shfletues të vërtetë, ku kontrasti i elementeve të rinj matet në të dyja temat.
+
+**Çfarë nuk prek.** Punimin. Nënkapitulli 4.8 e përshkruan ndërfaqen, dhe mënyra e
+thjeshtë mund të përmendet atje pasi mentorja të mbarojë me kapitujt 1–4. Po atëherë
+rifreskohen numrat e validimit te 4.10 dhe te ROADMAP-i (`BACKEND_TESTS`,
+`FRONTEND_TESTS`): ata janë të datës 25 shtator, 717 dhe 165, dhe mbeten të vërtetë
+për atë datë; sot janë 797 dhe 173, me mbulim 96%.

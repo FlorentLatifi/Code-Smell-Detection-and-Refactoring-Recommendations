@@ -1,6 +1,8 @@
 // Dy panelet e mbetura: krahasimi i dy qasjeve, dhe skedarët më të ndotur.
 
 import { Suspense, lazy, memo } from "react";
+import { useSimple } from "../mode";
+import { severityName, term } from "../plain";
 import { Card } from "./DashboardLayout";
 
 /** Vizatimi vjen në copën e vet, sepse Recharts-i nuk i duhet ekranit të parë. */
@@ -21,11 +23,18 @@ export interface ScoreRow {
  * e 0.29 të duken larg njëra-tjetrës.
  */
 function PerformanceChartsView({ scores }: { scores: ScoreRow[] }) {
+  const simple = useSimple();
   const label = scores
     .map((row) => `${row.smell}: rregullat ${row.rules ?? "—"}, modeli ${row.model ?? "—"}`)
     .join("; ");
   return (
-    <Card title="Rregullat kundrejt modelit, MCC">
+    <Card title={simple ? "Sa saktë i gjejnë problemet rregullat dhe modeli" : "Rregullat kundrejt modelit, MCC"}>
+      {simple && (
+        <p className="m-0 px-4 pt-1 text-xs text-ink-600 dark:text-ink-300">
+          {term("mcc").what} Shifrat vijnë nga vlerësimi i mjetit mbi mijëra shembuj të gjykuar nga
+          zhvillues me përvojë, jo nga projekti yt.
+        </p>
+      )}
       <div className="h-[270px] px-4 pt-2 pb-4" role="img" aria-label={label}>
         {/* Si te llojet: etiketa e mban përmbajtjen, vizatimi fshihet. Etiketa
             është këtu e jo te copa e vonuar, që të lexohet pa pritur vizatimin;
@@ -66,9 +75,10 @@ function SmellyFilesTableView({
   rows: FileRow[];
   onPick: (file: string) => void;
 }) {
+  const simple = useSimple();
   if (rows.length === 0) return null;
   return (
-    <Card title="Skedarët më të ndotur">
+    <Card title={simple ? "Skedarët me më shumë probleme" : "Skedarët më të ndotur"}>
       <div className="overflow-x-auto px-4 pb-2">
         <table className="w-full text-sm">
           <thead>
@@ -79,7 +89,7 @@ function SmellyFilesTableView({
                   Pa të, `TestRelation` me 53 erëra dilte mbi `RelationalOperations`
                   me 117, dhe asgjë e dukshme nuk e shpjegonte (VD-110). */}
               <Th align="right">Vende</Th>
-              <Th align="right">Erëra</Th>
+              <Th align="right">{simple ? "Probleme" : "Erëra"}</Th>
               <Th>Ashpërsia</Th>
             </tr>
           </thead>
@@ -111,7 +121,7 @@ function SmellyFilesTableView({
                   {row.smells}
                 </td>
                 <td className={`py-2.5 text-xs font-medium ${SEVERITY_INK[row.severity]}`}>
-                  {row.severity}
+                  {simple ? severityName(row.severity) : row.severity}
                 </td>
               </tr>
             ))}

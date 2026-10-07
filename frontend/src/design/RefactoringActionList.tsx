@@ -6,6 +6,8 @@
 // analiza nuk e provon dot. Një listë e vetme do t'i premtonte të dyja njësoj.
 
 import { CheckCircle2, Eye, GitPullRequestArrow, Info, Lock, Wand2 } from "lucide-react";
+import { useSimple } from "../mode";
+import { conditionSentence, refactoringEntry, severityName, smellName } from "../plain";
 import type { Condition } from "../types";
 import type { Entry, WriteEffect } from "../writeEffect";
 import { Card } from "./DashboardLayout";
@@ -49,6 +51,7 @@ export function RefactoringActionList({
   /** Veprimet e patch-it dhe të shkrimit, që i mban thirrësi. */
   children?: React.ReactNode;
 }) {
+  const simple = useSimple();
   const automated = suggestions.filter((s) => s.automated);
   const advisory = suggestions.filter((s) => !s.automated);
 
@@ -60,7 +63,13 @@ export function RefactoringActionList({
           375-pikselësh (VD-111). */}
       <div className="min-w-0 space-y-4 xl:col-span-2">
         {automated.length > 0 && (
-          <Card title={`Rishkrime të gatshme (${automated.length})`}>
+          <Card
+            title={
+              simple
+                ? `Mjeti mund t'i ndreqë vetë (${automated.length})`
+                : `Rishkrime të gatshme (${automated.length})`
+            }
+          >
             <ul className="m-0 mt-2 list-none divide-y divide-ink-200 border-t border-ink-200 p-0 dark:divide-ink-800 dark:border-ink-800">
               {automated.slice(0, 6).map((item) => (
                 <Row key={item.key} item={item} onOpen={onOpen} />
@@ -71,11 +80,20 @@ export function RefactoringActionList({
         )}
 
         {advisory.length > 0 && (
-          <Card title={`Propozime pa rishkrim (${advisory.length})`}>
+          <Card
+            title={
+              simple
+                ? `Duhen ndrequr me dorë (${advisory.length})`
+                : `Propozime pa rishkrim (${advisory.length})`
+            }
+          >
             <p className="m-0 flex items-start gap-2 px-4 pt-1 pb-3 text-xs text-ink-500 dark:text-ink-400">
               <Info className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              Këto kërkojnë gjetjen e çdo reference në projekt, të cilën analiza nuk e provon dot.
-              Mbeten propozim për autorin.
+              {simple
+                ? "Për t'i ndrequr këto, mjetit do t'i duhej të gjente çdo vend në projekt ku " +
+                  "përdoret kodi, dhe këtë nuk e provon dot. Mjeti të thotë si; ndreqjen e bën ti."
+                : "Këto kërkojnë gjetjen e çdo reference në projekt, të cilën analiza nuk e provon " +
+                  "dot. Mbeten propozim për autorin."}
             </p>
             <ul className="m-0 list-none divide-y divide-ink-200 border-t border-ink-200 p-0 dark:divide-ink-800 dark:border-ink-800">
               {advisory.slice(0, 4).map((item) => (
@@ -107,6 +125,7 @@ function count(n: number, one: string, many: string): string {
  * thoshte «nuk ndryshoi asgjë», që është e pavërtetë (VD-122, VD-123).
  */
 function Effect({ effect }: { effect: WriteEffect }) {
+  const simple = useSimple();
   const { removed, introduced, kept } = effect;
   return (
     <section
@@ -127,19 +146,30 @@ function Effect({ effect }: { effect: WriteEffect }) {
       {(removed.length > 0 || introduced.length > 0) && (
         <details className="mt-2 text-xs text-ink-600 dark:text-ink-300">
           <summary className="cursor-pointer">Cilat</summary>
-          <EntryList title="U hoqën" entries={removed} />
-          <EntryList title="Të reja" entries={introduced} />
+          <EntryList title="U hoqën" entries={removed} simple={simple} />
+          <EntryList title="Të reja" entries={introduced} simple={simple} />
         </details>
       )}
       <p className="m-0 mt-2 text-[11px] text-ink-500 dark:text-ink-400">
-        Një rishkrim i saktë mund të sjellë erë të re, p.sh. një konstruktor me po aq parametra.
-        Punimi e mat të njëjtën gjë mbi korpusin (Nënkapitulli 5.4).
+        {simple
+          ? "Kjo ndodh: një ndreqje e saktë mund të sjellë një problem të ri, zakonisht më të " +
+            "vogël, p.sh. një konstruktor me po aq parametra."
+          : "Një rishkrim i saktë mund të sjellë erë të re, p.sh. një konstruktor me po aq " +
+            "parametra. Punimi e mat të njëjtën gjë mbi korpusin (Nënkapitulli 5.4)."}
       </p>
     </section>
   );
 }
 
-function EntryList({ title, entries }: { title: string; entries: Entry[] }) {
+function EntryList({
+  title,
+  entries,
+  simple,
+}: {
+  title: string;
+  entries: Entry[];
+  simple: boolean;
+}) {
   if (entries.length === 0) return null;
   return (
     <>
@@ -147,7 +177,7 @@ function EntryList({ title, entries }: { title: string; entries: Entry[] }) {
       <ul className="m-0 mt-1 list-none space-y-0.5 p-0">
         {entries.map((entry, index) => (
           <li key={`${entry.file}|${entry.entity}|${entry.smell}|${index}`} className="font-mono text-[11px]">
-            {entry.entity} · {entry.smell}
+            {entry.entity} · {simple ? smellName(entry.smell) : entry.smell}
           </li>
         ))}
       </ul>
@@ -164,7 +194,9 @@ function More({ count }: { count: number }) {
 }
 
 function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void }) {
+  const simple = useSimple();
   const severity = SEVERITY[item.severity];
+  const step = refactoringEntry(item.refactoring);
   return (
     <li className="relative py-3.5 pr-4 pl-5 transition hover:bg-ink-50 dark:hover:bg-ink-800/40">
       <span className={`absolute top-3 bottom-3 left-0 w-[3px] rounded-r-sm ${severity.bar}`} aria-hidden="true" />
@@ -175,25 +207,32 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
             <span className="min-w-0 font-mono text-[13.5px] font-medium [overflow-wrap:anywhere] text-ink-900 dark:text-white">
               {item.entity}
             </span>
-            <span className="text-[13px] text-ink-700 dark:text-ink-200">{item.smell}</span>
-            <span className={`text-xs font-medium ${severity.ink}`}>{item.severity}</span>
+            <span className="text-[13px] text-ink-700 dark:text-ink-200">
+              {simple ? smellName(item.smell) : item.smell}
+            </span>
+            <span className={`text-xs font-medium ${severity.ink}`}>
+              {simple ? severityName(item.severity) : item.severity}
+            </span>
           </p>
 
-          <Clauses item={item} />
+          <Clauses item={item} simple={simple} />
 
           <p className="m-0 mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500 dark:text-ink-400">
             <span className="min-w-0 truncate font-mono">
               {item.file}:{item.line}
             </span>
             {item.automated ? (
-              <span className="flex items-center gap-1 font-medium text-brand-ink">
+              <span
+                className="flex items-center gap-1 font-medium text-brand-ink"
+                title={simple ? step?.what : step?.name}
+              >
                 <Wand2 className="h-3 w-3" aria-hidden="true" />
-                {item.refactoring}
+                {simple ? (step?.name ?? item.refactoring) : item.refactoring}
               </span>
             ) : (
               <span className="flex items-center gap-1">
                 <Lock className="h-3 w-3" aria-hidden="true" />
-                vetëm propozim
+                {simple ? "ndreqet me dorë" : "vetëm propozim"}
               </span>
             )}
           </p>
@@ -204,7 +243,13 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
           className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-ink-200 bg-transparent px-2.5 text-xs font-medium text-ink-700 transition hover:bg-white dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
         >
           <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-          {item.automated ? "Shfaq diff-in" : "Shfaq arsyen"}
+          {simple
+            ? item.automated
+              ? "Shiko ndreqjen"
+              : "Shiko si ndreqet"
+            : item.automated
+              ? "Shfaq diff-in"
+              : "Shfaq arsyen"}
         </button>
       </div>
     </li>
@@ -218,9 +263,21 @@ function Row({ item, onOpen }: { item: Suggestion; onOpen: (key: string) => void
  * «and» anglisht brenda një ekrani shqip dhe me katër numra të ngjitur në një
  * varg. Si lexime veç e veç, e matura del e theksuar dhe pragu pranë saj (VD-119).
  */
-function Clauses({ item }: { item: Suggestion }) {
+function Clauses({ item, simple }: { item: Suggestion; simple: boolean }) {
   if (item.conditions.length === 0) {
     return <p className="m-0 mt-1.5 text-sm text-ink-600 dark:text-ink-300">{item.reason}</p>;
+  }
+  if (simple) {
+    return (
+      <ul
+        className="m-0 mt-1.5 list-none space-y-0.5 p-0 text-[13px] text-ink-600 dark:text-ink-300"
+        aria-label="Pse u shënua"
+      >
+        {item.conditions.map((condition) => (
+          <li key={`${condition.metric}${condition.operator}`}>{conditionSentence(condition)}</li>
+        ))}
+      </ul>
+    );
   }
   return (
     <ul className="m-0 mt-2 flex list-none flex-wrap gap-1.5 p-0" aria-label="Klauzolat që ndezën">
@@ -258,11 +315,14 @@ function AppliedTimeline({
   revert: string | null;
   effect: WriteEffect | null;
 }) {
+  const simple = useSimple();
   return (
     <Card title="Aplikuar në këtë seancë">
       {applied.length === 0 ? (
         <p className="m-0 px-4 pt-1 pb-4 text-xs text-ink-500 dark:text-ink-400">
-          Asgjë nuk është shkruar ende. Motori nuk e prek kodin pa u kërkuar.
+          {simple
+            ? "Asnjë skedar nuk është ndryshuar ende. Mjeti nuk e prek kodin tënd pa ia kërkuar."
+            : "Asgjë nuk është shkruar ende. Motori nuk e prek kodin pa u kërkuar."}
         </p>
       ) : (
         <>
@@ -290,7 +350,7 @@ function AppliedTimeline({
           {revert && (
             <div className="border-t border-ink-200 p-4 dark:border-ink-800">
               <p className="m-0 text-xs text-ink-500 dark:text-ink-400">
-                Për t'i kthyer të gjitha:{" "}
+                {simple ? "Nëse do t'i kthesh si ishin, ekzekuto në dosjen e projektit:" : "Për t'i kthyer të gjitha:"}{" "}
                 <code className="rounded-sm bg-ink-100 px-1.5 py-0.5 font-mono text-ink-700 dark:bg-ink-800 dark:text-ink-200">
                   {revert}
                 </code>
@@ -326,6 +386,7 @@ export function PatchActions({
   onPrepare: () => void;
   children?: React.ReactNode;
 }) {
+  const simple = useSimple();
   return (
     <Card title="Veprimet">
       <div className="space-y-3 px-4 pt-2 pb-4">
@@ -335,14 +396,17 @@ export function PatchActions({
           className="flex h-9 w-full items-center justify-center gap-2 rounded-md border-0 bg-brand-600 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           <GitPullRequestArrow className="h-4 w-4" aria-hidden="true" />
-          {busy ? "Duke përgatitur…" : "Përgatit patch-in"}
+          {busy ? "Duke përgatitur…" : simple ? "Përgatit ndreqjet" : "Përgatit patch-in"}
         </button>
 
         <p className="m-0 text-xs text-ink-500 dark:text-ink-400">
           <b className="text-ink-800 dark:text-ink-100">
             {ready} nga {total}
           </b>{" "}
-          vende kanë një rishkrim që motori e provon.
+          {simple
+            ? "vende mund t'i ndreqë mjeti vetë. Fillimisht i sheh të gjitha ndryshimet; " +
+              "skedarët nuk preken pa e konfirmuar ti."
+            : "vende kanë një rishkrim që motori e provon."}
         </p>
 
         {busy && progress && (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { patch } from "./api";
+import { useSimple } from "./mode";
 import { REFUSAL_SQ } from "./evaluation";
 import type { DeclinedSite, PatchProgress, PatchResult } from "./types";
 
@@ -98,10 +99,14 @@ function Outcome({
   onCopy: (text: string) => void;
   copied: boolean;
 }) {
+  const simple = useSimple();
   if (result.changes === 0) {
     return (
       <p className="note">
-        Asnjë rishkrim i sigurt nën këtë shteg. <Reasons result={result} />
+        {simple
+          ? "Mjeti nuk gjeti asnjë ndreqje që mund ta bëjë vetë me siguri. "
+          : "Asnjë rishkrim i sigurt nën këtë shteg. "}
+        <Reasons result={result} />
       </p>
     );
   }
@@ -116,19 +121,30 @@ function Outcome({
         </p>
         <div className="patch-actions">
           <button onClick={() => onCopy(result.diff)}>
-            {copied ? "U kopjua" : "Kopjo patch-in"}
+            {copied ? "U kopjua" : simple ? "Kopjo ndryshimet" : "Kopjo patch-in"}
           </button>
           <button onClick={() => save(result.diff)}>Shkarko</button>
         </div>
       </div>
 
 
-      <p className="caption">
-        Ruaje si <code>fixes.patch</code> te rrënja e projektit dhe provoje pa e prekur asgjë:{" "}
-        <code>git apply --check fixes.patch</code>.
-        {!result.verified_with_javac &&
-          " javac nuk u gjet, ndaj rishkrimi u verifikua vetëm për sintaksë."}
-      </p>
+      {simple ? (
+        <p className="caption">
+          Më poshtë sheh çdo rresht që do të ndryshonte: rreshtat me «-» hiqen, ata me «+»
+          shtohen. Asnjë skedar nuk është prekur ende. Mund t'i shkarkosh ndryshimet, ose t'i
+          aplikosh me butonin «Ndrysho skedarët».
+          {!result.verified_with_javac &&
+            " Mjeti nuk gjeti kompilatorin e Java-s (javac), ndaj kontrolloi vetëm që kodi i ri " +
+              "është i shkruar saktë, jo që kompilohet."}
+        </p>
+      ) : (
+        <p className="caption">
+          Ruaje si <code>fixes.patch</code> te rrënja e projektit dhe provoje pa e prekur asgjë:{" "}
+          <code>git apply --check fixes.patch</code>.
+          {!result.verified_with_javac &&
+            " javac nuk u gjet, ndaj rishkrimi u verifikua vetëm për sintaksë."}
+        </p>
+      )}
 
       <DeclineBreakdown declines={result.declines} />
 

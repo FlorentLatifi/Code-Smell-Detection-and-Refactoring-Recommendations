@@ -150,6 +150,24 @@ Dy shënime:
   montuar i përket një përdoruesi tjetër, analiza punon por «Apliko» nuk shkruan dot;
   shtohet `--user "$(id -u)"`.
 
+## Mënyra e thjeshtë
+
+Ndërfaqja ka dy mënyra leximi, me çelësin **Thjeshtë / Teknike** lart djathtas.
+E thjeshta, që e gjen çdo vizitor i ri, i shpjegon gjetjet me fjalë: «Metodë shumë e
+gjatë» në vend të `LongMethod`, «Rreshtat e kodit të metodës: 77 (problem kur është
+mbi 35)» në vend të `MLOC 77 > 35`, me çfarë do të thotë, pse ka rëndësi dhe si
+ndreqet. Teknikja i shfaq emrat dhe matjet e literaturës. Numrat dhe gjetjet janë të
+njëjtat në të dyja; ndryshojnë vetëm fjalët. Zgjedhja mbahet mend te shfletuesi.
+
+E njëjta gjë nga rreshti i komandës, me `--thjeshte`:
+
+```bash
+python -m javasmell path/to/project --thjeshte
+```
+
+Shpjegimet vijnë nga një fjalor i vetëm, `backend/javasmell/glossary/plain_sq.json`,
+që e lexojnë si ndërfaqja, ashtu edhe CLI-ja (VD-144).
+
 ## Përdorimi nga rreshti i komandës
 
 ```bash

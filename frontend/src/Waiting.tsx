@@ -8,7 +8,35 @@
 // ekranit, dhe gjysma e ekranit duhet të thotë diçka. Kjo listë thotë çfarë
 // merret me atë klikim, e cila është pikërisht ajo që dikush nuk e di ende.
 
+import { useSimple } from "./mode";
+
 export function Waiting() {
+  const simple = useSimple();
+  if (simple) {
+    return (
+      <div className="waiting">
+        <h2>Zgjidh një vend nga lista</h2>
+        <p className="caption">Për çdo vend, këtu do të shohësh:</p>
+        <ul>
+          <li>
+            <b>Çfarë problemi ka</b>, me fjalë të thjeshta, dhe pse ka rëndësi.
+          </li>
+          <li>
+            <b>Kodin</b> ku u gjet problemi.
+          </li>
+          <li>
+            <b>Pse u shënua</b>: cila matje e kaloi kufirin dhe me sa.
+          </li>
+          <li>
+            <b>Si mund të ndreqet</b>, hap pas hapi.
+          </li>
+          <li>
+            <b>Ndreqjen e gatshme</b>, kur mjeti mund ta bëjë vetë, para se të prekë ndonjë skedar.
+          </li>
+        </ul>
+      </div>
+    );
+  }
   return (
     <div className="waiting">
       <h2>Zgjidh një vend</h2>

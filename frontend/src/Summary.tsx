@@ -1,5 +1,7 @@
 import { MODEL_REFUSAL_SQ } from "./api";
 import { SMELL_SQ } from "./evaluation";
+import { useSimple } from "./mode";
+import { smellName } from "./plain";
 import type { ModelBlock, Summary } from "./types";
 
 /**
@@ -23,7 +25,19 @@ import type { ModelBlock, Summary } from "./types";
  * (VD-91).
  */
 export function Unparsed({ summary }: { summary: Summary }) {
+  const simple = useSimple();
   if (!summary.unparsed) return null;
+  if (simple) {
+    return (
+      <p className="note unparsed" role="status">
+        <b>
+          {summary.unparsed} nga {summary.files} {summary.files === 1 ? "skedari" : "skedarët"}
+        </b>{" "}
+        nuk u lexua plotësisht, ndaj problemet brenda tyre mund të mos jenë gjetur të gjitha.
+        Për skedarët e tjerë, numrat janë të saktë.
+      </p>
+    );
+  }
   return (
     <p className="note unparsed" role="status">
       <b>
@@ -44,7 +58,24 @@ export function Unparsed({ summary }: { summary: Summary }) {
  * (VD-121).
  */
 export function NoSmells({ summary }: { summary: Summary }) {
+  const simple = useSimple();
   const { files, unparsed } = summary;
+  if (simple) {
+    if (unparsed !== undefined && unparsed >= files && unparsed > 0) {
+      return (
+        <p className="empty">
+          Nuk u gjet asnjë problem, por kjo nuk thotë gjë për kodin:{" "}
+          {files === 1 ? "skedari nuk u lexua dot." : "asnjë skedar nuk u lexua dot."}
+        </p>
+      );
+    }
+    return (
+      <p className="empty">
+        Nuk u gjet asnjë problem. Kodi i kaloi të gjitha kontrollet
+        {unparsed ? ", të paktën te skedarët që u lexuan plotësisht" : ""}.
+      </p>
+    );
+  }
   // Një server i vjetër nuk e dërgon numrin, dhe mungesa nuk është zero.
   if (unparsed === undefined) return <p className="empty">Asnjë erë e detektuar.</p>;
   if (unparsed === 0) {
@@ -75,6 +106,7 @@ export function NoSmells({ summary }: { summary: Summary }) {
  * adding them would suggest a single total that no measurement supports.
  */
 export function ModelBar({ block }: { block: ModelBlock }) {
+  const simple = useSimple();
   if (!block.available) {
     return (
       <p className="note">
@@ -92,19 +124,21 @@ export function ModelBar({ block }: { block: ModelBlock }) {
       {/* The row says whose numbers these are. Without it the second row reads
           as more of the first, and the two approaches are not additive. */}
       <div className="figure name">
-        <b>Qasja B</b>
-        <span>modeli i trajnuar</span>
+        <b>{simple ? "Modeli" : "Qasja B"}</b>
+        <span>{simple ? "sa vende shënoi, sipas llojit" : "modeli i trajnuar"}</span>
       </div>
       {block.smells.map((report) => (
         <div className="figure" key={report.smell}>
           <b>{report.flagged}</b>
-          <span>{SMELL_SQ[report.smell] ?? report.smell}</span>
+          <span>{simple ? smellName(report.smell) : (SMELL_SQ[report.smell] ?? report.smell)}</span>
         </div>
       ))}
       {skipped > 0 && (
         <p className="caption">
-          {skipped} entitete nuk u gjykuan: u mungonte një matje, dhe modeli nuk pyetet mbi një
-          zero të shpikur.
+          {simple
+            ? `${skipped} vende nuk u gjykuan nga modeli, sepse i mungonte një matje.`
+            : `${skipped} entitete nuk u gjykuan: u mungonte një matje, dhe modeli nuk pyetet ` +
+              "mbi një zero të shpikur."}
         </p>
       )}
     </div>

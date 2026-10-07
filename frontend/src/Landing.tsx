@@ -18,8 +18,62 @@ import {
   SMELL_SQ,
   SMELLS,
 } from "./evaluation";
+import { useSimple } from "./mode";
+import { smellName, term } from "./plain";
 
 export function Landing({ root, onPick }: { root: string | null; onPick: () => void }) {
+  const simple = useSimple();
+  if (simple) {
+    return (
+      <div className="landing">
+        <section className="lead">
+          <h2>Gjej dhe ndreq pjesët e vështira të kodit tënd Java</h2>
+          <p>
+            Mjeti e lexon projektin tënd dhe gjen pjesët që janë të vështira për t'u lexuar ose
+            ndryshuar, të quajtura «erëra kodi». Për secilën të thotë me fjalë të thjeshta çfarë
+            nuk shkon, pse ka rëndësi dhe si ndreqet. Disa prej tyre i ndreq edhe vetë, por vetëm
+            pasi t'i shikosh dhe t'i pranosh. Gjithçka punon në kompjuterin tënd.
+          </p>
+          <ol className="steps">
+            <li>Zgjidh projektin.</li>
+            <li>Shiko listën e problemeve, nga më i rëndi.</li>
+            <li>Hap një problem për ta kuptuar dhe për ta ndrequr.</li>
+          </ol>
+          <p className="start">
+            <button type="button" className="primary" onClick={onPick}>
+              Zgjidh një projekt Java
+            </button>
+          </p>
+          <p className="hint">
+            Zgjidh një dosje nga kompjuteri, ose ngjit lidhjen e një projekti publik te skeda «Nga
+            GitHub». Butoni «Teknike» lart djathtas i shfaq gjetjet me emrat dhe matjet e
+            literaturës.
+          </p>
+        </section>
+
+        <div className="approaches">
+          {(["rules", "model", "engine"] as const).map((key) => (
+            <article className="approach" key={key}>
+              <h3>{term(key).name}</h3>
+              <p>{term(key).what}</p>
+            </article>
+          ))}
+        </div>
+
+        <section className="evidence">
+          <h3>Sa i besueshëm është</h3>
+          <p className="hint">
+            Mjeti u provua mbi {corpusRepositories.toLocaleString("sq")} projekte reale Java dhe{" "}
+            {dataset.rows.toLocaleString("sq")} pjesë kodi, që zhvillues profesionistë i kishin
+            gjykuar më parë. Skeda «Vlerësimi» i tregon rezultatet të plota, me shpjegim për çdo
+            shifër.
+          </p>
+          <ScoreRow variant="model" simple />
+          <p className="hint">{term("mcc").what}</p>
+        </section>
+      </div>
+    );
+  }
   return (
     <div className="landing">
       <section className="lead">
@@ -109,15 +163,18 @@ function Approaches() {
  * bashkësi ku shumica e etiketave janë «asnjë», një detektor që nuk ndez kurrë
  * merr saktësi të lartë dhe MCC zero.
  */
-function ScoreRow({ variant }: { variant: "strategy" | "model" }) {
+function ScoreRow({ variant, simple = false }: { variant: "strategy" | "model"; simple?: boolean }) {
   return (
     <table className="mcc">
+      {simple && (
+        <caption className="caption">Nota e saktësisë së modelit (MCC), sipas problemit</caption>
+      )}
       <tbody>
         {SMELLS.map((smell) => {
           const score = variant === "strategy" ? ruleScore(smell, "mean").mcc : modelMcc(smell);
           return (
             <tr key={smell}>
-              <th scope="row">{SMELL_SQ[smell] ?? smell}</th>
+              <th scope="row">{simple ? smellName(smell) : (SMELL_SQ[smell] ?? smell)}</th>
               <td>{score === null ? "—" : score.toFixed(3)}</td>
             </tr>
           );

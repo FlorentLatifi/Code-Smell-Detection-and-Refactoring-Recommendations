@@ -8,7 +8,27 @@
 import { useState } from "react";
 import { AlertTriangle, HardDriveDownload } from "lucide-react";
 import { APPLY_REFUSAL_SQ, applyPatch } from "../api";
+import { useSimple } from "../mode";
 import type { ApplyResult, TreeState } from "../types";
+
+/**
+ * Të njëjtat refuzime pa fjalorin e git-it (VD-144).
+ *
+ * «Pema e punës» dhe «gjurmohen» janë fjalë të git-it; lexuesi i thjeshtë ka
+ * nevojë të dijë vetëm pse mjeti nuk shkruan dhe çfarë mund të bëjë në vend të
+ * kësaj. Shkarkimi i ndryshimeve mbetet gjithmonë i mundur.
+ */
+const APPLY_REFUSAL_PLAIN: Record<string, string> = {
+  not_a_repository:
+    "Mjeti i ndryshon skedarët vetëm në një projekt të ruajtur me git, që çdo ndryshim të " +
+    "kthehet mbrapsht me një komandë. Këtu nuk ka git, ndaj shkarko ndryshimet dhe aplikoji vetë.",
+  tree_not_clean:
+    "Ke ndryshime të paruajtura në projekt. Ruaji ato në git (commit) para se mjeti të ndryshojë " +
+    "skedarët, që kthimi mbrapsht të prekë vetëm ndreqjet e mjetit.",
+  not_tracked:
+    "Këta skedarë nuk ruhen në git, ndaj ndryshimi i tyre nuk do të kthehej dot mbrapsht. " +
+    "Shkarko ndryshimet dhe aplikoji vetë.",
+};
 
 export function ApplyControl({
   path,
@@ -25,6 +45,7 @@ export function ApplyControl({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
+  const simple = useSimple();
 
   // Para `ready`, jo pas tij. Komenti më lart e premtonte këtë që nga VD-100, por
   // kontrolli rrinte pas kthimit të hershëm: refuzimi shfaqej vetëm pasi patch-i
@@ -33,7 +54,9 @@ export function ApplyControl({
     return (
       <p className="flex items-start gap-2 rounded-lg bg-medium/10 px-3 py-2 text-xs text-medium-ink">
         <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        {APPLY_REFUSAL_SQ[tree.reason ?? ""] ?? tree.detail}
+        {(simple ? APPLY_REFUSAL_PLAIN[tree.reason ?? ""] : undefined) ??
+          APPLY_REFUSAL_SQ[tree.reason ?? ""] ??
+          tree.detail}
       </p>
     );
   }
@@ -64,8 +87,11 @@ export function ApplyControl({
       {confirming ? (
         <>
           <p className="rounded-lg bg-ink-50 px-3 py-2 text-xs text-ink-600 dark:bg-ink-800/60 dark:text-ink-300">
-            Kjo rishkruan skedarët te disku. Pema është e pastër, ndaj{" "}
-            <code className="font-mono">git restore .</code> e kthen gjithçka.
+            {simple
+              ? "Kjo i ndryshon skedarët e tu. Nëse nuk të pëlqen rezultati, komanda "
+              : "Kjo rishkruan skedarët te disku. Pema është e pastër, ndaj "}
+            <code className="font-mono">git restore .</code>
+            {simple ? " i kthen ashtu si ishin." : " e kthen gjithçka."}
           </p>
           <div className="flex gap-2">
             <button
@@ -91,7 +117,7 @@ export function ApplyControl({
           className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-ink-200 bg-transparent text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
         >
           <HardDriveDownload className="h-4 w-4" aria-hidden="true" />
-          Apliko te skedarët
+          {simple ? "Ndrysho skedarët" : "Apliko te skedarët"}
         </button>
       )}
     </div>

@@ -1,0 +1,301 @@
+{
+  "smells": {
+    "GodClass": {
+      "name": "Klasë që bën gjithçka",
+      "what": "Një klasë e vetme mban shumë punë të palidhura me njëra-tjetrën dhe përdor shumë të dhëna të klasave të tjera.",
+      "why": "Çdo ndryshim aty rrezikon të prishë diçka tjetër, dhe klasa kuptohet me vështirësi.",
+      "fix": "Ndaje në disa klasa më të vogla, secila me një përgjegjësi të vetme."
+    },
+    "LargeClass": {
+      "name": "Klasë shumë e madhe",
+      "what": "Klasa ka shumë rreshta kodi dhe shumë metoda.",
+      "why": "Sa më e madhe klasa, aq më e vështirë lexohet, testohet dhe ndryshohet.",
+      "fix": "Nxirr pjesët që shkojnë bashkë në klasa të veçanta."
+    },
+    "DataClass": {
+      "name": "Klasë vetëm me të dhëna",
+      "what": "Klasa mban të dhëna, por pothuajse nuk bën asgjë me to; punën me to e bëjnë klasa të tjera.",
+      "why": "Puna që u përket këtyre të dhënave shpërndahet nëpër projekt dhe shpesh përsëritet.",
+      "fix": "Fshih fushat pas metodave dhe sille këtu punën që bëhet me këto të dhëna."
+    },
+    "FeatureEnvy": {
+      "name": "Metodë që punon me të dhënat e të tjerëve",
+      "what": "Metoda përdor më shumë të dhënat e një klase tjetër sesa ato të klasës së vet.",
+      "why": "Metoda duket se është në vendin e gabuar, dhe dy klasat mbeten të lidhura ngushtë.",
+      "fix": "Zhvendose metodën, ose pjesën që i përdor ato të dhëna, te klasa ku ndodhen të dhënat."
+    },
+    "LongMethod": {
+      "name": "Metodë shumë e gjatë",
+      "what": "Metoda ka shumë rreshta kodi.",
+      "why": "Një metodë e gjatë lexohet me vështirësi, dhe gabimet fshihen më lehtë brenda saj.",
+      "fix": "Ndaje në disa metoda më të vogla, secila me një emër që thotë çfarë bën."
+    },
+    "BrainMethod": {
+      "name": "Metodë shumë e ndërlikuar",
+      "what": "Metoda është njëkohësisht e gjatë, me shumë degëzime (if, for, while), me blloqe të futura thellë dhe me shumë variabla.",
+      "why": "Është nga pjesët më të vështira të projektit për t'u kuptuar dhe për t'u testuar.",
+      "fix": "Ndaje në hapa më të vegjël dhe thjeshto kushtet."
+    },
+    "LongParameterList": {
+      "name": "Shumë parametra",
+      "what": "Metoda kërkon shumë vlera hyrëse (parametra).",
+      "why": "Thirrja e saj ngatërrohet lehtë, sepse radha e parametrave harrohet.",
+      "fix": "Mblidhi parametrat që shkojnë bashkë në një objekt të vetëm."
+    },
+    "DeepNesting": {
+      "name": "Kod i futur shumë thellë",
+      "what": "Brenda metodës ka blloqe (if, for, while) të futura shumë nivele brenda njëri-tjetrit.",
+      "why": "Çdo nivel shton një kusht që lexuesi duhet ta mbajë mend, dhe rrjedha e kodit ndiqet me vështirësi.",
+      "fix": "Dil herët nga metoda kur një kusht nuk plotësohet, ose nxirr blloqet e brendshme në metoda të veçanta."
+    }
+  },
+  "smell_aliases": {
+    "blob": "GodClass",
+    "data class": "DataClass",
+    "data_class": "DataClass",
+    "feature envy": "FeatureEnvy",
+    "feature_envy": "FeatureEnvy",
+    "long method": "LongMethod",
+    "long_method": "LongMethod"
+  },
+  "metrics": {
+    "CLOC": {
+      "name": "Rreshtat e kodit të klasës",
+      "what": "Sa rreshta kod të vërtetë ka klasa, pa rreshtat bosh dhe pa komentet."
+    },
+    "NOM": {
+      "name": "Numri i metodave",
+      "what": "Sa metoda ka klasa."
+    },
+    "NOF": {
+      "name": "Numri i fushave",
+      "what": "Sa fusha (variabla të klasës) mban klasa."
+    },
+    "WMC": {
+      "name": "Sasia e logjikës në klasë",
+      "what": "Ndërlikimi i të gjitha metodave të klasës, i mbledhur. Sa më i lartë, aq më shumë punë bën klasa."
+    },
+    "AMW": {
+      "name": "Ndërlikimi mesatar i metodave",
+      "what": "Sa e ndërlikuar është, mesatarisht, një metodë e kësaj klase."
+    },
+    "MAXCC": {
+      "name": "Metoda më e ndërlikuar e klasës",
+      "what": "Numri i rrugëve në kod te metoda më e ndërlikuar e klasës."
+    },
+    "TCC": {
+      "name": "Sa lidhen metodat mes tyre",
+      "what": "Pjesa e çifteve të metodave që përdorin të njëjtat fusha, nga 0 deri në 1. Vlera e ulët do të thotë që klasa bën gjëra të palidhura."
+    },
+    "LCOM": {
+      "name": "Mungesa e lidhjes mes metodave",
+      "what": "Sa çifte metodash nuk ndajnë asnjë fushë. Sa më e lartë, aq më pak lidhen metodat."
+    },
+    "LCOM3": {
+      "name": "Mungesa e lidhjes mes metodave (0–2)",
+      "what": "E njëjta ide si mungesa e lidhjes, e matur në një shkallë nga 0 deri në 2."
+    },
+    "ATFD": {
+      "name": "Të dhëna të huaja që përdoren",
+      "what": "Sa të dhëna të klasave të tjera lexohen drejtpërdrejt."
+    },
+    "CBO": {
+      "name": "Lidhjet me klasa të tjera",
+      "what": "Me sa klasa të tjera është e lidhur kjo klasë."
+    },
+    "RFC": {
+      "name": "Metodat që mund të vihen në punë",
+      "what": "Metodat e klasës bashkë me metodat e tjera që ato thërrasin."
+    },
+    "WOC": {
+      "name": "Sa punë të vërtetë ofron klasa",
+      "what": "Pjesa e metodave publike që bëjnë punë, e jo vetëm lexojnë ose vendosin një vlerë, nga 0 deri në 1."
+    },
+    "NOPA": {
+      "name": "Fusha publike",
+      "what": "Sa fusha mund të ndryshohen drejtpërdrejt nga jashtë klasës."
+    },
+    "NOAM": {
+      "name": "Metoda get/set",
+      "what": "Sa metoda vetëm lexojnë ose vendosin një fushë."
+    },
+    "NOPA+NOAM": {
+      "name": "Të dhëna të hapura nga jashtë",
+      "what": "Fushat publike bashkë me metodat që vetëm lexojnë ose vendosin një fushë."
+    },
+    "DIT": {
+      "name": "Thellësia e trashëgimisë",
+      "what": "Sa nivele klasash prind ka mbi këtë klasë."
+    },
+    "NOC": {
+      "name": "Numri i nënklasave",
+      "what": "Sa klasa e trashëgojnë drejtpërdrejt këtë klasë."
+    },
+    "MLOC": {
+      "name": "Rreshtat e kodit të metodës",
+      "what": "Sa rreshta kod të vërtetë ka metoda, pa rreshtat bosh dhe pa komentet."
+    },
+    "CC": {
+      "name": "Numri i rrugëve në kod",
+      "what": "Sa rrugë të ndryshme mund të ndjekë ekzekutimi. Çdo if, for, while ose case shton një."
+    },
+    "NP": {
+      "name": "Numri i parametrave",
+      "what": "Sa vlera hyrëse kërkon metoda."
+    },
+    "MAXNESTING": {
+      "name": "Thellësia e blloqeve",
+      "what": "Sa nivele blloqesh (if, for, while) janë futur brenda njëri-tjetrit."
+    },
+    "FDP": {
+      "name": "Klasat nga merren të dhëna",
+      "what": "Nga sa klasa të ndryshme merr të dhëna metoda."
+    },
+    "LAA": {
+      "name": "Sa të dhëna merr nga klasa e vet",
+      "what": "Pjesa e të dhënave që metoda i merr nga klasa e vet, nga 0 deri në 1. Vlera e ulët do të thotë që ajo punon kryesisht me të dhëna të huaja."
+    },
+    "NOAV": {
+      "name": "Variablat që prek metoda",
+      "what": "Sa variabla të ndryshme përdor metoda."
+    },
+    "CINT": {
+      "name": "Thirrje drejt metodave të tjera",
+      "what": "Sa metoda të tjera thërret kjo metodë."
+    }
+  },
+  "threshold_metrics": {
+    "god_class_wmc": "WMC",
+    "god_class_tcc": "TCC",
+    "god_class_atfd": "ATFD",
+    "data_class_woc": "WOC",
+    "data_class_public_members": "NOPA+NOAM",
+    "data_class_wmc_low": "WMC",
+    "data_class_public_members_many": "NOPA+NOAM",
+    "data_class_wmc_high": "WMC",
+    "feature_envy_atfd": "ATFD",
+    "feature_envy_laa": "LAA",
+    "feature_envy_fdp": "FDP",
+    "long_method_loc": "MLOC",
+    "brain_method_loc": "MLOC",
+    "brain_method_cc": "CC",
+    "brain_method_nesting": "MAXNESTING",
+    "brain_method_noav": "NOAV",
+    "long_parameter_list_np": "NP",
+    "deep_nesting": "MAXNESTING",
+    "large_class_loc": "CLOC",
+    "large_class_nom": "NOM"
+  },
+  "severities": {
+    "critical": {
+      "name": "E rëndë",
+      "what": "Kodi e kalon shumë kufirin. Ndreqe së pari."
+    },
+    "major": {
+      "name": "E mesme",
+      "what": "Kodi e kalon qartë kufirin. Ndreqe kur të punosh me këtë pjesë."
+    },
+    "minor": {
+      "name": "E lehtë",
+      "what": "Kodi e kalon pak kufirin. Mund të presë."
+    }
+  },
+  "refactorings": {
+    "ExtractMethod": {
+      "name": "Nxirr një metodë",
+      "what": "Një pjesë e kodit kalon në një metodë të re, me emrin e vet."
+    },
+    "ExtractClass": {
+      "name": "Nxirr një klasë",
+      "what": "Një grup fushash dhe metodash që shkojnë bashkë kalon në një klasë të re."
+    },
+    "ExtractSubclass": {
+      "name": "Nxirr një nënklasë",
+      "what": "Sjellja që vlen vetëm për disa raste kalon në një nënklasë."
+    },
+    "MoveMethod": {
+      "name": "Zhvendos metodën",
+      "what": "Metoda kalon te klasa, të dhënat e së cilës i përdor më shumë."
+    },
+    "EncapsulateField": {
+      "name": "Fshih fushat",
+      "what": "Fushat bëhen private dhe lexohen ose ndryshohen vetëm përmes metodave."
+    },
+    "DecomposeConditional": {
+      "name": "Ndaj kushtin e ndërlikuar",
+      "what": "Një kusht i ndërlikuar ndahet në metoda me emra që thonë çfarë kontrollojnë."
+    },
+    "ReplaceConditionalWithPolymorphism": {
+      "name": "Zëvendëso kushtet me klasa",
+      "what": "Në vend të shumë if-eve sipas llojit, secili lloj merr klasën e vet."
+    },
+    "IntroduceParameterObject": {
+      "name": "Mblidhi parametrat në një objekt",
+      "what": "Parametrat që shkojnë bashkë kalojnë në një objekt të vetëm."
+    },
+    "PreserveWholeObject": {
+      "name": "Dërgo objektin e plotë",
+      "what": "Në vend të disa vlerave nga i njëjti objekt, metodës i dërgohet vetë objekti."
+    },
+    "ReplaceNestedConditionalWithGuardClauses": {
+      "name": "Dil herët nga metoda",
+      "what": "Në vend të if-eve brenda if-eve, metoda kthehet menjëherë kur një kusht nuk plotësohet."
+    }
+  },
+  "operators": {
+    ">": "mbi",
+    ">=": "të paktën",
+    "<": "nën",
+    "<=": "deri në"
+  },
+  "terms": {
+    "smell": {
+      "name": "Erë kodi",
+      "what": "Shenjë se një pjesë e kodit është e vështirë për t'u lexuar ose ndryshuar. Nuk është gabim: programi punon, por mirëmbahet me vështirësi."
+    },
+    "site": {
+      "name": "Vend",
+      "what": "Një klasë ose metodë ku u gjet të paktën një erë."
+    },
+    "rules": {
+      "name": "Rregullat",
+      "what": "Kufij të botuar në literaturë: kur një matje e kalon kufirin, kodi shënohet."
+    },
+    "model": {
+      "name": "Modeli",
+      "what": "Një program që ka mësuar nga mijëra shembuj të vlerësuar nga zhvillues me përvojë, dhe jep gjasën që një pjesë kodi të ketë problem."
+    },
+    "engine": {
+      "name": "Ndreqja automatike",
+      "what": "Mjeti e rishkruan kodin vetë vetëm kur mund ta provojë që rishkrimi nuk e prish programin. Përndryshe e lë si propozim."
+    },
+    "patch": {
+      "name": "Skedari i ndryshimeve",
+      "what": "Një skedar që tregon çdo rresht që hiqet dhe çdo rresht që shtohet, pa e prekur ende kodin."
+    },
+    "mcc": {
+      "name": "Nota e saktësisë (MCC)",
+      "what": "Nga −1 deri në 1: 0 do të thotë sa hamendja, 1 do të thotë përsosur. Nuk mashtrohet kur shumica e kodit nuk ka probleme."
+    },
+    "precision": {
+      "name": "Sa shpesh ka të drejtë (P)",
+      "what": "Kur mjeti thotë «këtu ka problem», sa shpesh ka vërtet."
+    },
+    "recall": {
+      "name": "Sa nga problemet gjen (R)",
+      "what": "Nga problemet e vërteta, sa i gjen mjeti."
+    },
+    "f1": {
+      "name": "Nota e përbashkët (F1)",
+      "what": "Një notë e vetme që bashkon dy të mësipërmet."
+    },
+    "kappa": {
+      "name": "Pajtimi (κ)",
+      "what": "Sa pajtohen dy metoda përtej asaj që do të pritej rastësisht. 0 = sa rastësia, 1 = pajtim i plotë."
+    },
+    "sample": {
+      "name": "Mostër",
+      "what": "Një pjesë kodi e vlerësuar nga zhvillues me përvojë, me të cilën krahasohet mjeti."
+    }
+  }
+}

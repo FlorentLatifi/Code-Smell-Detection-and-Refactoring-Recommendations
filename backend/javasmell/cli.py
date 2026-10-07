@@ -25,6 +25,11 @@ tool broke" from "the code is over the line" without parsing any output. Finding
 smells is otherwise a success, because reporting is what this command is for
 (VD-92).
 
+``--thjeshte`` writes the text report in plain Albanian, with every term from
+``javasmell.glossary`` explained, for a reader who has not met the literature's
+names; the default report stays in the technical vocabulary that scripts and the
+thesis use (VD-144).
+
 ``--apply`` is the one option that changes the author's files, and it is the only
 one that can produce 4. A refusal there is an ordinary outcome -- the tree was
 not clean, the path is not a repository -- but a script that asked for a write
@@ -45,6 +50,7 @@ from dataclasses import fields
 from pathlib import Path
 from typing import TextIO
 
+from javasmell import glossary
 from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import REFACTORINGS, detect_all
@@ -58,6 +64,7 @@ from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel, posix
 from javasmell.refactor.apply import Refusal, apply_patches
 from javasmell.refactor.patch import Plan, iter_plan, unified
+from javasmell.refactor.registry import AUTOMATED
 
 SEVERITY_ORDER = {"critical": 0, "major": 1, "minor": 2}
 
@@ -108,6 +115,11 @@ def build_parser() -> argparse.ArgumentParser:
         "so the command can gate a build",
     )
     parser.add_argument(
+        "--thjeshte",
+        action="store_true",
+        help="Raport i thjeshtë në shqip, ku çdo term shpjegohet. Vlen vetëm me --format text",
+    )
+    parser.add_argument(
         "--thresholds",
         metavar="FILE",
         help="A TOML file of threshold overrides, e.g. long_method_loc = 40. Names not "
@@ -146,6 +158,10 @@ def main(argv: list[str] | None = None) -> int:
         print(problem, file=sys.stderr)
         return 2
 
+    if args.thjeshte and args.format != "text":
+        print("--thjeshte vlen vetëm me --format text.", file=sys.stderr)
+        return 2
+
     thresholds = DEFAULT
     if args.thresholds:
         loaded = _load_thresholds(args.thresholds)
@@ -173,12 +189,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.out:
         with Path(args.out).open("w", encoding="utf-8", newline="") as stream:
-            _emit(args.format, project, smells, stream, planned)
+            _emit(args.format, project, smells, stream, planned, plain=args.thjeshte)
         # Reported only after the file closed cleanly; claiming a write that
         # raised half way through would be worse than saying nothing.
         print(f"Wrote {args.out}", file=sys.stderr)
     else:
-        _emit(args.format, project, smells, sys.stdout, planned)
+        _emit(args.format, project, smells, sys.stdout, planned, plain=args.thjeshte)
 
     if planned is not None and not _apply(planned, Path(project.root)):
         return 4
@@ -240,6 +256,8 @@ def _emit(
     smells: list[Smell],
     stream: TextIO,
     planned: Plan | None = None,
+    *,
+    plain: bool = False,
 ) -> None:
     if fmt == "json":
         json.dump([s.to_dict() for s in smells], stream, indent=2)
@@ -249,6 +267,8 @@ def _emit(
         _write_metric_csv(stream, project)
     elif fmt == "patch":
         _write_patch(stream, project, smells, planned)
+    elif plain:
+        _write_plain_report(stream, project, smells)
     else:
         _write_report(stream, project, smells)
 
@@ -419,6 +439,92 @@ def _write_report(stream: TextIO, project: ProjectModel, smells: list[Smell]) ->
         print(f"    {smell.location}", file=stream)
         print(f"    why: {smell.rationale}", file=stream)
         print(f"    fix: {', '.join(smell.refactorings)}", file=stream)
+        print(file=stream)
+
+
+def _count(n: int, one: str, many: str) -> str:
+    return f"{n} {one if n == 1 else many}"
+
+
+def _plain_name(smell_type: str) -> str:
+    entry = glossary.smell(smell_type)
+    return entry["name"] if entry else smell_type
+
+
+def _write_plain_report(stream: TextIO, project: ProjectModel, smells: list[Smell]) -> None:
+    """I njëjti raport si `_write_report`, me çdo term të shpjeguar shqip (VD-144).
+
+    Renditja dhe numrat janë të njëjtët; ndryshojnë vetëm fjalët. Emri teknik i
+    erës mbetet në kllapa pranë emrit të thjeshtë, që lexuesi ta gjejë në
+    literaturë ose në mënyrën teknike të ndërfaqes.
+    """
+    files = len(project.units)
+    classes = len(project.classes)
+    methods = sum(len(c.methods) for c in project.classes)
+    print(
+        f"U analizuan {_count(files, 'skedar', 'skedarë')}, "
+        f"{_count(classes, 'klasë', 'klasa')} dhe {_count(methods, 'metodë', 'metoda')}.",
+        file=stream,
+    )
+    unparsed = project.unparsed
+    if unparsed:
+        named = ", ".join(posix(u.file_path) for u in unparsed[:MAX_UNPARSED_NAMED])
+        print(
+            f"KUJDES: {_count(len(unparsed), 'skedar nuk u lexua', 'skedarë nuk u lexuan')} "
+            f"plotësisht, ndaj çfarë u gjet në to mund të jetë e paplotë: {named}",
+            file=stream,
+        )
+    print(file=stream)
+
+    smell_term = glossary.vocabulary()["terms"]["smell"]
+    print(f"Çfarë është një «erë kodi»: {smell_term['what']}", file=stream)
+    print(file=stream)
+
+    if not smells:
+        print("Nuk u gjet asnjë erë kodi.", file=stream)
+        return
+
+    by_severity = Counter(s.severity.value for s in smells)
+    print(f"U gjetën {_count(len(smells), 'erë kodi', 'erëra kodi')}.", file=stream)
+    for level in ("critical", "major", "minor"):
+        entry = glossary.severity(level)
+        if entry and by_severity.get(level):
+            print(f"  {entry['name']}: {by_severity[level]}. {entry['what']}", file=stream)
+    print(file=stream)
+
+    print("Sipas llojit:", file=stream)
+    for smell_type, count in Counter(s.smell_type for s in smells).most_common():
+        print(f"  {_plain_name(smell_type):<44} {count}", file=stream)
+    print(file=stream)
+
+    for number, smell in enumerate(smells, 1):
+        entry = glossary.smell(smell.smell_type)
+        grade = glossary.severity(smell.severity.value)
+        label = grade["name"].upper() if grade else smell.severity.value.upper()
+        title = f"{_plain_name(smell.smell_type)} ({smell.smell_type})"
+        print(f"{number}. [{label}] {title}", file=stream)
+        print(f"   Ku: {smell.location}", file=stream)
+        if entry:
+            print(f"   Çfarë do të thotë: {entry['what']}", file=stream)
+        if smell.conditions:
+            print("   Pse u shënua:", file=stream)
+            for c in smell.conditions:
+                sentence = glossary.condition_sentence(c.metric, c.operator, c.threshold, c.value)
+                print(f"     - {sentence}", file=stream)
+        if entry:
+            print(f"   Pse ka rëndësi: {entry['why']}", file=stream)
+            print(f"   Çfarë mund të bësh: {entry['fix']}", file=stream)
+        for name in smell.refactorings:
+            step = glossary.refactoring(name)
+            line = f"{step['name']}: {step['what']}" if step else name
+            print(f"     - {line}", file=stream)
+        if smell.smell_type in AUTOMATED:
+            print(
+                "   Mjeti mund ta ndreqë vetë: shiko ndryshimin me --format patch.",
+                file=stream,
+            )
+        else:
+            print("   Këtë duhet ta ndreqësh me dorë: mjeti vetëm e propozon.", file=stream)
         print(file=stream)
 
 

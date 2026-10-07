@@ -11,6 +11,8 @@
 // shenja e tij, dhe titujt lexohen si fjali (VD-119).
 
 import { Gauge, LayoutDashboard, Moon, Play, Square, Sun } from "lucide-react";
+import { ModeToggle } from "../mode";
+import type { Mode } from "../mode";
 
 export type View = "overview" | "metrics";
 
@@ -19,6 +21,8 @@ export function DashboardLayout({
   onView,
   dark,
   onTheme,
+  mode,
+  onMode,
   project,
   status,
   onScan,
@@ -33,6 +37,9 @@ export function DashboardLayout({
   onView: (view: View) => void;
   dark: boolean;
   onTheme: () => void;
+  /** Mënyra e shpjegimit; pa të, çelësi nuk shfaqet (VD-144). */
+  mode?: Mode;
+  onMode?: (next: Mode) => void;
   /** Zgjedhësi i projektit: dropdown te maketi, kutia e shtegut te aplikacioni. */
   project: React.ReactNode;
   status?: React.ReactNode;
@@ -86,6 +93,7 @@ export function DashboardLayout({
               {busy ? "Duke skanuar…" : scanLabel}
             </button>
           )}
+          {mode && onMode && <ModeToggle mode={mode} onMode={onMode} />}
           <button
             onClick={onTheme}
             aria-label={dark ? "Kalo te tema e çelët" : "Kalo te tema e errët"}

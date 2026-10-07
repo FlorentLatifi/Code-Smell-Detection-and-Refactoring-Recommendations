@@ -15,6 +15,8 @@ RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 # Faqja e vlerësimit i lexon shifrat e punimit gjatë ndërtimit, nga i njëjti burim.
 COPY data/results/*.json /app/data/results/
+# Fjalori i mënyrës së thjeshtë, i njëjti që lexon CLI-ja (VD-144).
+COPY backend/javasmell/glossary/plain_sq.json /app/backend/javasmell/glossary/
 RUN npm run build
 
 # --- 2. Varësitë Python, të përbashkëta për trajnimin dhe për imazhin ------------
