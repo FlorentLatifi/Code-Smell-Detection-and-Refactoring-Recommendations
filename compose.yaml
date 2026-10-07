@@ -1,0 +1,20 @@
+# JavaSmell me një komandë: `docker compose up`, pastaj http://localhost:8000.
+#
+# Dosja me projektet Java jepet me PROJEKTET; pa të përdoret ./projekte pranë këtij
+# skedari. Shembull në Windows (PowerShell):
+#   $env:PROJEKTET = "C:\Users\emri\Projektet"; docker compose up
+services:
+  javasmell:
+    image: ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations:latest
+    build: .
+    # Vetëm 127.0.0.1: shërbimi është për përdoruesin në kompjuterin e vet, dhe nuk
+    # ka autentikim (ENGINEERING.md §6). Pa këtë adresë, porti hapet në rrjet.
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ${PROJEKTET:-./projekte}:/projekte
+      # Depot e importuara nga GitHub ruhen mes nisjeve.
+      - depot:/app/data/projects
+
+volumes:
+  depot:

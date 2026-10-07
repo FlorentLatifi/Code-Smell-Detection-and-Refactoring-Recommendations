@@ -107,7 +107,7 @@ METHODOLOGY = [
     ),
     (
         "PMD Team, 2026. PMD: An Extensible Cross-Language Static Code Analyzer, "
-        "versioni 7.27.0. https://pmd.github.io/ (data e qasjes: 8 shtator 2026)."
+        "versioni 7.27.0. [https://pmd.github.io/], data e qasjes: 08.09.2026."
     ),
     (
         "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, "

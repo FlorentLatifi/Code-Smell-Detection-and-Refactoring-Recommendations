@@ -17,6 +17,10 @@ approaches, and proposes refactorings that are verified before they are offered.
 
 Everything runs locally on open-source tools; no paid service is involved.
 
+**Quick start.** With Docker installed, nothing else is needed:
+`docker run --rm -p 127.0.0.1:8000:8000 -v "<your projects>:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations`,
+then open `http://localhost:8000`. Public GitHub repositories can be analysed from a link.
+
 **Results.** All three approaches are evaluated on 4,534 samples from 512 Java
 repositories, with ground truth from professional reviewers (MLCQ). Splits are grouped
 by repository, never random by row, and the majority-class baseline never fires, so
@@ -113,6 +117,38 @@ docs/thesis/   Punimi sipas shabllonit të UBT-së
 
 **Klasë:** CLOC, NOM, NOF, WMC, AMW, MAXCC, TCC, LCOM, LCOM3, ATFD, CBO, RFC, WOC, NOPA, NOAM, DIT, NOC
 **Metodë:** MLOC, CC, NP, MAXNESTING, ATFD, FDP, LAA, NOAV, CINT
+
+## Nisja e shpejtë me Docker
+
+Mënyra më e lehtë për ta përdorur mjetin. Duhet vetëm
+[Docker Desktop](https://www.docker.com/products/docker-desktop/); Python-i, Node-i,
+Java dhe modelet e Qasjes B janë brenda imazhit (VD-142).
+
+```bash
+docker run --rm -p 127.0.0.1:8000:8000 -v "C:\Users\emri\Projektet:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations
+```
+
+Pastaj hapet `http://localhost:8000`. Dosja pas `-v` është ajo që mjeti lejohet ta
+lexojë dhe, me «Apliko», ta ndryshojë; brenda ndërfaqes ajo duket si `projekte`.
+Një depo publike analizohet edhe pa dosje, nga skeda **Nga GitHub**, duke ngjitur
+lidhjen e saj.
+
+E njëjta gjë me `docker compose`, që i mban mend depot e importuara mes nisjeve:
+
+```bash
+PROJEKTET=/shtegu/i/projekteve docker compose up
+```
+
+Imazhi publikohet nga CI-ja te çdo push në `main`. Për ta ndërtuar vetë:
+`docker build -t javasmell .` (rreth 5 minuta, sepse modelet trajnohen gjatë ndërtimit).
+
+Dy shënime:
+
+- `127.0.0.1` te `-p` nuk është opsional: mjeti nuk ka autentikim, dhe pa të porti
+  hapet për gjithë rrjetin.
+- Në Linux, procesi brenda kontejnerit punon si përdoruesi 1000. Nëse dosja e
+  montuar i përket një përdoruesi tjetër, analiza punon por «Apliko» nuk shkruan dot;
+  shtohet `--user "$(id -u)"`.
 
 ## Përdorimi nga rreshti i komandës
 

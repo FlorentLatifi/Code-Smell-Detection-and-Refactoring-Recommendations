@@ -33,9 +33,24 @@ async function violations(page: Page): Promise<string[]> {
   //
   // `catch`: një kalim që zëvendësohet nga një tjetër anulohet, dhe `finished` i
   // tij refuzohet me `AbortError`. Për këtë pritje, i anuluari ka mbaruar.
-  await page.evaluate(() =>
-    Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))),
-  );
+  //
+  // Kalimet krijohen vetëm kur shfletuesi rillogarit stilet pas ndërrimit të temës.
+  // Një thirrje e vetme e `getAnimations()` menjëherë pas klikimit mund ta paraprijë
+  // atë rillogaritje, të gjejë listë bosh dhe të mos presë asgjë: në CI kjo ndodhi
+  // dhe katër butonat u matën sërish në mes të kalimit. Prandaj pritet sa të kalojnë
+  // dy korniza, dhe pritja përsëritet derisa asnjë animacion të mos jetë më në lëvizje.
+  await page.evaluate(async () => {
+    const frame = () => new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    for (;;) {
+      await frame();
+      await frame();
+      const moving = document
+        .getAnimations()
+        .filter((a) => a.playState === "running" || a.pending);
+      if (moving.length === 0) return;
+      await Promise.all(moving.map((a) => a.finished.catch(() => undefined)));
+    }
+  });
   await page.evaluate(axe.source);
   return page.evaluate(async () => {
     const result = await window.axe.run(document, { resultTypes: ["violations"] });

@@ -15,6 +15,7 @@ rerunning this script overwrites the file.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 
 from docx import Document
@@ -231,6 +232,11 @@ def configure_styles(doc: Document) -> None:
         style.font.all_caps = caps
         style.font.color.rgb = None
         style.element.rPr.rFonts.set(qn("w:eastAsia"), FONT)
+        # Stilet e titujve të python-docx e marrin shkronjën nga tema («majorHAnsi»),
+        # dhe Word-i e vë temën mbi emrin e shkronjës. PDF-ja që komentoi mentorja i
+        # tregonte titujt me Cambria në vend të Times New Roman.
+        for attribute in ("asciiTheme", "hAnsiTheme", "eastAsiaTheme", "cstheme"):
+            style.element.rPr.rFonts.attrib.pop(qn(f"w:{attribute}"), None)
         style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
         style.paragraph_format.line_spacing = LINE_SPACING
         style.paragraph_format.space_before = Pt(12)
@@ -442,7 +448,7 @@ def build_cover(doc: Document) -> None:
     14 and the rest at body size until VD-113.
     """
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
     blank(doc, 8)
     centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
     blank(doc, 2)
@@ -458,7 +464,7 @@ def build_inner_page(doc: Document) -> None:
     """Page 2: adds the academic year, the supervisor and the degree statement."""
     doc.add_page_break()
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinieri", size=TITLE_SIZE, bold=True)
+    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
     blank(doc, 2)
     centered(doc, "Punim Diplome", size=TITLE_SIZE, bold=True)
     centered(doc, f"Viti akademik {ACADEMIC_YEAR}", size=TITLE_SIZE)
@@ -607,7 +613,7 @@ def build_introduction(doc: Document, numbering: Numbering) -> None:
     render_sections(doc, INTRODUCTION, numbering)
 
 
-def build_references(doc: Document) -> None:
+def build_references(doc: Document, only_cited_in: str | None = None) -> None:
     """Chapter 7, numbered and alphabetical, in the template's own format.
 
     Only cited sources belong here; anything read but not cited goes under
@@ -615,7 +621,10 @@ def build_references(doc: Document) -> None:
     the document, so a citation added to the text and a citation added to the
     list cannot drift apart.
     """
-    for number, reference in enumerate(all_references(), 1):
+    references = all_references()
+    if only_cited_in is not None:
+        references = _cited_in(only_cited_in, references)
+    for number, reference in enumerate(references, 1):
         paragraph = doc.add_paragraph()
         paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         paragraph.paragraph_format.line_spacing = LINE_SPACING
@@ -624,13 +633,56 @@ def build_references(doc: Document) -> None:
         _set_font(paragraph.add_run(f"[{number}]	{reference}"))
 
 
-def build_remaining_chapters(doc: Document, chapters: dict, numbering: Numbering) -> None:
+def _cited_in(text: str, references: list[str]) -> list[str]:
+    """Referencat që i citon një pjesë e tekstit, me të njëjtin krahasim si kontrolli.
+
+    Versioni i pjesshëm për mentoren mban vetëm kapitujt 1–4, dhe shablloni lejon te
+    «Referencat» vetëm burimet e cituara. Krahasimi merret nga `check_citations`,
+    që lista e pjesshme dhe kontrolli i plotë të mos kenë dy rregulla të ndryshme.
+    """
+    from check_citations import ACCESS_DATE, _first_author, _fold, _undeclined, citations
+
+    keys = {}
+    for reference in references:
+        published = reference.split(ACCESS_DATE)[0]
+        year = re.search(r"\b(?:19|20)\d{2}\b", published)
+        keys[reference] = (_first_author(reference.split(",")[0]), year.group() if year else "")
+    known = {author for author, _ in keys.values()}
+    cited = {(_undeclined(author, known), year) for author, year in citations(text)}
+    folded = _fold(text)
+    return [
+        reference
+        for reference, (author, year) in keys.items()
+        if (author in folded if year == "" else (author, year) in cited)
+    ]
+
+
+def _chapter_text(chapters: dict) -> str:
+    """Teksti i kapitujve si një varg, për të gjetur cilat burime citohen aty."""
+    from check_citations import _strings
+
+    return "\n".join(_strings([chapters[number] for number in sorted(chapters)]))
+
+
+def build_remaining_chapters(
+    doc: Document, chapters: dict, numbering: Numbering, last_chapter: int | None = None
+) -> None:
     """Every chapter after the introduction.
 
     Chapters 2, 3, 4 and 6 are prose and live in ``chapters.py``. Chapters 5 and 8
     are built at this moment from ``data/results/``, so a rebuilt experiment and a
     rebuilt document cannot disagree. Chapter 7 renders the reference list.
     """
+    if last_chapter is not None:
+        # Versioni i pjesshëm: kapitujt deri te `last_chapter`, pastaj referencat e
+        # tyre pa numër kapitulli, që pas Kapitullit 4 të mos vijë «7 Referencat».
+        for number, title in REMAINING_CHAPTERS:
+            if number <= last_chapter:
+                chapter(doc, number, title)
+                render_sections(doc, chapters[number], numbering)
+        unnumbered_heading(doc, "Referencat")
+        build_references(doc, only_cited_in=_chapter_text(chapters))
+        return
     for number, title in REMAINING_CHAPTERS:
         chapter(doc, number, title)
         if number in chapters:
@@ -641,7 +693,13 @@ def build_remaining_chapters(doc: Document, chapters: dict, numbering: Numbering
             body(doc, f"{TODO}")
 
 
-def build() -> str:
+def build(last_chapter: int | None = None) -> str:
+    """Ndërton punimin; me `last_chapter` vetëm kapitujt deri aty.
+
+    Mentorja e lexon punimin pjesë-pjesë, dhe versioni që i dërgohet mban vetëm
+    kapitujt që ka për t'i shqyrtuar. Ai shkruhet në skedar të veçantë, që punimi i
+    plotë të mos mbishkruhet nga një version i pjesshëm.
+    """
     # Kapitujt 5 dhe 8 lexojnë `data/results/` sa herë thirren, ndaj ndërtohen një
     # herë: ballina i numëron elementet e tyre para se ata të renderohen, dhe dy
     # lexime të veçanta do të ishin dy burime të vërtete për të njëjtin dokument.
@@ -654,6 +712,10 @@ def build() -> str:
         6: chapter_6(),
         8: chapter_8(),
     }
+    output = OUTPUT
+    if last_chapter is not None:
+        chapters = {n: c for n, c in chapters.items() if n <= last_chapter}
+        output = OUTPUT.replace(".docx", f"_Kapitujt_1-{last_chapter}.docx")
     figures, tables = caption_lists([chapters[n] for n in sorted(chapters)])
     numbering = Numbering()
 
@@ -683,10 +745,10 @@ def build() -> str:
     _page_numbering(main, "decimal", 1)
     _footer_page_number(main, enabled=True)
     build_introduction(doc, numbering)
-    build_remaining_chapters(doc, chapters, numbering)
+    build_remaining_chapters(doc, chapters, numbering, last_chapter)
 
-    doc.save(OUTPUT)
-    return OUTPUT
+    doc.save(output)
+    return output
 
 
 # ======================================================================
@@ -745,6 +807,18 @@ GLOSSARY = [
     "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
     "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al.",
     "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
+    # Termat e huaj që teksti i përdor pa i përkthyer, dhe dy shkurtesat e vetë
+    # punimit. Një lexues që nuk i njeh duhet t'i gjejë këtu, jo t'i hamendësojë.
+    "Bootstrap - rimostrim me kthim për të vlerësuar pasigurinë e një treguesi",
+    "Commit - një gjendje e ruajtur e kodit në historikun e git-it",
+    "Dataset - bashkësi të dhënash e etiketuar",
+    "Diff / patch - dallimi mes kodit para dhe pas një rishkrimi",
+    "Fold - njëra nga pjesët në të cilat ndahet bashkësia për validim të kryqëzuar",
+    "IB - interval besimi",
+    "JDK - Java Development Kit, që përmban kompilatorin javac",
+    "PK - pyetje kërkimore",
+    "Precizion - pjesa e rasteve të shënuara që janë vërtet pozitive",
+    "Recall - pjesa e rasteve pozitive që detektori i gjen",
 ]
 
 # Hyrja është një tekst i vetëm, pa nënkapituj, 1 deri 1.5 faqe, dhe e shtron
@@ -799,14 +873,35 @@ INTRODUCTION = [
             "edhe refaktorimin, si ajo e Tsantalis & Chatzigeorgiou (2009) për Move "
             "Method, janë më të rralla dhe mbulojnë pak raste.",
             "Ky punim merret me hapësirën mes gjetjes së problemit dhe ndreqjes së "
-            "tij, për gjuhën Java. Erërat detektohen në dy mënyra, me strategji "
-            "metrikash dhe me një klasifikues të trajnuar mbi të njëjtat metrika, dhe "
-            "të dyja vlerësohen mbi të njëjtin dataset të etiketuar nga zhvillues "
-            "profesionistë. Një motor i veçantë e rishkruan kodin vetëm kur mund ta "
-            "provojë se transformimi është i sigurt. Kapitulli 2 shqyrton "
-            "literaturën, Kapitulli 3 shtron problemin dhe pyetjet kërkimore, "
-            "Kapitulli 4 përshkruan metodologjinë, ndërsa Kapitujt 5 dhe 6 paraqesin "
-            "dhe diskutojnë rezultatet.",
+            "tij, për gjuhën Java. Kontributi i tij kryesor është një zinxhir i "
+            "vetëm që i lidh tre hapa që literatura zakonisht i trajton veç e veç: "
+            "detektimin e erës, rishkrimin e kodit dhe verifikimin e rishkrimit. "
+            "Konkretisht, punimi sjell tri gjëra. E para, një krahasim të "
+            "drejtpërdrejtë të dy qasjeve të detektimit, strategjive me metrika dhe "
+            "një klasifikuesi të trajnuar mbi të njëjtat metrika, mbi të njëjtin "
+            "dataset publik të etiketuar nga zhvillues profesionistë, me të njëjtën "
+            "ndarje të të dhënave dhe me të njëjtën mënyrë pikëzimi. E dyta, një "
+            "motor refaktorimi që nuk ndalet te njoftimi: e rishkruan kodin kur "
+            "transformimi është i sigurt, dhe kur nuk është, e refuzon dhe e "
+            "shënon arsyen. E treta, matjen e asaj që ndodh pas rishkrimit, pra "
+            "nëse kodi kompilon ende dhe nëse era u hoq vërtet. I gjithë "
+            "eksperimenti riprodhohet me komanda të dokumentuara.",
+            "Një transformim quhet këtu i sigurt kur plotëson dy kushte. Para "
+            "aplikimit duhet të provohen parakushtet e tij, në kuptimin e Opdyke "
+            "(1992): për shembull, Extract Method refuzohet kur nga blloku që do të "
+            "nxirret del një return, break ose continue, sepse metoda e re do ta "
+            "ndryshonte rrjedhën e programit. Ky kontroll bëhet mbi pemën sintaksore "
+            "të kodit, jo mbi tekstin e tij. Pas aplikimit, rishkrimi kontrollohet "
+            "në tri mënyra: skedari duhet të parsohet sërish, kompilatori javac nuk "
+            "duhet të japë asnjë lloj të ri gabimi krahasuar me versionin para "
+            "rishkrimit, dhe klasa matet sërish me të njëjtët detektorë për të parë "
+            "nëse era u hoq. Siguria në këtë punim do të thotë pra se kodi mbetet "
+            "i vlefshëm dhe se era hiqet. Që programi të sillet njësoj edhe kur "
+            "ekzekutohet do të ishte garanci më e fortë, por ky punim nuk e jep "
+            "(Nënkapitulli 3.4).",
+            "Kapitulli 2 shqyrton literaturën, Kapitulli 3 shtron problemin dhe "
+            "pyetjet kërkimore, Kapitulli 4 përshkruan metodologjinë, ndërsa "
+            "Kapitujt 5 dhe 6 paraqesin dhe diskutojnë rezultatet.",
         ],
     ),
 ]
@@ -823,7 +918,13 @@ REMAINING_CHAPTERS = [
 
 
 if __name__ == "__main__":
-    print(f"U gjenerua: {build()}")
+    # `python build_thesis.py --deri 4` jep versionin për mentoren me kapitujt 1–4.
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Ndërton punimin e diplomës.")
+    parser.add_argument("--deri", type=int, choices=range(1, 7), metavar="N",
+                        help="vetëm kapitujt 1..N, në skedar të veçantë")
+    print(f"U gjenerua: {build(parser.parse_args().deri)}")
 
     # Importuar këtu e jo lart, sepse check_citations e lexon këtë modul: në krye
     # do të ishte import qarkor. Ndërtimi nuk ndalet nga një mospërputhje — gjatë
