@@ -147,6 +147,34 @@ def _provenance() -> tuple[dict[str, str], set[str], set[str]]:
 # ======================================================================
 # Abstrakti
 # ======================================================================
+def _quality_in_abstract() -> str:
+    """Pranueshmëria e rishkrimeve në një fjali, me transformimin më të mirë dhe më të keq."""
+    quality = _load_if_present("rewrite_quality.json")
+    if quality is None:
+        return ""
+
+    def how_often(rate: float) -> str:
+        if rate == 1:
+            return "gjithmonë"
+        if rate == 0:
+            return "asnjëherë"
+        return f"te {rate:.0%} e rasteve"
+
+    per = quality["by_refactoring"]
+    best = max(per, key=lambda name: per[name]["acceptable"])
+    worst = min(per, key=lambda name: per[name]["acceptable"])
+    # Emri i plotë i Guard Clauses ka shtatë fjalë dhe abstrakti duhet të hyjë në
+    # një faqe; në tekst emri i shkurtër përdoret po ashtu.
+    short = {"ReplaceNestedConditionalWithGuardClauses": "Guard Clauses"}
+    return (
+        f"Nga {quality['reviewed']} rishkrime të lexuara, të ripeshuara, "
+        f"{quality['acceptable_reweighted']:.1%} janë të pranueshme për një zhvillues: "
+        f"{short.get(best, _named(best))} "
+        f"{how_often(per[best]['acceptable'])}, {short.get(worst, _named(worst))} "
+        f"{how_often(per[worst]['acceptable'])}. "
+    )
+
+
 def abstract() -> list[str]:
     """Abstrakti, me çdo shifër të lexuar nga `data/results/`.
 
@@ -226,9 +254,9 @@ def abstract() -> list[str]:
         share = refactoring["applied"] / refactoring["detected"]
         third += (
             f"Motori i refaktorimit automatizon {_word(automated)} transformime dhe transformoi "
-            f"{share:.1%} të vendeve të detektuara; refuzimi trajtohet si rezultat i "
-            f"saktë dhe numërohet. "
+            f"{share:.1%} të vendeve të detektuara, duke refuzuar ku nuk provon dot. "
         )
+    third += _quality_in_abstract()
     third += (
         "Kontributi kryesor nuk është një shifër e vetme, por një zinxhir i plotë dhe "
         "i riprodhueshëm, nga korpusi deri te rezultati."
@@ -693,10 +721,10 @@ def _coverage_sentence() -> str:
 # Gjendja e validimit në verifikimin e fundit, e njëjta me `docs/ROADMAP.md`.
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
-VALIDATION_DATE = "25 shtator 2026"
-BACKEND_TESTS = 717
+VALIDATION_DATE = "8 tetor 2026"
+BACKEND_TESTS = 797
 COVERAGE = "96%"
-FRONTEND_TESTS = 165
+FRONTEND_TESTS = 173
 
 # Versionet e varësive që kanë rol në rezultate ose në sistem, ashtu si janë
 # fiksuar te `backend/requirements*.txt`, `frontend/package.json` dhe
@@ -1222,6 +1250,14 @@ CHAPTER_4 = [
             "matura, shpjegimi i modelit, dhe diff-i i rishkrimit ose arsyeja e "
             "refuzimit. Pas shkrimit në disk tregohet cilat erëra u hoqën dhe cilat u "
             "shfaqën.",
+            "Ndërfaqja ka dy mënyra leximi. Mënyra teknike përdor emrat e literaturës, "
+            "si Feature Envy ose klauzola «WOC < 0.333». Mënyra e thjeshtë, që hapet "
+            "si parazgjedhje për një vizitor të ri, i jep çdo ere, metrike, ashpërsie "
+            "dhe refaktorimi një emër shqip dhe një fjali që e shpjegon, dhe çdo "
+            "klauzolë e lexon si fjali: «Rreshtat e kodit të metodës: 77 (problem kur "
+            "është mbi 35)». Shpjegimet janë në një fjalor të vetëm, që e lexojnë "
+            "njësoj ndërfaqja dhe rreshti i komandës me opsionin --thjeshte, dhe "
+            "testet kontrollojnë që çdo term që prodhon sistemi të ketë shpjegim.",
         ],
     ),
     (
@@ -1362,6 +1398,9 @@ CHAPTER_4 = [
             "zgjat disa minuta, ndërsa ekzekutimi i motorit të refaktorimit mbi tërë "
             "korpusin disa orë, sepse javac thirret dy herë për çdo skedar të "
             "rishkruar. Asnjë hap nuk kërkon shërbim në re apo me pagesë.",
+            "Mjeti shpërndahet edhe si imazh Docker në GitHub Container Registry, me "
+            "Python-in, JDK-në dhe git-in brenda, ndaj mund të nisë me një komandë të "
+            "vetme pa instaluar asgjë tjetër.",
         ],
     ),
     (
