@@ -5916,3 +5916,35 @@ kolona `note`.
 
 Një rresht i ndryshuar te `rewrite_quality_sample.csv` rigjeneron gjithçka me
 `review_rewrites.py --score` dhe `build_thesis.py`.
+
+### VD-147: Abstrakti, validimi, ndërfaqja dhe prezantimi pas fletës së cilësisë
+
+**Konteksti.** Pas VD-146 mbetën katër vende ku punimi ose prezantimi nuk përputheshin
+me gjendjen e sotme: abstrakti nuk e përmendte cilësinë e rishkrimeve; 4.10 i jepte
+numrat e testeve të 25 shtatorit; 4.8 nuk e përmendte mënyrën e thjeshtë (VD-144) dhe
+asnjë kapitull imazhin Docker (VD-142); prezantimi thoshte «Çdo rishkrim kompilohet»
+dhe «Nuk ka krahasim me mjete ekzistuese», ndërsa 5.6 e krahason me PMD-në.
+
+**Vendimi.**
+- **Abstrakti** merr një fjali, të lexuar nga `rewrite_quality.json`: 62.9% të
+  pranueshme, Guard Clauses gjithmonë, Introduce Parameter Object asnjëherë. Që
+  faqja të mbetet nën kufirin prej 360 fjalësh të `check_format`, fraza për refuzimin
+  u shkurtua; faqja ka 345.
+- **4.10:** 797 teste të backend-it me mbulim 96% dhe 173 të ndërfaqes, të
+  ekzekutuara më 8 tetor 2026. ROADMAP-i po ashtu, bashkë me 15 testet end-to-end, nga
+  të cilat 7 me axe.
+- **4.8** përshkruan dy mënyrat e leximit dhe fjalorin e përbashkët; **4.11** imazhin
+  Docker me Python-in, JDK-në dhe git-in brenda (u verifikua te `Dockerfile`).
+- **Prezantimi:**
+  - sllajdi i PK1 merr krahasimin me PMD-në;
+  - sllajdi i verifikimit thotë që «nuk shton lloj të ri gabimi» nuk është garanci;
+  - një sllajd i ri, «A ia vlejnë rishkrimet?», ka figurën e pranueshmërisë dhe rastin
+    EM01 në shënimin e folësit;
+  - përgjigjja e PK3 ngushtohet si te 6.4;
+  - kufizimi i rremë për mjetet ekzistuese zëvendësohet me atë të rishikuesit të vetëm.
+  - Prezantimi ka 18 sllajde.
+
+**Verifikimi.** Kalojnë citimet, riprodhimi, formati, përsëritjet dhe sllajdet.
+Sllajdi i ri nuk u renderua dot këtu, sepse LibreOffice-i i makinës nuk e ka
+Impress-in. Pozicionet e elementeve u kontrolluan me python-pptx: figura dhe pikat
+nuk mbivendosen dhe rrinë brenda sllajdit.

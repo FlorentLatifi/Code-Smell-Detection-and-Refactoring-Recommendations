@@ -185,6 +185,7 @@ def build() -> str:
     dataset = _load("mlcq_dataset.json")
     agreement = _load("reviewer_agreement.json")
     verify = _load("verify_with_project.json")
+    quality = _load("rewrite_quality.json")
 
     smells = sorted(rules["per_smell"])
     ceiling = [agreement["per_smell"][s]["mcc"] for s in smells]
@@ -322,7 +323,11 @@ def build() -> str:
     )
     _bullets(
         slide,
-        ["Kur strategjia ndez, zakonisht ka të drejtë. Por ndez rrallë."],
+        [
+            "Kur strategjia ndez, zakonisht ka të drejtë. Por ndez rrallë.",
+            "PMD-ja, me të njëjtat strategji dhe pragjet e veta, nuk del më mirë në "
+            "asnjë krahasim.",
+        ],
         top=Inches(5.3),
         size=SMALL_SIZE,
     )
@@ -396,8 +401,8 @@ def build() -> str:
     _bullets(
         slide,
         [
-            "Çdo rishkrim kompilohet. Pretendimi është «kompilon» ose «nuk shton lloj "
-            "të ri gabimi».",
+            "Çdo rishkrim kalon nga javac. Pretendimi është «kompilon» ose «nuk shton "
+            "lloj të ri gabimi», dhe i dyti nuk është garanci.",
             "I kompiluar brenda projektit të vet, verdikti më i fortë ngjitet nga "
             f"{verify['compiled_alone'].get('compiles', 0)} te "
             f"{verify['compiled_in_project'].get('compiles', 0)} nga {verify['rewrites']} "
@@ -413,7 +418,38 @@ def build() -> str:
         "jashtë kohës dhe hapësirës; kufizimi është i shkruar te Kapitulli 3 dhe 6.",
     )
 
-    # --- 12. përgjigjet ---
+    # --- 12. cilësia e rishkrimeve ---
+    per = quality["by_refactoring"]
+    slide = _blank(deck)
+    _title(
+        slide,
+        "A ia vlejnë rishkrimet?",
+        f"{quality['reviewed']} rishkrime të lexuara sipas një rubrike, pa parë verdiktin "
+        "e kompilatorit",
+    )
+    _picture(slide, "pranueshmeria_e_rishkrimeve.png", top=Inches(1.9), height=Inches(3.4))
+    _bullets(
+        slide,
+        [
+            f"Të ripeshuara: {quality['acceptable_reweighted']:.0%} të pranueshme për "
+            "një zhvillues, zakonisht pas një ndreqjeje të vogël.",
+            "Introduce Parameter Object e heq erën nga matja, jo nga kodi: lista e "
+            "gjatë kalon te konstruktori.",
+        ],
+        top=Inches(5.4),
+        size=SMALL_SIZE,
+    )
+    _note(
+        slide,
+        f"Guard Clauses {per['ReplaceNestedConditionalWithGuardClauses']['acceptable']:.0%}, "
+        f"Extract Method {per['ExtractMethod']['acceptable']:.0%}, Introduce Parameter "
+        f"Object {per['IntroduceParameterObject']['acceptable']:.0%}. Extract Method do "
+        "emër tjetër në vend të «extracted»; një rishkrim i tij nuk kompilon, ndonëse "
+        "kishte verdiktin «pa gabim të ri» — gabimi ishte i të njëjtit lloj si ata që "
+        "skedari i izoluar kishte tashmë.",
+    )
+
+    # --- 13. përgjigjet ---
     slide = _blank(deck)
     _title(slide, "Përgjigjet")
     _bullets(
@@ -422,13 +458,14 @@ def build() -> str:
             "PK1 — Strategjitë janë të sakta kur ndezin, por e humbin shumicën e rasteve.",
             "PK2 — Po. Modeli i tejkalon pragjet fikse te të katër erërat, mbi të njëjtën "
             "ndarje dhe me të njëjtin kod pikëzimi.",
-            "PK3 — Pjesërisht. Rishkrimet e aplikuara u verifikuan me kompilator dhe "
-            "u rimatën; ruajtja e sjelljes mbetet jashtë pyetjes dhe thuhet si kufizim.",
+            "PK3 — Pjesërisht. Rishkrimet u verifikuan me kompilator dhe u rimatën; "
+            "struktura përmirësohet te Guard Clauses dhe Extract Method, jo te "
+            "Introduce Parameter Object. Sjellja nuk u mat.",
         ],
     )
     _note(slide, "Formulimi i PK3 u ngushtua me kërkesë të mentores; arsyeja është te DECISIONS.md.")
 
-    # --- 13. kufizimet ---
+    # --- 14. kufizimet ---
     slide = _blank(deck)
     _title(slide, "Kufizimet", "Të raportuara, jo të zbutura")
     _bullets(
@@ -440,13 +477,12 @@ def build() -> str:
             "Ashpërsia e derivuar u krahasua me atë të rishikuesve, rezultati doli "
             "negativ, dhe pretendimi u hoq.",
             "Sjellja e kodit të rishkruar mbetet e paverifikuar.",
-            "Nuk ka krahasim me mjete ekzistuese: kontributi është krahasueshmëria e "
-            "brendshme mes A-së dhe B-së.",
+            "Cilësia e rishkrimeve u gjykua nga një rishikues i vetëm.",
         ],
     )
     _note(slide, "Më mirë t'i thuash vetë kufizimet se t'i nxjerrin ata.")
 
-    # --- 14. kontributi ---
+    # --- 15. kontributi ---
     slide = _blank(deck)
     _title(slide, "Kontributi")
     _bullets(
@@ -462,7 +498,7 @@ def build() -> str:
     )
     _note(slide, "Mbyll me riprodhueshmërinë: është ajo që e dallon këtë punim.")
 
-    # --- 15. faleminderit ---
+    # --- 16. faleminderit ---
     slide = _blank(deck)
     frame = _text(slide, MARGIN, Inches(3.0), WIDTH - 2 * MARGIN, Inches(1.0), Pt(36), INK, SERIF)
     frame.paragraphs[0].text = "Faleminderit"
