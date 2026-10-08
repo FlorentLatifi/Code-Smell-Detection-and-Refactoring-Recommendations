@@ -48,7 +48,7 @@ SMELL_LABELS = {
 plt.rcParams.update(
     {
         "font.family": "serif",
-        "font.serif": ["Times New Roman", "DejaVu Serif"],
+        "font.serif": ["Times New Roman", "Liberation Serif", "DejaVu Serif"],
         "font.size": 10,
         "axes.spines.top": False,
         "axes.spines.right": False,
@@ -450,12 +450,90 @@ def figure_architecture() -> None:
     save(fig, "arkitektura_e_sistemit")
 
 
+def figure_refactoring_funnel(refactoring: Results) -> None:
+    """Nga vendi i detektuar te era e hequr, në katër hapa.
+
+    Një shirit për çdo hap dhe jo një tabelë: pyetja e lexuesit është sa mbetet
+    nga një hap te tjetri, dhe gjatësia e shiritit e tregon pa llogari.
+    """
+    verdicts = refactoring["verdicts"]
+    kept = verdicts.get("compiles", 0) + verdicts.get("no_new_errors", 0)
+    steps = (
+        ("Vende të detektuara", refactoring["detected"]),
+        ("Të transformuara", refactoring["applied"]),
+        ("Pa gabim të ri", kept),
+        ("Era u hoq", refactoring["resolution"]["resolved"]),
+    )
+    fig, ax = plt.subplots(figsize=(6.2, 2.6))
+    positions = range(len(steps))
+    values = [count for _, count in steps]
+    colours = [MUTED, ACCENT, ACCENT, ACCENT]
+    ax.barh(list(positions), values, color=colours, height=0.6)
+    for position, value in zip(positions, values, strict=True):
+        share = value / values[0]
+        ax.text(value + values[0] * 0.01, position, f"{value:,} ({share:.1%})".replace(",", " "),
+                va="center", fontsize=9)  # fmt: skip
+    ax.set_yticks(list(positions))
+    ax.set_yticklabels([label for label, _ in steps])
+    ax.set_xlabel("Numri i vendeve")
+    ax.set_xlim(0, values[0] * 1.3)
+    ax.invert_yaxis()
+    save(fig, "rrjedha_e_refaktorimit")
+
+
+def figure_refusals_by_severity(refusals: Results) -> None:
+    """Përbërja e arsyeve të refuzimit brenda secilit nivel ashpërsie.
+
+    Dy arsyet kryesore me ngjyrë, të tjerat bashkë: lëvizja që tregon figura është
+    shkëmbimi mes atyre dyjave, dhe gjashtë ngjyra do ta mbulonin.
+    """
+    scale = ("minor", "major", "critical")
+    totals: dict[str, dict[str, int]] = {level: {} for level in scale}
+    for levels in refusals["per_smell"].values():
+        for level, cell in levels.items():
+            bucket = totals.setdefault(level, {})
+            for reason, count in cell["refused_by_reason"].items():
+                bucket[reason] = bucket.get(reason, 0) + count
+
+    groups = (
+        ("forma e kodit nuk përputhet", ("shape_not_matched",), ACCENT),
+        ("rrjedha e kontrollit del nga blloku", ("control_flow_escapes",), MUTED),
+        ("arsye të tjera", None, LIGHT),
+    )
+    named = {reason for _, reasons, _ in groups if reasons for reason in reasons}
+    fig, ax = plt.subplots(figsize=(6.2, 2.6))
+    positions = range(len(scale))
+    left = [0.0] * len(scale)
+    for label, reasons, colour in groups:
+        shares = []
+        for level in scale:
+            bucket = totals[level]
+            total = sum(bucket.values()) or 1
+            if reasons is None:
+                count = sum(c for r, c in bucket.items() if r not in named)
+            else:
+                count = sum(bucket.get(r, 0) for r in reasons)
+            shares.append(100 * count / total)
+        ax.barh(list(positions), shares, left=left, label=label, color=colour, height=0.6)
+        left = [a + b for a, b in zip(left, shares, strict=True)]
+
+    ax.set_yticks(list(positions))
+    ax.set_yticklabels(list(scale))
+    ax.set_xlabel("Përqindje e refuzimeve brenda nivelit")
+    ax.set_xlim(0, 100)
+    ax.invert_yaxis()
+    ax.legend(frameon=False, fontsize=8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.2))
+    save(fig, "refuzimet_sipas_ashpersise")
+
+
 def main() -> int:
     rules = load("rules_evaluation.json")
     ml = load("ml_evaluation.json")
     dataset = load("mlcq_dataset.json")
     sweep = load("threshold_sweep.json")
     intervals = load("bootstrap_intervals.json")
+    refactoring = load("refactoring_evaluation.json")
+    refusals = load("refusals_by_severity.json")
 
     print("Figurat:")
     figure_architecture()
@@ -467,6 +545,8 @@ def main() -> int:
     figure_threshold_sweep(sweep)
     figure_confidence_intervals(intervals)
     figure_severity_bias(rules)
+    figure_refactoring_funnel(refactoring)
+    figure_refusals_by_severity(refusals)
     return 0
 
 

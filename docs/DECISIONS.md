@@ -5826,3 +5826,43 @@ thjeshtë mund të përmendet atje pasi mentorja të mbarojë me kapitujt 1–4.
 rifreskohen numrat e validimit te 4.10 dhe te ROADMAP-i (`BACKEND_TESTS`,
 `FRONTEND_TESTS`): ata janë të datës 25 shtator, 717 dhe 165, dhe mbeten të vërtetë
 për atë datë; sot janë 797 dhe 173, me mbulim 96%.
+
+### VD-145: Kapitujt 5 dhe 6 sipas udhëzuesit të UBT-së dhe shënimeve të mentores
+
+**Konteksti.** Pasi mentorja i mori kapitujt 1–4, mbetën kapitujt e rezultateve dhe
+të diskutimit. Udhëzuesi i UBT-së kërkon që rezultatet të organizohen sipas pyetjeve
+kërkimore, të ndajnë kryesoret nga vëzhgimet dytësore, dhe që çdo tabelë e figurë të
+jetë e titulluar dhe e përshkruar në tekst; diskutimi duhet të interpretojë, të
+krahasojë me literaturën, të japë implikimet, kufizimet, punën e ardhshme dhe një
+përfundim me kontributet. Shënimet e mentores thonë të njëjtën gjë: rezultatet me
+tabela dhe figura pa shpjeguar pse dolën, diskutimi me çfarë funksionoi e çfarë jo dhe
+krahasim me literaturën. Një temë e pranuar e të njëjtit vit u përdor si model
+strukture: çdo nënkapitull rezultatesh hapet me metodën dhe mbyllet me pyetjen.
+Kapitulli 5 kishte 1793 fjalë për 21 tabela, shumica me një fjali të vetme përshkrimi.
+
+**Vendimi.**
+- **Kapitulli 5.** Çdo nënkapitull hapet me nënkapitullin e metodologjisë nga vjen dhe
+  mbyllet me pyetjen kërkimore të cilës i shërben; 5.5–5.7 shënohen si vëzhgime
+  dytësore. Fjalitë e reja përshkruese lexohen nga të dhënat (`_rules_extremes`,
+  `_models_chosen`, `_top_importance`, `_mcc_gap`), pa interpretim.
+- **Dy figura të reja** për 5.4, që nuk kishte asnjë: rrjedha nga vendi i detektuar te
+  era e hequr, dhe përbërja e arsyeve të refuzimit sipas ashpërsisë. Te teksti thuhet
+  se dy shiritat e fundit të rrjedhës maten veç e veç dhe nuk janë nënbashkësi e
+  njëri-tjetrit.
+- **5.8 Përmbledhje e rezultateve**: një tabelë me shifrat që mbajnë përgjigjet,
+  sipas pyetjes, secila me nënkapitullin ku jepet e plotë.
+- **Arsyet e refuzimit shqip** te tabelat (`REASON_LABEL_SQ`); kodi anglisht mbetet në
+  kllapa vetëm te Shtojca 8.4, ku lexuesi e lidh me burimin.
+- **Kapitulli 6.** Hyrje me rendin e nënkapitujve; te 6.2 edhe rezultatet që
+  funksionuan, jo vetëm zgjedhjet metodologjike; te 6.3 një tabelë që vë tetë gjetje të
+  literaturës përballë atyre të punimit, me raportin mes tyre; te 6.4 një tabelë me
+  përgjigjen e shkurtër; te 6.6 kufizimi se tre detektorë nuk kanë të vërtetë bazë dhe
+  Large Class matet vetëm si kusht i Blob-it; te 6.8 kontributet dhe rekomandimet.
+- **Kolona «E kalon zeron»** u bë «Mbi zero»: «kalon» lexohej edhe si «e kapërcen
+  zeron», pra e kundërta.
+
+**Çfarë nuk prek.** Abstraktin dhe falënderimet, që autori i shkruan në fund, dhe
+fletën e cilësisë së rishkrimeve, që pret gjykimin e autorit.
+
+**Verifikimi.** Kapitulli 5 ka 2764 fjalë, Kapitulli 6 ka 3717. Kontrollet e
+përsëritjes, formatit, citimeve, riprodhimit dhe sllajdeve kalojnë.
