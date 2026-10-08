@@ -526,6 +526,41 @@ def figure_refusals_by_severity(refusals: Results) -> None:
     save(fig, "refuzimet_sipas_ashpersise")
 
 
+def figure_rewrite_acceptance(quality: Results) -> None:
+    """Pranueshmëria e rishkrimeve të lexuara, një shirit për çdo transformim.
+
+    Tri kategoritë e rubrikës, me ngjyrën më të fortë për atë që shkon ashtu si
+    është: dallimi që lexuesi kërkon është mes transformimeve, jo mes kategorive.
+    """
+    names = {
+        "ExtractMethod": "Extract Method",
+        "IntroduceParameterObject": "Introduce Parameter Object",
+        "ReplaceNestedConditionalWithGuardClauses": "Guard Clauses",
+    }
+    per = quality["by_refactoring"]
+    order = sorted(per, key=lambda name: -per[name]["acceptable"])
+    fig, ax = plt.subplots(figsize=(6.2, 2.6))
+    positions = range(len(order))
+    left = [0.0] * len(order)
+    for key, label, colour in (
+        ("as_is", "ashtu si është", ACCENT),
+        ("after_edit", "pas një ndreqjeje", MUTED),
+        ("reject", "e refuzuar", LIGHT),
+    ):
+        values = [per[name]["acceptance"][key] for name in order]
+        ax.barh(list(positions), values, left=left, label=label, color=colour, height=0.6)
+        left = [a + b for a, b in zip(left, values, strict=True)]
+    ax.set_yticks(list(positions))
+    ax.set_yticklabels([names.get(name, name) for name in order])
+    ax.set_xlabel("Rishkrime të lexuara")
+    most = max(per[name]["reviewed"] for name in order)
+    ax.set_xlim(0, most)
+    ax.set_xticks(range(0, most + 1, 5))
+    ax.invert_yaxis()
+    ax.legend(frameon=False, fontsize=8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.2))
+    save(fig, "pranueshmeria_e_rishkrimeve")
+
+
 def main() -> int:
     rules = load("rules_evaluation.json")
     ml = load("ml_evaluation.json")
@@ -534,6 +569,7 @@ def main() -> int:
     intervals = load("bootstrap_intervals.json")
     refactoring = load("refactoring_evaluation.json")
     refusals = load("refusals_by_severity.json")
+    quality = load("rewrite_quality.json")
 
     print("Figurat:")
     figure_architecture()
@@ -547,6 +583,7 @@ def main() -> int:
     figure_severity_bias(rules)
     figure_refactoring_funnel(refactoring)
     figure_refusals_by_severity(refusals)
+    figure_rewrite_acceptance(quality)
     return 0
 
 

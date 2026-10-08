@@ -1,0 +1,93 @@
+{
+  "acceptable_reweighted": 0.6293,
+  "acceptance_by_verdict": {
+    "no_new_errors": {
+      "after_edit": 30,
+      "as_is": 3,
+      "reject": 27
+    }
+  },
+  "by_refactoring": {
+    "ExtractMethod": {
+      "acceptable": 0.65,
+      "acceptable_ci": [
+        0.4329,
+        0.8188
+      ],
+      "acceptance": {
+        "after_edit": 13,
+        "as_is": 0,
+        "reject": 7
+      },
+      "behaviour": {
+        "changed": 1,
+        "preserved": 19,
+        "unclear": 0
+      },
+      "benefit": {
+        "improves": 14,
+        "neutral": 5,
+        "worsens": 1
+      },
+      "population": 3298,
+      "reviewed": 20
+    },
+    "IntroduceParameterObject": {
+      "acceptable": 0.0,
+      "acceptable_ci": [
+        0.0,
+        0.1611
+      ],
+      "acceptance": {
+        "after_edit": 0,
+        "as_is": 0,
+        "reject": 20
+      },
+      "behaviour": {
+        "changed": 0,
+        "preserved": 20,
+        "unclear": 0
+      },
+      "benefit": {
+        "improves": 0,
+        "neutral": 16,
+        "worsens": 4
+      },
+      "population": 155,
+      "reviewed": 20
+    },
+    "ReplaceNestedConditionalWithGuardClauses": {
+      "acceptable": 1.0,
+      "acceptable_ci": [
+        0.8389,
+        1.0
+      ],
+      "acceptance": {
+        "after_edit": 17,
+        "as_is": 3,
+        "reject": 0
+      },
+      "behaviour": {
+        "changed": 0,
+        "preserved": 20,
+        "unclear": 0
+      },
+      "benefit": {
+        "improves": 20,
+        "neutral": 0,
+        "worsens": 0
+      },
+      "population": 79,
+      "reviewed": 20
+    }
+  },
+  "drawn": 60,
+  "environment": {
+    "commit": "adf4db30c290003d68988b2a1a54b1e99c79f4e9",
+    "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39",
+    "python": "3.13.12"
+  },
+  "per_refactoring": 20,
+  "reviewed": 60,
+  "seed": 20260907
+}

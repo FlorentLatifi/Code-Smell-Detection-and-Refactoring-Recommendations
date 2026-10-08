@@ -5866,3 +5866,53 @@ fletën e cilësisë së rishkrimeve, që pret gjykimin e autorit.
 
 **Verifikimi.** Kapitulli 5 ka 2764 fjalë, Kapitulli 6 ka 3717. Kontrollet e
 përsëritjes, formatit, citimeve, riprodhimit dhe sllajdeve kalojnë.
+
+### VD-146: Fleta e cilësisë së rishkrimeve
+
+**Konteksti.** Seksioni i cilësisë te 5.4 ishte i vetmi `[PLOTËSO]` përveç
+falënderimeve: 60 rishkrime të mostrës së mbjellë (VD-74), 20 për çdo transformim,
+prisnin gjykimin sipas rubrikës së 4.7. Rubrika kërkon që vlerësuesi të mos e shohë
+verdiktin e kompilatorit.
+
+**Si u bë.** Korpusi nuk ishte në makinë, ndaj 47 skedarët burimorë të mostrës u
+shkarkuan nga GitHub te `data/corpus/` (jashtë git-it), me commit-in që mban emri i
+dosjes; katër skedarë të Eclipse-it erdhën nga organizatat e reja `eclipse-jdt` dhe
+`eclipse-platform`. `review_rewrites.py --sample` i rigjeneroi të 60 diff-et, dhe
+fleta e rigjeneruar doli identike me të komituarën. Çdo diff u lexua; kur nuk
+mjaftonte, u lexua edhe metoda origjinale (variablat që përdor blloku i nxjerrë,
+fushat, kapjet nga klasat anonime, thirrjet e metodës, Javadoc-u). Verdiktet e
+kompilatorit nuk u panë para se fleta të mbushej. Arsyeja e çdo gjykimi është te
+kolona `note`.
+
+**Rezultati.**
+- **Guard Clauses:** 20 nga 20 të pranueshme, 3 ashtu si janë dhe 17 pas një
+  ndreqjeje: kushti shkruhet si mohim i plotë (`!(raw != null)`), ose roja nuk ndjek
+  stilin Allman të skedarit.
+- **Extract Method:** 13 nga 20, të gjitha pas ndreqjes së emrit `extracted`. Të
+  refuzuarat: një bllok nga shumë blloqe paralele (EM05, EM06), gjithë trupi i
+  metodës (EM10, EM20), kod i gjeneruar (EM07, EM20), një test (EM17), dhe EM01.
+- **Introduce Parameter Object:** 0 nga 20. Sjellja ruhet gjithmonë: metodat janë
+  private, të gjitha thirrjet përditësohen, nuk ka mbingarkesa dhe as përplasje
+  emrash. Por klasa merr emrin e metodës, mban të gjithë parametrat dhe shpaketohet
+  menjëherë, ndaj lista kalon te konstruktori. Te katër raste Javadoc-u me `@param`
+  mbetet sipër klasës së re.
+- **E ripeshuar:** 62.9% e vendeve të rishkruara janë të pranueshme.
+- **EM01 nuk kompilon.** Extract Method nxjerr te `Resolve.resolveMemberReference`
+  një `if` që cakton `unboundRes`, pa ia kaluar metodës së re as variablën, as vlerën
+  e saj fillestare. U provua me `javac` mbi skedarin e izoluar: rishkrimi shton dy
+  gabime «cannot find symbol: variable unboundRes», por skedari kishte tashmë 731
+  gabime të atij lloji, ndaj verdikti ishte «pa gabim të ri». Është defekt i
+  analizës së daljeve dhe rast konkret ku toleranca e VD-53 dështon. Motori nuk u
+  ndreq këtu: ndreqja do të kërkonte riekzekutimin e hapit 7 mbi gjithë korpusin.
+
+**Punimi.**
+- 5.4 merr tabelën, një figurë dhe përshkrimin sipas transformimit.
+- 6.1 e interpreton leximin: Introduce Parameter Object e heq erën nga matja, jo nga
+  kodi.
+- 6.2 korrigjon pohimin e VD-145 se Introduce Parameter Object «e hoqi erën me
+  ndërtim» si sukses.
+- 6.4 e ngushton përgjigjen e PK3 për strukturën te dy nga tri transformimet.
+- 6.7 shton dy drejtime.
+
+Një rresht i ndryshuar te `rewrite_quality_sample.csv` rigjeneron gjithçka me
+`review_rewrites.py --score` dhe `build_thesis.py`.

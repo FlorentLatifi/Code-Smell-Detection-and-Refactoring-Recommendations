@@ -1844,6 +1844,62 @@ def _isolation_reading(context: dict) -> str:
     )
 
 
+def _quality_reading() -> list:
+    """Çfarë thotë leximi i rishkrimeve për secilin transformim.
+
+    Shifrat lexohen nga `rewrite_quality.json`; arsyet janë ato që përsëriten te
+    shënimet e fletës së komituar, ndaj fjalitë e tyre shkruhen këtu dhe jo
+    nxirren, por vetëm kur shifrat përputhen me modelin që përshkruajnë.
+    """
+    data = _load_if_present("rewrite_quality.json")
+    if data is None:
+        return []
+    per = data["by_refactoring"]
+    ipo = per.get("IntroduceParameterObject")
+    guard = per.get("ReplaceNestedConditionalWithGuardClauses")
+    extract = per.get("ExtractMethod")
+    paragraphs = []
+    if ipo and guard and ipo["acceptable"] < guard["acceptable"]:
+        none = "asnjëherë" if ipo["acceptable"] == 0 else "rrallë"
+        paragraphs.append(
+            "Leximi i rishkrimeve (Nënkapitulli 5.4) e përmbys këtë renditje. Transformimi "
+            f"që e heq erën me ndërtim, Introduce Parameter Object, nuk u pranua {none}: "
+            "klasa e re merr emrin e metodës, mban të gjithë parametrat dhe shpaketohet në "
+            "rreshtat e parë, ndaj lista e gjatë kalon nga metoda te konstruktori dhe "
+            "thirrjet nuk lexohen më mirë. Era zhduket sipas matjes, jo sipas lexuesit. "
+            "Fowler-i e propozon këtë transformim për parametra që udhëtojnë bashkë si një "
+            "koncept, jo për çdo listë që kalon një prag, dhe ky dallim nuk matet me numrin "
+            "e parametrave. Guard Clauses, përkundrazi, u pranua te "
+            f"{guard['acceptance']['as_is'] + guard['acceptance']['after_edit']} nga "
+            f"{guard['reviewed']} rishkrimet e lexuara, zakonisht pas një ndreqjeje të "
+            "vogël: motori e shkruan kushtin si mohim të plotë, !(raw != null), aty ku "
+            "një zhvillues do të shkruante raw == null."
+        )
+    if extract:
+        accepted = extract["acceptance"]["as_is"] + extract["acceptance"]["after_edit"]
+        paragraphs.append(
+            f"Extract Method u pranua te {accepted} nga {extract['reviewed']} rishkrime, "
+            "kur blloku i nxjerrë kishte një përgjegjësi të qartë, dhe "
+            + ("gjithmonë" if not extract["acceptance"]["as_is"] else "zakonisht")
+            + " pas ndreqjes së emrit «extracted», të cilin një motor determinist nuk e "
+            "zgjedh dot. U refuzua kur nxirrte vetëm një nga shumë blloqe paralele, kur "
+            "zhvendoste gjithë trupin e metodës, ose kur prekte kod të gjeneruar nga një "
+            "mjet. Kufiri i tij nuk është pra sintaksor: blloku që motori di ta nxjerrë "
+            "pa rrezik nuk është gjithmonë blloku që ia vlen të nxirret."
+        )
+    if extract and extract["behaviour"]["changed"]:
+        paragraphs.append(
+            "Leximi gjeti edhe një rishkrim që nuk kompilon dhe që kontrolli i "
+            "kompilatorit e kishte lënë të kalonte. Extract Method nxori një bllok që "
+            "cakton një variabël vetëm brenda një if-i, por nuk ia kaloi metodës së re as "
+            "variablën, as vlerën e saj të mëparshme. Gabimi «cannot find symbol» që "
+            "shtonte ishte i të njëjtit lloj si qindra të tjerë që skedari i izoluar kishte "
+            "tashmë, ndaj toleranca «pa lloj të ri gabimi» nuk e dalloi. Është defekt i "
+            "analizës së daljeve në motor dhe provë konkrete e kufirit të asaj tolerance."
+        )
+    return paragraphs
+
+
 def _reading_of_refactoring() -> list:
     """Interpretimi i PK3, me çdo numër nga të dhënat."""
     data = _load_if_present("refactoring_evaluation.json")
@@ -1876,6 +1932,7 @@ def _reading_of_refactoring() -> list:
             "se metoda bie nën prag. Vetëm Introduce Parameter Object e zgjidh erën me "
             "ndërtim, sepse lista e parametrave bëhet një."
         )
+    paragraphs += _quality_reading()
     if introduced:
         top = max(introduced, key=lambda name: introduced[name])
         paragraphs.append(
@@ -2058,6 +2115,45 @@ def _gain_in_answer(h: dict) -> str:
     )
 
 
+def _quality_in_answer() -> str:
+    """Pranueshmëria e ripeshuar, si kufi i pretendimit për strukturën."""
+    data = _load_if_present("rewrite_quality.json")
+    if data is None:
+        return ""
+    pooled = data.get("acceptable_reweighted")
+    worst = min(data["by_refactoring"].items(), key=lambda pair: pair[1]["acceptable"])
+    return (
+        f"Leximi i {data['reviewed']} rishkrimeve e kufizon pretendimin për strukturën: "
+        f"të ripeshuara sipas transformimit, {pooled:.1%} janë të pranueshme për një "
+        f"zhvillues, por te {_named(worst[0])} "
+        + ("asnjë. " if worst[1]["acceptable"] == 0 else f"vetëm {worst[1]['acceptable']:.0%}. ")
+    )
+
+
+def _structure_cell() -> str:
+    """E njëjta përgjigje si `_structure_verdict`, në formën e shkurtër të tabelës."""
+    data = _load_if_present("rewrite_quality.json")
+    if data is None:
+        return " po për strukturën"
+    per = data["by_refactoring"]
+    good = sum(entry["acceptable"] >= 0.5 for entry in per.values())
+    if good == len(per):
+        return " po për strukturën"
+    return f" për strukturën te {_word(good)} nga {_word(len(per))} transformimet"
+
+
+def _structure_verdict() -> str:
+    """Për sa transformime vlen «po» edhe për strukturën."""
+    data = _load_if_present("rewrite_quality.json")
+    if data is None:
+        return " dhe për strukturën"
+    per = data["by_refactoring"]
+    good = sum(entry["acceptable"] >= 0.5 for entry in per.values())
+    if good == len(per):
+        return " dhe për strukturën"
+    return f" dhe, te {_word(good)} nga {_word(len(per))} transformimet, për strukturën"
+
+
 def _answers(h: dict) -> list:
     """Përgjigjet e qarta ndaj tri pyetjeve kërkimore, nga të dhënat."""
     smells, strategy, model = h["smells"], h["strategy"], h["model"]
@@ -2122,9 +2218,11 @@ def _answers(h: dict) -> list:
             "objektivisht në shumicën e rasteve, me koston e "
             f"{sum((data.get('introduced_smells') or {}).values())} erërave të reja. Kur "
             f"skedari kompilohet brenda projektit të vet, {_context_conclusion()}. "
-            "Ruajtja e sjelljes nuk është pjesë e PK3 dhe **nuk u mat** (Nënkapitulli "
-            "3.4). Përgjigjja është pra po për kompilueshmërinë dhe për strukturën, "
-            "me kosto të matur, ndërsa sjellja mbetet pyetje e hapur."
+            + _quality_in_answer()
+            + "Ruajtja e sjelljes nuk është pjesë e PK3 dhe **nuk u mat** (Nënkapitulli "
+            "3.4). Përgjigjja është pra po për kompilueshmërinë"
+            + _structure_verdict()
+            + ", me kosto të matur, ndërsa sjellja mbetet pyetje e hapur."
         )
     return answers
 
@@ -2229,7 +2327,8 @@ def chapter_6() -> list:
                 "dyja kushtet e strategjisë e numërojnë këtë si përkeqësim. Fowler-i e "
                 "trajton atë si hap përgatitor, jo si ilaç. Extract Method e ka të "
                 "njëjtin cen në shkallë më të vogël, përmes listës së gjatë të "
-                "parametrave që lë pas (Nënkapitulli 6.1).",
+                "parametrave që lë pas, dhe Introduce Parameter Object, ashtu si e zbaton "
+                "motori, e heq erën nga matja pa e hequr nga kodi (Nënkapitulli 6.1).",
             ],
         ),
         (
@@ -2326,6 +2425,19 @@ def chapter_6() -> list:
                 ),
                 (
                     "bullet",
+                    "Introduce Parameter Object që grupon vetëm parametrat që udhëtojnë "
+                    "bashkë në disa thirrje dhe i jep klasës një emër koncepti, jo emrin e "
+                    "metodës; Extract Method që nuk nxjerr një bllok të vetëm nga blloqe "
+                    "paralele dhe nuk prek kodin e gjeneruar.",
+                ),
+                (
+                    "bullet",
+                    "Ndreqja e analizës së daljeve te Extract Method, që një variabël e "
+                    "caktuar vetëm me kusht të hyjë si parametër, dhe kushte rojesh pa "
+                    "mohim të dyfishtë.",
+                ),
+                (
+                    "bullet",
                     "Zgjerim i të vërtetës bazë përtej katër erërave që mbulon MLCQ, dhe "
                     "gjykim i cilësisë së rishkrimeve nga rishikues të pavarur.",
                 ),
@@ -2375,9 +2487,20 @@ def _what_worked(h: dict) -> str:
     if data is not None:
         broken = data["verdicts"].get("new_errors", 0) / data["applied"]
         text += (
-            f" Te refaktorimi, vetëm {broken:.1%} e rishkrimeve shtuan gabim të ri, dhe "
-            "Introduce Parameter Object e hoqi erën me vetë ndërtimin e tij."
+            f" Te refaktorimi, vetëm {broken:.1%} e rishkrimeve shtuan gabim të ri"
         )
+        quality = _load_if_present("rewrite_quality.json")
+        guard = (quality or {}).get("by_refactoring", {}).get(
+            "ReplaceNestedConditionalWithGuardClauses"
+        )
+        if guard:
+            accepted = guard["acceptance"]["as_is"] + guard["acceptance"]["after_edit"]
+            text += (
+                f", dhe rojet e Guard Clauses u gjykuan të pranueshme te {accepted} nga "
+                f"{guard['reviewed']} rishkrimet e lexuara."
+            )
+        else:
+            text += "."
     return text
 
 
@@ -2454,9 +2577,15 @@ def _answers_table(h: dict) -> list:
     ]  # fmt: skip
     data = _load_if_present("refactoring_evaluation.json")
     if data is not None:
+        quality = _load_if_present("rewrite_quality.json")
+        evidence = f"{data['applied'] / data['detected']:.1%} e vendeve të transformuara"
+        if quality is not None:
+            evidence += (
+                f"; {quality['acceptable_reweighted']:.1%} e rishkrimeve të pranueshme"
+            )
         rows.append(
-            ["PK3", "Po për kompilueshmërinë dhe strukturën; sjellja nuk u mat",
-             f"{data['applied'] / data['detected']:.1%} e vendeve të transformuara", "5.4"]
+            ["PK3", "Po për kompilueshmërinë;" + _structure_cell() + "; sjellja nuk u mat",
+             evidence, "5.4"]
         )  # fmt: skip
     return [
         "Të treja përgjigjet, në formë të shkurtër dhe me shifrën që i mban, janë këto:",
@@ -2564,6 +2693,12 @@ def _summary_paragraphs() -> list:
             ["PK3", "Erëra të reja pas rishkrimit",
              _count(sum(refactoring["introduced_smells"].values())), "5.4"],
         ]  # fmt: skip
+        quality = _load_if_present("rewrite_quality.json")
+        if quality is not None:
+            rows.append(
+                ["PK3", "Rishkrime të pranueshme për zhvilluesin (të ripeshuara)",
+                 f"{quality['acceptable_reweighted']:.1%}", "5.4"]
+            )  # fmt: skip
     return [
         "Tabela e fundit e kapitullit i mbledh në një vend shifrat që mbajnë përgjigjet, "
         "të renditura sipas pyetjes kërkimore. Ku shifra ndryshon sipas erës, jepet "
@@ -4100,10 +4235,40 @@ def _verdict_separates(table: dict[str, dict[str, int]]) -> str:
             "Asnjë rishkrim që kaloi kontrollin e kompilatorit nuk u refuzua nga "
             "rishikuesi."
         )
-    verb = "u refuzua" if rejected == 1 else "u refuzuan"
+    if rejected == 1:
+        return "Një rishkrim që kaloi kontrollin e kompilatorit u refuzua nga rishikuesi."
     return (
-        f"{_opens(_rewrites(rejected))} që kaloi kontrollin e kompilatorit {verb} nga "
+        f"{_opens(_rewrites(rejected))} që kaluan kontrollin e kompilatorit u refuzuan nga "
         "rishikuesi."
+    )
+
+
+def _acceptance_by_refactoring(per: dict) -> str:
+    """Sa rishkrime u pranuan te secili transformim, nga më i pranuari te më pak."""
+    parts = []
+    for name, entry in sorted(per.items(), key=lambda pair: -pair[1]["acceptable"]):
+        accepted = entry["acceptance"]["as_is"] + entry["acceptance"]["after_edit"]
+        if not accepted:
+            parts.append(f"te {_named(name)} asnjë")
+            continue
+        detail = []
+        if entry["acceptance"]["as_is"]:
+            detail.append(f"{entry['acceptance']['as_is']} ashtu si janë")
+        if entry["acceptance"]["after_edit"]:
+            detail.append(f"{entry['acceptance']['after_edit']} pas një ndreqjeje")
+        parts.append(
+            f"te {_named(name)} {accepted} nga {entry['reviewed']} ({_joined(detail)})"
+        )
+    improves = [
+        f"{entry['benefit']['improves']} nga {entry['reviewed']} te {_named(name)}"
+        for name, entry in per.items()
+    ]
+    return (
+        "Rishkrimet e pranueshme janë "
+        + "; ".join(parts)
+        + ". Përfitim strukturor u gjykua te "
+        + _joined(improves)
+        + "."
     )
 
 
@@ -4126,7 +4291,7 @@ def _rewrite_quality_paragraphs() -> list:
     per = data["by_refactoring"]
     rows = [
         [
-            name,
+            _named(name),
             str(entry["reviewed"]),
             str(entry["acceptance"]["as_is"]),
             str(entry["acceptance"]["after_edit"]),
@@ -4161,12 +4326,22 @@ def _rewrite_quality_paragraphs() -> list:
             "pranonte as atë."
         )
 
+    verdicts = set(data.get("acceptance_by_verdict") or {})
+    if changed and verdicts and verdicts <= {"compiles", "no_new_errors"}:
+        behaviour += (
+            " Të gjitha rishkrimet e mostrës, përfshirë këtë, e kishin kaluar kontrollin "
+            "e kompilatorit."
+        )
+
     paragraphs: list = [
         f"Sipas rubrikës së Nënkapitullit 4.7 u lexua një mostër e mbjellë prej "
         f"{data['drawn']} rishkrimesh, {data['per_refactoring']} për çdo transformim.",
         ("table", "Pranueshmëria e rishkrimeve sipas rishikuesit",
          ["Transformimi", "Të lexuara", "Ashtu si është", "Pas ndreqjeje",
           "Të refuzuara", "Të pranueshme", "IB 95%"], rows),  # fmt: skip
+        ("figure", str(FIGURES / "pranueshmeria_e_rishkrimeve.png"),
+         "Pranueshmëria e rishkrimeve sipas transformimit"),
+        _acceptance_by_refactoring(per),
         behaviour,
         _quality_shortfall(
             sum(e["benefit"]["neutral"] + e["benefit"]["worsens"] for e in per.values()),
