@@ -1553,6 +1553,26 @@ REASON_SHORT_SQ = {
 }
 
 
+# Emri i arsyes si shfaqet në tabela. Kodi i sistemit mbetet në anglisht dhe jepet
+# në kllapa vetëm te Shtojca 8.4, ku lexuesi e lidh me burimin.
+REASON_LABEL_SQ = {
+    "shape_not_matched": "forma e kodit nuk përputhet",
+    "control_flow_escapes": "rrjedha e kontrollit del nga blloku",
+    "not_definitely_assigned": "vlerë e pacaktuar me siguri",
+    "multiple_outputs": "më shumë se një vlerë dalëse",
+    "ambiguous_overload": "mbingarkesë e paqartë",
+    "unresolved_name": "emër i pazgjidhur",
+    "possible_side_effect": "efekt anësor i mundshëm",
+    "edit_conflict": "editime që mbivendosen",
+    "unparseable": "kod që nuk parsohet",
+}
+
+
+def _reason_label(reason: str) -> str:
+    """Emri shqip i një arsyeje refuzimi; një arsye e re shfaqet me kodin e vet."""
+    return REASON_LABEL_SQ.get(reason, reason.replace("_", " "))
+
+
 def _calibration_verdict() -> str:
     """Ku ndihmoi kalibrimi jashtë fold-it, nga të dhënat e Nënkapitullit 5.5."""
     data = _load_if_present("threshold_calibration.json")
@@ -1968,6 +1988,7 @@ def _literature_comparison(h: dict) -> list:
         "lidhje me një erë (Silva et al., 2016), por tregon vlerën e një transformimi "
         "që zgjidhet për erën e gjetur dhe matet pas aplikimit."
     )
+    paragraphs += _literature_summary(h)
     return paragraphs
 
 
@@ -2152,6 +2173,18 @@ def chapter_6() -> list:
     h = _headline()
     return [
         (
+            None,
+            "",
+            [
+                "Kapitulli 5 i dha rezultatet ashtu si dolën. Ky kapitull i shpjegon: "
+                "çfarë nënkupton secili rezultat (6.1), çfarë funksionoi dhe çfarë jo "
+                "(6.2), si krahasohen gjetjet me ato të literaturës (6.3) dhe si "
+                "përgjigjet secila pyetje kërkimore (6.4). Pas tyre vijnë implikimet "
+                "(6.5), kufizimet që e ngushtojnë vlefshmërinë e përfundimeve (6.6), "
+                "drejtimet për punë të mëtejshme (6.7) dhe përfundimi i punimit (6.8).",
+            ],
+        ),
+        (
             "6.1",
             "Interpretimi i rezultateve",
             [
@@ -2170,6 +2203,7 @@ def chapter_6() -> list:
                 "mbajti motorin larg kodit që nuk e kuptonte, dhe dëmi mbeti te pakica e "
                 "raportuar. Matja mbi kod real, më në fund, kapi tri defekte që testet e "
                 "njësisë i kishin lënë të kalonin (Nënkapitulli 5.4).",
+                _what_worked(h),
                 "**Çfarë nuk funksionoi.** Strategjitë nuk matin plotësisht atë që "
                 "emërtojnë. Dy gjetje të pavarura tregojnë në të njëjtin drejtim. E "
                 "para: kur modeleve u lihet të zgjedhin vetë veçoritë, te Blob nuk "
@@ -2206,7 +2240,7 @@ def chapter_6() -> list:
         (
             "6.4",
             "Përgjigjet ndaj pyetjeve kërkimore",
-            _answers(h),
+            [*_answers(h), *_answers_table(h)],
         ),
         (
             "6.5",
@@ -2263,6 +2297,11 @@ def chapter_6() -> list:
                 "të God Class-it. Po ashtu, niveli i "
                 "ashpërsisë që shfaq mjeti është renditje e brendshme e tij dhe jo "
                 "parashikim i gjykimit njerëzor.",
+                "Jo çdo detektor i sistemit u vlerësua kundrejt njerëzve. MLCQ mbulon "
+                "katër erëra, ndaj Brain Method, Deep Nesting dhe Long Parameter List "
+                "nuk kanë të vërtetë bazë dhe saktësia e tyre nuk u mat; ato hyjnë në "
+                "rezultate vetëm si burim vendesh për motorin e refaktorimit. Large Class "
+                "matet vetëm tërthorazi, si kusht shtesë i Blob-it.",
                 *_blob_recall_limits(),
             ],
         ),
@@ -2314,8 +2353,134 @@ def chapter_6() -> list:
                 "rrjedh nga një depo te tjetra, dhe një rishkrim vlen aq sa verifikimi që "
                 "e ndjek. Që këto të mos mbeten pohime, çdo numër i punimit rigjenerohet "
                 "nga korpusi me një komandë, dhe çdo vendim ruhet bashkë me arsyen e vet.",
+                *_conclusion_paragraphs(h),
             ],
         ),
+    ]
+
+
+def _what_worked(h: dict) -> str:
+    """Rezultatet që e mbajtën premtimin e tyre, me shifrat nga të dhënat."""
+    ml, smells = h["ml"], h["smells"]
+    shares = [ml["per_smell"][s]["explained"]["share"] for s in smells]
+    precision = [ml["per_smell"][s]["combined"]["intersection"]["precision"] for s in smells]
+    text = (
+        "Edhe disa rezultate e mbajtën premtimin e tyre. Modeli e kaloi rregullin te "
+        "çdo erë, dhe shumica e verdikteve të tij, nga "
+        f"{min(shares):.0%} deri në {max(shares):.0%}, u shpjeguan me një matje të vetme, "
+        "ndaj fitimi nuk erdhi në kurriz të shpjegueshmërisë. Kur dy qasjet pajtohen, precizioni nuk "
+        f"bie nën {min(precision):.2f}, çka i jep zhvilluesit një sinjal të fortë."
+    )
+    data = _load_if_present("refactoring_evaluation.json")
+    if data is not None:
+        broken = data["verdicts"].get("new_errors", 0) / data["applied"]
+        text += (
+            f" Te refaktorimi, vetëm {broken:.1%} e rishkrimeve shtuan gabim të ri, dhe "
+            "Introduce Parameter Object e hoqi erën me vetë ndërtimin e tij."
+        )
+    return text
+
+
+# Gjetjet e literaturës, ashtu si i raportojnë autorët dhe si diskutohen më lart.
+# Shifrat e këtij punimi në kolonën ngjitur lexohen nga rezultatet.
+LITERATURE_FINDINGS = (
+    ("Lanza & Marinescu (2006)", "strategji me pragje nga statistikat e 45 sistemeve"),
+    ("Arcelli Fontana et al. (2016)", "saktësi dhe F-measure mbi 95%"),
+    ("Di Nucci et al. (2018)", "me të dhëna realiste performanca bie ndjeshëm"),
+    ("Madeyski & Lewowski (2023)", "MCC 0.51 te Blob, 0.57 te Data Class, 0.31 te Feature Envy"),
+    ("Mäntylä & Lassenius (2006)", "gjykimi i erërave nga zhvilluesit është subjektiv"),
+    ("Sjøberg et al. (2013)", "madhësia peshon më shumë se erërat në mirëmbajtje"),
+    ("Bavota et al. (2015)", "7% e refaktorimeve të zhvilluesve e heqin erën"),
+    ("Opdyke (1992)", "refaktorim vetëm kur parakushtet provohen"),
+)
+
+
+def _literature_summary(h: dict) -> list:
+    """Gjetjet kryesore përballë literaturës, në një tabelë."""
+    strategy, model, smells = h["strategy"], h["model"], h["smells"]
+    precision = [strategy[s]["precision"] for s in smells]
+    recall = [strategy[s]["recall"] for s in smells]
+    f1 = [model[s]["f1"] for s in smells]
+    mcc = [model[s]["mcc"] for s in smells]
+    ceiling = _load_if_present("reviewer_agreement.json")
+    refactoring = _load("refactoring_evaluation.json")
+    applied = refactoring["applied"]
+    resolved = refactoring["resolution"]["resolved"] / applied
+    broken = refactoring["verdicts"].get("new_errors", 0) / applied
+    blob_top = max(
+        h["ml"]["per_smell"]["blob"]["importances"],
+        key=h["ml"]["per_smell"]["blob"]["importances"].get,
+    )[2:]
+
+    here = {
+        "Lanza & Marinescu (2006)": (
+            f"precizion {min(precision):.2f}–{max(precision):.2f}, recall "
+            f"{min(recall):.2f}–{max(recall):.2f}", "pjesërisht"),
+        "Arcelli Fontana et al. (2016)": (
+            f"F1 {min(f1):.2f}–{max(f1):.2f}", "nuk konfirmohet"),
+        "Di Nucci et al. (2018)": (f"F1 {min(f1):.2f}–{max(f1):.2f} mbi MLCQ", "konfirmohet"),
+        "Madeyski & Lewowski (2023)": (
+            f"MCC {min(mcc):.2f}–{max(mcc):.2f}; {model['feature envy']['mcc']:.2f} te "
+            "Feature Envy", "i njëjti brez, Feature Envy më lart"),
+        "Mäntylä & Lassenius (2006)": (
+            "MCC mes rishikuesve "
+            + _span([e["mcc"] for e in ceiling["per_smell"].values()], 2).replace(" deri në ", "–")
+            if ceiling else "—", "konfirmohet"),
+        "Sjøberg et al. (2013)": (f"te Blob veçoria kryesore është {blob_top}", "përputhet"),
+        "Bavota et al. (2015)": (f"era u hoq te {resolved:.1%} e rishkrimeve", "kontekst tjetër"),
+        "Opdyke (1992)": (f"gabim i ri te {broken:.1%} e rishkrimeve", "përputhet"),
+    }  # fmt: skip
+    rows = [[source, claim, *here[source]] for source, claim in LITERATURE_FINDINGS]
+    return [
+        "Krahasimet e mësipërme përmblidhen në tabelën e mëposhtme. Kolona e fundit "
+        "thotë nëse gjetja e këtij punimi e mbështet atë të burimit, e kundërshton apo "
+        "nuk krahasohet dot drejtpërdrejt me të.",
+        ("table", "Gjetjet e punimit përballë literaturës",
+         ["Burimi", "Gjetja e burimit", "Gjetja këtu", "Raporti"], rows),
+    ]
+
+
+def _answers_table(h: dict) -> list:
+    """Përgjigjja e shkurtër për secilën pyetje, me dëshminë që e mban."""
+    strategy, model, smells = h["strategy"], h["model"], h["smells"]
+    higher = sum(model[s]["mcc"] > strategy[s]["mcc"] for s in smells)
+    rows = [
+        ["PK1", "Pjesërisht: precizion i lartë, recall i ulët",
+         f"MCC {min(strategy[s]['mcc'] for s in smells):.3f}–"
+         f"{max(strategy[s]['mcc'] for s in smells):.3f}", "5.1"],
+        ["PK2", f"Po, {_among(higher, len(smells))}",
+         f"MCC {min(model[s]['mcc'] for s in smells):.3f}–"
+         f"{max(model[s]['mcc'] for s in smells):.3f}", "5.2, 5.3, 5.7"],
+    ]  # fmt: skip
+    data = _load_if_present("refactoring_evaluation.json")
+    if data is not None:
+        rows.append(
+            ["PK3", "Po për kompilueshmërinë dhe strukturën; sjellja nuk u mat",
+             f"{data['applied'] / data['detected']:.1%} e vendeve të transformuara", "5.4"]
+        )  # fmt: skip
+    return [
+        "Të treja përgjigjet, në formë të shkurtër dhe me shifrën që i mban, janë këto:",
+        ("table", "Përgjigjet e shkurtra ndaj pyetjeve kërkimore",
+         ["Pyetja", "Përgjigjja", "Dëshmia kryesore", "Nënkapitulli"], rows),
+    ]
+
+
+def _conclusion_paragraphs(h: dict) -> list:
+    """Kontributet dhe rekomandimet, sipas udhëzuesit të UBT-së për përfundimin."""
+    data = _load_if_present("refactoring_evaluation.json")
+    applied = f"{_count(data['applied'])} rishkrime të verifikuara" if data else "rishkrime"
+    return [
+        "Kontributi i punimit është i trefishtë. I pari është një krahasim i ndershëm "
+        "i rregullave dhe i mësimit të makinës mbi të njëjtat mostra të MLCQ-së, me "
+        "ndarje sipas depos dhe me intervale besimi. I dyti është një motor refaktorimi "
+        f"që refuzon kur nuk provon dot, i matur mbi kod real me {applied}. I treti "
+        "është vetë mjeti, i hapur dhe i riprodhueshëm, me ndërfaqe web dhe me një "
+        "mënyrë të thjeshtë për lexuesin pa formim teknik.",
+        "Për praktikuesit rekomandimi është i qartë: pragjet e botuara të përdoren si "
+        "pikënisje dhe jo si vendim, një model i mësuar të përdoret aty ku ka të "
+        "dhëna të etiketuara, dhe rishkrimi automatik të pranohet vetëm kur mjeti e "
+        "verifikon dhe e mat. Për kërkuesit, hapi i radhës është ai që ky punim "
+        "nuk e bëri dot: të provohet se rishkrimi e ruan sjelljen e programit.",
     ]
 
 
@@ -2343,7 +2508,72 @@ def chapter_5() -> list:
             number = f"5.{FIRST_SECONDARY_IN_CHAPTER + offset}"
             offset += 1
         renumbered.append((number, title, paragraphs))
+    renumbered.append(
+        (f"5.{FIRST_SECONDARY_IN_CHAPTER + offset}", "Përmbledhje e rezultateve",
+         _summary_paragraphs())
+    )  # fmt: skip
     return renumbered
+
+
+def _summary_paragraphs() -> list:
+    """Shifrat kryesore të kapitullit në një tabelë, sipas pyetjes kërkimore.
+
+    Asnjë shifër e re: çdo rresht rillogaritet nga i njëjti skedar si nënkapitulli
+    që e paraqet, ndaj tabela nuk mund të rrëshqasë prej tij.
+    """
+    rules = _load("rules_evaluation.json")
+    ml = _load("ml_evaluation.json")
+    intervals = _load("bootstrap_intervals.json")
+    refactoring = _load_if_present("refactoring_evaluation.json")
+    smells = sorted(ml["per_smell"])
+
+    def strategy(smell: str) -> dict:
+        return rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]
+
+    def best(smell: str) -> dict:
+        entry = ml["per_smell"][smell]
+        return entry["models"][entry["best_model"]]
+
+    def band(values: list[float]) -> str:
+        return f"{min(values):.3f} – {max(values):.3f}"
+
+    gaps = [best(s)["mcc"] - strategy(s)["mcc"] for s in smells]
+    above = sum(
+        entry["intervals"]["difference_model_minus_rules"]["low"] > 0
+        for entry in intervals["per_smell"].values()
+    )
+    rows = [
+        ["PK1", "MCC e strategjive", band([strategy(s)["mcc"] for s in smells]), "5.1"],
+        ["PK1", "Precizioni i strategjive", band([strategy(s)["precision"] for s in smells]),
+         "5.1"],
+        ["PK1", "Recall-i i strategjive", band([strategy(s)["recall"] for s in smells]), "5.1"],
+        ["PK2", "MCC e modelit më të mirë", band([best(s)["mcc"] for s in smells]), "5.2"],
+        ["PK2", "Dallimi B − A në MCC", band(gaps), "5.3"],
+        ["PK2", "Erëra me dallim mbi zero (IB 95%)", f"{above} nga {len(smells)}", "5.7"],
+    ]
+    if refactoring is not None:
+        detected, applied = refactoring["detected"], refactoring["applied"]
+        broken = refactoring["verdicts"].get("new_errors", 0)
+        resolved = refactoring["resolution"]["resolved"]
+        rows += [
+            ["PK3", "Vende të transformuara",
+             f"{_count(applied)} nga {_count(detected)} ({applied / detected:.1%})", "5.4"],
+            ["PK3", "Rishkrime me gabim të ri", f"{broken} ({broken / applied:.1%})", "5.4"],
+            ["PK3", "Rishkrime ku era u hoq", f"{_count(resolved)} ({resolved / applied:.1%})",
+             "5.4"],
+            ["PK3", "Erëra të reja pas rishkrimit",
+             _count(sum(refactoring["introduced_smells"].values())), "5.4"],
+        ]  # fmt: skip
+    return [
+        "Tabela e fundit e kapitullit i mbledh në një vend shifrat që mbajnë përgjigjet, "
+        "të renditura sipas pyetjes kërkimore. Ku shifra ndryshon sipas erës, jepet "
+        "brezi nga vlera më e ulët te më e larta; kolona e fundit tregon nënkapitullin "
+        "ku ajo paraqitet e plotë.",
+        ("table", "Shifrat kryesore sipas pyetjes kërkimore",
+         ["Pyetja", "Treguesi", "Vlera", "Nënkapitulli"], rows),
+        "Kapitulli 6 i merr këto shifra me radhë: i interpreton, i krahason me "
+        "literaturën dhe prej tyre formulon përgjigjen për secilën pyetje.",
+    ]
 
 
 def secondary_results() -> list:
@@ -2489,18 +2719,27 @@ def _results_sections() -> list:
                 "ndjeshmëria ndaj pragjeve (5.5), krahasimi me një mjet ekzistues (5.6), "
                 "dhe intervalet e besimit bashkë me pajtimin mes rishikuesve (5.7). "
                 "Analizat e tjera dytësore janë te Shtojcat 8.6 deri 8.8.",
+                "Çdo nënkapitull hapet me metodën nga e cila vijnë shifrat e tij dhe "
+                "mbyllet me pyetjen kërkimore të cilës ato i shërbejnë. Tabelat dhe "
+                "figurat përshkruhen këtu ashtu si dolën; çfarë nënkuptojnë, pse dolën "
+                "ashtu dhe si krahasohen me literaturën trajtohet te Kapitulli 6.",
             ],
         ),
         (
             "5.1",
             "Qasja A: detektimi me rregulla",
             [
+                "Ky nënkapitull paraqet sa pajtohen strategjitë e publikuara, të "
+                "zbatuara me pragjet e Nënkapitullit 4.5, me gjykimin e rishikuesve të "
+                "MLCQ-së. Treguesit janë ata të Nënkapitullit 4.9, dhe secili llogaritet "
+                "mbi të gjitha mostrat e erës përkatëse.",
                 "Kundrejt gjykimit të rishikuesve, strategjitë arrijnë këtë precizion (P), "
                 "recall (R), F1 dhe MCC për çdo erë, mbi numrin e mostrave pozitive në "
                 "kolonën e fundit.",
                 ("table", "Qasja A kundrejt gjykimit të rishikuesve",
                  ["Erë", "P", "R", "F1", "MCC", "Pozitivë"], rules_rows),
                 _precision_over_recall(rules, smells),
+                _rules_extremes(rules, smells),
                 "Recall-i ndryshon ndjeshëm sipas ashpërsisë që rishikuesit i dhanë "
                 "secilës mostër.",
                 ("table", "Recall-i sipas ashpërsisë",
@@ -2508,29 +2747,46 @@ def _results_sections() -> list:
                 ("figure", str(FIGURES / "recall_sipas_ashpersise.png"),
                  "Recall-i sipas ashpërsisë së caktuar nga rishikuesit"),
                 _severity_direction(rules, smells),
+                "Dy tabelat e këtij nënkapitulli janë përgjigjja empirike për PK1: ato "
+                "japin, erë për "
+                "erë, sa shpesh strategjitë pajtohen me rishikuesit dhe sa nga rastet "
+                "e shënuara prej tyre i kapin.",
             ],
         ),
         (
             "5.2",
             "Qasja B: detektimi me mësim makine",
             [
+                "Ky nënkapitull paraqet rezultatet e Qasjes B, të katër algoritmeve "
+                "të Nënkapitullit 4.6, të trajnuar mbi të njëjtat mostra dhe të "
+                "vlerësuar me ndarjen e grupuar sipas depos, që asnjë depo të mos "
+                "dalë njëkohësisht në trajnim dhe në vlerësim.",
                 "Për secilën erë raportohet modeli me MCC-në më të lartë, i pikëzuar mbi "
                 "parashikimet jashtë fold-it. Klasifikuesi i shumicës nuk ndez asnjëherë "
                 "për asnjë erë, ndaj MCC-ja e tij është e papërcaktuar.",
                 ("table", "Modeli më i mirë për çdo erë",
                  ["Erë", "Modeli", "P", "R", "F1", "MCC"], ml_rows),
+                _models_chosen(ml, smells),
                 f"MCC-ja më e lartë e arritur është {best_mcc:.3f}. Veçoritë që peshojnë më "
                 "shumë te secila erë, të matura me permutim, janë këto:",
                 ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
                  "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
+                _top_importance(ml, smells),
                 *_explanation_paragraphs(ml),
                 *_strategy_feature_paragraphs(rules, ml, smells),
+                "Këto shifra janë gjysma e parë e përgjigjes për PK2; gjysma tjetër, "
+                "krahasimi mostër për mostër me Qasjen A, vjen në nënkapitullin "
+                "pasues.",
             ],
         ),
         (
             "5.3",
             "Krahasimi i dy qasjeve",
             [
+                "Ky nënkapitull i vë dy qasjet përballë mbi saktësisht të njëjtat "
+                "mostra dhe me të njëjtën etiketë, siç e kërkon kriteri i PK2 te "
+                "Nënkapitulli 3.3. Krahasohen MCC-ja, pajtimi mes tyre dhe dy mënyra "
+                "për t'i bashkuar.",
                 ("figure", str(FIGURES / "mcc_a_vs_b.png"),
                  "MCC për të dyja qasjet"),
                 _who_is_higher(rules, ml, smells),
@@ -2540,24 +2796,37 @@ def _results_sections() -> list:
                  "Mostrat e shënuara nga secila qasje"),
                 _only_rules_vs_only_model(ml, smells),
                 *_combined_paragraphs(ml),
+                "Me këtë mbyllen rezultatet për PK2. Sa e qëndrueshme është përparësia "
+                "e njërës qasje kur korpusi rimostrohet jepet te Nënkapitulli 5.7.",
             ],
         ),
         (
             "5.4",
             "Qasja C: refaktorimi",
             [
+                "Ky nënkapitull paraqet çfarë bëri motori i Nënkapitullit 4.7 kur u "
+                "ekzekutua mbi tërë korpusin: sa vende transformoi, pse refuzoi të "
+                "tjerat, nëse rishkrimet kompilojnë dhe nëse era u hoq. Rendi i "
+                "tabelave ndjek rendin e pyetjeve që shtron PK3.",
                 *_refactoring_section(),
                 "Gjatë ekzekutimit mbi korpus, verifikimi nxori edhe tri defekte në "
                 "motor që prodhonin kod që nuk kompilon, dhe që testet e shkruara me dorë "
                 "nuk i kishin kapur: deklarimet brenda një cikli të mëparshëm "
                 "numëroheshin si të dukshme, kllapat e vargut pas emrit të variablës nuk "
                 "hynin në tip, dhe klauzola «throws» nuk bartej te metoda e nxjerrë.",
+                "Tabelat e këtij nënkapitulli janë dëshmia për PK3: sa shpesh motori "
+                "vepron, sa "
+                "shpesh rishkrimi e ruan kompilueshmërinë dhe sa shpesh e heq erën. "
+                "Për sjelljen e programit pas rishkrimit ky kapitull nuk jep shifër.",
             ],
         ),
         (
             "5.5",
             "Ndjeshmëria ndaj pragjeve",
             [
+                "Ky është i pari nga vëzhgimet dytësore. Ai nuk i përgjigjet "
+                "drejtpërdrejt një pyetjeje, por tregon sa varen shifrat e "
+                "Nënkapitullit 5.1 nga pragjet e zgjedhura.",
                 "Secili prag i strategjive u zhvendos veç me faktorët e Nënkapitullit "
                 "4.9, ndërsa të tjerët mbetën te vlerat e botuara. Rreshtat renditen "
                 "sipas amplitudës, pra dallimit mes MCC-së më të lartë dhe më të ulët "
@@ -2574,6 +2843,9 @@ def _results_sections() -> list:
             "5.6",
             "Krahasimi me një mjet ekzistues",
             [
+                "Ky nënkapitull i vë detektorët e Qasjes A përballë PMD-së, një mjeti "
+                "të lirë e të përhapur që zbaton rregulla të ngjashme, mbi të njëjtat "
+                "mostra dhe me të njëjtin pikëzim.",
                 *_pmd_comparison_paragraphs(),
             ],
         ),
@@ -2856,11 +3128,14 @@ def _confidence_section() -> list:
         for entry in intervals["per_smell"].values()
     )
     paragraphs: list = [
+        "Shifrat e nënkapitujve të mësipërm janë vlerësime të vetme mbi një korpus. Ky "
+        "nënkapitull jep sa lëvizin ato kur korpusi rimostrohet, dhe sa pajtohen vetë "
+        "rishikuesit, kundrejt të cilëve maten të gjitha.",
         f"Me bootstrap sipas depos ({intervals['resamples']} rimostrime, Nënkapitulli "
         "4.9), MCC-ja e secilës qasje dhe dallimi mes tyre kanë këto intervale besimi "
         "95%:",
         ("table", "Intervale besimi 95% për MCC-në",
-         ["Erë", "A: rregullat", "B: modeli", "B − A", "E kalon zeron"], rows),
+         ["Erë", "A: rregullat", "B: modeli", "B − A", "Mbi zero"], rows),
         ("figure", str(FIGURES / "intervalet_e_besimit.png"),
          "MCC me interval besimi 95% për të dyja qasjet"),
         f"Kufiri i poshtëm i dallimit B − A është mbi zero {_among(above, len(widths))}. "
@@ -2869,7 +3144,7 @@ def _confidence_section() -> list:
         "Kur Qasja A merr pragun e saj më të mirë nga fshirja e Nënkapitullit 5.5, "
         "dallimi ka këto intervale:",
         ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
-         ["Erë", "Pragu i zhvendosur", "B − A", "E kalon zeron", "Shenja e ruajtur"],
+         ["Erë", "Pragu i zhvendosur", "B − A", "Mbi zero", "Shenja e ruajtur"],
          swept_rows),
         f"{_swept_summary(intervals)} Te Long Method intervali e përfshin zeron, dhe "
         f"shenja pozitive ruhet në {_crossing_share(intervals)} të rimostrimeve.",
@@ -2896,6 +3171,9 @@ def _confidence_section() -> list:
         ("table", "Sa pajtohen rishikuesit me njëri-tjetrin",
          ["Erë", "MCC mes rishikuesve", "Saktësia", "Çifte"], ceiling_rows),
         f"MCC-ja mes rishikuesve nuk e kalon {best:.3f} te asnjë erë.",
+        "Me këto dy matje mbyllen vëzhgimet dytësore. Ato nuk i shtojnë përgjigje të "
+        "re asnjë pyetjeje kërkimore, por i japin secilës shifër të mësipërme brezin "
+        "e pasigurisë dhe tavanin kundrejt të cilit duhet lexuar.",
     ]
 
     return [("5.9", "Intervalet e besimit dhe pajtimi mes rishikuesve", paragraphs)]
@@ -3685,7 +3963,7 @@ def _refactoring_section() -> list:
         )  # fmt: skip
 
     refusals = [
-        [reason.replace("_", " "), _count(count), f"{count / detected:.1%}"]
+        [_reason_label(reason), _count(count), f"{count / detected:.1%}"]
         for reason, count in sorted(data["refused_by_reason"].items(), key=lambda p: -p[1])
     ]
 
@@ -3716,9 +3994,31 @@ def _refactoring_section() -> list:
         + " Pjesa tjetër ose kompiloi, ose nuk shtoi asnjë lloj të ri gabimi kundrejt "
         "skedarit origjinal.",
         *_resolution_paragraphs(data),
+        *_refactoring_funnel(data),
         *_project_context_paragraphs(),
         *_rewrite_quality_paragraphs(),
         *_refusal_severity_paragraphs(),
+    ]
+
+
+def _refactoring_funnel(data: dict) -> list:
+    """Rrjedha e motorit në një figurë: sa mbetet nga një hap te tjetri."""
+    resolution = data.get("resolution")
+    if not resolution:
+        return []
+    detected = data["detected"]
+    kept = data["verdicts"].get("compiles", 0) + data["verdicts"].get("no_new_errors", 0)
+    resolved = resolution["resolved"]
+    return [
+        "E gjithë rrjedha, nga vendi i detektuar te era e hequr, jepet në një figurë, "
+        "ku çdo shirit shprehet si pjesë e vendeve të detektuara:",
+        ("figure", str(FIGURES / "rrjedha_e_refaktorimit.png"),
+         "Nga vendet e detektuara te erërat e hequra"),
+        f"Nga {_count(detected)} vende, {_count(kept)} ({kept / detected:.1%}) dalin të "
+        f"transformuara pa gabim të ri, dhe te {_count(resolved)} "
+        f"({resolved / detected:.1%}) era nuk ndez më. Dy shiritat e fundit janë të dy "
+        "pjesë e vendeve të transformuara, por maten veç e veç: një rishkrim mund ta "
+        "heqë erën edhe kur shton një gabim, dhe anasjelltas.",
     ]
 
 
@@ -3931,6 +4231,72 @@ def _precision_over_recall(rules: dict, smells: list) -> str:
     )
 
 
+def _rules_extremes(rules: dict, smells: list) -> str:
+    """Erët me MCC-në më të lartë dhe më të ulët te Qasja A, dhe çfarë shton madhësia."""
+    mcc = {s: rules["per_smell"][s]["strategy"]["by_aggregation"]["mean"]["mcc"] for s in smells}
+    top, bottom = max(mcc, key=mcc.get), min(mcc, key=mcc.get)
+    text = (
+        f"MCC-ja më e lartë është te {SMELL_SQ[top]} ({mcc[top]:.3f}) dhe më e ulëta te "
+        f"{SMELL_SQ[bottom]} ({mcc[bottom]:.3f})."
+    )
+    sized = rules["per_smell"].get("blob", {}).get("with_size")
+    if sized is not None:
+        before = rules["per_smell"]["blob"]["strategy"]["by_aggregation"]["mean"]
+        after = sized["by_aggregation"]["mean"]
+        text += (
+            " Varianti i Blob-it që shton kushtin e madhësisë (Nënkapitulli 4.5) e ngre "
+            f"recall-in nga {before['recall']:.3f} në {after['recall']:.3f} dhe MCC-në nga "
+            f"{before['mcc']:.3f} në {after['mcc']:.3f}, ndërsa precizioni zbret nga "
+            f"{before['precision']:.3f} në {after['precision']:.3f}."
+        )
+    return text
+
+
+def _models_chosen(ml: dict, smells: list) -> str:
+    """Cili algoritëm fitoi te secila erë dhe sa afër janë precizioni e recall-i."""
+    names: dict[str, list[str]] = {}
+    gaps = []
+    for smell in smells:
+        entry = ml["per_smell"][smell]
+        names.setdefault(entry["best_model"].replace("_", " "), []).append(SMELL_SQ[smell])
+        best = entry["models"][entry["best_model"]]
+        gaps.append(abs(best["precision"] - best["recall"]))
+    chosen = "; ".join(f"{model} te {_joined(found)}" for model, found in sorted(names.items()))
+    return (
+        f"Modeli më i mirë është {chosen}. Ndryshe nga Qasja A, precizioni dhe recall-i "
+        f"i modelit janë pranë njëri-tjetrit te çdo erë: dallimi mes tyre nuk e kalon "
+        f"{max(gaps):.3f}."
+    )
+
+
+def _top_importance(ml: dict, smells: list) -> str:
+    """Veçoria me rëndësinë më të lartë te secila erë, sipas Figurës së rëndësisë."""
+    parts = []
+    for smell in smells:
+        importances = ml["per_smell"][smell]["importances"]
+        name = max(importances, key=importances.get)
+        parts.append(f"{name[2:]} te {SMELL_SQ[smell]} ({importances[name]:.3f})")
+    return (
+        "Veçoria me rëndësinë më të lartë është "
+        + _joined(parts)
+        + ". Vlera është rënia e MCC-së kur vlerat e asaj veçorie përzihen rastësisht."
+    )
+
+
+def _mcc_gap(rules: dict, ml: dict, smells: list) -> str:
+    """Sa pikë MCC e ndajnë dy qasjet, nga dallimi më i vogël te më i madhi."""
+    gaps = {
+        smell: ml["per_smell"][smell]["models"][ml["per_smell"][smell]["best_model"]]["mcc"]
+        - rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]["mcc"]
+        for smell in smells
+    }
+    low, high = min(gaps, key=gaps.get), max(gaps, key=gaps.get)
+    return (
+        f"Dallimi më i vogël është te {SMELL_SQ[low]}, {gaps[low]:.3f} pikë MCC, dhe më i "
+        f"madhi te {SMELL_SQ[high]}, {gaps[high]:.3f} pikë."
+    )
+
+
 def _who_is_higher(rules: dict, ml: dict, smells: list) -> str:
     """Te sa erëra Qasja B ka MCC më të lartë se Qasja A."""
     higher = [
@@ -3941,6 +4307,7 @@ def _who_is_higher(rules: dict, ml: dict, smells: list) -> str:
     ]
     return (
         f"Qasja B ka MCC më të lartë se Qasja A {_among(len(higher), len(smells))}. "
+        f"{_mcc_gap(rules, ml, smells)} "
         "Pajtimi mes tyre matet me koeficientin kappa dhe me numrin e "
         "mostrave që shënon secila qasje, vetëm ose bashkë me tjetrën."
     )
@@ -4259,12 +4626,14 @@ def _refusal_reason_shift(data: dict) -> list:
             bucket = totals[name]
             total = sum(bucket.values())
             cells.append(f"{bucket.get(reason, 0) / total:.0%}" if total else "-")
-        rows.append([reason.replace("_", " "), *cells])
+        rows.append([_reason_label(reason), *cells])
 
     return [
         "Brenda çdo niveli ashpërsie, arsyet e refuzimit kanë këtë përbërje:",
         ("table", "Përbërja e arsyeve të refuzimit brenda çdo niveli",
          ["Arsyeja", *order], rows),
+        ("figure", str(FIGURES / "refuzimet_sipas_ashpersise.png"),
+         "Dy arsyet kryesore të refuzimit sipas nivelit të ashpërsisë"),
         _reason_trend(totals, order),
     ]
 
@@ -4279,9 +4648,9 @@ def _reason_trend(totals: dict[str, dict[str, int]], order: list[str]) -> str:
     first, last = order[0], order[-1]
     return (
         f"Nga niveli {first} te {last}, pjesa e refuzimeve për formën e kodit "
-        f"(shape not matched) kalon nga {share(first, 'shape_not_matched'):.0%} në "
+        f"kalon nga {share(first, 'shape_not_matched'):.0%} në "
         f"{share(last, 'shape_not_matched'):.0%}, ndërsa ajo për rrjedhën e kontrollit "
-        f"(control flow escapes) nga {share(first, 'control_flow_escapes'):.0%} në "
+        f"nga {share(first, 'control_flow_escapes'):.0%} në "
         f"{share(last, 'control_flow_escapes'):.0%}."
     )
 
@@ -4307,6 +4676,11 @@ def _resolution_paragraphs(data: dict) -> list:
         "mbi të.",
         ("table", "A u hoq era pas rishkrimit",
          ["Rezultati", "Numri", "Pjesa e të aplikuarave"], rows),
+        f"Era nuk ndez më te {counts.get('resolved', 0)} nga {total} entitete të "
+        f"rishkruara dhe ndez ende te {counts.get('persists', 0)}. Te "
+        f"{counts.get('unknown', 0)} të tjera entiteti nuk u identifikua dot pa mëdyshje, "
+        "sepse emri i tij nuk ishte unik, si te dy klasa me të njëjtin emër ose te një "
+        "metodë e mbingarkuar; për to motori nuk jep verdikt në vend që të hamendësojë.",
         *_metric_shift_paragraphs(data),
         *_introduced_paragraphs(data),
     ]
@@ -4480,7 +4854,7 @@ def chapter_8() -> list:
         )
 
     refusal_rows = [
-        [reason.replace("_", " "),
+        [f"{_reason_label(reason)} ({reason.replace('_', ' ')})",
          REFUSAL_SQ.get(reason, "[PLOTËSO: arsye e re, pa shpjegim në shtojcë]")]
         for reason in reference["refusal_reasons"]
     ]
