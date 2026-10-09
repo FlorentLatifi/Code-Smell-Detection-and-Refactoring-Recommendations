@@ -5948,3 +5948,85 @@ dhe «Nuk ka krahasim me mjete ekzistuese», ndërsa 5.6 e krahason me PMD-në.
 Sllajdi i ri nuk u renderua dot këtu, sepse LibreOffice-i i makinës nuk e ka
 Impress-in. Pozicionet e elementeve u kontrolluan me python-pptx: figura dhe pikat
 nuk mbivendosen dhe rrinë brenda sllajdit.
+
+### VD-148: Extract Method i kalon si parametra edhe variablat që blloku vetëm i cakton
+
+**Konteksti.** EM01 i fletës së cilësisë (VD-146) nuk kompilonte. Te
+`Resolve.resolveMemberReference` i SapMachine-it, `unboundRes` merr vlerën
+`referenceNotFound` para një `if`-i dhe ricaktohet vetëm brenda tij. Motori e nxori
+`if`-in te `extracted(...)`, që e cakton dhe e kthen `unboundRes` pa e deklaruar, dhe
+thirrja bënte `unboundRes = extracted(...)`.
+
+**Shkaku ishte më i gjerë se kushti.** Parametrat merreshin vetëm nga variablat që
+blloku lexon. Një variabël që blloku e cakton vetëm me `=` nuk lexohet, ndaj nuk bëhej
+parametër dhe mbetej e padeklaruar te metoda e re. Kjo ndodhte sa herë që blloku
+cakton një variabël të deklaruar para tij pa e lexuar, qoftë në çdo shteg apo vetëm në
+disa, qoftë kur lexohet pas bllokut apo jo. Te EM01 humbte edhe vlera fillestare: kur
+`if`-i nuk ekzekutohet, `unboundRes` duhet të mbajë `referenceNotFound`.
+
+**Pse kontrolli i kompilatorit nuk e kapi.** Skedarët e korpusit kompilohen të
+izoluar, dhe «pa gabim të ri» do të thotë «pa lloj të ri gabimi» (VD-53).
+`Resolve.java` i izoluar kishte tashmë 731 gabime «cannot find symbol», ndaj dy të
+rejat nuk e ndryshuan verdiktin.
+
+**Vendimi.** Çdo variabël lokale që blloku e cakton bëhet parametër, edhe kur blloku
+nuk e lexon (`_plan` te `extract_method.py`). Parametri e deklaron emrin te metoda e
+re dhe sjell vlerën e mëparshme, që mbijeton në shtigjet ku blloku nuk e prek. Kështu
+variabla kalon edhe nga kontrolli ekzistues i caktimit të sigurt: kur nuk ka vlerë me
+siguri para bllokut, rishkrimi refuzohet me `not_definitely_assigned`.
+
+- **Pa arsye të re refuzimi.** Refuzimi është po ai që Java do të jepte për parametrin,
+  ndaj arsyeja ekzistuese e përshkruan saktë. `REFUSAL_SQ`, `REASON_LABEL_SQ`,
+  `plain_sq.json` dhe ndërfaqja nuk ndryshojnë; ndryshon vetëm komenti i
+  `Refusal.NOT_DEFINITELY_ASSIGNED`, që tani thotë «lexon ose cakton».
+- **Një refuzim i tepërt, i pranuar.** Kur variabla nuk ka vlerë para bllokut, por
+  blloku e cakton në të dyja degët e një `if/else`, metoda e re mund ta deklaronte vetë
+  dhe do të kompilonte. Ta provosh kërkon rregullat e caktimit të sigurt mbi vetë
+  bllokun, që motori nuk i zbaton. Para ndreqjes këto raste dilnin me variablën të
+  padeklaruar, ndaj refuzimi është drejtimi i sigurt.
+- **U hodh poshtë:** refuzimi i çdo blloku që cakton një variabël pa e lexuar. Do ta
+  humbiste EM01 bashkë me formën e zakonshme «vlerë e parazgjedhur, e mbishkruar me
+  kusht», ku parametri jep rishkrim të saktë.
+
+**Testet.** Pesë të reja te `test_extract_method.py`, të gjitha të kuqe para
+ndreqjes:
+- forma e EM01 (vlerë fillestare, ricaktim vetëm brenda `if`-it, lexim pas tij), me
+  skedarin e pritur të shkruar me dorë;
+- një caktim që nuk lexohet askund;
+- refuzimi kur variabla nuk ka vlerë para bllokut;
+- kompilimi me `javac` i dy rasteve të para, që para ndreqjes dështonin me «cannot
+  find symbol».
+
+**Verifikimi mbi EM01.** Motori i ndrequr mbi `Resolve.java` e mostrës jep
+`unboundRes = extracted(env, methodCheck, site, unboundEnv, unboundLookupHelper,
+unboundRes, unboundSym);`. `javac` mbi skedarin e izoluar, krahasuar simbol për simbol
+me origjinalin: para ndreqjes rishkrimi shtonte gjashtë simbole të pazgjidhura, dy
+prej tyre `variable unboundRes`; pas ndreqjes katër, `Env` dhe `AttrContext` nga dy
+herë. Këto vijnë nga nënshkrimi i metodës së re, janë klasa të së njëjtës paketë që
+nuk gjenden kur skedari kompilohet vetëm, dhe dalin njësoj para dhe pas ndreqjes.
+
+Nga `backend/` kalojnë `ruff check`, `ruff format --check` dhe `mypy`. `pytest`: 799
+kalojnë, 2 kapërcehen, 2 dështojnë. Të dyja janë teste të CLI-së për fundin e
+rreshtave: në këtë kopje pune git-i (`core.autocrlf=true`) e nxori fiksturën
+`OrderManager.java` me CRLF, ndërsa në depo ajo është LF. Dështojnë njësoj edhe pa
+ndreqjen.
+
+**Çfarë nuk preket.** Rezultatet e komituara pasqyrojnë motorin para ndreqjes dhe nuk
+ndryshohen me dorë: `refactoring_evaluation.json`, `refactoring_sites.csv`, fleta e
+cilësisë dhe `rewrite_quality.json`. Po ashtu teksti që i përshkruan: 4.7 i quan
+parametra «ato që blloku i lexon», 6.1 e jep EM01 si rishkrim që nuk kompilon, 6.7 e
+ka ndreqjen ndër drejtimet e ardhshme, dhe shënimi i folësit te sllajdi «A ia vlejnë
+rishkrimet?» e përmend. Ky tekst ndryshon bashkë me numrat, jo para tyre.
+
+**Që numrat ta pasqyrojnë ndreqjen.**
+1. Hapi 7 (`evaluate_refactorings.py`) mbi gjithë korpusin, me `--no-resume` dhe pasi
+   të fshihen `refactoring_progress.json` e `refactoring_sites.csv.part`; përndryshe
+   pika e kontrollit mban rreshtat e motorit të vjetër.
+2. `review_rewrites.py --sample`. Nëse mostra tërheq vende të tjera, `--score`
+   refuzon derisa rreshtat që ndryshuan të rigjykohen.
+3. `build_thesis.py` dhe `build_slides.py`, bashkë me tekstin e mësipërm.
+
+Pritet që disa vende të Extract Method të kalojnë nga të aplikuara te
+`not_definitely_assigned`, dhe që disa rishkrime të marrin një parametër më shumë.
+Edhe 19% e rishkrimeve mbi pragun e Long Parameter List, te docstring-u i `_notes`,
+është matur para ndreqjes.

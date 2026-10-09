@@ -181,11 +181,19 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | Note:
         for name, type_text in declarations_in(node, source).types.items():
             outer.add(name, type_text)
 
+    written = names_written(statement, source, outer)
+
+    # A local the block assigns is a parameter even when the block never reads
+    # it. The lifted code still holds the assignment, so the new method has to
+    # declare the name, and a parameter is the declaration that also carries the
+    # value in -- which matters whenever only some paths through the block assign
+    # it. Taking only the names read left it undeclared: `cannot find symbol` in
+    # Resolve.resolveMemberReference, found by the rewrite review (VD-148).
+    #
     # Sorted, not in order of appearance: the parameter order has to be fixed by
     # something, and sorting is the only rule that cannot depend on how the tree
     # happened to be walked.
-    inputs = sorted(names_read(statement, source, outer))
-    written = names_written(statement, source, outer)
+    inputs = sorted(names_read(statement, source, outer) | written)
 
     read_after: set[str] = set()
     for node in after:
@@ -197,8 +205,10 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | Note:
 
     # Java's definite-assignment rules: a local read before it is certainly
     # assigned is a compile error, and that includes reading it as a parameter.
-    # A variable only written inside the block is an output and needs no value
-    # going in, so only the inputs are checked.
+    # The names the block assigns are inputs too, so they are checked as well. One
+    # with no value before the block may still get one on every path through it,
+    # but proving that is definite assignment over the block itself, which this
+    # analysis does not do; it refuses instead.
     unassigned = sorted(set(inputs) - _definitely_assigned(method, before, source))
     if unassigned:
         return explain("not_assigned", names=", ".join(unassigned))
@@ -383,11 +393,11 @@ WIDE_PARAMETERS = "wide_parameter_list"
 def _notes(planned: Plan, thresholds: Thresholds) -> tuple[Note, ...]:
     """What the author should know about a rewrite that is otherwise correct.
 
-    Every value the block reads becomes a parameter, so a block reading seven
-    names yields a seven-parameter method -- and this same tool flags a method
-    with more than ``long_parameter_list_np`` parameters as Long Parameter List.
-    Measured over one corpus project, 19% of extractions land above that line,
-    one of them at eleven parameters.
+    Every value the block reads or assigns becomes a parameter, so a block
+    touching seven names yields a seven-parameter method -- and this same tool
+    flags a method with more than ``long_parameter_list_np`` parameters as Long
+    Parameter List. Measured over one corpus project, 19% of extractions land
+    above that line, one of them at eleven parameters.
 
     Not a refusal. Fowler's own reading is that a block needing many parameters
     is usually the wrong slice, but "usually" is not something a parse tree can

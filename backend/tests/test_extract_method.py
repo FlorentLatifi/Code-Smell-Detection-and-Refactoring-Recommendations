@@ -104,6 +104,84 @@ def test_a_value_used_after_the_block_comes_back_as_the_return():
     )
 
 
+CONDITIONAL_OUTPUT = b"""public class T {
+    String m(int n) {
+        String result = "none";
+        if (n > 0) {
+            int doubled = n * 2;
+            String label = "positive";
+            result = label + doubled;
+        }
+        return result;
+    }
+}
+"""
+
+
+def test_a_value_assigned_on_some_paths_is_passed_in_as_well():
+    """`result` is only written inside, but its prior value survives the `if`.
+
+    When `n > 0` is false the block leaves `result` alone, so the new method has
+    to start from the value it held -- which means taking it as a parameter even
+    though the block never reads it. Without that the new method assigns and
+    returns a name it never declares, and the default `"none"` is lost. This is
+    EM01 of the rewrite quality sample (VD-148), where javac reported
+    `cannot find symbol: variable unboundRes`.
+    """
+    outcome = transform(CONDITIONAL_OUTPUT)
+    assert outcome.applied
+
+    assert (
+        apply_edits(CONDITIONAL_OUTPUT, outcome.edits).decode()
+        == """public class T {
+    String m(int n) {
+        String result = "none";
+        result = extracted(n, result);
+        return result;
+    }
+
+    private String extracted(int n, String result) {
+        if (n > 0) {
+            int doubled = n * 2;
+            String label = "positive";
+            result = label + doubled;
+        }
+        return result;
+    }
+}
+"""
+    )
+
+
+DEAD_STORE = b"""public class T {
+    void m(int[] xs) {
+        int last = 0;
+        for (int i = 0; i < xs.length; i++) {
+            last = xs[i];
+            System.out.println(i);
+            System.out.println(xs.length - i);
+        }
+        System.out.println("done");
+    }
+}
+"""
+
+
+def test_a_value_written_and_never_read_is_still_declared():
+    """`last` is assigned in the loop and read nowhere, so it is neither in nor out.
+
+    The new method still contains `last = xs[i]`, and that assignment needs a
+    `last` to land on. A parameter gives it one; the value written is dropped
+    with the parameter, just as the original drops it at the end of `m`.
+    """
+    outcome = transform(DEAD_STORE)
+    assert outcome.applied
+
+    rewritten = apply_edits(DEAD_STORE, outcome.edits).decode()
+    assert "        extracted(last, xs);\n" in rewritten
+    assert "    private void extracted(int last, int[] xs) {" in rewritten
+
+
 def test_a_block_that_produces_nothing_becomes_a_void_method():
     source = b"""public class T {
     void m(int[] xs) {
@@ -418,8 +496,10 @@ def test_a_decline_leaves_the_file_untouched():
             b'        }\n        System.out.println("done");\n    }\n}\n',
             2,
         ),
+        (CONDITIONAL_OUTPUT, 2),
+        (DEAD_STORE, 2),
     ],
-    ids=["returns-a-value", "touches-a-field", "static"],
+    ids=["returns-a-value", "touches-a-field", "static", "conditional-output", "dead-store"],
 )
 def test_what_it_emits_compiles(source, line):
     """The engine's claim is not that the output looks right, but that javac takes it."""
@@ -561,6 +641,32 @@ def test_an_assignment_inside_a_conditional_does_not_count():
     outcome = transform(source)
     assert not outcome.applied
     assert outcome.refusal is Refusal.NOT_DEFINITELY_ASSIGNED
+
+
+def test_an_output_with_no_value_before_the_block_is_refused():
+    """`result` has no value going in, so it cannot be passed in.
+
+    Here both branches assign it, and a method declaring its own `result` would
+    compile. Proving that means running Java's definite-assignment rules over
+    the block itself, which this analysis does not do, so it refuses. Before the
+    output was passed in, this site came out with `result` undeclared.
+    """
+    source = b"""public class T {
+    String m(int n) {
+        String result;
+        if (n > 0) {
+            result = "positive";
+        } else {
+            result = "none";
+        }
+        return result;
+    }
+}
+"""
+    outcome = transform(source)
+    assert not outcome.applied
+    assert outcome.refusal is Refusal.NOT_DEFINITELY_ASSIGNED
+    assert "result" in outcome.detail
 
 
 def test_a_checked_exception_keeps_its_throws_clause():
