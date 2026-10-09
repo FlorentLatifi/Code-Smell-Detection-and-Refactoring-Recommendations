@@ -2162,9 +2162,9 @@ def _quality_in_answer() -> str:
     pooled = data.get("acceptable_reweighted")
     worst = min(data["by_refactoring"].items(), key=lambda pair: pair[1]["acceptable"])
     return (
-        f"Leximi i {data['reviewed']} rishkrimeve e kufizon pretendimin për strukturën: "
-        f"të ripeshuara sipas transformimit, {pooled:.1%} janë të pranueshme për një "
-        f"zhvillues, por te {_named(worst[0])} "
+        f"Gjykimi me dorë i {data['reviewed']} diff-eve e ngushton këtë përgjigje për "
+        f"strukturën: pas ripeshimit, një zhvillues do të mbante {pooled:.1%} të tyre, "
+        f"ndërsa nga {_named(worst[0])} "
         + ("asnjë. " if worst[1]["acceptable"] == 0 else f"vetëm {worst[1]['acceptable']:.0%}. ")
     )
 
