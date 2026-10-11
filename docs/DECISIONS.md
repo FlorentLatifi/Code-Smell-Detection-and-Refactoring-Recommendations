@@ -5948,3 +5948,71 @@ dhe «Nuk ka krahasim me mjete ekzistuese», ndërsa 5.6 e krahason me PMD-në.
 Sllajdi i ri nuk u renderua dot këtu, sepse LibreOffice-i i makinës nuk e ka
 Impress-in. Pozicionet e elementeve u kontrolluan me python-pptx: figura dhe pikat
 nuk mbivendosen dhe rrinë brenda sllajdit.
+
+### VD-148: Kontrolli përfundimtar kundrejt shabllonit, mentores dhe një teme të pranuar
+
+**Konteksti.** Autori kërkoi një kontroll të fundit para dorëzimit te mentorja: a është
+punimi i plotë sipas udhëzuesit të UBT-së për anën përmbajtësore, shënimeve të mentores
+dhe temës së pranuar të Isa Bilallit (vlerësuar me 10), dhe a ka gabime drejtshkrimore
+ose fjali që lexohen mekanikisht. Abstrakti dhe mirënjohja mbeten të autorit.
+
+**Çfarë u gjet.**
+- **Kopertina.** Shablloni shkruan «Viti akademik XXXX-YYYY (VITI I REGJISTRIMIT)».
+  Punimi kishte 2025 – 2026, viti i dorëzimit; autori u regjistrua më 2023, dhe tema e
+  pranuar e të njëjtit vit shkruan 2023-2024. VD-112 e kishte marrë vizën e shabllonit
+  por jo kuptimin e vitit. Data shtypej «Nëntor / 2026», pra vija e pjerrët e
+  vendmbajtësit «Muaji / Viti».
+- **Hyrja** zinte dy faqe të plota në renderimin e Word-it, ndërsa mentorja kërkon
+  1–1.5. Dy paragrafët e shtuar te VD-141 (kontributi, transformimi i sigurt) e kishin
+  zgjatur.
+- **Kalke terminologjike.** «Hendeku» (gap; udhëzuesi thotë «boshllëk»), «matrica
+  konfuze» (confusion matrix), «fshirja» për threshold sweep, «akordim» për tuning,
+  «mostër e mbjellë» për seeded sample, «ri-ekzekutuan», disa «çka» si përemër lidhor,
+  dhe katër viza të gjata në prozë.
+- **Kapitulli 5** kishte shumë paragrafë njëfjalësh, disa që nisnin me shifër («26
+  rishkrime…», «27 rishkrime…»), dhe pesë nënkapituj që hapeshin me «Ky nënkapitull…».
+  Lexohej si listë, jo si tekst.
+- «, ndaj» si lidhëz përfundimi dilte 48 herë në kapitujt 1–6, gjithmonë në të njëjtën
+  strukturë fjalie.
+- Shtojca 8.5 thoshte «interpretuesi dhe platforma janë të njëjtë për të gjithë» dhe
+  pastaj listonte dy versione Python-i dhe dy platforma.
+- `check_repetition.py` dështonte edhe në HEAD: fjalia e cilësisë te 6.4 përsëriste atë
+  të abstraktit (0.57). Ishte dështim i mëparshëm, jo i këtij ndryshimi.
+
+**Vendimi.**
+- Viti akademik 2023 – 2024, data «Nëntor 2026»; README-ja po ashtu.
+- Hyrja rishkruhet më ngjeshur: problemi i përgjithshëm (Lehman, erërat, borxhi teknik,
+  pse gjetja me dorë nuk shkallëzohet, tri mangësitë e mjeteve) mbetet i plotë, ndërsa
+  kontributi dhe përkufizimi i transformimit të sigurt bashkohen në një paragraf. E matur
+  me Word: një faqe e plotë dhe gjysmë faqe.
+- Termat: «Boshllëku në literaturë», «matrica e konfuzionit», «analiza e ndjeshmërisë» /
+  «zhvendosja e pragjeve», «optimizim i hiperparametrave», «mostër e zgjedhur me farë»,
+  «riekzekutuan», «gjë që» / «çfarë», presje në vend të vizave të gjata.
+- `_paragraph` dhe `_flow` te `chapters.py` i bashkojnë fjalitë e njëpasnjëshme të
+  Kapitullit 5 në paragrafë, me `_BREAK` aty ku ndërrohet tema. Asnjë fjali nuk ndryshoi
+  përmbajtje dhe asnjë numër nuk shkruhet më me dorë; përmendjet «(Tabela N)» mbeten te
+  paragrafi para elementit. Hapjet e nënkapitujve ndryshojnë, dhe fjalitë nuk nisin më me
+  shifër.
+- Rreth gjysma e «, ndaj» u bë «prandaj», «kështu që», «Meqë…» ose «dhe», sipas fjalisë.
+- Fjalia e mjedisit te 8.5 degëzohet: njëjës kur ka një interpretues e një platformë,
+  shumës kur ka më shumë.
+- Fjalia e 6.4 riformulohet; kontrolli i përsëritjeve kalon (784 fjali).
+- **Referencat**, me kërkesën «kritike» të mentores, u rikontrolluan të 44 te Crossref
+  (titulli, autori i parë, viti, revista, vëllimi, faqet): të gjitha ekzistojnë dhe
+  përputhen. Dallimet e vetme janë vitet e botimit online para atij të shtypit (Arcelli
+  Fontana 2015/2016, Khomh 2011/2012, Palomba 2017/2018), ku punimi citon vitin e
+  vëllimit.
+
+**Çfarë nuk prek.** Abstraktin dhe mirënjohjen, që i shkruan autori; prezantimin.
+
+**Verifikimi.** Kalojnë `check_citations` (44/44), `check_reproduction` (22 hapa),
+`check_format`, `check_repetition`, `build_slides` dhe `check_slides`. Renderimi me Word:
+93 faqe; hyrja 1.5 faqe.
+
+**Çfarë nuk u verifikua.**
+- Korrektura drejtshkrimore u bë me lexim dhe me kontrolle të synuara (diakritikë që
+  mungojnë, fjalë të dyfishta, thonjëza, viza, kalke). Word-i i makinës nuk ka fjalor
+  shqip, ndaj asnjë kontrollues automatik drejtshkrimi nuk u përdor.
+- Abstrakti, me 345 fjalë, del ende në dy faqe te renderimi (fjalët kyçe kalojnë në faqen
+  II). Kufiri prej 360 fjalësh i `check_format` është pra shumë i butë; autori duhet ta
+  mbajë abstraktin e ri rreth 280 fjalë bashkë me fjalët kyçe.

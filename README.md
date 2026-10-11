@@ -56,7 +56,7 @@ the published numbers can be reproduced.
 ---
 
 Punim diplome Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
-Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2025/2026 · Dorëzimi: 2026
+Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2023/2024 (viti i regjistrimit) · Dorëzimi: nëntor 2026
 
 Sistem që analizon projekte **Java**, detekton *code smells* me tri qasje të pavarura
 dhe gjeneron rekomandime refaktorimi të verifikueshme.
