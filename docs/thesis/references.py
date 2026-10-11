@@ -208,7 +208,7 @@ RELATED_WORK = [
     (
         "Palomba, F., Bavota, G., Di Penta, M., Fasano, F., Oliveto, R. & De Lucia, A. "
         "2018. “On the diffuseness and the impact on maintainability of code smells: a "
-        "large scale empirical investigation.” Empirical Software Engineering, 23, "
+        "large scale empirical investigation.” Empirical Software Engineering, 23(3), "
         "pp. 1188-1221."
     ),
     (

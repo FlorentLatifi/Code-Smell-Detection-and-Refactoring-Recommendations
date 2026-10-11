@@ -6016,3 +6016,51 @@ ose fjali që lexohen mekanikisht. Abstrakti dhe mirënjohja mbeten të autorit.
 - Abstrakti, me 345 fjalë, del ende në dy faqe te renderimi (fjalët kyçe kalojnë në faqen
   II). Kufiri prej 360 fjalësh i `check_format` është pra shumë i butë; autori duhet ta
   mbajë abstraktin e ri rreth 280 fjalë bashkë me fjalët kyçe.
+
+### VD-149: Referencat e verifikuara fushë për fushë, dhe një defekt në etiketat e MLCQ-së
+
+**Konteksti.** Autori kërkoi siguri të plotë se të 44 referencat ekzistojnë dhe janë të
+sakta. Kontrolli u bë në dy nivele: të dhënat bibliografike, dhe ajo që punimi u
+atribuon burimeve.
+
+**Bibliografia.** 37 hyrje me DOI u krahasuan me Crossref fushë për fushë (titulli,
+autorët, viti, revista, vëllimi, numri, faqet). Faqet e Brown et al. dhe Friedman, që
+Crossref nuk i ka, u konfirmuan te Semantic Scholar. Librat u konfirmuan me ISBN te Open
+Library ose te faqja e botuesit (Fowler 2018, Efron & Tibshirani 1993, Henderson-Sellers
+1996, Lanza & Marinescu 2006, Wohlin et al. 2012); Pedregosa et al. te faqja e JMLR-së
+(12, 2825-2830); PMD 7.27.0 te lëshimet e GitHub-it (28 gusht 2026); tree-sitter te depoja
+e projektit; teza e Opdyke-s nga faqja e saj e titullit (UIUC, 1992). Të gjitha
+ekzistojnë. E vetmja mangësi ishte numri i revistës te Palomba et al. 2018, që u shtua:
+23(3).
+
+**Atribuimet.** U krahasuan me abstraktin ose me tekstin e plotë. Tri nuk qëndronin:
+- Murphy-Hill et al. (2012): «mbi trembëdhjetë mijë zhvillues» është shifra e versionit
+  të ICSE 2009; artikulli i cituar (TSE 2012) thotë «more than 39,000». U ndreq.
+- Tufano et al. (2015): «rreth katër të pestat mbijetojnë» vjen nga versioni i zgjeruar
+  i TSE 2017, jo nga artikulli i cituar. Fraza u hoq.
+- Madeyski & Lewowski (2023): DS1 përdor mesoren e ashpërsive, jo mesataren e
+  rrumbullakosur; «me të njëjtin kriter» ishte i pasaktë dhe referonte 4.9 në vend të
+  4.3. Fjalia thotë tani se dy kriteret përkojnë vetëm me një ose dy rishikime. Edhe
+  «erën më të vështirë» u bë «era me performancën më të ulët», siç e thonë autorët.
+Shifrat e tjera u konfirmuan: Khomh (13 antimodele, 54 versione, 4 sisteme), Palomba 2018
+(395 versione, 30 projekte, 17 350 raste), Sjøberg (6 zhvillues, 4 sisteme, 12 erëra),
+Yamashita (85), Arcelli Fontana (16 algoritme, 74 sisteme, 1986 mostra), Di Nucci («up to
+90%» në F-measure, nga teksti i plotë), Azeem (15 nga 2456), Bavota (42% dhe 7%), MLCQ
+(14 739 rishikime, 4770 mostra, 26 zhvillues), dhe MCC-të e Tabelës 25 për DS1.
+
+**Defekt i gjetur gjatë kontrollit, ende i pandrequr.** `load_samples` te
+`evaluation/mlcq.py` grupon rishikimet vetëm sipas `sample_id`, me supozimin se një id
+është «një entitet i rishikuar për një erë». Në skedarin e MLCQ-së 4747 nga 4770 id-të
+kanë rishikime për dy erëra (Blob dhe Data Class për klasat, Feature Envy dhe Long Method
+për metodat), gjithsej 9517 çifte mostër-erë. Pasojat:
+- çdo mostër merr erën e rreshtit të parë dhe mesataren e rishikimeve të të dyja erërave;
+- mbi 4534 mostrat e vlerësuara ndryshojnë etiketat: Blob 182, Data Class 106, Feature Envy
+  53, Long Method 38; pozitivët bëhen 226, 142, 39 dhe 198 në vend të 350, 186, 72 dhe 216;
+- 4512 çifte mostër-erë të etiketuara mbeten jashtë vlerësimit;
+- pajtimi mes rishikuesve krahason gjykime për erëra të ndryshme: i grupuar sipas mostrës
+  dhe erës, MCC-ja del 0.312, 0.396, -0.071 dhe 0.567 në vend të 0.022, 0.031, 0.238 dhe
+  0.189.
+Prekur janë të gjitha shifrat e Qasjeve A dhe B, krahasimi, intervalet, krahasimi me
+PMD-në, pajtimi i rishikuesve dhe ashpërsia, pra Kapitujt 5 e 6, abstrakti dhe
+prezantimi. Qasja C (motori mbi korpusin) dhe fleta e cilësisë nuk varen nga etiketat.
+Ndreqja pret vendimin e autorit, sepse rihap rezultatet katër javë para dorëzimit.

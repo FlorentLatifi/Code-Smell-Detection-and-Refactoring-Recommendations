@@ -333,8 +333,8 @@ CHAPTER_2 = [
             "tjetër.",
             "Tufano et al. (2015) ndoqën historikun e 200 projekteve me burim të "
             "hapur për të parë kur lindin erërat. Shumica e tyre futen që kur krijohet "
-            "klasa ose metoda, jo gradualisht gjatë evolucionit, dhe rreth katër të "
-            "pestat mbijetojnë në sistem. Nëse një erë lind bashkë me kodin, mjeti "
+            "klasa ose metoda, jo gradualisht gjatë evolucionit. Nëse një erë lind "
+            "bashkë me kodin, mjeti "
             "që e gjen ka më shumë vlerë kur vepron herët, para se kodi të rritet mbi "
             "të.",
             "Mbetet pyetja nëse zhvilluesit i shohin erërat si probleme reale. "
@@ -493,7 +493,7 @@ CHAPTER_2 = [
             "rasteve të Move Method si zgjidhje për Feature Envy. Algoritmi mat "
             "distancën mes entiteteve dhe klasave, propozon vetëm lëvizje që kalojnë "
             "një bashkësi parakushtesh, dhe vendimin e fundit ia lë projektuesit.",
-            "Murphy-Hill et al. (2012), me të dhëna nga mbi trembëdhjetë mijë "
+            "Murphy-Hill et al. (2012), me të dhëna nga mbi tridhjetë e nëntë mijë "
             "zhvillues, gjetën se refaktorimi shpesh përzihet me ndryshime të tjera "
             "dhe rrallë përmendet në mesazhet e commit-eve, prandaj matet me vështirësi "
             "nga historiku. Silva et al. (2016) i pyetën zhvilluesit pse refaktorojnë "
@@ -2081,7 +2081,10 @@ def _literature_comparison(h: dict) -> list:
         "Krahasimi më i drejtpërdrejtë është me Madeyski & Lewowski (2023), të cilët "
         "trajnuan tetë algoritme mbi të njëjtin dataset MLCQ, me metrikat e PMD-së dhe "
         "të CODEBEAT-it si veçori. Konfigurimi i tyre DS1 e quan pozitive një mostër "
-        "me të njëjtin kriter si ky punim (Nënkapitulli 4.9). Tabela vë përballë MCC-në e të dy qasjeve këtu me mesoren "
+        "kur mesorja e ashpërsive të saj është mbi «none»; ky punim përdor mesataren e "
+        "rrumbullakosur (Nënkapitulli 4.3), dhe të dy kriteret japin të njëjtën etiketë "
+        "kur mostra ka një ose dy rishikime. Tabela vë përballë MCC-në e të dy qasjeve "
+        "këtu me mesoren "
         "më të mirë të MCC-së që raportojnë ata.",
         ("table", "Krahasimi i MCC-së me Madeyski & Lewowski (2023), mbi MLCQ",
          ["Erë", "Qasja A", "Qasja B", "M&L 2023, DS1"], _literature_rows(h)),
@@ -2101,7 +2104,8 @@ def _literature_comparison(h: dict) -> list:
         "optimizim të hiperparametrave, "
         "rezultatet e këtij punimi janë në të njëjtin brez.",
         f"Te Feature Envy drejtimi është i kundërt: {model['feature envy']['mcc']:.2f} "
-        "këtu kundrejt 0.31 atje, ku autorët e quajnë erën më të vështirë. Shpjegimi më "
+        "këtu kundrejt 0.31 atje, ku sipas autorëve është era me performancën më të ulët. "
+        "Shpjegimi më "
         "i mundshëm janë veçoritë: ky punim mat për çdo metodë ATFD, LAA, FDP dhe "
         "rreshtat efektivë, ndërsa ata përdorin metrika të mjeteve të përgjithshme. Dy "
         "punimet nuk vlerësohen mbi saktësisht të njëjtat mostra, sepse një pjesë e "
