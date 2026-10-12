@@ -114,6 +114,13 @@ jobs:
         working-directory: docs/thesis
         run: python check_format.py
 
+      # Each table is read from its own result file, so nothing else proves that
+      # two tables agree on a number they share. The mentor asked for exactly
+      # that consistency (VD-150).
+      - name: Check that tables agree
+        working-directory: docs/thesis
+        run: python check_tables.py
+
       # A sentence said twice, in two chapters written weeks apart, reads as
       # padding and is invisible while writing. The mentor asked for none (VD-128).
       - name: Check for repeated sentences

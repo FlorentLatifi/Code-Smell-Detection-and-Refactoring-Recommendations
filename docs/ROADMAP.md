@@ -16,7 +16,7 @@ janë në [`DECISIONS.md`](DECISIONS.md).
 | Korpusi | ✅ 512/522 depo, 95.4% e mostrave | pas ndjekjes së zhvendosjeve (VD-20) |
 | Përputhësi MLCQ↔entitet | ✅ 99.8% e mostrave të disponueshme | `evaluation/matcher.py` |
 | Harness vlerësimi (A) | ✅ P/R/F1/MCC + ndjeshmëri | `scripts/evaluate_rules.py` |
-| Testet | ✅ 797 kalojnë, mbulim 96% (8 tetor 2026) | vlera të derivuara me dorë; 1 anashkalohet pa symlink; asnjë modul nën 90% (VD-64), kufi i rikthyer me testet e `--apply` dhe të dështimeve të `git`-it (VD-123) |
+| Testet | ✅ 798 kalojnë, mbulim 96% (12 tetor 2026) | vlera të derivuara me dorë; 1 anashkalohet pa symlink; asnjë modul nën 90% (VD-64), kufi i rikthyer me testet e `--apply` dhe të dështimeve të `git`-it (VD-123) |
 | Porta e cilësisë | ✅ ruff, mypy strict, CI | `backend/pyproject.toml`, `.github/workflows/ci.yml` |
 | ML (B) | ✅ e plotë | 4 modele, ndarje sipas depos, të shërbyera nga API-ja me shpjegim per-rast (VD-48) |
 | Motori i refaktorimit (C) | ✅ e mbyllur | 3 të automatizuara, 2 këshillë; heqja e erës matet (VD-42, VD-44); patch (VD-49); verifikim në kontekst projekti (VD-55); përmbysja e parë u veçua (VD-82), dhe rimatja pas ndreqjes së ndërfutjes nxori dy (VD-130) me shkakun e secilës të regjistruar (VD-137); një dështim i javac-ut pa gabim të emërtuar nuk lexohet më si kompilim i pastër (VD-138), dhe kufiri kohor i javac-ut kufizon vetë kompilatorin (VD-139); çdo refuzim ka kod të përkthyeshëm (VD-123) |

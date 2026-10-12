@@ -864,7 +864,7 @@ INTRODUCTION = [
             "Mjetet e analizës statike e automatizojnë një pjesë të kësaj pune, por "
             "lënë tri mangësi. Strategjitë me metrika, si ato të Lanza & Marinescu "
             "(2006), përdorin pragje fikse të nxjerra nga sisteme të tjera, dhe rrallë "
-            "dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim makine "
+            "dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim të makinës "
             "premton më shumë, por rezultatet e tij varen nga mënyra si ndërtohen dhe "
             "ndahen të dhënat, dhe rrallë krahasohet me rregullat mbi të njëjtat "
             "mostra. Së fundi, shumica e mjeteve ndalen te njoftimi: tregojnë ku është "

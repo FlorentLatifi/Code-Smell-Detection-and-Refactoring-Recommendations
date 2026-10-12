@@ -248,8 +248,8 @@ RELATED_WORK = [
 # ---------------------------------------------------------------------
 TOOLS = [
     (
-        "Brunsfeld, M. et al. tree-sitter: An incremental parsing system for "
-        "programming tools. [https://tree-sitter.github.io/tree-sitter/], "
+        "Brunsfeld, M. et al. 2026. tree-sitter: An incremental parsing system for "
+        "programming tools, versioni 0.26. [https://tree-sitter.github.io/tree-sitter/], "
         "data e qasjes: 30.08.2026."
     ),
 ]

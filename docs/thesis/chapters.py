@@ -513,8 +513,8 @@ CHAPTER_2 = [
         "2.7",
         "Boshllëku në literaturë",
         [
-            "Nga ky shqyrtim dalin tri vërejtje. Qasja me rregulla dhe ajo me mësim "
-            "makine rrallë vlerësohen mbi të njëjtën të vërtetë bazë dhe me të "
+            "Nga ky shqyrtim dalin tri vërejtje. Qasja me rregulla dhe ajo me mësim të "
+            "makinës rrallë vlerësohen mbi të njëjtën të vërtetë bazë dhe me të "
             "njëjtat metrika, kështu që krahasimi i drejtpërdrejtë mungon. Jo çdo punim e "
             "thotë qartë si e ndan bashkësinë e vlerësimit, edhe pse shifra e "
             "raportuar varet drejtpërdrejt prej saj. Detektimi dhe refaktorimi, nga ana "
@@ -727,9 +727,9 @@ def _coverage_sentence() -> str:
     no_file = dataset["unreached"].get("no_file", 0)
     unreachable = coverage["repositories_total"] - coverage["repositories_available"]
     return (
-        f"MLCQ-ja përmend {dataset['samples_considered']} mostra në "
+        f"MLCQ-ja jep {_count(dataset['samples_considered'])} çifte mostër-erë në "
         f"{coverage['repositories_total']} depo, nga të cilat {unreachable} nuk ishin më të "
-        f"arritshme. Jashtë vlerësimit mbetën {missing} mostra: {no_file} sepse skedari nuk "
+        f"arritshme. Jashtë vlerësimit mbetën {missing} çifte: {no_file} sepse skedari nuk "
         f"ishte në korpus, dhe {missing - no_file} sepse entiteti nuk u përputh ose "
         "skedari kishte gabim sintakse."
     )
@@ -738,8 +738,8 @@ def _coverage_sentence() -> str:
 # Gjendja e validimit në verifikimin e fundit, e njëjta me `docs/ROADMAP.md`.
 # Nuk lexohet nga një skedar rezultati, sepse testet nuk shkruajnë të tillë; kur
 # suita rritet, këto ndryshohen bashkë me ROADMAP-in.
-VALIDATION_DATE = "8 tetor 2026"
-BACKEND_TESTS = 797
+VALIDATION_DATE = "12 tetor 2026"
+BACKEND_TESTS = 798
 COVERAGE = "96%"
 FRONTEND_TESTS = 173
 
@@ -971,6 +971,10 @@ CHAPTER_4 = [
             "Blob dhe Data Class në nivel klase, Feature Envy dhe Long Method në nivel "
             "metode. Çdo rishikim i jep mostrës një ashpërsi në shkallën none, minor, "
             "major dhe critical, ku «none» do të thotë se rishikuesi nuk e sheh erën. "
+            "Një mostër kodi zakonisht është rishikuar për të dyja erërat e nivelit "
+            "të saj: një klasë për Blob dhe për Data Class, një metodë për Feature Envy "
+            "dhe për Long Method. Prandaj njësia e vlerësimit në këtë punim është çifti "
+            "mostër-erë, dhe 4770 mostrat japin 9517 çifte të tilla. "
             "Mostrat vijnë nga projekte me burim të hapur, por vetë kodi nuk është "
             "pjesë e dataset-it: çdo rresht tregon depon, commit-in, skedarin dhe "
             "rangun e rreshtave të entitetit.",
@@ -997,20 +1001,22 @@ CHAPTER_4 = [
             "shkaku regjistrohet (skedari mungon, ka gabim sintakse, ose te rreshtat e "
             "dhënë nuk ka entitet me atë emër) dhe mostra del nga vlerësimi.",
             "**Etiketa.** Ashpërsitë e rishikuesve kthehen në numra nga 0 (none) te 3 "
-            "(critical), dhe për çdo mostër merret mesatarja e tyre, e rrumbullakosur "
+            "(critical), dhe për çdo çift mostër-erë merret mesatarja e ashpërsive të "
+            "dhëna për atë erë, e rrumbullakosur "
             "te numri i plotë më i afërt me gjysmën drejt lart. Mostra quhet pozitive "
             "kur rezultati është mbi zero; te dy rishikues, pra, mjafton që njëri ta "
             "shohë erën. Si analizë ndjeshmërie përdoren edhe maksimumi, minimumi dhe "
-            "unanimiteti, ku mostrat me mospajtim hidhen. Çdo mostër pikëzohet vetëm "
-            "për erën për të cilën u rishikua; një mostër e Blob-it, për shembull, "
-            "nuk hyn si negative në vlerësimin e Data Class-it.",
+            "unanimiteti, ku mostrat me mospajtim hidhen. Rishikimet e një ere nuk "
+            "përzihen me ato të erës tjetër të së njëjtës mostër: një klasë që "
+            "rishikuesit e quajtën Blob por jo Data Class është pozitive për të parën "
+            "dhe negative për të dytën.",
         ],
     ),
     (
         "4.4",
         "Matja e metrikave",
         [
-            "Analizuesi mbështetet te tree-sitter (Brunsfeld et al.), dhe mbi pemën "
+            "Analizuesi mbështetet te tree-sitter (Brunsfeld et al., 2026), dhe mbi pemën "
             "që ai prodhon maten shtatëmbëdhjetë metrika klase dhe nëntë metrika "
             "metode, me një kalim për klasë. Ndër to janë metrikat e Chidamber & "
             "Kemerer (1994), varianti i normalizuar i LCOM-it nga Henderson-Sellers "
@@ -1051,7 +1057,7 @@ CHAPTER_4 = [
             "Sistemi zbaton tetë strategji. God Class, Data Class, Feature Envy dhe "
             "Brain Method janë marrë ashtu siç i publikuan Lanza & Marinescu (2006). "
             "Large Class, Long Method dhe Long Parameter List ndjekin përshkrimet e "
-            "Fowler-it (2018), ndërsa Deep Nesting mat sa thellë janë futur blloqet "
+            "Fowler (2018), ndërsa Deep Nesting mat sa thellë janë futur blloqet "
             "brenda njëri-tjetrit. Kushtet dhe burimi i secilës janë te Shtojca 8.1.",
             "**Si shprehen strategjitë.** Secila strategji është kombinim kushtesh mbi "
             "metrika, jo një metrikë e vetme. God Class kërkon njëkohësisht "
@@ -1096,7 +1102,7 @@ CHAPTER_4 = [
     ),
     (
         "4.6",
-        "Qasja B: detektimi me mësim makine",
+        "Qasja B: detektimi me mësim të makinës",
         [
             "Vlerësohen katër modele: klasifikuesi i shumicës, regresioni logjistik, "
             "Random Forest (Breiman, 2001) dhe Gradient Boosting (Friedman, 2001), të "
@@ -1134,8 +1140,8 @@ CHAPTER_4 = [
             "Long Method vetëm MLOC. Foldet, fara dhe pikëzimi mbeten të njëjta, ndaj "
             "dallimi me modelin e plotë tregon sa nga fitimi vjen nga kufiri i mësuar "
             "dhe sa nga metrikat shtesë.",
-            "**Rëndësia dhe shpjegimi.** Rëndësia e veçorive matet me permutation "
-            "importance mbi fold-in e testimit, me dhjetë përsëritje, sepse rëndësia e "
+            "**Rëndësia dhe shpjegimi.** Rëndësia e veçorive matet me permutim (permutation "
+            "importance) mbi fold-in e testimit, me dhjetë përsëritje, sepse rëndësia e "
             "bazuar te papastërtia favorizon veçoritë me shumë vlera të ndryshme "
             "(Strobl et al., 2007). Kjo tregon cila metrikë ka peshë në tërë "
             "korpusin, por jo pse u shënua një entitet i caktuar. Prandaj çdo verdikt "
@@ -1159,7 +1165,7 @@ CHAPTER_4 = [
         "4.7",
         "Qasja C: motori i refaktorimit",
         [
-            "Motori automatizon tri transformime të Fowler-it (2018): Extract Method "
+            "Motori automatizon tri transformime nga katalogu i Fowler (2018): Extract Method "
             "për Long Method dhe Brain Method, Replace Nested Conditional with Guard "
             "Clauses për Deep Nesting, dhe Introduce Parameter Object për Long "
             "Parameter List, vetëm te metodat «private». Për katër erërat e tjera "
@@ -1225,7 +1231,7 @@ CHAPTER_4 = [
             "shton një metodë të re. Kështu shihet nëse era u hoq, sa ndryshoi "
             "metrika që e ndez detektorin, dhe nëse rishkrimi solli një erë të re.",
             "**Cilësia e rishkrimeve.** Kompilimi dëshmon vetëm se rishkrimi mbetet kod i "
-            "vlefshëm. Përkufizimi i Fowler-it (2018) kërkon edhe që struktura të "
+            "vlefshëm. Përkufizimi i Fowler (2018) kërkon edhe që struktura të "
             "përmirësohet, dhe nëse u përmirësua e gjykon një njeri, mbi një mostër diff-esh, me një rubrikë me tri përmasa: "
             "**sjellja** (e ruajtur, e paqartë, e ndryshuar), **përfitimi** "
             "(përmirëson, asnjanës, përkeqëson) dhe **pranueshmëria** (ashtu si është, "
@@ -1971,7 +1977,8 @@ def _quality_reading() -> list:
             "klasa e re merr emrin e metodës, mban të gjithë parametrat dhe shpaketohet në "
             "rreshtat e parë, ndaj lista e gjatë kalon nga metoda te konstruktori dhe "
             "thirrjet nuk lexohen më mirë. Era zhduket sipas matjes, jo sipas lexuesit. "
-            "Fowler-i e propozon këtë transformim për parametra që udhëtojnë bashkë si një "
+            "Fowler (2018) e propozon këtë transformim për parametra që udhëtojnë bashkë si "
+            "një "
             "koncept, jo për çdo listë që kalon një prag, dhe ky dallim nuk matet me numrin "
             "e parametrave. Guard Clauses, përkundrazi, u pranua te "
             f"{guard['acceptance']['as_is'] + guard['acceptance']['after_edit']} nga "
@@ -2025,6 +2032,9 @@ def _reading_of_refactoring() -> list:
         "thellë mban më shumë return, break e continue. Motori tërhiqet pra te "
         "metodat ku ndihma do të vlente më shumë.",
     ]
+    by_transformation = _by_transformation_reading()
+    if by_transformation:
+        paragraphs.append(by_transformation)
     if context is not None:
         paragraphs.append(_isolation_reading(context))
     if resolution:
@@ -2090,7 +2100,7 @@ def _literature_comparison(h: dict) -> list:
          ["Erë", "Qasja A", "Qasja B", "M&L 2023, DS1"], _literature_rows(h)),
         (
             f"Te {_joined(lower)} modelet e këtij punimi dalin pak nën ato të "
-            "Madeyski & Lewowski-t. "
+            "Madeyski & Lewowski (2023). "
             if lower
             else ""
         )
@@ -2366,6 +2376,36 @@ def _strategy_source(title: str) -> str:
     return f"{source}, f. {page}" if page else source
 
 
+# Kufizimet e 6.6 në një tabelë. Janë veti të sistemit dhe të vlerësimit, jo numra,
+# ndaj shkruhen këtu; secila ka nënkapitullin ku trajtohet ose matet.
+LIMITATIONS = [
+    ["Analizë sintaksore, pa zgjidhje simbolesh",
+     "Automatizohen vetëm tri transformime; ATFD-ja matet në mënyrë konservative",
+     "Transformimi refuzohet kur parakushti nuk provohet (3.4, 4.4)"],
+    ["Verifikim vetëm me kompilator, shpesh i skedarit të izoluar",
+     "«Pa lloj të ri gabimi» nuk është garanci; sjellja e programit nuk u mat",
+     "Mostër e kompiluar brenda projektit dhe 60 rishkrime të lexuara (5.4)"],
+    ["Cilësia e rishkrimeve e gjykuar nga një rishikues i vetëm",
+     "Nuk ka pajtim mes rishikuesish për këtë gjykim",
+     "Rubrikë e fiksuar, mostër e shtresuar, intervale Wilson (4.7)"],
+    ["Një dataset i vetëm, katër erëra, gjykime njerëzore",
+     "Tre detektorë nuk kanë të vërtetë bazë; etiketa varet nga agregimi",
+     "Agregimet alternative dhe pajtimi mes rishikuesve raportohen (4.3, 5.7)"],
+    ["Depo që nuk gjenden më",
+     "Një pjesë e mostrave mungon nga vlerësimi",
+     "Numërohen me shkakun në hyrje të Kapitullit 5"],
+    ["Ashpërsia derivohet nga teprica mbi pragje",
+     "Nuk përkon me ashpërsinë e rishikuesve",
+     "Përdoret vetëm si renditje brenda mjetit (Shtojca 8.7)"],
+    ["Modele pa optimizim hiperparametrash, me një farë",
+     "Pasiguria nga fara nuk matet",
+     "Pasiguria nga korpusi matet me bootstrap sipas depos (4.9)"],
+    ["Vetëm Java dhe kod me burim të hapur",
+     "Transferimi te gjuhë ose kod industrial i mbyllur nuk provohet",
+     "Deklarohet si kërcënim i vlefshmërisë së jashtme (4.13)"],
+]
+
+
 def chapter_6() -> list:
     """Diskutimi dhe përfundimet, me pohimet empirike të lexuara nga rezultatet.
 
@@ -2434,7 +2474,7 @@ def chapter_6() -> list:
                 "zhvendosin problemin në vend që ta heqin. Encapsulate Field, i "
                 "rekomanduar për Data Class, e përkeqëson matjen sipas vetë përkufizimit "
                 "të strategjisë: një fushë publike bëhet dy akses-metoda publike, dhe të "
-                "dyja kushtet e strategjisë e numërojnë këtë si përkeqësim. Fowler-i e "
+                "dyja kushtet e strategjisë e numërojnë këtë si përkeqësim. Fowler (2018) e "
                 "trajton atë si hap përgatitor, jo si ilaç. Extract Method e ka të "
                 "njëjtin cen në shkallë më të vogël, përmes listës së gjatë të "
                 "parametrave që lë pas, dhe Introduce Parameter Object, ashtu si e zbaton "
@@ -2485,6 +2525,13 @@ def chapter_6() -> list:
             "6.6",
             "Kufizimet",
             [
+                # Mentorja kërkoi që kufizimet e sistemit të sqarohen më mirë (VD-150):
+                # tabela i mbledh në një vend, me pasojën dhe vendin ku trajtohen.
+                "Kufizimet kryesore të sistemit dhe të vlerësimit, pasoja e secilit për "
+                "rezultatet dhe mënyra si u trajtua, janë përmbledhur në tabelë; "
+                "paragrafët pasues i shtjellojnë.",
+                ("table", "Kufizimet e sistemit dhe pasojat e tyre",
+                 ["Kufizimi", "Pasoja për rezultatet", "Si u trajtua"], LIMITATIONS),
                 "Mostrat e depove që nuk ishin më të arritshme mungojnë nga vlerësimi "
                 "(hyrja e Kapitullit 5); nëse ato ndryshojnë sistematikisht nga pjesa "
                 "tjetër, shifrat e raportuara nuk e pasqyrojnë këtë. E vërteta "
@@ -2997,7 +3044,7 @@ def _results_sections() -> list:
         ),
         (
             "5.2",
-            "Qasja B: detektimi me mësim makine",
+            "Qasja B: detektimi me mësim të makinës",
             _flow([
                 "Qasja B vlerësohet me katër algoritmet e Nënkapitullit 4.6, të trajnuar "
                 "mbi të njëjtat mostra dhe të vlerësuar me ndarjen e grupuar sipas depos, "
@@ -3011,7 +3058,7 @@ def _results_sections() -> list:
                 f"MCC-ja më e lartë e arritur është {best_mcc:.3f}. Veçoritë që peshojnë më "
                 "shumë te secila erë, të matura me permutim, janë këto:",
                 ("figure", str(FIGURES / "rendesia_e_vecorive.png"),
-                 "Veçoritë me rëndësi më të lartë, të matura me permutation importance"),
+                 "Veçoritë me rëndësi më të lartë, të matura me permutim"),
                 _top_importance(ml, smells),
                 *_explanation_paragraphs(ml),
                 *_strategy_feature_paragraphs(rules, ml, smells),
@@ -3844,7 +3891,7 @@ def _blocking_section() -> list:
         spread.append([SMELL_SQ.get(smell, smell), str(entry["missed"]), counts])
 
     paragraphs: list = [
-        "Një strategji e Lanza & Marinescu-t është konjunksion, ndaj çdo mospërputhje "
+        "Një strategji e Lanza & Marinescu (2006) është konjunksion, ndaj çdo mospërputhje "
         "ka shkak të emërtueshëm: një klauzolë, ose dy, ose të tria nuk qëndruan. "
         "Matjet për ta thënë këtë ekzistojnë tashmë te tabela e veçorive, ndaj pyetja "
         "«pse nuk ndezi» ka përgjigje pa asnjë ekzekutim të ri.",
@@ -4027,7 +4074,7 @@ def _blob_saturated(data: dict) -> list:
     ]
     return [
         "Një pjesë e vogël e mospërputhjeve i detyrohet matjes e jo etiketave. TCC-ja "
-        "e Bieman & Kang-ut (1995) mat pjesën e çifteve të metodave publike të "
+        "e Bieman & Kang (1995) mat pjesën e çifteve të metodave publike të "
         "instancës që ndajnë një fushë. Një klasë me më pak se dy metoda të tilla nuk "
         "ka çift, ndaj llogaritësi i jep vlerën 1.0; dhe çdo klauzolë e God Class-it e "
         "kërkon TCC-në **nën** një prag, pra kjo klasë nuk kapet me asnjë prag.",
@@ -4247,7 +4294,101 @@ def _refactoring_section() -> list:
         *_rewrite_quality_paragraphs(),
         _BREAK,
         *_refusal_severity_paragraphs(),
+        _BREAK,
+        *_by_transformation_paragraphs(),
     ]
+
+
+def _by_transformation() -> dict[str, dict[str, float]] | None:
+    """Hapat e motorit të ndarë sipas transformimit, nga rreshtat e çdo vendi.
+
+    Shifrat e përgjithshme të 5.4 janë shuma e tri sjelljeve shumë të ndryshme, dhe
+    mentorja kërkoi që rezultati i refaktorimit të lexohej më qartë (VD-150). Çdo
+    vlerë këtu rillogaritet nga `refactoring_sites.csv`, i njëjti skedar që jep
+    totalet, ndaj shuma e kolonave përkon me Tabelën e rezultatit të motorit.
+    """
+    rows = _rows_if_present("refactoring_sites.csv")
+    quality = _load_if_present("rewrite_quality.json")
+    if rows is None:
+        return None
+    out: dict[str, dict[str, float]] = {}
+    for row in rows:
+        entry = out.setdefault(
+            row["refactoring"], {"sites": 0, "applied": 0, "clean": 0, "resolved": 0}
+        )
+        entry["sites"] += 1
+        if row["applied"] != "1":
+            continue
+        entry["applied"] += 1
+        entry["clean"] += row["verdict"] in ("compiles", "no_new_errors")
+        entry["resolved"] += row["resolution"] == "resolved"
+    for name, entry in out.items():
+        reviewed = (quality or {}).get("by_refactoring", {}).get(name)
+        entry["acceptable"] = reviewed["acceptable"] if reviewed else float("nan")
+    return out
+
+
+def _by_transformation_paragraphs() -> list:
+    """Tabela përmbledhëse e 5.4: vende, rishkrime, verifikim, erë e hequr, pranim."""
+    data = _by_transformation()
+    if not data:
+        return []
+    rows = []
+    for name, e in sorted(data.items(), key=lambda pair: -pair[1]["applied"]):
+        applied = int(e["applied"])
+        rows.append([
+            _named(name),
+            _count(int(e["sites"])),
+            f"{_count(applied)} ({applied / e['sites']:.1%})",
+            f"{_count(int(e['clean']))} ({e['clean'] / applied:.1%})",
+            f"{_count(int(e['resolved']))} ({e['resolved'] / applied:.1%})",
+            "—" if e["acceptable"] != e["acceptable"] else f"{e['acceptable']:.0%}",
+        ])
+    return [
+        "Të njëjtat hapa, të ndarë sipas transformimit, japin këto vlera. Përqindja e "
+        "të transformuarave llogaritet mbi vendet, dy kolonat pasuese mbi të "
+        "transformuarat, dhe kolona e fundit vjen nga mostra e lexuar më sipër:",
+        ("table", "Rezultati i refaktorimit sipas transformimit",
+         ["Transformimi", "Vende", "Të transformuara", "Pa gabim të ri", "Era u hoq",
+          "Të pranueshme (mostra)"], rows),  # fmt: skip
+    ]
+
+
+def _by_transformation_reading() -> str:
+    """Çfarë thotë tabela sipas transformimit, me çdo numër të lexuar prej saj."""
+    data = _by_transformation()
+    if not data or not {"ExtractMethod", "IntroduceParameterObject",
+                        "ReplaceNestedConditionalWithGuardClauses"} <= set(data):  # fmt: skip
+        return ""
+    em = data["ExtractMethod"]
+    gc = data["ReplaceNestedConditionalWithGuardClauses"]
+    ipo = data["IntroduceParameterObject"]
+    total = sum(e["applied"] for e in data.values())
+    text = (
+        "Rezultatet e refaktorimit lexohen më qartë sipas transformimit (tabela e "
+        "fundit e Nënkapitullit 5.4), sepse shifrat e përgjithshme janë shuma e tri "
+        f"sjelljeve të ndryshme. Extract Method jep {em['applied'] / total:.0%} të "
+        "rishkrimeve, ndaj i përcakton ato: aplikohet te "
+        f"{em['applied'] / em['sites']:.0%} e vendeve të veta, {em['clean'] / em['applied']:.0%} "
+        "e rishkrimeve të tij nuk shtojnë gabim, era hiqet te "
+        f"{em['resolved'] / em['applied']:.0%}, dhe një zhvillues do të pranonte "
+        f"{em['acceptable']:.0%} të tyre, pasi t'i japë metodës së re një emër. "
+    )
+    if gc["applied"] == gc["clean"]:
+        text += (
+            "Guard Clauses aplikohet vetëm te "
+            f"{gc['applied'] / gc['sites']:.1%} e vendeve, sepse pranon një formë të "
+            "vetme, por kur aplikohet nuk shton asnjë gabim"
+            + (" dhe u pranua në çdo rast të lexuar. " if gc["acceptable"] == 1.0 else ". ")
+        )
+    if ipo["resolved"] == ipo["applied"] and ipo["acceptable"] == 0.0:
+        text += (
+            "Introduce Parameter Object e heq erën sipas matjes te çdo rishkrim, por "
+            "asnjë nuk u pranua, sepse e zhvendos listën e gjatë nga metoda te "
+            "konstruktori. Një shifër e përgjithshme e mirë mund të fshehë pra një "
+            "transformim që nuk i shërben zhvilluesit, dhe anasjelltas."
+        )
+    return text
 
 
 def _refactoring_funnel(data: dict) -> list:
@@ -5185,7 +5326,7 @@ def chapter_8() -> list:
                     strategy_rows,
                 ),
                 "Emrat me shkronja të mëdha te kolona e kushteve janë kuantifikuesit e "
-                "Lanza & Marinescu-t, vlerat e të cilëve jepen më poshtë.",
+                "Lanza & Marinescu (2006), vlerat e të cilëve jepen më poshtë.",
             ],
         ),
         (
@@ -5240,7 +5381,7 @@ def chapter_8() -> list:
                 (
                     "table",
                     "Çfarë propozohet dhe çfarë aplikohet",
-                    ["Erë", "Refaktorimet e Fowler-it", "Motori"],
+                    ["Erë", "Refaktorimet sipas Fowler (2018)", "Motori"],
                     engine_rows,
                 ),
                 "Kur një parakusht nuk provohet, motori refuzon me një arsye të "
@@ -5284,7 +5425,7 @@ def chapter_8() -> list:
                 "hapat që kishte atëherë tabela u riekzekutuan mbi të njëjtat hyrje, dhe të "
                 "gjithë, me një "
                 "përjashtim, dhanë skedarë identikë me të komituarit, veç commit-it dhe "
-                "kohëzgjatjes që regjistrojnë. Tabela e veçorive, 4534 rreshta, doli bajt "
+                "kohëzgjatjes që regjistrojnë. Tabela e veçorive e atëhershme doli bajt "
                 "për bajt identike; po ashtu të katër modelet e trajnuara, dhe asnjë figurë "
                 "nuk ndryshoi.",
                 "Përjashtimi është hapi i dymbëdhjetë. Ai riprodhoi numrat që mbajnë "
@@ -5303,6 +5444,17 @@ def chapter_8() -> list:
                 "skedarë që nuk kompilojnë. Pas ndreqjes, kjo shtojcë dhe Kapitulli 5 "
                 "raportojnë matjen e re. Vlera e riprodhimit qëndron pikërisht këtu: totalet "
                 "përkonin, dhe defekti u pa vetëm sepse u krahasua çdo rresht.",
+                "Një defekt i dytë u gjet më 12 tetor 2026, gjatë verifikimit të "
+                "referencave, dhe jo nga riprodhimi: lexuesi i MLCQ-së i grupoi "
+                "rishikimet vetëm sipas identifikuesit të mostrës, ndërsa pothuajse çdo "
+                "mostër është rishikuar për dy erëra. Rishikimet e dy erërave "
+                "përziheshin në një etiketë, dhe gjysma e çifteve mostër-erë mbetej "
+                "jashtë. Lexuesi grupon tani sipas mostrës dhe erës, një test me vlera "
+                "të llogaritura me dorë e provon këtë, dhe çdo hap që lexon etiketat u "
+                "riekzekutua. Riprodhimi i 3 shtatorit i përket tabelës së vjetër; "
+                "Kapitujt 5 dhe 6 raportojnë vetëm matjen e re. Totalet e riprodhueshme "
+                "nuk e kishin zbuluar këtë, sepse defekti ishte i qëndrueshëm: i njëjti "
+                "kod jepte të njëjtin gabim çdo herë.",
                 "Hapi 1 mbetet i pariekzekutuar, sepse kërkon rishkarkimin e korpusit të "
                 "plotë; për të riprodhimi mbetet pretendim i pakontrolluar, dhe thuhet këtu "
                 "si i tillë.",
