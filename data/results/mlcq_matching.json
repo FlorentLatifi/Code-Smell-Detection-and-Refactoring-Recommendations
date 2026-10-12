@@ -1,57 +1,59 @@
 {
   "by_entity_type": {
     "class": {
-      "matched": 2233,
+      "matched": 4459,
+      "no_file": 211,
+      "span_mismatch": 2
+    },
+    "function": {
+      "matched": 4597,
+      "no_entity": 16,
+      "no_file": 230,
+      "syntax_errors": 2
+    }
+  },
+  "by_smell": {
+    "blob": {
+      "matched": 2228,
+      "no_file": 105,
+      "span_mismatch": 1
+    },
+    "data class": {
+      "matched": 2231,
       "no_file": 106,
       "span_mismatch": 1
     },
-    "function": {
+    "feature envy": {
+      "matched": 2291,
+      "no_entity": 8,
+      "no_file": 115,
+      "syntax_errors": 1
+    },
+    "long method": {
       "matched": 2306,
       "no_entity": 8,
       "no_file": 115,
       "syntax_errors": 1
     }
   },
-  "by_smell": {
-    "blob": {
-      "matched": 1410,
-      "no_file": 73,
-      "span_mismatch": 1
-    },
-    "data class": {
-      "matched": 823,
-      "no_file": 33
-    },
-    "feature envy": {
-      "matched": 823,
-      "no_entity": 1,
-      "no_file": 36,
-      "syntax_errors": 1
-    },
-    "long method": {
-      "matched": 1483,
-      "no_entity": 7,
-      "no_file": 79
-    }
-  },
   "corpus_coverage": {
     "repositories_available": 512,
     "repositories_total": 522,
-    "samples_available": 4549,
-    "samples_total": 4770
+    "samples_available": 9076,
+    "samples_total": 9517
   },
   "environment": {
-    "commit": "40b3d7b24044c0b9a7cc4369853f6ab005d7e0ba",
+    "commit": "79151a7043c6a13ee679505b7d2ed833b871a904",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "match_rate": 0.9516,
   "match_rate_of_available": 0.9978,
   "outcomes": {
-    "matched": 4539,
-    "no_entity": 8,
-    "no_file": 221,
-    "span_mismatch": 1,
-    "syntax_errors": 1
+    "matched": 9056,
+    "no_entity": 16,
+    "no_file": 441,
+    "span_mismatch": 2,
+    "syntax_errors": 2
   }
 }

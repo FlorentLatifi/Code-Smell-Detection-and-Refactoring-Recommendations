@@ -6064,3 +6064,41 @@ Prekur janë të gjitha shifrat e Qasjeve A dhe B, krahasimi, intervalet, krahas
 PMD-në, pajtimi i rishikuesve dhe ashpërsia, pra Kapitujt 5 e 6, abstrakti dhe
 prezantimi. Qasja C (motori mbi korpusin) dhe fleta e cilësisë nuk varen nga etiketat.
 Ndreqja pret vendimin e autorit, sepse rihap rezultatet katër javë para dorëzimit.
+
+### VD-150: Etiketat e MLCQ-së sipas mostrës dhe erës, dhe komentet e mentores për kapitujt 1-5
+
+**Konteksti.** VD-149 gjeti se `load_samples` i grupon rishikimet vetëm sipas
+`sample_id`. Mentorja, pasi lexoi kapitujt 1-5, kërkoi të rishikohej konsistenca e të
+dhënave në tabela, të sqaroheshin kufizimet e sistemit dhe rezultatet e refaktorimit,
+dhe uniformiteti i citimeve, i terminologjisë dhe i formatimit, edhe për Kapitullin 6.
+
+**Vendimi.**
+- **Lexuesi** grupon sipas `(sample_id, erë)`; identifikuesi i mostrës bëhet
+  `id/erë`, që çdo skript që e përdor si çelës të mbetet i saktë. Testi i ri ndërton një
+  mostër me rishikime për dy erëra (rasti real 5827650) dhe i llogarit të dy etiketat me
+  dorë; testi mbi skedarin real pret 9517 çifte mbi 4770 id.
+- **Rimatja.** U riekzekutuan hapat 2, 3, 4, 5, 6, 8, 9, 10, 13, 15, 19, 20, 21 dhe 22.
+  Tabela e veçorive ka 9046 rreshta në vend të 4534. Qasja C dhe fleta e cilësisë nuk
+  lexojnë etiketa dhe nuk u prekën.
+- **Çfarë ndryshoi në rezultate.** MCC e rregullave: Blob 0.336, Data Class 0.367,
+  Feature Envy 0.243, Long Method 0.617. MCC e modelit: 0.539, 0.473, 0.321, 0.723.
+  Përparësia e modelit mbetet mbi zero te Blob, Data Class dhe Long Method, por jo te
+  Feature Envy, ku vlera e vjetër 0.696 ishte artefakt i përzierjes. Pajtimi mes
+  rishikuesve është 0.312, 0.396, -0.071 dhe 0.567, jo 0.02-0.24. Parashikimi i
+  Shtojcës 8.6, se kalibrimi do të ndihmonte aty ku mospërputhjet janë afër pragjeve,
+  nuk konfirmohet më dhe teksti e thotë.
+- **Teksti.** Fjalitë e gjeneruara që pohonin «pa përjashtim», «pranë njëri-tjetrit»,
+  «një rezervë e vetme», «drejtim i kundërt» ose «pajtim i ulët» u kthyen në degëzime që
+  lexohen nga të dhënat. Përgjigjja e PK2 bëhet «Po, por jo te çdo erë»; Feature Envy
+  kundrejt Madeyski & Lewowski (2023) del në të njëjtin nivel, me shpjegimin te pajtimi
+  i munguar i rishikuesve. Kapitulli 4.3 e përkufizon njësinë e vlerësimit si çift
+  mostër-erë; Shtojca 8.5 e raporton defektin.
+- **Komentet e mentores.** `check_tables.py` provon që tabelat përputhen me njëra-tjetrën
+  dhe hyn në CI. Kufizimet e sistemit marrin një tabelë te 6.6; rezultati i refaktorimit
+  sipas transformimit merr një tabelë te 5.4 dhe një paragraf te 6.1. Citimet me
+  prapashtesë («Fowler-it», «Lanza & Marinescu-t») bëhen «Autori (viti)»; tree-sitter
+  merr vit; «mësim makine» bëhet «mësim i makinës»; fjalori merr «Mostër», «Rishkrim» dhe
+  «Vend».
+
+**Çfarë nuk u verifikua.** Pohimet cilësore të 6.5 («i moderuar te tri erëra») janë
+shkruar me dorë mbi këto të dhëna dhe nuk lëvizin vetë po të rimaten.

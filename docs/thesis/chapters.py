@@ -251,11 +251,17 @@ def abstract() -> list[str]:
         f"{band([m['recall'] for m in primary])}. Klasifikuesit i tejkaluan qartë, me "
         f"MCC {band([m['mcc'] for m in best])} kundrejt "
         f"{band([m['mcc'] for m in primary])}. Intervalet e besimit me bootstrap sipas depos "
-        f"tregojnë se ajo përparësi e kalon zeron te të katër erërat.",
+        f"e vendosin atë përparësi mbi zero {_among(4 - len(_significance(sorted(ml['per_smell']))[0]), 4)}"
+        + (
+            f"; te {_joined(_significance(sorted(ml['per_smell']))[0])} ajo nuk dallohet nga "
+            "zeroja."
+            if _significance(sorted(ml["per_smell"]))[0]
+            else "."
+        ),
     ]
 
     third = (
-        f"Dy rezultate janë negative dhe raportohen si të tilla. Ashpërsia që sistemi "
+        f"Rezultatet negative raportohen si të tilla. Ashpërsia që sistemi "
         f"e derivon nga teprica mbi pragje nuk e riprodhon gjykimin e rishikuesve: "
         f"pajtimi i matur me kappa me peshë qëndron te {band(severity)}, dhe gabimi "
         f"anon nga mbivlerësimi. "
@@ -263,9 +269,9 @@ def abstract() -> list[str]:
     if ceiling is not None:
         ceilings = [entry["mcc"] for entry in ceiling["per_smell"].values()]
         third += (
-            f"Po ashtu, vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}, "
-            f"çka tregon se një pjesë e pareduktueshme e gabimit të çdo detektori i "
-            f"takon përkufizimit të erës dhe jo detektorit. "
+            f"Vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}; te erëra ku "
+            "pajtimi i tyre është i ulët, një pjesë e gabimit të çdo detektori i takon "
+            "përkufizimit të erës dhe jo detektorit. "
         )
     if refactoring is not None:
         share = refactoring["applied"] / refactoring["detected"]
@@ -1734,7 +1740,14 @@ def _reading_of_detection(h: dict) -> list:
         > max(strategy[s]["precision"], model[s]["precision"])
     )
     vs = {s: ml["per_smell"][s]["vs_rules"] for s in smells}
-    covers = all(vs[s]["only_model"] > vs[s]["only_rules"] for s in smells)
+    # «Pothuajse e përfshin» kërkon që rastet e rregullit t'i kapë kryesisht edhe
+    # modeli, jo vetëm që modeli të ketë më shumë raste të veta (VD-150).
+    contained = [
+        s for s in smells
+        if vs[s]["only_rules"] <= 0.2 * (vs[s]["both"] + vs[s]["only_rules"])
+    ]
+    covers = len(contained) == len(smells)
+    apart = [SMELL_SQ[s] for s in smells if s not in contained]
     # Era ku bashkimi humbet më shumë, dhe era ku rregulli ka më shumë raste të veta.
     worst_union = min(
         smells,
@@ -1775,7 +1788,8 @@ def _reading_of_detection(h: dict) -> list:
         )
         + ". Një F1 i vetëm do ta fshihte këtë dallim.",
         *_sensitivity_reading(),
-        "**Qasja B.** Modelet e tejkalojnë qasjen me rregulla te çdo erë, dhe meqë "
+        "**Qasja B.** Sipas vlerës së matur, modelet e tejkalojnë qasjen me rregulla "
+        "te çdo erë, dhe meqë "
         "klasifikuesi i shumicës nuk ndez kurrë, fitimi nuk vjen nga çekuilibri i "
         "klasave." + _gain_split(h),
         *_intervals_reading(),
@@ -1787,9 +1801,9 @@ def _reading_of_detection(h: dict) -> list:
         + ". Zhvilluesi merr kështu një fjali me të njëjtën formë si klauzola e një "
         "strategjie."
         + (
-            " Që Feature Envy shpjegohet kryesisht me gjatësinë e metodës, e jo me "
-            "qasjet në të dhëna të huaja, tregon se modeli mëson atë që rishikuesit "
-            "shënojnë, jo domosdoshmërisht përkufizimin e erës."
+            " Që matja vendimtare më e shpeshtë te Feature Envy është gjatësia e "
+            "metodës, e jo qasja në të dhëna të huaja, tregon se modeli mëson atë që "
+            "rishikuesit shënojnë, jo domosdoshmërisht përkufizimin e erës."
             if envy_by_length
             else ""
         ),
@@ -1797,11 +1811,17 @@ def _reading_of_detection(h: dict) -> list:
             "Modeli pothuajse e përfshin rregullin: te çdo erë ai shënon më shumë raste "
             "që rregulli i humb sesa anasjelltas. "
             if covers
+            else "Modeli pothuajse e përfshin rregullin te "
+            + _joined([SMELL_SQ[s] for s in contained])
+            + ", ndërsa te "
+            + _joined(apart)
+            + " rregulli kap shumë raste që modeli i humb. "
+            if contained
             else ""
         )
-        + "Bashkimi i dy qasjeve nuk ndihmon, sepse bashkë me rastet e sakta të "
-        "rregullit vijnë edhe pozitivët e tij të rremë, dhe mbi një bashkësi ku shumica "
-        "e etiketave janë negative ky shkëmbim humbet"
+        + "Bashkimi i dy qasjeve ndihmon pak ose aspak, sepse bashkë me rastet e sakta "
+        "të rregullit vijnë edhe pozitivët e tij të rremë, dhe mbi një bashkësi ku "
+        "shumica e etiketave janë negative ky shkëmbim mezi del në fitim"
         + (
             f"; ironikisht, bashkimi humbet më shumë pikërisht te {SMELL_SQ[richest]}, ku "
             "rregulli kishte më shumë raste të veta"
@@ -1909,11 +1929,19 @@ def _intervals_reading() -> list:
         "janë të gjera, dhe renditja e erërave mes tyre nuk qëndron: dallimi mes Data "
         "Class-it dhe Blob-it, për shembull, humbet brenda tyre."
     )
-    if lost:
+    unsure = [SMELL_SQ[s] for s in sorted(per) if s not in above]
+    if unsure:
         text += (
-            f" Kur rregullit i jepet pragu i tij më i mirë, përparësia zhduket te "
-            f"{_joined(lost)}, pikërisht aty ku rregulli punonte më mirë; ky është "
-            "kufizimi i vetëm i rëndësishëm i krahasimit mes dy qasjeve."
+            f" Te {_joined(unsure)} intervali i dallimit e përfshin zeron edhe me pragjet "
+            "e botuara, pra përparësia e modelit atje nuk dallohet nga rastësia e "
+            "rimostrimit."
+        )
+    swept_only = [name for name in lost if name not in unsure]
+    if swept_only:
+        text += (
+            f" Kur rregullit i jepet pragu i tij më i mirë, përparësia zhduket edhe te "
+            f"{_joined(swept_only)}, ku rregulli kishte rezultatin më të mirë mes "
+            "erërave."
         )
     return [text]
 
@@ -2072,6 +2100,116 @@ def _literature_rows(h: dict) -> list:
     ]
 
 
+def _madeyski_values() -> dict[str, float]:
+    """Mesoret e Madeyski & Lewowski (2023) për DS1, si numra («> 0.75» merret 0.75)."""
+    return {s: float(v.lstrip("> ").split()[0]) for s, v in MADEYSKI_2023_DS1.items()}
+
+
+def _madeyski_position(h: dict) -> str:
+    """Ku bien modelet e këtij punimi kundrejt Madeyski & Lewowski (2023), erë për erë.
+
+    Fjalia e vjetër emërtonte me dorë erërat «nën» ata dhe e quante Feature Envy
+    «drejtim të kundërt»; me etiketat e ndrequra Blob del mbi ta dhe Feature Envy
+    në të njëjtin nivel (VD-150). Dallimi deri në 0.02 MCC quhet i njëjti nivel.
+    """
+    model, theirs = h["model"], _madeyski_values()
+    lower = [SMELL_SQ[s] for s in sorted(theirs) if model[s]["mcc"] < theirs[s] - 0.02]
+    higher = [SMELL_SQ[s] for s in sorted(theirs) if model[s]["mcc"] > theirs[s] + 0.02]
+    level = [SMELL_SQ[s] for s in sorted(theirs) if abs(model[s]["mcc"] - theirs[s]) <= 0.02]
+    parts = []
+    if lower:
+        parts.append(f"te {_joined(lower)} modelet e këtij punimi dalin nën ato të tyre")
+    if higher:
+        parts.append(f"te {_joined(higher)} dalin mbi to")
+    if level:
+        parts.append(f"te {_joined(level)} janë në të njëjtin nivel")
+    text = _opens("; ".join(parts)) + ". " if parts else ""
+    return text + (
+        "Dallimi i validimit e bën të pritshme që shifrat këtu të mos jenë më të larta: "
+        "ata e ndajnë bashkësinë me validim të kryqëzuar me pesë folde, të shtresuar "
+        "sipas klasës por jo të grupuar sipas projektit, ndaj e njëjta depo mund ta "
+        "ushqejë trajnimin dhe të vlerësohet në të njëjtën kohë, që është rrjedhja që ky "
+        "punim e shmang me GroupKFold. Ata raportojnë edhe mesoren e 120 ekzekutimeve me "
+        "hiperparametra të optimizuar për MCC, ndërsa këtu modelet kanë parametra të "
+        "fiksuar dhe një ekzekutim të vetëm jashtë fold-it. Me një ndarje më të rreptë "
+        "dhe pa optimizim të hiperparametrave, rezultatet e këtij punimi janë në të "
+        "njëjtin brez."
+    )
+
+
+def _feature_envy_against_madeyski(h: dict) -> str:
+    """Feature Envy kundrejt Madeyski & Lewowski (2023), dhe çfarë thotë pajtimi i rishikuesve."""
+    ours = h["model"]["feature envy"]["mcc"]
+    theirs = _madeyski_values()["feature envy"]
+    ceiling = _load_if_present("reviewer_agreement.json")
+    agreement = None if ceiling is None else ceiling["per_smell"]["feature envy"]["mcc"]
+    if abs(ours - theirs) <= 0.02:
+        text = (
+            f"Te Feature Envy dy punimet arrijnë pothuajse të njëjtën vlerë, {ours:.2f} "
+            f"këtu kundrejt {theirs:.2f} atje, dhe për të dy është era me performancën më "
+            "të ulët. Kjo ndodh edhe pse veçoritë ndryshojnë: ky punim mat për çdo metodë "
+            "ATFD, LAA, FDP dhe rreshtat efektivë, ndërsa ata përdorin metrika të mjeteve "
+            "të përgjithshme."
+        )
+        if agreement is not None and agreement <= 0.1:
+            text += (
+                " Shpjegimi më i mundshëm nuk janë pra veçoritë, por etiketa: dy "
+                "rishikues të së njëjtës metodë pajtohen për Feature Envy me MCC "
+                f"{agreement:.2f}, pra jo më shumë se rastësia (Nënkapitulli 5.7)."
+            )
+        return text
+    return (
+        f"Te Feature Envy dallimi është më i madh: {ours:.2f} këtu kundrejt {theirs:.2f} "
+        "atje, ku sipas autorëve është era me performancën më të ulët. Shpjegimi më i "
+        "mundshëm janë veçoritë: ky punim mat për çdo metodë ATFD, LAA, FDP dhe "
+        "rreshtat efektivë, ndërsa ata përdorin metrika të mjeteve të përgjithshme. Dy "
+        "punimet nuk vlerësohen mbi saktësisht të njëjtat mostra, sepse një pjesë e "
+        "depove sot mungon, prandaj dallimi lexohet si tregues dhe jo si provë."
+    )
+
+
+def _subjectivity_reading(h: dict, ceiling: dict) -> str:
+    """Mäntylä & Lassenius (2006) kundrejt pajtimit të matur mes rishikuesve të MLCQ-së.
+
+    Me grupimin e gabuar (VD-150) pajtimi dilte 0.02-0.24 te të katër erërat dhe
+    teksti fliste për «tavan të ulët»; i matur saktë, ai është i moderuar te tri
+    erëra dhe mungon te Feature Envy. Fjalia ndërtohet nga ato vlera.
+    """
+    values = {s: e["mcc"] for s, e in ceiling["per_smell"].items()}
+    moderate = sorted(s for s, v in values.items() if v > 0.1)
+    absent = sorted(s for s, v in values.items() if v <= 0.1)
+    above = [SMELL_SQ[s] for s in sorted(values) if h["model"][s]["mcc"] > values[s]]
+    text = (
+        "Mäntylä & Lassenius (2006) gjetën se vlerësimi i erërave nga zhvilluesit është "
+        "subjektiv, dhe ky punim e mat këtë mbi MLCQ. Dy rishikues të së njëjtës mostër "
+    )
+    if moderate:
+        text += (
+            "pajtohen me MCC "
+            + _span([values[s] for s in moderate], 2)
+            + f" te {_joined([SMELL_SQ[s] for s in moderate])}, një pajtim i moderuar"
+        )
+    if absent:
+        text += (
+            f", ndërsa te {_joined([SMELL_SQ[s] for s in absent])} pajtimi është "
+            + _joined([f"{values[s]:.2f}" for s in absent])
+            + ", pra jo më i mirë se rastësia"
+        )
+    text += (
+        ". Etiketa e agreguar është mesatare e disa gjykimeve dhe e zbut zhurmën e "
+        "secilit, ndaj një model mund të pajtohet me të më shumë sesa pajtohen dy "
+        "rishikues mes tyre"
+    )
+    if above:
+        text += f", siç ndodh te {_joined(above)}"
+    text += (
+        ". Kjo nuk e bën modelin më të mirë se njeriun, por tregon se shifrat e fushës "
+        "duhen lexuar kundrejt këtij pajtimi, dhe se një erë mbi të cilën vetë "
+        "rishikuesit nuk pajtohen nuk mund të detektohet mirë nga asnjë qasje."
+    )
+    return text
+
+
 def _literature_comparison(h: dict) -> list:
     """Krahasimi me literaturën, me shifrat tona nga të dhënat.
 
@@ -2080,11 +2218,6 @@ def _literature_comparison(h: dict) -> list:
     rigjenerohet ndonjë rezultat.
     """
     model = h["model"]
-    lower = [
-        SMELL_SQ[s]
-        for s in ("blob", "data class", "long method")
-        if model[s]["mcc"] < float(MADEYSKI_2023_DS1[s].lstrip("> ").split()[0])
-    ]
     f1 = [model[s]["f1"] for s in h["smells"]]
     ceiling = _load_if_present("reviewer_agreement.json")
     paragraphs = [
@@ -2098,28 +2231,8 @@ def _literature_comparison(h: dict) -> list:
         "më të mirë të MCC-së që raportojnë ata.",
         ("table", "Krahasimi i MCC-së me Madeyski & Lewowski (2023), mbi MLCQ",
          ["Erë", "Qasja A", "Qasja B", "M&L 2023, DS1"], _literature_rows(h)),
-        (
-            f"Te {_joined(lower)} modelet e këtij punimi dalin pak nën ato të "
-            "Madeyski & Lewowski (2023). "
-            if lower
-            else ""
-        )
-        + "Dallimi i validimit e bën këtë të pritshme: ata e ndajnë bashkësinë me "
-        "validim të kryqëzuar me pesë folde, të shtresuar sipas klasës por jo të "
-        "grupuar sipas projektit, ndaj e njëjta depo mund ta ushqejë trajnimin dhe të "
-        "vlerësohet në të njëjtën kohë, që është rrjedhja që ky punim e shmang me "
-        "GroupKFold. Ata raportojnë edhe mesoren e 120 ekzekutimeve me hiperparametra "
-        "të optimizuar për MCC, ndërsa këtu modelet kanë parametra të fiksuar dhe një "
-        "ekzekutim të vetëm jashtë fold-it. Me një ndarje më të rreptë dhe pa "
-        "optimizim të hiperparametrave, "
-        "rezultatet e këtij punimi janë në të njëjtin brez.",
-        f"Te Feature Envy drejtimi është i kundërt: {model['feature envy']['mcc']:.2f} "
-        "këtu kundrejt 0.31 atje, ku sipas autorëve është era me performancën më të ulët. "
-        "Shpjegimi më "
-        "i mundshëm janë veçoritë: ky punim mat për çdo metodë ATFD, LAA, FDP dhe "
-        "rreshtat efektivë, ndërsa ata përdorin metrika të mjeteve të përgjithshme. Dy "
-        "punimet nuk vlerësohen mbi saktësisht të njëjtat mostra, sepse një pjesë e "
-        "depove sot mungon, prandaj dallimi lexohet si tregues dhe jo si provë.",
+        _madeyski_position(h),
+        _feature_envy_against_madeyski(h),
         "Rezultatet janë shumë larg atyre të Arcelli Fontana et al. (2016), ku "
         "shumica e klasifikuesve kaluan 95% në saktësi dhe F-measure. Di Nucci et al. "
         "(2018) treguan se ato vlera vinin nga ndërtimi i dataset-it: me shpërndarje më "
@@ -2130,15 +2243,7 @@ def _literature_comparison(h: dict) -> list:
     ]
     if ceiling is not None:
         values = [entry["mcc"] for entry in ceiling["per_smell"].values()]
-        paragraphs.append(
-            "Mäntylä & Lassenius (2006) gjetën se vlerësimi i erërave nga zhvilluesit "
-            "është subjektiv, dhe ky punim e mat këtë mbi MLCQ: dy rishikues të së "
-            f"njëjtës mostër pajtohen me MCC nga {_span(values, 2)}. Etiketa e agreguar "
-            "është mesatare e disa gjykimeve dhe e zbut zhurmën e secilit, ndaj modelet "
-            "mund të pajtohen me të më shumë sesa pajtohen dy rishikues mes tyre. Kjo "
-            "nuk e bën modelin më të mirë se njeriun, por tregon se shifrat e fushës "
-            "duhen lexuar kundrejt një tavani të ulët."
-        )
+        paragraphs.append(_subjectivity_reading(h, ceiling))
     paragraphs.append(
         "Te rregullat, rezultati përputhet me vërejtjen e Nënkapitullit 2.3 se pragjet "
         "e nxjerra nga një korpus nuk transferohen lehtë në një tjetër: strategjitë e "
@@ -2206,16 +2311,33 @@ def _gain_split(h: dict) -> str:
         return ""
     cut = {smell: gain for smell, (gain, _) in parts.items()}
     extra = {smell: gain for smell, (_, gain) in parts.items()}
-    rising = sum(1 for gain in cut.values() if gain > 0)
+    rising = sorted(smell for smell, gain in cut.items() if gain > 0.005)
+    falling = sorted(smell for smell, gain in cut.items() if gain < -0.005)
     most = max(extra, key=lambda smell: extra[smell])
-    return (
+    negligible = sorted(smell for smell, gain in extra.items() if abs(gain) <= 0.005)
+    # Të shkruara sipas erës e jo si brez: brezi «-0.052 deri në 0.158» fshihte se te
+    # një erë modeli i kufizuar del nën rregullin, dhe «-0.000» lexohej si gabim (VD-150).
+    text = (
         " Ablacioni i Nënkapitullit 5.2 e ndan këtë fitim në dy pjesë. Vetëm me "
         "metrikat e strategjisë, pra duke mësuar vetëm ku pritet kufiri, modeli e ngre "
-        f"MCC-në {_among(rising, len(cut))}, me {_span(list(cut.values()))}. Metrikat e "
-        f"tjera shtojnë edhe {_span(list(extra.values()))}, më së shumti te "
-        f"{SMELL_SQ[most]}. Strategjive u mungojnë pra të dyja: kufiri i duhur dhe një "
-        "pjesë e informacionit."
+        "MCC-në te " + _joined([f"{SMELL_SQ[s]} (+{cut[s]:.3f})" for s in rising])
     )
+    if falling:
+        text += (
+            ", ndërsa te " + _joined([f"{SMELL_SQ[s]} ({cut[s]:+.3f})" for s in falling])
+            + " del nën rregullin"
+        )
+    text += (
+        f". Metrikat e tjera shtojnë më së shumti te {SMELL_SQ[most]} "
+        f"(+{extra[most]:.3f})"
+    )
+    if negligible:
+        text += " dhe pothuajse asgjë te " + _joined([SMELL_SQ[s] for s in negligible])
+    text += (
+        ". Strategjive u mungon pra kryesisht kufiri i duhur, dhe te disa erëra edhe "
+        "një pjesë e informacionit."
+    )
+    return text
 
 
 def _gain_in_answer(h: dict) -> str:
@@ -2273,6 +2395,27 @@ def _structure_verdict() -> str:
     return f" dhe, te {_word(good)} nga {_word(len(per))} transformimet, për strukturën"
 
 
+def _significance(smells: list) -> tuple[list[str], list[str]]:
+    """Erërat ku B − A nuk ndahet nga zeroja: me pragjet e botuara, dhe vetëm me më të mirin.
+
+    Përgjigjja e PK2 dhe tabela e saj i shkruanin këto si «pa përjashtim» dhe «një
+    rezervë e vetme, te Long Method»; me etiketat e ndrequra Feature Envy e kalon
+    zeron edhe me pragjet e botuara (VD-150).
+    """
+    intervals = _load_if_present("bootstrap_intervals.json")
+    if intervals is None:
+        return [], []
+    per = intervals["per_smell"]
+    unsure = [SMELL_SQ[s] for s in smells if per[s]["intervals"]["difference_model_minus_rules"]["low"] <= 0]
+    swept = [
+        SMELL_SQ[s]
+        for s in smells
+        if per[s]["intervals"]["difference_model_minus_rules_swept"]["low"] <= 0
+        and SMELL_SQ[s] not in unsure
+    ]
+    return unsure, swept
+
+
 def _answers(h: dict) -> list:
     """Përgjigjet e qarta ndaj tri pyetjeve kërkimore, nga të dhënat."""
     smells, strategy, model = h["smells"], h["strategy"], h["model"]
@@ -2302,23 +2445,7 @@ def _answers(h: dict) -> list:
         f"{_span([strategy[s]['mcc'] for s in smells])}, më e larta te {SMELL_SQ[best]} "
         f"dhe më e ulëta te {SMELL_SQ[worst]}. Ashpërsia që derivojnë nuk pajtohet me "
         "atë të rishikuesve.",
-        "**PK2, mësimi i makinës.** Po, e përmirëson. Modeli i mësuar mbi "
-        "metrikat e sistemit e ngre MCC-në te të katër erërat: brezi kalon nga "
-        f"{min(strategy[s]['mcc'] for s in smells):.3f}–"
-        f"{max(strategy[s]['mcc'] for s in smells):.3f} në "
-        f"{min(model[s]['mcc'] for s in smells):.3f}–"
-        f"{max(model[s]['mcc'] for s in smells):.3f}"
-        + (
-            ", dhe intervalet bootstrap sipas depos e vendosin këtë përparësi mbi zero "
-            + ("pa përjashtim" if positive == len(smells) else of_smells(positive))
-            if positive is not None
-            else ""
-        )
-        + f". Fitimi vjen kryesisht nga recall-i, që rritet {of_smells(gained)}. Një "
-        "rezervë e vetme: kur rregullit i jepet pragu i tij më i "
-        "mirë nga analiza e ndjeshmërisë, dallimi te Long Method nuk ndahet më nga "
-        "zeroja "
-        "(Nënkapitulli 5.7)." + _gain_in_answer(h),
+        _pk2_answer(h, positive, gained, of_smells),
     ]
 
     data = _load_if_present("refactoring_evaluation.json")
@@ -2345,6 +2472,39 @@ def _answers(h: dict) -> list:
             + ", me kosto të matur, ndërsa sjellja mbetet pyetje e hapur."
         )
     return answers
+
+
+def _pk2_answer(h: dict, positive: int | None, gained: int, of_smells) -> str:
+    """Përgjigjja e PK2, me rezervat që lexohen nga intervalet e jo të shkruara me dorë."""
+    smells, strategy, model = h["smells"], h["strategy"], h["model"]
+    unsure, swept = _significance(smells)
+    verdict = "Po, e përmirëson." if not unsure else "Po, por jo te çdo erë."
+    text = (
+        f"**PK2, mësimi i makinës.** {verdict} Sipas vlerës së matur, modeli i mësuar "
+        "mbi metrikat e sistemit e ngre MCC-në te të katër erërat: brezi kalon nga "
+        f"{min(strategy[s]['mcc'] for s in smells):.3f}–"
+        f"{max(strategy[s]['mcc'] for s in smells):.3f} në "
+        f"{min(model[s]['mcc'] for s in smells):.3f}–"
+        f"{max(model[s]['mcc'] for s in smells):.3f}"
+    )
+    if positive is not None:
+        text += (
+            ", dhe intervalet bootstrap sipas depos e vendosin këtë përparësi mbi zero "
+            + ("pa përjashtim" if positive == len(smells) else of_smells(positive))
+        )
+    text += "."
+    if unsure:
+        text += (
+            f" Te {_joined(unsure)} dallimi nuk ndahet nga zeroja, pra atje përmirësimi "
+            "nuk provohet."
+        )
+    text += f" Fitimi vjen kryesisht nga recall-i, që rritet {of_smells(gained)}."
+    if swept:
+        text += (
+            " Kur rregullit i jepet pragu i tij më i mirë nga analiza e ndjeshmërisë, "
+            f"dallimi nuk ndahet më nga zeroja as te {_joined(swept)} (Nënkapitulli 5.7)."
+        )
+    return text + _gain_in_answer(h)
 
 
 def _one_in_how_many() -> str:
@@ -2452,13 +2612,7 @@ def chapter_6() -> list:
                 "raportuar. Matja mbi kod real, më në fund, kapi tri defekte që testet e "
                 "njësisë i kishin lënë të kalonin (Nënkapitulli 5.4).",
                 _what_worked(h),
-                "**Çfarë nuk funksionoi.** Strategjitë nuk matin plotësisht atë që "
-                "emërtojnë. Dy gjetje të pavarura tregojnë në të njëjtin drejtim. E "
-                "para: kur modeleve u lihet të zgjedhin vetë veçoritë, te Blob nuk "
-                "zgjidhen TCC dhe WMC, pikërisht kushtet e kohezionit dhe të "
-                "kompleksitetit mbi të cilat është ndërtuar God Class, por metrikat e "
-                "madhësisë. E dyta: shtimi i një detektori që mbështetet vetëm te "
-                "madhësia e përmirëson përputhjen me rishikuesit për të njëjtën erë.",
+                _blob_features_sentence(h),
                 *_blocking_in_discussion(),
                 "Këto sugjerojnë se ajo që rishikuesit e MLCQ-së e quajnë «blob» "
                 "shpjegohet më mirë me madhësi sesa me kohezionin që strategjia e vendos "
@@ -2499,9 +2653,11 @@ def chapter_6() -> list:
                 "këto rezultate: si njohuri e shpjegueshme për atë që e bën një klasë "
                 "të dyshimtë, ato mbeten të vlefshme. Ajo që nuk kalon nga një korpus "
                 "te tjetri janë kufijtë numerikë, të cilët duhen kalibruar ose mësuar "
-                "për kodin ku zbatohen. Pajtimi i ulët mes rishikuesve i vë gjithashtu "
-                "një tavan çdo detektori, përtej të cilit gabimi i përket paqartësisë "
-                "së vetë erës.",
+                "për kodin ku zbatohen. Pajtimi mes rishikuesve, i moderuar te tri "
+                "erëra dhe pothuajse i munguar te Feature Envy, i vë gjithashtu një tavan "
+                "çdo detektori, përtej të cilit gabimi i përket paqartësisë së vetë erës: "
+                "një erë që vetë njerëzit nuk e dallojnë njësoj nuk mësohet dot nga të "
+                "dhënat e tyre.",
                 "**Implikime praktike.** Për një ekip, strategjitë janë sinjal i rrallë "
                 "por i besueshëm, i përshtatshëm si paralajmërim që nuk e mbyt "
                 "zhvilluesin me zhurmë. Modeli vlen aty ku ka më shumë rëndësi të mos "
@@ -2535,8 +2691,8 @@ def chapter_6() -> list:
                 "Mostrat e depove që nuk ishin më të arritshme mungojnë nga vlerësimi "
                 "(hyrja e Kapitullit 5); nëse ato ndryshojnë sistematikisht nga pjesa "
                 "tjetër, shifrat e raportuara nuk e pasqyrojnë këtë. E vërteta "
-                "bazë vjen nga një dataset i vetëm, me mospajtim të konsiderueshëm mes "
-                "rishikuesve; prandaj çdo strategji agregimi raportohet veç, dhe mostrat "
+                "bazë vjen nga një dataset i vetëm, me pajtim vetëm të moderuar mes "
+                "rishikuesve, dhe pothuajse asnjë pajtim te Feature Envy; prandaj çdo strategji agregimi raportohet veç, dhe mostrat "
                 "që një strategji nuk i etiketon dot hidhen në vend që të lexohen si "
                 "negative.",
                 "Verifikimi i refaktorimeve kufizohet te kompilatori, dhe për shumicën e "
@@ -2628,14 +2784,58 @@ def chapter_6() -> list:
     ]
 
 
+def _blob_features_sentence(h: dict) -> str:
+    """«Çfarë nuk funksionoi»: cilat metrika zgjedh modeli te Blob, nga rëndësia e matur.
+
+    Fjalia e shkruar me dorë thoshte se WMC nuk zgjidhet; me etiketat e ndrequra
+    WMC del e pesta, ndërsa TCC dhe ATFD mbeten pa rëndësi (VD-150).
+    """
+    importances = h["ml"]["per_smell"]["blob"]["importances"]
+    ranked = sorted(importances, key=lambda name: -importances[name])
+    top = [name.split("_", 1)[1] for name in ranked[:2]]
+    idle = [name.split("_", 1)[1] for name in ("c_TCC", "c_ATFD") if importances.get(name, 0) <= 0.005]
+    sized = h["rules"]["per_smell"]["blob"].get("with_size")
+    text = (
+        "**Çfarë nuk funksionoi.** Strategjitë nuk matin plotësisht atë që emërtojnë. "
+        "Dy gjetje të pavarura tregojnë në të njëjtin drejtim. E para: kur modeleve u "
+        f"lihet të zgjedhin vetë veçoritë, te Blob dalin të parat metrikat e madhësisë "
+        f"({_joined(top)})"
+    )
+    if idle:
+        text += (
+            f", ndërsa {_joined(idle)}, kushtet e kohezionit dhe të qasjes në të dhëna të "
+            "huaja mbi të cilat është ndërtuar God Class, nuk kanë rëndësi të matshme"
+        )
+    text += "."
+    if sized is not None:
+        before = h["rules"]["per_smell"]["blob"]["strategy"]["by_aggregation"]["mean"]["mcc"]
+        after = sized["by_aggregation"]["mean"]["mcc"]
+        if after > before:
+            text += (
+                " E dyta: shtimi i një detektori që mbështetet vetëm te madhësia e ngre "
+                f"përputhjen me rishikuesit për të njëjtën erë, nga MCC {before:.3f} në "
+                f"{after:.3f}."
+            )
+    return text
+
+
+def _significant_wins(smells: list) -> str:
+    """«te Blob, Data Class dhe Long Method me dallim mbi zero» ose «te çdo erë»."""
+    unsure, _ = _significance(smells)
+    if not unsure:
+        return "te çdo erë, me dallim mbi zero te të gjitha"
+    sure = [SMELL_SQ[s] for s in smells if SMELL_SQ[s] not in unsure]
+    return f"te {_joined(sure)} me dallim që mbetet mbi zero kur korpusi rimostrohet"
+
+
 def _what_worked(h: dict) -> str:
     """Rezultatet që e mbajtën premtimin e tyre, me shifrat nga të dhënat."""
     ml, smells = h["ml"], h["smells"]
     shares = [ml["per_smell"][s]["explained"]["share"] for s in smells]
     precision = [ml["per_smell"][s]["combined"]["intersection"]["precision"] for s in smells]
     text = (
-        "Edhe disa rezultate e mbajtën premtimin e tyre. Modeli e kaloi rregullin te "
-        "çdo erë, dhe shumica e verdikteve të tij, nga "
+        "Edhe disa rezultate e mbajtën premtimin e tyre. Modeli e kaloi rregullin "
+        f"{_significant_wins(smells)}, dhe shumica e verdikteve të tij, nga "
         f"{min(shares):.0%} deri në {max(shares):.0%}, u shpjeguan me një matje të vetme, "
         "ndaj fitimi nuk erdhi në kurriz të shpjegueshmërisë. Kur dy qasjet pajtohen, precizioni nuk "
         f"bie nën {min(precision):.2f}, çka i jep zhvilluesit një sinjal të fortë."
@@ -2701,7 +2901,10 @@ def _literature_summary(h: dict) -> list:
         "Di Nucci et al. (2018)": (f"F1 {min(f1):.2f}–{max(f1):.2f} mbi MLCQ", "konfirmohet"),
         "Madeyski & Lewowski (2023)": (
             f"MCC {min(mcc):.2f}–{max(mcc):.2f}; {model['feature envy']['mcc']:.2f} te "
-            "Feature Envy", "i njëjti brez, Feature Envy më lart"),
+            "Feature Envy",
+            "i njëjti brez"
+            + ("" if abs(model["feature envy"]["mcc"] - _madeyski_values()["feature envy"])
+               <= 0.02 else ", Feature Envy ndryshe")),
         "Mäntylä & Lassenius (2006)": (
             "MCC mes rishikuesve "
             + _span([e["mcc"] for e in ceiling["per_smell"].values()], 2).replace(" deri në ", "–")
@@ -2720,6 +2923,15 @@ def _literature_summary(h: dict) -> list:
     ]
 
 
+def _pk2_cell(smells: list, higher: int) -> str:
+    """Përgjigjja e shkurtër e PK2: sa erëra fitojnë, dhe ku fitimi nuk provohet."""
+    unsure, _ = _significance(smells)
+    cell = f"Po, {_among(higher, len(smells))} sipas vlerës së matur"
+    if unsure:
+        cell += f"; te {_joined(unsure)} dallimi nuk ndahet nga zeroja"
+    return cell
+
+
 def _answers_table(h: dict) -> list:
     """Përgjigjja e shkurtër për secilën pyetje, me dëshminë që e mban."""
     strategy, model, smells = h["strategy"], h["model"], h["smells"]
@@ -2728,7 +2940,7 @@ def _answers_table(h: dict) -> list:
         ["PK1", "Pjesërisht: precizion i lartë, recall i ulët",
          f"MCC {min(strategy[s]['mcc'] for s in smells):.3f}–"
          f"{max(strategy[s]['mcc'] for s in smells):.3f}", "5.1"],
-        ["PK2", f"Po, {_among(higher, len(smells))}",
+        ["PK2", _pk2_cell(smells, higher),
          f"MCC {min(model[s]['mcc'] for s in smells):.3f}–"
          f"{max(model[s]['mcc'] for s in smells):.3f}", "5.2, 5.3, 5.7"],
     ]  # fmt: skip
@@ -3322,18 +3534,24 @@ def _pmd_comparison_paragraphs() -> list:
     return paragraphs
 
 
-def _crossing_share(intervals: dict) -> str:
-    """Sa e ruajnë shenjën rimostrimet, te era e vetme që e kalon zeron.
+def _crossing_sentence(intervals: dict) -> str:
+    """Erërat ku dallimi me pragun më të mirë e përfshin zeron, secila me shenjën e ruajtur.
 
-    E nxjerrë e jo e shkruar: po të ndryshojë korpusi ose numri i rimostrimeve,
-    fjalia lëviz bashkë me tabelën mbi të cilën mbështetet.
+    Fjalia e shkruante vetëm Long Method-in; me etiketat e ndrequra edhe Feature
+    Envy e kalon zeron, dhe një emër i shkruar me dorë do ta fshihte (VD-150).
     """
     crossing = [
-        band["intervals"]["difference_model_minus_rules_swept"]
-        for band in intervals["per_smell"].values()
-        if band["intervals"]["difference_model_minus_rules_swept"]["low"] <= 0
+        (SMELL_SQ[smell], entry["intervals"]["difference_model_minus_rules_swept"])
+        for smell, entry in sorted(intervals["per_smell"].items())
+        if entry["intervals"]["difference_model_minus_rules_swept"]["low"] <= 0
     ]
-    return f"{min(c['share_positive'] for c in crossing):.1%}" if crossing else "—"
+    if not crossing:
+        return ""
+    parts = [f"{name} ({band['share_positive']:.1%})" for name, band in crossing]
+    return (
+        f"Te {_joined([name for name, _ in crossing])} intervali e përfshin zeron; "
+        f"shenja pozitive ruhet në këtë pjesë të rimostrimeve: {_joined(parts)}."
+    )
 
 
 def _swept_best() -> str:
@@ -3434,8 +3652,7 @@ def _confidence_section() -> list:
         ("table", "B − A kur rregullat marrin pragun e tyre më të mirë",
          ["Erë", "Pragu i zhvendosur", "B − A", "Mbi zero", "Shenja e ruajtur"],
          swept_rows),
-        f"{_swept_summary(intervals)} Te Long Method intervali e përfshin zeron, dhe "
-        f"shenja pozitive ruhet në {_crossing_share(intervals)} të rimostrimeve.",
+        f"{_swept_summary(intervals)} {_crossing_sentence(intervals)}",
     ]
 
     if ceiling is None:
@@ -3652,8 +3869,10 @@ def _calibration_facts(data: dict) -> list:
     total = len(data["per_smell"])
     recall_up, precision_up, mcc_up = moved_up("recall"), moved_up("precision"), moved_up("mcc")
     facts.append(
-        f"Recall-i u rrit {_among(len(recall_up), total)}, precizioni vetëm te "
-        f"{_joined(precision_up) or 'asnjëra'}, dhe MCC-ja {_among(len(mcc_up), total)}."
+        f"Recall-i u rrit {_among(len(recall_up), total)}, "
+        + (f"precizioni vetëm te {_joined(precision_up)}" if precision_up
+           else "precizioni te asnjëra")
+        + f", dhe MCC-ja {_among(len(mcc_up), total)}."
     )
     return facts
 
@@ -3698,7 +3917,7 @@ def _union_against_model(ml: dict, smells: list) -> str:
 
     Fjalia e mëparshme e shkruante me dorë se ku bie; tani lexohet.
     """
-    up, down, raised = [], [], 0
+    up, down, same, raised = [], [], [], 0
     for smell in smells:
         entry = ml["per_smell"][smell]
         best = entry["models"][entry["best_model"]]
@@ -3707,12 +3926,17 @@ def _union_against_model(ml: dict, smells: list) -> str:
         if union["mcc"] is None:
             continue
         change = f"{SMELL_SQ[smell]} ({best['mcc']:.3f} → {union['mcc']:.3f})"
-        (up if union["mcc"] > best["mcc"] else down).append(change)
+        if f"{best['mcc']:.3f}" == f"{union['mcc']:.3f}":
+            same.append(SMELL_SQ[smell])
+        else:
+            (up if union["mcc"] > best["mcc"] else down).append(change)
     text = f"Bashkimi e ngre recall-in mbi atë të modelit {_among(raised, len(smells))}"
     if up:
         text += f"; MCC-ja rritet te {_joined(up)}"
     if down:
         text += f", dhe bie te {_joined(down)}"
+    if same:
+        text += f", ndërsa te {_joined(same)} mbetet e njëjtë"
     return text + "."
 
 
@@ -3846,17 +4070,30 @@ def _blocking_predicts_calibration() -> list:
     lines.sort(key=lambda item: item[1])
     near = lines[-1]
     far = lines[0]
-    return [
+    text = (
         "Kjo llogari bën një parashikim që një matje tjetër e provon në mënyrë të "
         f"pavarur. Te {SMELL_SQ.get(far[0], far[0])}-i mospërputhjet janë larg pragjeve "
         f"(mediana mesatare {far[1]:.2f}), ndaj kalibrimi nuk duhet të ndihmojë shumë; "
         f"te {SMELL_SQ.get(near[0], near[0])} janë afër ({near[1]:.2f}), ndaj duhet. "
         f"Kalibrimi jashtë fold-it i Nënkapitullit 5.5, i matur veç dhe pa e parë këtë "
         f"analizë, jep {far[2]:+.3f} MCC për të parin dhe {near[2]:+.3f} për të dytin. "
-        "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
-        "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
-        "përshkrim të mëpasshëm.",
-    ]
+    )
+    # Parashikimi raportohet edhe kur dështon: me etiketat e ndrequra kalibrimi nuk
+    # ndihmoi aty ku llogaria e priste (VD-150), dhe kjo është rezultat negativ.
+    if near[2] > far[2] and near[2] > 0:
+        text += (
+            "Dy erëra nuk provojnë një rregull, por drejtimi është ai që llogaria e "
+            "klauzolave e priste, dhe kjo e bën atë shpjegim me vlerë parashikuese e jo "
+            "përshkrim të mëpasshëm."
+        )
+    else:
+        text += (
+            "Parashikimi nuk konfirmohet: aty ku mospërputhjet janë më afër pragjeve, "
+            "kalibrimi nuk ndihmoi. Afria e mesatarizuar mbi klauzola nuk mjafton pra "
+            "për të thënë ku do të fitojë një prag i ri, dhe llogaria e klauzolave "
+            "mbetet përshkrim i mospërputhjeve e jo parashikim."
+        )
+    return [text]
 
 
 def _blocking_section() -> list:
@@ -3979,7 +4216,7 @@ def _blob_aggregation_flattens(data: dict) -> str:
         f"{label} {counts[how].get(label, 0)}" for label in SEVERITY_SCALE
     )
     return (
-        "Shumica e mostrave mbajnë vetëm dy rishikime, dhe një votë «asnjë» përballë "
+        "Kur një mostër ka më shumë se një rishikim, një votë «asnjë» përballë "
         "një vote të rëndë e ul mesataren për një shkallë të tërë. Nën mesatare "
         f"pozitivët ndahen {shape('mean')}, ndërsa nën MAX {shape('max')}: mesatarja e "
         "zbraz skajin e rëndë të shkallës, ndaj gradienti nuk shihet nën të."
@@ -4182,9 +4419,18 @@ def _severity_section() -> list:
                     elif rank[predicted] < rank[actual]:
                         lenient += count
 
-    # Sa larg e çon fshirja e pragjeve të ashpërsisë kappa-n, mbi të gjitha erërat.
+    # Sa larg e çon zhvendosja e pragjeve të ashpërsisë kappa-n, vetëm te erërat ku
+    # pajtimi i botuar është i ulët: maksimumi mbi të gjitha erërat ishte thjesht
+    # vlera e Long Method-it, që e ka tashmë të moderuar (VD-150).
+    low = {
+        smell
+        for smell in rules["per_smell"]
+        if (rules["per_smell"][smell]["strategy"]["severity_agreement"]["kappa_quadratic"] or 0) < 0.4
+    }
     best = 0.0
-    for per_threshold in sweep.get("severity", {}).values():
+    for smell, per_threshold in sweep.get("severity", {}).items():
+        if smell not in low:
+            continue
         for points in per_threshold.values():
             for point in points:
                 if point["kappa_quadratic"] is not None:
@@ -4220,7 +4466,8 @@ def _severity_section() -> list:
                 "tepricave mbi metrika heterogjene, dhe asgjë nuk garanton se ajo përkon me "
                 "atë që një zhvillues e quan problem të rëndë.",
                 "Nuk është çështje kalibrimi: zhvendosja e pragjeve të ashpërsisë e ngre "
-                f"kappa-n më së shumti deri në {best:.3f}, pra pajtimi mbetet i dobët.",
+                f"kappa-n te erërat me pajtim të ulët më së shumti deri në {best:.3f}, pra "
+                "atje pajtimi mbetet i dobët.",
                 "Ashpërsia e derivuar mbetet renditje brenda mjetit, që tregon cili rast të "
                 "shihet i pari, dhe jo riprodhim i gjykimit të zhvilluesit. Ajo hyn në "
                 "rezultatet "
@@ -4708,11 +4955,20 @@ def _models_chosen(ml: dict, smells: list) -> str:
         best = entry["models"][entry["best_model"]]
         gaps.append(abs(best["precision"] - best["recall"]))
     chosen = "; ".join(f"{model} te {_joined(found)}" for model, found in sorted(names.items()))
-    return (
-        f"Modeli më i mirë është {chosen}. Ndryshe nga Qasja A, precizioni dhe recall-i "
-        f"i modelit janë pranë njëri-tjetrit te çdo erë: dallimi mes tyre nuk e kalon "
-        f"{max(gaps):.3f}."
-    )
+    # «Pranë njëri-tjetrit» thuhet vetëm kur është e vërtetë; me etiketat e ndrequra
+    # dallimi arriti 0.26 dhe fjalia e vjetër e quante ende të vogël (VD-150).
+    if max(gaps) <= 0.1:
+        balance = (
+            "Ndryshe nga Qasja A, precizioni dhe recall-i i modelit janë pranë "
+            f"njëri-tjetrit te çdo erë: dallimi mes tyre nuk e kalon {max(gaps):.3f}."
+        )
+    else:
+        balance = (
+            "Ndryshe nga Qasja A, ku precizioni del gjithmonë mbi recall-in, te modeli "
+            "dallimi mes tyre shkon në të dy drejtimet dhe arrin "
+            f"{max(gaps):.3f}."
+        )
+    return f"Modeli më i mirë është {chosen}. {balance}"
 
 
 def _top_importance(ml: dict, smells: list) -> str:

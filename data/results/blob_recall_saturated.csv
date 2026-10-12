@@ -1,20 +1,31 @@
 sample_id,class_name,failed,CLOC,NOM,NOF,WMC,public_instance_methods,path
-7047868,FormatParser,TCC,968,22,19,529,0,java/sage/media/format/FormatParser.java
-4620157,GenericsUtils,TCC,540,46,5,220,0,src/main/java/org/codehaus/groovy/ast/tools/GenericsUtils.java
-4034686,PipelineOptionsFactory,TCC,1031,39,12,189,1,sdks/java/core/src/main/java/org/apache/beam/sdk/options/PipelineOptionsFactory.java
-9199423,BaseScriptEvalUtil,TCC,593,21,2,177,0,data/org.eclipse.birt.data/src/org/eclipse/birt/data/engine/api/script/BaseScriptEvalUtil.java
-3827535,MetadataTableUtil,TCC,668,52,5,167,0,server/base/src/main/java/org/apache/accumulo/server/util/MetadataTableUtil.java
-3702984,PhTypeUtil,TCC,452,35,12,142,0,client-adapter/hbase/src/main/java/com/alibaba/otter/canal/client/adapter/hbase/support/PhTypeUtil.java
-8119000,Strings,TCC ATFD,241,33,4,98,0,org.eclipse.xtext.util/src/org/eclipse/xtext/util/Strings.java
-4815345,TezClientUtils,TCC,470,16,2,93,0,tez-api/src/main/java/org/apache/tez/client/TezClientUtils.java
-4512195,WireAdminImpl,TCC,350,15,11,82,5,wireadmin/src/main/java/org/apache/felix/wireadmin/WireAdminImpl.java
-8025468,ImportsAwareClipboardAction,TCC,290,17,4,70,3,org.eclipse.xtext.xbase.ui/src/org/eclipse/xtext/xbase/ui/editor/actions/ImportsAwareClipboardAction.java
-8428144,OgnlHelper,TCC ATFD,114,9,1,67,0,core/camel-util/src/main/java/org/apache/camel/util/OgnlHelper.java
-5111458,CheckstyleViolationCheckMojo,TCC ATFD,297,13,44,66,1,src/main/java/org/apache/maven/plugins/checkstyle/CheckstyleViolationCheckMojo.java
-5141876,AbstractPmdReport,TCC ATFD,189,14,22,63,1,maven-pmd-plugin/src/main/java/org/apache/maven/plugins/pmd/AbstractPmdReport.java
-4199164,CayenneGeneratorMojo,TCC,149,7,28,61,1,maven-plugins/cayenne-maven-plugin/src/main/java/org/apache/cayenne/tools/CayenneGeneratorMojo.java
-4296219,ConstraintBasePanel,TCC ATFD,256,20,50,54,1,src/main/java/org/apache/directory/fortress/web/panel/ConstraintBasePanel.java
-5735198,MRBaseForCommonInstructions,TCC,157,7,7,54,1,src/main/java/org/apache/sysml/runtime/matrix/mapred/MRBaseForCommonInstructions.java
-7372240,EndpointDiscoverer,TCC,271,26,5,54,1,spring-boot-project/spring-boot-actuator/src/main/java/org/springframework/boot/actuate/endpoint/annotation/EndpointDiscoverer.java
-5470060,MemoryConsumptionTestClient,TCC,272,15,32,51,0,tools/src/main/java/org/apache/qpid/tools/MemoryConsumptionTestClient.java
-7148928,DockerRunDialog,TCC,211,14,27,48,1,PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.container/src/main/java/com/microsoft/azuretools/container/ui/DockerRunDialog.java
+7047868/blob,FormatParser,TCC,968,22,19,529,0,java/sage/media/format/FormatParser.java
+4620157/blob,GenericsUtils,TCC,540,46,5,220,0,src/main/java/org/codehaus/groovy/ast/tools/GenericsUtils.java
+7093849/blob,PeriodFormatterData,TCC,370,14,10,197,13,jre_emul/android/platform/external/icu/android_icu4j/src/main/java/android/icu/impl/duration/impl/PeriodFormatterData.java
+4034686/blob,PipelineOptionsFactory,TCC,1031,39,12,189,1,sdks/java/core/src/main/java/org/apache/beam/sdk/options/PipelineOptionsFactory.java
+9199423/blob,BaseScriptEvalUtil,TCC,593,21,2,177,0,data/org.eclipse.birt.data/src/org/eclipse/birt/data/engine/api/script/BaseScriptEvalUtil.java
+9309376/blob,Files,TCC,627,78,4,174,0,src/java.base/share/classes/java/nio/file/Files.java
+3827535/blob,MetadataTableUtil,TCC,668,52,5,167,0,server/base/src/main/java/org/apache/accumulo/server/util/MetadataTableUtil.java
+3702984/blob,PhTypeUtil,TCC,452,35,12,142,0,client-adapter/hbase/src/main/java/com/alibaba/otter/canal/client/adapter/hbase/support/PhTypeUtil.java
+6470076/blob,Cel4rreg,TCC,292,8,5,100,0,debugtools/DDR_VM/src/com/ibm/j9ddr/corereaders/tdump/zebedee/le/Caa.java
+8119000/blob,Strings,TCC ATFD,241,33,4,98,0,org.eclipse.xtext.util/src/org/eclipse/xtext/util/Strings.java
+9034294/blob,JavaConventions,TCC,204,23,4,94,0,org.eclipse.jdt.core/model/org/eclipse/jdt/core/JavaConventions.java
+4815345/blob,TezClientUtils,TCC,470,16,2,93,0,tez-api/src/main/java/org/apache/tez/client/TezClientUtils.java
+7075575/blob,Sync,TCC ATFD,207,21,9,89,0,jre_emul/android/platform/libcore/ojluni/src/main/java/java/util/concurrent/locks/ReentrantReadWriteLock.java
+4512195/blob,WireAdminImpl,TCC,350,15,11,82,5,wireadmin/src/main/java/org/apache/felix/wireadmin/WireAdminImpl.java
+7274451/blob,JmxSupport,TCC,245,18,14,77,0,visualvm/jmx/src/org/graalvm/visualvm/jmx/impl/JmxSupport.java
+8025468/blob,ImportsAwareClipboardAction,TCC,290,17,4,70,3,org.eclipse.xtext.xbase.ui/src/org/eclipse/xtext/xbase/ui/editor/actions/ImportsAwareClipboardAction.java
+8428144/blob,OgnlHelper,TCC ATFD,114,9,1,67,0,core/camel-util/src/main/java/org/apache/camel/util/OgnlHelper.java
+5111458/blob,CheckstyleViolationCheckMojo,TCC ATFD,297,13,44,66,1,src/main/java/org/apache/maven/plugins/checkstyle/CheckstyleViolationCheckMojo.java
+5247450/blob,AppInfoCollector,TCC,279,23,2,66,0,tools/src/main/java/org/apache/oozie/tools/diag/AppInfoCollector.java
+5141876/blob,AbstractPmdReport,TCC ATFD,189,14,22,63,1,maven-pmd-plugin/src/main/java/org/apache/maven/plugins/pmd/AbstractPmdReport.java
+4199164/blob,CayenneGeneratorMojo,TCC,149,7,28,61,1,maven-plugins/cayenne-maven-plugin/src/main/java/org/apache/cayenne/tools/CayenneGeneratorMojo.java
+9096815/blob,SearchFirstStringNode,TCC ATFD,209,9,17,58,1,com.oracle.truffle.r.nodes/src/com/oracle/truffle/r/nodes/access/vector/SearchFirstStringNode.java
+4296219/blob,ConstraintBasePanel,TCC ATFD,256,20,50,54,1,src/main/java/org/apache/directory/fortress/web/panel/ConstraintBasePanel.java
+5735198/blob,MRBaseForCommonInstructions,TCC,157,7,7,54,1,src/main/java/org/apache/sysml/runtime/matrix/mapred/MRBaseForCommonInstructions.java
+6876949/blob,PostgreSQLDatabaseFunctions,TCC,257,14,1,54,0,src/main/java/com/google/security/zynamics/binnavi/Database/PostgreSQL/Functions/PostgreSQLDatabaseFunctions.java
+7372240/blob,EndpointDiscoverer,TCC,271,26,5,54,1,spring-boot-project/spring-boot-actuator/src/main/java/org/springframework/boot/actuate/endpoint/annotation/EndpointDiscoverer.java
+4757534/blob,Plc4XEtherNetIpProtocol,TCC,200,13,10,51,2,plc4j/protocols/ethernet-ip/src/main/java/org/apache/plc4x/java/ethernetip/netty/Plc4XEtherNetIpProtocol.java
+5470060/blob,MemoryConsumptionTestClient,TCC,272,15,32,51,0,tools/src/main/java/org/apache/qpid/tools/MemoryConsumptionTestClient.java
+7148928/blob,DockerRunDialog,TCC,211,14,27,48,1,PluginsAndFeatures/azure-toolkit-for-eclipse/com.microsoft.azuretools.container/src/main/java/com/microsoft/azuretools/container/ui/DockerRunDialog.java
+3789205/blob,ElementParser,TCC ATFD,128,16,4,48,1,library/smoothstreaming/src/main/java/com/google/android/exoplayer2/source/smoothstreaming/manifest/SsManifestParser.java

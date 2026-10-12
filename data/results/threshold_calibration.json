@@ -1,7 +1,7 @@
 {
   "aggregation": "mean",
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "42e021057612c480ded29e3d0c350caaccc516e3",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
@@ -17,114 +17,119 @@
   "per_smell": {
     "blob": {
       "calibrated": {
-        "accuracy": 0.774,
-        "f1": 0.2244,
-        "fn": 304,
-        "fp": 14,
-        "mcc": 0.2529,
-        "precision": 0.7667,
-        "recall": 0.1314,
-        "support_positive": 350,
-        "tn": 1043,
-        "tp": 46
+        "accuracy": 0.8605,
+        "f1": 0.3111,
+        "fn": 287,
+        "fp": 23,
+        "mcc": 0.337,
+        "precision": 0.7527,
+        "recall": 0.1961,
+        "support_positive": 357,
+        "tn": 1843,
+        "tp": 70
       },
       "chosen": {
+        "god_class_tcc": {
+          "0.5": 1,
+          "0.6667": 2
+        },
         "god_class_wmc": {
-          "23.5": 3,
-          "35.25": 2
+          "23.5": 1,
+          "35.25": 1
         }
       },
       "published": {
-        "accuracy": 0.7704,
-        "f1": 0.1781,
-        "fn": 315,
-        "fp": 8,
-        "mcc": 0.2321,
-        "precision": 0.814,
-        "recall": 0.1,
-        "support_positive": 350,
-        "tn": 1049,
-        "tp": 35
+        "accuracy": 0.861,
+        "f1": 0.2864,
+        "fn": 295,
+        "fp": 14,
+        "mcc": 0.3357,
+        "precision": 0.8158,
+        "recall": 0.1737,
+        "support_positive": 357,
+        "tn": 1852,
+        "tp": 62
       }
     },
     "data class": {
       "calibrated": {
-        "accuracy": 0.7942,
-        "f1": 0.2747,
-        "fn": 154,
-        "fp": 15,
-        "mcc": 0.2674,
-        "precision": 0.6809,
-        "recall": 0.172,
-        "support_positive": 186,
-        "tn": 620,
-        "tp": 32
+        "accuracy": 0.8562,
+        "f1": 0.4521,
+        "fn": 251,
+        "fp": 69,
+        "mcc": 0.4046,
+        "precision": 0.6567,
+        "recall": 0.3446,
+        "support_positive": 383,
+        "tn": 1774,
+        "tp": 132
       },
       "chosen": {
-        "data_class_wmc_low": {
-          "23.25": 1
-        },
-        "data_class_woc": {
-          "0.5": 2,
-          "0.6667": 2
+        "data_class_public_members": {
+          "2.5": 5
         }
       },
       "published": {
-        "accuracy": 0.7966,
-        "f1": 0.2511,
-        "fn": 158,
-        "fp": 9,
-        "mcc": 0.2752,
-        "precision": 0.7568,
-        "recall": 0.1505,
-        "support_positive": 186,
-        "tn": 626,
-        "tp": 28
+        "accuracy": 0.8553,
+        "f1": 0.3534,
+        "fn": 295,
+        "fp": 27,
+        "mcc": 0.3668,
+        "precision": 0.7652,
+        "recall": 0.2298,
+        "support_positive": 383,
+        "tn": 1816,
+        "tp": 88
       }
     },
     "feature envy": {
       "calibrated": {
-        "accuracy": 0.9247,
-        "f1": 0.4151,
-        "fn": 50,
-        "fp": 12,
-        "mcc": 0.4111,
-        "precision": 0.6471,
-        "recall": 0.3056,
-        "support_positive": 72,
-        "tn": 739,
-        "tp": 22
+        "accuracy": 0.9171,
+        "f1": 0.252,
+        "fn": 133,
+        "fp": 57,
+        "mcc": 0.2236,
+        "precision": 0.3596,
+        "recall": 0.1939,
+        "support_positive": 165,
+        "tn": 2069,
+        "tp": 32
       },
       "chosen": {
         "feature_envy_fdp": {
-          "10.0": 5
+          "10.0": 1
+        },
+        "feature_envy_laa": {
+          "0.25": 1,
+          "0.5": 1,
+          "0.6667": 2
         }
       },
       "published": {
-        "accuracy": 0.9137,
-        "f1": 0.268,
-        "fn": 59,
-        "fp": 12,
-        "mcc": 0.2709,
-        "precision": 0.52,
-        "recall": 0.1806,
-        "support_positive": 72,
-        "tn": 739,
-        "tp": 13
+        "accuracy": 0.9223,
+        "f1": 0.2583,
+        "fn": 134,
+        "fp": 44,
+        "mcc": 0.2429,
+        "precision": 0.4133,
+        "recall": 0.1879,
+        "support_positive": 165,
+        "tn": 2082,
+        "tp": 31
       }
     },
     "long method": {
       "calibrated": {
-        "accuracy": 0.9123,
-        "f1": 0.7162,
-        "fn": 52,
-        "fp": 78,
-        "mcc": 0.666,
-        "precision": 0.6777,
-        "recall": 0.7593,
-        "support_positive": 216,
-        "tn": 1189,
-        "tp": 164
+        "accuracy": 0.9324,
+        "f1": 0.7338,
+        "fn": 55,
+        "fp": 101,
+        "mcc": 0.6981,
+        "precision": 0.6804,
+        "recall": 0.7963,
+        "support_positive": 270,
+        "tn": 1935,
+        "tp": 215
       },
       "chosen": {
         "long_method_loc": {
@@ -133,16 +138,16 @@
         }
       },
       "published": {
-        "accuracy": 0.909,
-        "f1": 0.5846,
-        "fn": 121,
-        "fp": 14,
-        "mcc": 0.5796,
-        "precision": 0.8716,
-        "recall": 0.4398,
-        "support_positive": 216,
-        "tn": 1253,
-        "tp": 95
+        "accuracy": 0.931,
+        "f1": 0.615,
+        "fn": 143,
+        "fp": 16,
+        "mcc": 0.6166,
+        "precision": 0.8881,
+        "recall": 0.4704,
+        "support_positive": 270,
+        "tn": 2020,
+        "tp": 127
       }
     }
   },

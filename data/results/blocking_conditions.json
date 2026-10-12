@@ -1,45 +1,45 @@
 {
   "by_smell": {
     "blob": {
-      "blocked_by_one_clause": 61,
+      "blocked_by_one_clause": 87,
       "clauses_failing": {
-        "1": 61,
-        "2": 127,
-        "3": 127
+        "1": 87,
+        "2": 115,
+        "3": 93
       },
       "median_shortfall": {
         "ATFD": 0.4,
         "TCC": 0.3333,
-        "WMC": 0.5213
+        "WMC": 0.5426
       },
-      "missed": 315,
+      "missed": 295,
       "sole_blocker": {
-        "ATFD": 9,
-        "TCC": 22,
-        "WMC": 30
+        "ATFD": 11,
+        "TCC": 34,
+        "WMC": 42
       }
     },
     "feature envy": {
-      "blocked_by_one_clause": 24,
+      "blocked_by_one_clause": 49,
       "clauses_failing": {
-        "1": 24,
-        "2": 34
+        "1": 49,
+        "2": 84
       },
       "median_shortfall": {
-        "ATFD": 0.8,
+        "ATFD": 0.4,
         "FDP": 0.7143,
-        "LAA": 0.8334
+        "LAA": 0.8333
       },
-      "missed": 58,
+      "missed": 133,
       "sole_blocker": {
-        "ATFD": 13,
-        "FDP": 9,
-        "LAA": 2
+        "ATFD": 33,
+        "FDP": 7,
+        "LAA": 9
       }
     }
   },
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "42e021057612c480ded29e3d0c350caaccc516e3",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },

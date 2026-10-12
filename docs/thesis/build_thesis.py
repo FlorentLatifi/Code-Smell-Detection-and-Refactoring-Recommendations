@@ -822,6 +822,10 @@ GLOSSARY = [
     "PK - pyetje kërkimore",
     "Precizion - pjesa e rasteve të shënuara që janë vërtet pozitive",
     "Recall - pjesa e rasteve pozitive që detektori i gjen",
+    # Njësitë e matjes, që teksti i përdor si terma (VD-150).
+    "Mostër - një entitet i MLCQ-së i rishikuar për një erë të caktuar (çift mostër-erë)",
+    "Rishkrim - një transformim i aplikuar mbi një vend të caktuar të kodit",
+    "Vend - një entitet ku detektori ndez dhe motori ka një transformim për të",
 ]
 
 # Hyrja është një tekst i vetëm, pa nënkapituj, 1 deri 1.5 faqe, dhe e shtron

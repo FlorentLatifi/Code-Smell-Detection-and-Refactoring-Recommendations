@@ -216,8 +216,8 @@ def build() -> str:
             "Një code smell është simptomë dizajni, jo defekt: kodi funksionon, por "
             "ndryshimi i tij kushton.",
             "Përkufizimet janë cilësore. Nuk ka prag të botuar që e pranojnë të gjithë.",
-            "Vetë zhvilluesit profesionistë nuk pajtohen mes tyre për një të katërtën "
-            "e mostrave.",
+            "Vetë zhvilluesit profesionistë nuk pajtohen mes tyre në një pjesë të madhe "
+            "të gjykimeve, dhe për Feature Envy pothuajse aspak.",
             "Rrjedhimisht «sa i saktë është një detektor» varet nga kundrejt kujt matet.",
         ],
     )
@@ -339,8 +339,8 @@ def build() -> str:
     _picture(slide, "mcc_a_vs_b.png", top=Inches(1.9), height=Inches(4.3))
     _note(
         slide,
-        "Modeli fiton te të katër erërat, dhe përparësia mbetet mbi zeron edhe me "
-        "intervale besimi të grupuara sipas depos.",
+        "Modeli del më lart te të katër erërat; me intervale besimi të grupuara sipas "
+        "depos, përparësia mbetet mbi zero te tri prej tyre, por jo te Feature Envy.",
     )
 
     # --- 9. tavani ---
@@ -456,8 +456,8 @@ def build() -> str:
         slide,
         [
             "PK1 — Strategjitë janë të sakta kur ndezin, por e humbin shumicën e rasteve.",
-            "PK2 — Po. Modeli i tejkalon pragjet fikse te të katër erërat, mbi të njëjtën "
-            "ndarje dhe me të njëjtin kod pikëzimi.",
+            "PK2 — Po, te tri nga katër erërat. Modeli i tejkalon pragjet fikse mbi të "
+            "njëjtën ndarje; te Feature Envy dallimi nuk dallohet nga zeroja.",
             "PK3 — Pjesërisht. Rishkrimet u verifikuan me kompilator dhe u rimatën; "
             "struktura përmirësohet te Guard Clauses dhe Extract Method, jo te "
             "Introduce Parameter Object. Sjellja nuk u mat.",
@@ -471,7 +471,8 @@ def build() -> str:
     _bullets(
         slide,
         [
-            "E vërteta bazë është subjektive dhe rishikuesit nuk pajtohen mes tyre.",
+            "E vërteta bazë është subjektive: rishikuesit pajtohen vetëm mesatarisht, "
+            "dhe për Feature Envy aspak.",
             "Analiza është statike dhe nuk zgjidh tipa: varësitë semantike trajtohen "
             "konservativisht.",
             "Ashpërsia e derivuar u krahasua me atë të rishikuesve, rezultati doli "

@@ -1,32 +1,28 @@
 {
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "42e021057612c480ded29e3d0c350caaccc516e3",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "per_smell": {
     "blob": {
-      "agree": 14052,
+      "agree": 14471,
       "decisive_file_alone": {
-        "c_AMW": 5,
-        "c_CBO": 439,
-        "c_CLOC": 395,
-        "c_MAXCC": 12,
-        "c_NOAM": 767,
-        "c_NOF": 51,
-        "c_NOM": 72,
-        "c_RFC": 332,
-        "c_TCC": 3,
-        "c_WMC": 9,
-        "c_WOC": 102
+        "c_AMW": 46,
+        "c_CBO": 35,
+        "c_CLOC": 845,
+        "c_LCOM3": 33,
+        "c_MAXCC": 158,
+        "c_NOF": 5,
+        "c_NOM": 258
       },
-      "decisive_on_a_moved_measurement": 439,
+      "decisive_on_a_moved_measurement": 35,
       "entities": 14567,
-      "explained_file_alone": 2187,
-      "false_alarm": 226,
-      "flagged_file_alone": 2851,
-      "flagged_with_project": 2914,
-      "lost": 289,
+      "explained_file_alone": 1380,
+      "false_alarm": 70,
+      "flagged_file_alone": 2362,
+      "flagged_with_project": 2318,
+      "lost": 26,
       "measurement_moved": {
         "c_ATFD": 5183,
         "c_CBO": 3056,
@@ -36,31 +32,26 @@
       "measurements_compared": 14567
     },
     "data class": {
-      "agree": 14334,
+      "agree": 14129,
       "decisive_file_alone": {
-        "c_AMW": 16,
-        "c_ATFD": 5,
-        "c_CBO": 517,
-        "c_CLOC": 322,
-        "c_LCOM": 22,
-        "c_LCOM3": 137,
-        "c_MAXCC": 7,
-        "c_NOAM": 149,
-        "c_NOF": 133,
-        "c_NOM": 1,
-        "c_NOPA": 2,
-        "c_RFC": 22,
-        "c_TCC": 6,
-        "c_WMC": 59,
-        "c_WOC": 545
+        "c_CBO": 1624,
+        "c_CLOC": 27,
+        "c_MAXCC": 1,
+        "c_NOAM": 754,
+        "c_NOF": 230,
+        "c_NOM": 2,
+        "c_NOPA": 3,
+        "c_RFC": 152,
+        "c_TCC": 92,
+        "c_WOC": 58
       },
-      "decisive_on_a_moved_measurement": 522,
+      "decisive_on_a_moved_measurement": 1624,
       "entities": 14567,
-      "explained_file_alone": 1943,
-      "false_alarm": 184,
-      "flagged_file_alone": 2920,
-      "flagged_with_project": 2785,
-      "lost": 49,
+      "explained_file_alone": 2943,
+      "false_alarm": 391,
+      "flagged_file_alone": 3420,
+      "flagged_with_project": 3076,
+      "lost": 47,
       "measurement_moved": {
         "c_ATFD": 5183,
         "c_CBO": 3056,
@@ -70,19 +61,31 @@
       "measurements_compared": 14567
     },
     "feature envy": {
-      "agree": 83751,
+      "agree": 83531,
       "decisive_file_alone": {
-        "m_CC": 12,
-        "m_MLOC": 3857,
-        "m_NOAV": 44
+        "c_AMW": 119,
+        "c_ATFD": 68,
+        "c_CBO": 118,
+        "c_CLOC": 10,
+        "c_LCOM3": 2,
+        "c_NOF": 1,
+        "c_NOM": 1,
+        "c_RFC": 31,
+        "m_ATFD": 28,
+        "m_CC": 1,
+        "m_CINT": 968,
+        "m_MAXNESTING": 1,
+        "m_MLOC": 167,
+        "m_NOAV": 64,
+        "m_NP": 6
       },
-      "decisive_on_a_moved_measurement": 44,
+      "decisive_on_a_moved_measurement": 278,
       "entities": 85753,
-      "explained_file_alone": 3913,
-      "false_alarm": 46,
-      "flagged_file_alone": 3913,
-      "flagged_with_project": 5823,
-      "lost": 1956,
+      "explained_file_alone": 1585,
+      "false_alarm": 312,
+      "flagged_file_alone": 1616,
+      "flagged_with_project": 3214,
+      "lost": 1910,
       "measurement_moved": {
         "c_ATFD": 53169,
         "c_CBO": 36063,
@@ -96,22 +99,19 @@
       "measurements_compared": 85753
     },
     "long method": {
-      "agree": 84925,
+      "agree": 84604,
       "decisive_file_alone": {
-        "c_AMW": 16,
-        "m_CC": 191,
-        "m_CINT": 9,
-        "m_MAXNESTING": 6,
-        "m_MLOC": 6551,
-        "m_NOAV": 4
+        "m_CC": 65,
+        "m_MAXNESTING": 1,
+        "m_MLOC": 6316
       },
-      "decisive_on_a_moved_measurement": 4,
+      "decisive_on_a_moved_measurement": 0,
       "entities": 85753,
-      "explained_file_alone": 6777,
-      "false_alarm": 146,
-      "flagged_file_alone": 6847,
-      "flagged_with_project": 7383,
-      "lost": 682,
+      "explained_file_alone": 6382,
+      "false_alarm": 246,
+      "flagged_file_alone": 6392,
+      "flagged_with_project": 7049,
+      "lost": 903,
       "measurement_moved": {
         "c_ATFD": 53169,
         "c_CBO": 36063,
@@ -147,6 +147,6 @@
       "files": 287
     }
   },
-  "seconds": 161.1,
+  "seconds": 129.7,
   "seed": 20260901
 }
