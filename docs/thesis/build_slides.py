@@ -325,8 +325,8 @@ def build() -> str:
         slide,
         [
             "Kur strategjia ndez, zakonisht ka të drejtë. Por ndez rrallë.",
-            "PMD-ja, me të njëjtat strategji dhe pragjet e veta, nuk del më mirë në "
-            "asnjë krahasim.",
+            "PMD-ja, me të njëjtat strategji dhe pragjet e veta, nuk del përpara në "
+            "asnjë krahasim; te Long Method dhe te Blob me madhësinë del pas.",
         ],
         top=Inches(5.3),
         size=SMALL_SIZE,

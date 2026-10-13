@@ -261,7 +261,7 @@ def abstract() -> list[str]:
     ]
 
     third = (
-        f"Rezultatet negative raportohen si të tilla. Ashpërsia që sistemi "
+        f"Ashpërsia që sistemi "
         f"e derivon nga teprica mbi pragje nuk e riprodhon gjykimin e rishikuesve: "
         f"pajtimi i matur me kappa me peshë qëndron te {band(severity)}, dhe gabimi "
         f"anon nga mbivlerësimi. "
@@ -269,9 +269,8 @@ def abstract() -> list[str]:
     if ceiling is not None:
         ceilings = [entry["mcc"] for entry in ceiling["per_smell"].values()]
         third += (
-            f"Vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}; te erëra ku "
-            "pajtimi i tyre është i ulët, një pjesë e gabimit të çdo detektori i takon "
-            "përkufizimit të erës dhe jo detektorit. "
+            f"Vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}, ndaj një pjesë "
+            "e gabimit i takon përkufizimit të erës dhe jo detektorit. "
         )
     if refactoring is not None:
         share = refactoring["applied"] / refactoring["detected"]
@@ -2249,7 +2248,8 @@ def _literature_comparison(h: dict) -> list:
         "e nxjerra nga një korpus nuk transferohen lehtë në një tjetër: strategjitë e "
         "Lanza & Marinescu (2006) ruajnë precizion të lartë mbi MLCQ, por humbin "
         "shumicën e rasteve. PMD-ja, që zbaton të njëjtat strategji me pragjet e veta, "
-        "nuk del më mirë në asnjë krahasim (Nënkapitulli 5.6), ndaj recall-i i ulët nuk "
+        "nuk del përpara në asnjë krahasim kur merret parasysh intervali i besimit "
+        "(Nënkapitulli 5.6), ndaj recall-i i ulët nuk "
         "është defekt i zbatimit tonë. Te refaktorimi, motori ndjek parimin e Opdyke "
         "(1992): transformimi aplikohet vetëm kur parakushtet provohen. Tsantalis & "
         "Chatzigeorgiou (2009) ia lënë vendimin përfundimtar projektuesit; ky punim e "
