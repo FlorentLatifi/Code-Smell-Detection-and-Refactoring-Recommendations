@@ -6148,3 +6148,12 @@ zgjedhjen e modelit më të mirë dhe ndikimin e saj; (4) referenca e citime në
 demonstrimit, që nuk është në depo. Dy fjali të vetë ndërfaqes («mjeti e rishkruan
 kodin vetëm kur mund ta provojë që rishkrimi nuk e prish programin») flasin ende më
 fort se punimi; nuk u prekën, sepse janë kod produkti dhe nuk hyjnë në pamjet e punimit.
+
+**Pas shqyrtimit (po atë ditë).** Autori e redaktoi `.docx`-in në Word: abstrakt i ri,
+mirënjohje e vetja, data «Tetor 2026», «2023-2024» dhe «Prishtinë» te faqja e
+brendshme. Të gjitha u sollën te `build_thesis.py` dhe `chapters.py`, sepse një
+rindërtim do t'i fshinte. Shifrat e abstraktit të ri lexohen nga rezultatet si më parë.
+Dy fjali u ndreqën: «nga ato të lexuara me dorë 62.9%» (të lexuarat e pranueshme janë
+33 nga 60, pra 55%; 62.9% është vlerësimi i ripeshuar), dhe «nuk e provonte dot
+sigurinë», që bëhet «parakushtet». Fjalia e parë e 6.8 u rishkrua, sepse përsëriste
+fjalë për fjalë pyetjen me të cilën hapet abstrakti.

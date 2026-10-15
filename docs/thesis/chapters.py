@@ -164,131 +164,114 @@ def _environment_sentence(pythons: str, platforms: str, n_pythons: int, n_platfo
 # ======================================================================
 # Abstrakti
 # ======================================================================
-def _quality_in_abstract() -> str:
-    """Pranueshmëria e rishkrimeve në një fjali, me transformimin më të mirë dhe më të keq."""
-    quality = _load_if_present("rewrite_quality.json")
-    if quality is None:
+def _answer_on_the_fourth(ml: dict, ceiling: dict | None) -> str:
+    """Fjalia për erën ku dallimi nuk qëndron, me arsyen që e japin të dhënat.
+
+    Abstrakti i autorit (15 tetor 2026) e lidh mosdallimin te Feature Envy me
+    pajtimin e rishikuesve. Lidhja shkruhet vetëm kur të dhënat e mbajnë: një erë e
+    vetme pa dallim, dhe rishikuesit e saj pajtohen jo më shumë se rastësia.
+    """
+    smells = sorted(ml["per_smell"])
+    unsure, _ = _significance(smells)
+    if not unsure:
         return ""
-
-    def how_often(rate: float) -> str:
-        if rate == 1:
-            return "gjithmonë"
-        if rate == 0:
-            return "asnjëherë"
-        return f"te {rate:.0%} e rasteve"
-
-    per = quality["by_refactoring"]
-    best = max(per, key=lambda name: per[name]["acceptable"])
-    worst = min(per, key=lambda name: per[name]["acceptable"])
-    # Emri i plotë i Guard Clauses ka shtatë fjalë dhe abstrakti duhet të hyjë në
-    # një faqe; në tekst emri i shkurtër përdoret po ashtu.
-    short = {"ReplaceNestedConditionalWithGuardClauses": "Guard Clauses"}
-    return (
-        f"Nga {quality['reviewed']} rishkrime të lexuara, të ripeshuara, "
-        f"{quality['acceptable_reweighted']:.1%} janë të pranueshme për një zhvillues: "
-        f"{short.get(best, _named(best))} "
-        f"{how_often(per[best]['acceptable'])}, {short.get(worst, _named(worst))} "
-        f"{how_often(per[worst]['acceptable'])}. "
-    )
+    if len(unsure) == 1 and len(smells) == 4 and ceiling is not None:
+        key = next(s for s in smells if SMELL_SQ[s] == unsure[0])
+        if ceiling["per_smell"][key]["mcc"] <= 0.1:
+            return (
+                f"Te e katërta, {unsure[0]}, as dy rishikues njerëzorë nuk pajtohen më "
+                "shumë se rastësia. "
+            )
+    return f"Te {_joined(unsure)} dallimi nuk ndahet nga zeroja. "
 
 
 def abstract() -> list[str]:
     """Abstrakti, me çdo shifër të lexuar nga `data/results/`.
 
-    Shifrat këtu janë të njëjtat që raporton Kapitulli 5, dhe lexohen nga i njëjti
-    burim. Të shtypura me dorë, ato do të ishin i vetmi vend në punim ku një numër
-    i rigjeneruar dhe një numër i shkruar mund të ndaheshin heshtazi — dhe do të
-    ishte pikërisht faqja e parë që lexon komisioni.
+    Teksti është i autorit, i shkruar në Word më 15 tetor 2026 dhe i sjellë këtu që
+    një rindërtim të mos e fshijë; shifrat lexohen nga i njëjti burim si Kapitulli 5.
+    Të shtypura me dorë, ato do të ishin i vetmi vend në punim ku një numër i
+    rigjeneruar dhe një numër i shkruar mund të ndaheshin heshtazi, dhe do të ishte
+    pikërisht faqja e parë që lexon komisioni.
+
+    Dy fjali u ndreqën gjatë sjelljes: 62.9% nuk është pjesa e 60 rishkrimeve të
+    lexuara (ajo është 55%) por vlerësimi i ripeshuar sipas transformimit, dhe motori
+    nuk provon «sigurinë» por parakushtet, siç kërkoi mentorja te komenti i parë.
     """
     rules = _load("rules_evaluation.json")
     ml = _load("ml_evaluation.json")
     dataset = _load("mlcq_dataset.json")
     reference = _load("system_reference.json")
     refactoring = _load_if_present("refactoring_evaluation.json")
+    quality = _load_if_present("rewrite_quality.json")
     ceiling = _load_if_present("reviewer_agreement.json")
 
-    primary = [
-        rules["per_smell"][smell]["strategy"]["by_aggregation"]["mean"]
-        for smell in sorted(rules["per_smell"])
-    ]
-    best = [
-        ml["per_smell"][smell]["models"][ml["per_smell"][smell]["best_model"]]
-        for smell in sorted(ml["per_smell"])
-    ]
-    severity = [
-        rules["per_smell"][smell]["strategy"]["severity_agreement"]["kappa_quadratic"]
-        for smell in sorted(rules["per_smell"])
-    ]
-    severity = [value for value in severity if value is not None]
-
+    smells = sorted(ml["per_smell"])
+    primary = {s: rules["per_smell"][s]["strategy"]["by_aggregation"]["mean"] for s in smells}
+    best = {s: ml["per_smell"][s]["models"][ml["per_smell"][s]["best_model"]] for s in smells}
     metrics = len(reference["metrics"]["class"]) + len(reference["metrics"]["method"])
-    automated = len({s["automated"] for s in reference["strategies"] if s["automated"]})
 
     def band(values: list[float]) -> str:
         return f"{min(values):.3f} deri {max(values):.3f}"
+
+    recall = [primary[s]["recall"] for s in smells]
+    higher = sum(best[s]["mcc"] > primary[s]["mcc"] for s in smells)
+    unsure, _ = _significance(smells)
+    held = len(smells) - len(unsure)
 
     # Numri formatohet vetë e jo paragrafi: një herë zëvendësimi u lëshua mbi tërë
     # tekstin dhe i hoqi të gjitha presjet e fjalisë.
     samples = _count(dataset["rows"])
 
-    paragraphs = [
-        "Code smells janë simptoma të dizajnit të dobët që nuk shkaktojnë gabime, por e "
-        "rrisin koston e çdo ndryshimi të ardhshëm. Identifikimi manual i tyre nuk "
-        "shkallëzohet në sisteme të mëdha, ndërsa mjetet ekzistuese të analizës statike "
-        "mbështeten kryesisht në pragje fikse të kalibruara gjetiu dhe rrallë "
-        "propozojnë zgjidhje.",
-        f"Ky punim ndërton një sistem që i zbulon code smells në dy mënyra të pavarura "
-        f"dhe i krahason mbi të njëjtën të vërtetë bazë. Qasja e parë zbaton strategjitë "
-        f"e publikuara të detektimit mbi {metrics} metrika; e dyta trajnon klasifikues "
-        f"mbi po ato metrika. Të dyja vlerësohen mbi {samples} mostra nga "
-        f"{_repositories_in_dataset()} depo Java, të etiketuara nga zhvillues "
-        f"profesionistë, me ndarje të grupuar sipas depos dhe me të njëjtin kod "
-        f"pikëzimi. Sistemi përfshin edhe një motor refaktorimi që rishkruan kod vetëm "
-        f"kur i provon parakushtet nga pema sintaksore, dhe një ndërfaqe web.",
-        f"Strategjitë e publikuara dolën të sakta por të kursyera: precizion "
-        f"{band([m['precision'] for m in primary])} me recall "
-        f"{band([m['recall'] for m in primary])}. Klasifikuesit i tejkaluan qartë, me "
-        f"MCC {band([m['mcc'] for m in best])} kundrejt "
-        f"{band([m['mcc'] for m in primary])}. Intervalet e besimit me bootstrap sipas depos "
-        f"e vendosin atë përparësi mbi zero {_among(4 - len(_significance(sorted(ml['per_smell']))[0]), 4)}"
-        + (
-            f"; te {_joined(_significance(sorted(ml['per_smell']))[0])} jo."
-            if _significance(sorted(ml["per_smell"]))[0]
-            else "."
-        ),
-    ]
-
     third = (
-        f"Ashpërsia që sistemi "
-        f"e derivon nga teprica mbi pragje nuk e riprodhon gjykimin e rishikuesve: "
-        f"pajtimi i matur me kappa me peshë qëndron te {band(severity)}, dhe gabimi "
-        f"anon nga mbivlerësimi. "
-    )
-    if ceiling is not None:
-        ceilings = [entry["mcc"] for entry in ceiling["per_smell"].values()]
-        third += (
-            f"Vetë rishikuesit pajtohen mes tyre me MCC {band(ceilings)}, ndaj një pjesë "
-            "e gabimit i takon përkufizimit të erës dhe jo detektorit. "
+        "Përgjigjja doli me dy anë. Rregullat e publikuara janë shpesh të sakta kur "
+        f"ndezin, por kapin vetëm {min(recall) * 100:.0f} deri {max(recall) * 100:.0f}% "
+        f"të rasteve. Klasifikuesit i kalojnë {_among(higher, len(smells))}, me MCC "
+        f"{band([best[s]['mcc'] for s in smells])} kundrejt "
+        f"{band([primary[s]['mcc'] for s in smells])}"
+        + (
+            f", por dallimi qëndron statistikisht vetëm te {_word(held)}. "
+            if unsure
+            else ", dhe dallimi qëndron statistikisht te secila. "
         )
+        + _answer_on_the_fourth(ml, ceiling)
+    )
     if refactoring is not None:
         share = refactoring["applied"] / refactoring["detected"]
         broken = refactoring["verdicts"].get("new_errors", 0) / refactoring["applied"]
-        # Kompilimi dhe sjellja ndahen që në abstrakt, me kërkesë të mentores (15 tetor
-        # 2026): «verifikuar» këtu do të thotë me kompilator, jo me ekzekutim.
         third += (
-            f"Motori automatizon {_word(automated)} transformime dhe rishkroi "
-            f"{share:.1%} të vendeve të detektuara, duke refuzuar ku nuk provon dot; "
-            f"{broken:.1%} e rishkrimeve shtuan gabim të ri kompilimi, ndërsa ruajtja e "
-            "sjelljes nuk u verifikua. "
+            f"Motori i refaktorimit transformoi {share:.1%} të vendeve dhe refuzoi kudo ku "
+            f"nuk i provonte dot parakushtet; vetëm {broken:.1%} e rishkrimeve shtuan lloj të "
+            "ri gabimi kompilimi"
         )
-    third += _quality_in_abstract()
-    third += (
-        "Kontributi kryesor është një zinxhir i plotë dhe i riprodhueshëm, nga korpusi "
-        "deri te rezultati."
-    )
+        if quality is not None:
+            third += (
+                f", dhe sipas leximit me dorë të {quality['reviewed']} rishkrimeve, të "
+                f"ripeshuar sipas transformimit, {quality['acceptable_reweighted']:.1%} janë "
+                "të pranueshme për një zhvillues"
+            )
+        third += "."
 
-    paragraphs.append(third)
-    return paragraphs
+    return [
+        "Çdo zhvillues e njeh atë klasë që askush nuk do ta prekë: programi punon, por "
+        "çdo ndryshim në të kushton më shumë nga sa duhet. Këto shenja të dizajnit të "
+        "dobët, code smells, nuk janë gabime, por e shtrenjtojnë mirëmbajtjen dhe në "
+        "sisteme të mëdha nuk gjenden me sy. Mjetet ekzistuese i kërkojnë me pragje "
+        "fikse, të kalibruara mbi kod tjetër, dhe rrallë thonë si të ndreqen.",
+        "Ky punim pyet nëse erërat mund të gjenden dhe të ndreqen automatikisht në "
+        "mënyrë që zhvilluesi t’i besojë. U ndërtua një sistem për Java me tri pjesë: "
+        f"detektim me strategjitë e publikuara mbi {metrics} metrika, klasifikues të "
+        "trajnuar mbi po ato metrika, dhe një motor refaktorimi që e rishkruan kodin "
+        "vetëm kur i provon parakushtet nga pema sintaksore. Dy qasjet e detektimit "
+        f"krahasohen mbi {samples} mostra nga {_repositories_in_dataset()} depo, të "
+        "etiketuara nga zhvillues profesionistë, pa e vlerësuar kurrë modelin mbi "
+        "projektin nga i cili mësoi.",
+        third.strip(),
+        "Mësimi kryesor është se kufiri i detektimit automatik nuk qëndron vetëm te "
+        "algoritmi, por edhe te vetë përkufizimi i erës. Ruajtja e sjelljes së programit "
+        "pas rishkrimit nuk u mat me teste dhe mbetet hapi i radhës. Çdo shifër e "
+        "punimit rigjenerohet nga korpusi me një komandë.",
+    ]
 
 
 # ======================================================================
@@ -2999,8 +2982,10 @@ def chapter_6() -> list:
             "6.8",
             "Përfundim",
             [
-                "Punimi u nis nga pyetja nëse erërat e kodit mund të gjenden dhe të "
-                "ndreqen automatikisht në një mënyrë të cilës zhvilluesi t'i besojë. "
+                # Abstrakti i autorit e hap punimin me këtë pyetje; këtu ajo rikthehet
+                # me fjalë të tjera, që përfundimi të mos e përsërisë fjalë për fjalë.
+                "Pyetja e fillimit ishte a mund t'ia lërë zhvilluesi një mjeti automatik "
+                "gjetjen dhe ndreqjen e erërave të kodit, dhe t'i besojë rezultatit. "
                 "Përgjigjja që japin të dhënat është e ndarë. Gjetja mund t'u besohet "
                 "metrikave, por jo pragjeve të fiksuara gjetiu: kufiri i mësuar nga vetë "
                 "bashkësia jep më shumë se ai i trashëguar. Ndreqja mund t'i lihet makinës "

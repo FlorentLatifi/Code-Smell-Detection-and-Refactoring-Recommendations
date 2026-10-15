@@ -294,6 +294,21 @@ def body(doc: Document, text: str) -> None:
             _set_font(paragraph.add_run(piece), bold=index % 2 == 1)
 
 
+def signature(doc: Document, lines: list[str]) -> None:
+    """Emri dhe vendi nën mirënjohjen, pa dhëmbëzim, secili rresht paragraf më vete.
+
+    Dy paragrafë e jo një me ndërprerje rreshti: në një paragraf të justifikuar Word-i
+    e shtrin rreshtin që mbaron me ndërprerje, dhe «Florent Latifi» do të dilte i
+    hapur nëpër gjithë gjerësinë e faqes.
+    """
+    for index, line in enumerate(lines):
+        paragraph = doc.add_paragraph()
+        paragraph.paragraph_format.line_spacing = LINE_SPACING
+        paragraph.paragraph_format.space_before = Pt(12 if index == 0 else 0)
+        paragraph.paragraph_format.space_after = Pt(0)
+        _set_font(paragraph.add_run(line))
+
+
 def unnumbered_heading(doc: Document, text: str, *, new_page: bool = True) -> None:
     """A front-matter heading: same look as a chapter title, but no number.
 
@@ -482,6 +497,9 @@ def build_inner_page(doc: Document) -> None:
     centered(doc, f"Mentore: {SUPERVISOR}", size=TITLE_SIZE, bold=True)
     blank(doc, 5)
     centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
+    # Vendi i shtoi autori në Word më 15 tetor 2026, që faqja e brendshme ta mbyllë
+    # datën si kopertina.
+    centered(doc, "Prishtinë", size=TITLE_SIZE)
     blank(doc, 3)
     centered(
         doc,
@@ -496,10 +514,12 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
     for paragraph in abstract():
         body(doc, paragraph)
     blank(doc)
-    body(doc, f"Fjalë kyçe: {KEYWORDS}")
+    body(doc, f"**Fjalë kyçe:** {KEYWORDS}")
 
     front_title(doc, "Mirënjohje")
-    body(doc, ACKNOWLEDGEMENTS)
+    for paragraph in ACKNOWLEDGEMENTS:
+        body(doc, paragraph)
+    signature(doc, SIGNATURE)
 
     front_title(doc, "Përmbajtja")
     toc = doc.add_paragraph()
@@ -773,25 +793,41 @@ SUPERVISOR = "MSc. Altina Salihu"
 # Shablloni: «Viti akademik XXXX-YYYY (VITI I REGJISTRIMIT)», pra viti kur autori
 # u regjistrua (2023), jo viti i dorëzimit. «Muaji / Viti» te kopertina është vend
 # për muajin dhe vitin, jo një vijë e pjerrët që shtypet (VD-148).
-ACADEMIC_YEAR = "2023 – 2024"
-SUBMISSION_DATE = "Nëntor 2026"
+# Vizë e shkurtër dhe tetor, ashtu si i ndreqi autori në Word më 15 tetor 2026: punimi
+# dorëzohet në tetor, jo në nëntor siç ishte planifikuar.
+ACADEMIC_YEAR = "2023-2024"
+SUBMISSION_DATE = "Tetor 2026"
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "
     "mësim i makinës, analizë statike, Java"
 )
 
-# Draft i 15 tetorit 2026, që versioni përfundimtar të mos dalë me «[PLOTËSO]». Është
-# teksti i autorit dhe ai mund ta ndryshojë lirisht; asnjë kontroll nuk varet prej tij.
-ACKNOWLEDGEMENTS = (
-    "Falënderoj mentoren time, MSc. Altina Salihu, për udhëheqjen, durimin dhe komentet "
-    "e kujdesshme që e formësuan këtë punim, nga plani i parë deri te versioni "
-    "përfundimtar. Falënderoj profesorët e Programit për Shkenca Kompjuterike dhe "
-    "Inxhinierisë në Universitetin për Biznes dhe Teknologji për njohuritë që më dhanë "
-    "gjatë studimeve. Një falënderim i veçantë shkon për familjen time, për mbështetjen e "
-    "pakushtëzuar gjatë gjithë këtyre viteve. Falënderoj gjithashtu autorët e dataset-it "
-    "MLCQ dhe komunitetet e projekteve me burim të hapur, puna e të cilëve e bëri të "
-    "mundur vlerësimin në këtë punim."
-)
+# Teksti i autorit, i shkruar në Word më 15 tetor 2026 dhe i sjellë këtu që një
+# rindërtim i dokumentit të mos e fshijë. Çdo paragraf është paragraf më vete.
+ACKNOWLEDGEMENTS = [
+    "Ky punim është përfundimi i disa viteve studimi, dhe asnjë prej tyre nuk e kalova "
+    "vetëm. Pas faqeve të tij qëndrojnë njerëz që nuk përmenden në asnjë kapitull, por pa "
+    "të cilët ai nuk do të ishte shkruar.",
+    "Falënderimi im i parë shkon për mentoren time, MSc. Altina Salihu, për udhëzimet, për "
+    "kohën dhe për mbështetjen gjatë gjithë punës në këtë temë. Vërejtjet e saj, kapitull "
+    "pas kapitulli, më mësuan të shkruaj më qartë, të mos e marr asnjë shifër si të "
+    "mirëqenë dhe të pyes gjithmonë pse një rezultat ka dalë ashtu. Falë saj, punimi është "
+    "më i saktë. Mënyrën e të menduarit që mësova gjatë kësaj pune do ta marr me vete edhe "
+    "më tej.",
+    "Falënderoj profesorët dhe stafin e Programit për Shkenca Kompjuterike dhe "
+    "Inxhinierisë në UBT. Njohuritë që mora në ligjërata dhe në projekte gjatë këtyre "
+    "viteve janë themeli mbi të cilin u ndërtua ky punim.",
+    "Familjes sime i detyrohem më shumë nga sa mund të shkruhet në një faqe. Që nga dita e "
+    "parë e studimeve e deri te kjo faqe, ajo më mbështeti pa kushte, më dha qetësinë të "
+    "mësoj dhe besimin se do t’ia dal, edhe në çastet kur vetë nuk isha i sigurt.",
+    "Shokëve dhe kolegëve të mi u jam mirënjohës për bisedat, për ndihmën kur ngecja dhe "
+    "për shoqërinë që i bëri vitet e studimeve më të lehta dhe më të bukura. Falënderoj "
+    "edhe këdo tjetër që, me një fjalë apo me një gjest, më ndihmoi të arrij deri këtu.",
+    "Në fund, këtë punim ia kushtoj kujtimit të gjyshit dhe të gjyshes sime, dhe të nipit "
+    "tim, Omerit. Asnjëri prej tyre nuk është më me ne për ta parë këtë ditë, por të tre "
+    "mbeten pjesë e saj.",
+]
+SIGNATURE = [AUTHOR, f"Prishtinë, {SUBMISSION_DATE}"]
 
 GLOSSARY = [
     "AST - Abstract Syntax Tree, pema e sintaksës abstrakte",
