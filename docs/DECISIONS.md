@@ -6102,3 +6102,49 @@ dhe uniformiteti i citimeve, i terminologjisë dhe i formatimit, edhe për Kapit
 
 **Çfarë nuk u verifikua.** Pohimet cilësore të 6.5 («i moderuar te tri erëra») janë
 shkruar me dorë mbi këto të dhëna dhe nuk lëvizin vetë po të rimaten.
+
+### VD-151: Komentet përfundimtare të mentores (15 tetor 2026)
+
+**Konteksti.** Mentorja e quajti punimin në fazën përfundimtare dhe kërkoi pesë gjëra para
+dorëzimit: (1) të ndahet qartë verifikimi i kompilimit nga ruajtja e sjelljes, dhe rastet
+kur refaktorimi solli gabime të dalin edhe te diskutimi e përfundimet; (2) të pajtohet
+pragu i Long Method, që dilte 30 te metodologjia dhe 35 te 4.8; (3) një sqarim për
+zgjedhjen e modelit më të mirë dhe ndikimin e saj; (4) referenca e citime në APA;
+(5) pamje nga ndërfaqja dhe një shembull kodi Java para dhe pas refaktorimit.
+
+**Vendimi.**
+- **Siguria e refaktorimit.** «I sigurt» përkufizohet që në hyrje si parakushte të
+  provuara plus kompilim, «jo provë se sjellja e programit ruhet». Objektivi i 3.2,
+  kriteri i PK3 te 3.3, 4.1, 4.7, 4.10, 6.1, 6.5 dhe 6.8 u rishkruan në të njëjtin kuptim.
+  6.6 merr një paragraf për rishkrimet që sollën gabim (58 me gabim të ri, dy që kalojnë
+  izolimin por jo projektin, një që kalon kontrollin dhe nuk kompilon), dhe 6.8 një
+  paragraf për kufirin e kontributit të dytë; numrat lexohen nga rezultatet.
+- **Pragu.** Long Method ka një prag, 30. Numri 35 ishte klauzola MLOC e Brain Method
+  (HIGH_METHOD_LOC/2), që shembulli i 4.8 e merrte nga ekrani i një gjetjeje Brain
+  Method. Shembulli tani është klauzola e Long Method, dhe 4.5 i vë të dy numrat përballë.
+- **Zgjedhja e modelit.** 4.6 thotë se algoritmi zgjidhet mbi të njëjtat parashikime
+  mbi të cilat raportohet (Cawley & Talbot, 2010). 5.2 merr tabelën e MCC-së së çdo
+  algoritmi, dhe 6.6 e kufizon animin: me algoritmin më të dobët, të caktuar
+  paraprakisht, MCC-ja do të ishte 0.023 deri 0.080 më e ulët dhe fitimi mbi rregullin
+  mbetet te tri erëra; te Feature Envy, ku dallimi nuk ndahej nga zeroja, bie në nivelin
+  e rregullit. Përfundimi i PK2 nuk varet nga zgjedhja.
+- **APA 7.** Lista nuk numërohet, ka dhëmbëzim të varur, shkronja të pjerrëta për
+  revistën, vëllimin dhe librin, dhe DOI për çdo burim që e ka. 37 DOI u verifikuan
+  te Crossref më 15 tetor 2026. Citimet narrative me dy autorë marrin «dhe», ato në
+  kllapa «&». Elementet bibliografike janë shqip («Në», «f.», «bot.», «[Softuer]»).
+  Referencat janë të rreshtuara majtas, si e do APA; `check_format` i njeh nga
+  dhëmbëzimi i varur.
+- **Implementimi praktik.** 4.7 merr si figurë një rishkrim të vërtetë të Guard Clauses
+  mbi korpus (Apache Geode, i pranuar ashtu si është te leximi), të vizatuar nga
+  `build_code_example.py` me motorin. 4.8 merr dy pamje të ndërfaqes mbi jsoup, të
+  nxjerra nga `capture_screens.cjs`: paneli në mënyrën e thjeshtë dhe diff-i i Extract
+  Method. Shembulli i kodit vizatohet si figurë sepse dokumenti lejon vetëm Times New
+  Roman.
+- **Të tjera.** Mirënjohja nuk mbetet «[PLOTËSO]»: hyn një draft që autori mund ta
+  ndryshojë. Dyshemeja e precizionit të prerjes shkruhet me tri shifra (0.655 dilte
+  «të paktën 0.66»). Pikat nën /refactor janë pesë dhe tani emërtohen të pesta.
+
+**Çfarë nuk u verifikua.** Pamjet e ndërfaqes varen nga projekti jsoup i dosjes së
+demonstrimit, që nuk është në depo. Dy fjali të vetë ndërfaqes («mjeti e rishkruan
+kodin vetëm kur mund ta provojë që rishkrimi nuk e prish programin») flasin ende më
+fort se punimi; nuk u prekën, sepse janë kod produkti dhe nuk hyjnë në pamjet e punimit.

@@ -15,7 +15,6 @@ rerunning this script overwrites the file.
 from __future__ import annotations
 
 import os
-import re
 from dataclasses import dataclass
 
 from docx import Document
@@ -355,15 +354,22 @@ class Numbering:
     equation: int = 0
 
 
-def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
-    """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni."""
+def figure(
+    doc: Document, path: str, text: str, numbering: Numbering, width: float = 5.6
+) -> None:
+    """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni.
+
+    `width` është në inç. Shembulli i kodit dhe diff-i i ndërfaqes futen me gjithë
+    gjerësinë e tekstit, sepse shkronjat e tyre janë llogaritur për atë gjerësi dhe
+    me 5.6 inç do të dilnin më të vogla se sa lexohen në letër.
+    """
     holder = doc.add_paragraph()
     holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
     # Pa këtë, një figurë në fund të faqes e linte përshkrimin vetëm në krye të
     # faqes pasardhëse, siç ndodhi me Figurën 1 (VD-134).
     holder.paragraph_format.keep_with_next = True
     if os.path.exists(path):
-        holder.add_run().add_picture(path, width=Inches(5.6))
+        holder.add_run().add_picture(path, width=Inches(width))
     else:
         _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
     numbering.figure += 1
@@ -576,7 +582,7 @@ def render_sections(doc: Document, sections: list, numbering: Numbering) -> None
             elif item[0] == "bullet":
                 bullet(doc, item[1])
             elif item[0] == "figure":
-                figure(doc, item[1], item[2], numbering)
+                figure(doc, item[1], item[2], numbering, *item[3:])
             elif item[0] == "equation":
                 equation(doc, item[1], numbering)
             elif item[0] == "table":
@@ -614,23 +620,33 @@ def build_introduction(doc: Document, numbering: Numbering) -> None:
 
 
 def build_references(doc: Document, only_cited_in: str | None = None) -> None:
-    """Chapter 7, numbered and alphabetical, in the template's own format.
+    """Chapter 7, alphabetical and unnumbered, in APA style.
 
     Only cited sources belong here; anything read but not cited goes under
     Bibliografia. The list is rendered from references.py rather than typed into
     the document, so a citation added to the text and a citation added to the
     list cannot drift apart.
+
+    APA wants a hanging indent and no numbers, and it sets book titles and journal
+    names in italics. The list marks those spans with single asterisks; odd pieces
+    of a split are the italic ones, the same convention `body()` uses for bold.
+    The paragraph is left-aligned rather than justified, because a justified line
+    that ends in a long DOI opens wide gaps between the words before it.
     """
     references = all_references()
     if only_cited_in is not None:
         references = _cited_in(only_cited_in, references)
-    for number, reference in enumerate(references, 1):
+    for reference in references:
         paragraph = doc.add_paragraph()
-        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         paragraph.paragraph_format.line_spacing = LINE_SPACING
         paragraph.paragraph_format.left_indent = Inches(0.5)
         paragraph.paragraph_format.first_line_indent = Inches(-0.5)
-        _set_font(paragraph.add_run(f"[{number}]	{reference}"))
+        for index, piece in enumerate(reference.split("*")):
+            if piece:
+                run = paragraph.add_run(piece)
+                _set_font(run)
+                run.font.italic = index % 2 == 1
 
 
 def _cited_in(text: str, references: list[str]) -> list[str]:
@@ -640,13 +656,9 @@ def _cited_in(text: str, references: list[str]) -> list[str]:
     «Referencat» vetëm burimet e cituara. Krahasimi merret nga `check_citations`,
     që lista e pjesshme dhe kontrolli i plotë të mos kenë dy rregulla të ndryshme.
     """
-    from check_citations import ACCESS_DATE, _first_author, _fold, _undeclined, citations
+    from check_citations import _fold, _undeclined, citations, reference_key
 
-    keys = {}
-    for reference in references:
-        published = reference.split(ACCESS_DATE)[0]
-        year = re.search(r"\b(?:19|20)\d{2}\b", published)
-        keys[reference] = (_first_author(reference.split(",")[0]), year.group() if year else "")
+    keys = {reference: reference_key(reference) for reference in references}
     known = {author for author, _ in keys.values()}
     cited = {(_undeclined(author, known), year) for author, year in citations(text)}
     folded = _fold(text)
@@ -768,9 +780,17 @@ KEYWORDS = (
     "mësim i makinës, analizë statike, Java"
 )
 
+# Draft i 15 tetorit 2026, që versioni përfundimtar të mos dalë me «[PLOTËSO]». Është
+# teksti i autorit dhe ai mund ta ndryshojë lirisht; asnjë kontroll nuk varet prej tij.
 ACKNOWLEDGEMENTS = (
-    f"{TODO}: Falënderimet shkruhen me fjalët e tua. Zakonisht përfshihen mentorja, "
-    "profesorët e programit, familja dhe kushdo që ka kontribuar në këtë punim."
+    "Falënderoj mentoren time, MSc. Altina Salihu, për udhëheqjen, durimin dhe komentet "
+    "e kujdesshme që e formësuan këtë punim, nga plani i parë deri te versioni "
+    "përfundimtar. Falënderoj profesorët e Programit për Shkenca Kompjuterike dhe "
+    "Inxhinierisë në Universitetin për Biznes dhe Teknologji për njohuritë që më dhanë "
+    "gjatë studimeve. Një falënderim i veçantë shkon për familjen time, për mbështetjen e "
+    "pakushtëzuar gjatë gjithë këtyre viteve. Falënderoj gjithashtu autorët e dataset-it "
+    "MLCQ dhe komunitetet e projekteve me burim të hapur, puna e të cilëve e bëri të "
+    "mundur vlerësimin në këtë punim."
 )
 
 GLOSSARY = [
@@ -808,7 +828,7 @@ GLOSSARY = [
     "NOPA - Number of Public Attributes, numri i atributeve publike",
     "NP - Number of Parameters, numri i parametrave",
     "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
-    "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al.",
+    "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al. (2010)",
     "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
     # Termat e huaj që teksti i përdor pa i përkthyer, dhe dy shkurtesat e vetë
     # punimit. Një lexues që nuk i njeh duhet t'i gjejë këtu, jo t'i hamendësojë.
@@ -866,14 +886,14 @@ INTRODUCTION = [
             "nuk është përkufizimi, por një mënyrë e përsëritshme për ta zbatuar atë "
             "mbi kod real.",
             "Mjetet e analizës statike e automatizojnë një pjesë të kësaj pune, por "
-            "lënë tri mangësi. Strategjitë me metrika, si ato të Lanza & Marinescu "
+            "lënë tri mangësi. Strategjitë me metrika, si ato të Lanza dhe Marinescu "
             "(2006), përdorin pragje fikse të nxjerra nga sisteme të tjera, dhe rrallë "
             "dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim të makinës "
             "premton më shumë, por rezultatet e tij varen nga mënyra si ndërtohen dhe "
             "ndahen të dhënat, dhe rrallë krahasohet me rregullat mbi të njëjtat "
             "mostra. Së fundi, shumica e mjeteve ndalen te njoftimi: tregojnë ku është "
             "problemi, por jo si ndreqet, dhe qasjet që propozojnë edhe refaktorimin, "
-            "si ajo e Tsantalis & Chatzigeorgiou (2009) për Move Method, mbulojnë pak "
+            "si ajo e Tsantalis dhe Chatzigeorgiou (2009) për Move Method, mbulojnë pak "
             "raste.",
             # Kontributi dhe «transformimi i sigurt» i kërkoi mentorja te komentet mbi
             # kapitujt 1-3 (VD-141); këtu janë në një paragraf, që hyrja të mbetet
@@ -885,12 +905,14 @@ INTRODUCTION = [
             "detektimi, strategjitë me metrika dhe një klasifikues i trajnuar mbi të "
             "njëjtat metrika, krahasohen mbi të njëjtin dataset të etiketuar nga "
             "zhvillues profesionistë, dhe një motor refaktorimi e rishkruan kodin "
-            "vetëm kur transformimi është i sigurt. Kjo do të thotë se parakushtet e "
-            "tij, në kuptimin e Opdyke (1992), provohen mbi pemën sintaksore para "
-            "aplikimit, përndryshe ai refuzohet me arsye, dhe se pas tij skedari "
-            "parsohet sërish, kompilatori javac nuk jep lloj të ri gabimi dhe "
-            "klasa rimatet për të parë nëse era u hoq. Sjelljen gjatë ekzekutimit "
-            "punimi nuk e provon (Nënkapitulli 3.4).",
+            "vetëm kur transformimi është i sigurt në një kuptim të ngushtë e të "
+            "matshëm. Parakushtet e tij, në kuptimin e Opdyke (1992), provohen mbi "
+            "pemën sintaksore para aplikimit, përndryshe ai refuzohet me arsye; pas "
+            "tij skedari parsohet sërish, kompilatori javac nuk duhet të japë lloj të "
+            "ri gabimi, dhe klasa rimatet për të parë nëse era u hoq. Kjo është "
+            "verifikim i kompilimit, jo provë se sjellja e programit ruhet: sjelljen "
+            "gjatë ekzekutimit punimi nuk e verifikon, dhe rishkrimet që sollën "
+            "gabime të reja raportohen veç (Nënkapitujt 3.4 dhe 5.4).",
             "Kapitujt në vijim trajtojnë me radhë literaturën, problemin, "
             "metodologjinë, rezultatet dhe diskutimin e tyre.",
         ],

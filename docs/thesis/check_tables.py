@@ -139,7 +139,7 @@ def check(tables: dict[str, list[list[str]]]) -> list[str]:
     intervals = need("Intervale besimi 95% për MCC-në")
     agreement = need("Pajtimi mes dy qasjeve")
     severity = need("Recall-i sipas ashpërsisë")
-    literature = need("Krahasimi i MCC-së me Madeyski & Lewowski (2023), mbi MLCQ")
+    literature = need("Krahasimi i MCC-së me Madeyski dhe Lewowski (2023), mbi MLCQ")
     combined = need("Të dyja qasjet së bashku")
 
     strategy = {r[0]: r for r in rules[1:] if "(+" not in r[0]} if rules else {}
