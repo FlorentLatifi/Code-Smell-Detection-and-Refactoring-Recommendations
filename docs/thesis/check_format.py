@@ -19,11 +19,14 @@ burim, jo njëri kontroll i tjetrit.
 
 Rregullat: Times New Roman kudo; tekst 12pt i drejtuar me hapësirë rreshtash së
 paku 1.5; tituj kapitujsh 14pt bold me shkronja kapitale, secili në faqe të re;
-nëntituj 12pt bold; përshkrime figurash e tituj tabelash 11pt në qendër, të
-numëruar pa hapësira; tri regjime numërimi faqesh; numri i faqes poshtë djathtas;
+nëntituj 13pt (Heading 2) dhe 12pt (Heading 3) bold e të zinj, siç i caktoi
+mentorja; përshkrime figurash e tituj tabelash 11pt në qendër, të numëruar pa
+hapësira me fusha SEQ; tri regjime numërimi faqesh; numri i faqes poshtë djathtas;
 faqe Letter (8.5×11 inç) me margjina 3cm nga të katër anët. Kontrollohet edhe që
-lista e figurave dhe e tabelave në fillim të përputhet me atë që dokumenti përmban
-vërtet.
+lista e figurave dhe e tabelave në fillim të jenë fusha që Word-i i mbush nga
+përshkrimet, dhe që rezultati i tyre të përputhet me atë që dokumenti përmban
+vërtet; që citimet IEEE të numërohen sipas radhës së citimit të parë; dhe që
+kopertinat të mos kenë paragraf bosh me ndërprerje faqeje (VD-152).
 
 Kontrollohen edhe numërimi i njëpasnjëshëm i nënkapitujve dhe mungesa e krerëve pa
 përmbajtje. Në fund listohen vendet `[PLOTËSO]` që i mbeten autorit: ato janë të
@@ -41,15 +44,19 @@ import sys
 from pathlib import Path
 
 from build_thesis import FRONT_TITLE, OUTPUT
+from check_citations import CITATION
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
+from docx.table import Table
 from docx.text.paragraph import Paragraph
 from ubt_format import (
     BODY_SIZE,
     CAPTION_SIZE,
     FONT,
+    HEADING_2_SIZE,
+    HEADING_3_SIZE,
     MARGIN_BOTTOM,
     MARGIN_LEFT,
     MARGIN_RIGHT,
@@ -70,6 +77,15 @@ EXPECTED_SECTIONS = (
 
 CAPTION = re.compile(r"^(Figura|Tabela) (\d+)\.")
 CHAPTER_HEADING = re.compile(r"^\d+ ")
+
+# Numri i faqes që Word-i i shton një hyrjeje të listës kur e rifreskon fushën.
+PAGE_SUFFIX = re.compile(r"\t\S*$")
+
+# Një citim IEEE në tekst, «[5]» ose «[5, p. 80]». «[?]» është citimi që ndërtimi nuk e
+# gjeti në listë.
+NUMERIC_CITATION = re.compile(r"\[(\d+|\?)(?:, p\. \d+)?\]")
+# Hyrja e listës: «[5]», tabulatori, pastaj teksti.
+REFERENCE_ENTRY = re.compile(r"^\[(\d+)\]\t")
 
 
 def _size_ok(run, expected: Pt) -> bool:
@@ -93,7 +109,11 @@ def _check_styles(doc: Document) -> list[str]:
     if spacing < MIN_LINE_SPACING:
         problems.append(f"stili Normal ka hapësirë rreshtash {spacing}")
 
-    for name, size, caps in (("Heading 1", TITLE_SIZE, True), ("Heading 2", BODY_SIZE, False)):
+    for name, size, caps in (
+        ("Heading 1", TITLE_SIZE, True),
+        ("Heading 2", HEADING_2_SIZE, False),
+        ("Heading 3", HEADING_3_SIZE, False),
+    ):
         style = doc.styles[name]
         if style.font.name != FONT:
             problems.append(f"stili {name} nuk është {FONT}")
@@ -105,6 +125,9 @@ def _check_styles(doc: Document) -> list[str]:
             problems.append(f"stili {name} me all_caps={style.font.all_caps}, pritej {caps}")
         if style.paragraph_format.alignment != WD_ALIGN_PARAGRAPH.LEFT:
             problems.append(f"stili {name} nuk është i rreshtuar majtas")
+        # Stilet e titujve të shabllonit të Word-it janë blu; mentorja i do të zinj.
+        if style.font.color.type is not None and style.font.color.rgb != RGBColor(0, 0, 0):
+            problems.append(f"stili {name} nuk është i zi")
 
     front = doc.styles[FRONT_TITLE]
     if front.font.name != FONT or front.font.size != TITLE_SIZE:
@@ -143,8 +166,8 @@ def _check_body(doc: Document) -> list[str]:
             continue  # përshkrimet dhe kopertina kontrollohen veç
         excerpt = paragraph.text[:40]
         # Hyrjet e referencave, të njohura nga dhëmbëzimi i varur, janë majtas me
-        # qëllim: APA-ja nuk e do justifikimin, dhe një DOI i gjatë në fund të rreshtit
-        # i hap fjalët para tij me boshllëqe të mëdha.
+        # qëllim: një DOI i gjatë në fund të një rreshti të justifikuar i hap fjalët
+        # para tij me boshllëqe të mëdha.
         first_line = paragraph.paragraph_format.first_line_indent
         hanging = first_line is not None and first_line < 0
         if paragraph.alignment not in (None, WD_ALIGN_PARAGRAPH.JUSTIFY) and not hanging:
@@ -179,7 +202,18 @@ def _captions(doc: Document) -> list:
     return [p for p in body_paragraphs if CAPTION.match(p.text)]
 
 
+def _field_codes(paragraph) -> str:
+    """Kodet e fushave të një paragrafi, «SEQ Figura \\* ARABIC», si një varg."""
+    return " ".join(instr.text or "" for instr in paragraph._p.iter(qn("w:instrText")))
+
+
 def _check_captions(doc: Document) -> list[str]:
+    """Përshkrimet: në qendër, 11pt, dhe me numrin si fushë SEQ të llojit të vet.
+
+    Lista e figurave dhe e tabelave i mbledh vetëm përshkrimet që kanë fushën: një
+    përshkrim i shtypur me dorë në Word do të dukej njësoj, por do të mungonte në
+    listë pa e vënë re askush.
+    """
     problems = []
     for paragraph in _captions(doc):
         if paragraph.alignment != WD_ALIGN_PARAGRAPH.CENTER:
@@ -188,6 +222,9 @@ def _check_captions(doc: Document) -> list[str]:
             if not _size_ok(run, CAPTION_SIZE):
                 problems.append(f"përshkrim {run.font.size.pt:g}pt: «{paragraph.text[:40]}»")
                 break
+        kind = CAPTION.match(paragraph.text).group(1)
+        if f"SEQ {kind}" not in _field_codes(paragraph):
+            problems.append(f"përshkrim pa fushën SEQ {kind}: «{paragraph.text[:40]}»")
     return problems
 
 
@@ -242,17 +279,22 @@ def _check_numbering(doc: Document) -> list[str]:
 
 
 def _check_lists(doc: Document) -> list[str]:
-    """Lista e ballinës përputhet me përshkrimet që dokumenti përmban vërtet.
+    """Listat e ballinës janë fusha mbi përshkrimet, dhe përputhen me to.
 
-    Të dyja dalin nga i njëjti burim — `caption_lists` e ndërton listën me të njëjtën
-    ecje që bën renderimi — por nga dy kalime të ndryshme mbi të. Krahasimi këtu e
-    verifikon se ato dy kalime pajtohen, çka nuk është e vetëkuptueshme: ballina
-    numërohet para se elementet të renderohen.
+    Që nga VD-152 secila listë është një fushë TOC `\\c` që Word-i e mbush nga fushat
+    SEQ të përshkrimeve, si përmbajtjen nga titujt. Ndërtimi e shkruan rezultatin e
+    fushës vetë, me të njëjtën ecje që bën renderimi, por nga një kalim tjetër mbi
+    kapitujt; krahasimi verifikon se dy kalimet pajtohen. Pasi Word-i e rifreskon
+    fushën, çdo hyrje merr pas një tabulatori numrin e faqes, që këtu hiqet.
     """
     front, _ = _split_at_first_chapter(doc)
-    declared = [p.text for p in front if CAPTION.match(p.text)]
-    actual = [p.text for p in _captions(doc)]
+    codes = " ".join(_field_codes(p) for p in front)
     problems = []
+    for kind in ("Figura", "Tabela"):
+        if not re.search(rf'TOC\s[^"]*\\c\s+"{kind}"', codes):
+            problems.append(f'lista për «{kind}» nuk është fushë TOC \\c "{kind}"')
+    declared = [PAGE_SUFFIX.sub("", p.text) for p in front if CAPTION.match(p.text)]
+    actual = [p.text for p in _captions(doc)]
     for missing in sorted(set(declared) - set(actual)):
         problems.append(f"e listuar në ballinë por s'del në tekst: «{missing}»")
     for extra in sorted(set(actual) - set(declared)):
@@ -401,6 +443,94 @@ def _check_mentioned_in_text(doc: Document) -> list[str]:
     ]
 
 
+def _body_texts(doc: Document) -> list[tuple[str, str]]:
+    """Teksti i trupit sipas radhës së leximit, si çifte (stili, teksti).
+
+    Tabelat japin qelizat rresht pas rreshti, me stilin «tabelë»: një citim në qelizë
+    numërohet aty ku e takon lexuesi, dhe `doc.paragraphs` nuk i përmban fare.
+    """
+    texts = []
+    for element in doc.element.body.iterchildren():
+        tag = element.tag.rsplit("}", 1)[-1]
+        if tag == "p":
+            paragraph = Paragraph(element, doc)
+            texts.append((paragraph.style.name, paragraph.text))
+        elif tag == "tbl":
+            for row in Table(element, doc).rows:
+                texts.extend(("tabelë", cell.text) for cell in row.cells)
+    return texts
+
+
+def _check_citations(doc: Document) -> list[str]:
+    """Citimet IEEE numërohen sipas radhës së citimit të parë, dhe lista u përgjigjet.
+
+    Mentorja kërkoi IEEE më 16 tetor 2026: lista numërohet sipas radhës në të cilën
+    burimi citohet për herë të parë, duke nisur nga Kapitulli 1 (VD-152). Ndërtimi e
+    llogarit atë radhë nga burimi; ky kontroll e lexon nga dokumenti, ndaj kap edhe një
+    paragraf të zhvendosur në Word, një citim të shtuar me dorë, «[?]» e një citimi pa
+    referencë, ose një citim autor-vit që nuk u kthye në numër.
+    """
+    problems = []
+    cited: list[str] = []
+    listed: list[int] = []
+    in_chapters = in_references = False
+    for style, text in _body_texts(doc):
+        if style == "Heading 1":
+            in_chapters = in_chapters or bool(CHAPTER_HEADING.match(text))
+            in_references = text.strip().endswith("Referencat")
+            continue
+        if in_references:
+            entry = REFERENCE_ENTRY.match(text)
+            if entry:
+                listed.append(int(entry.group(1)))
+            elif text.strip():
+                problems.append(f"hyrje e listës pa numër: «{text[:50]}»")
+            continue
+        leftover = CITATION.search(text)
+        if leftover:
+            problems.append(f"citim autor-vit që nuk u bë numër: «{leftover.group(0)}»")
+        if not in_chapters:
+            continue
+        for number in NUMERIC_CITATION.findall(text):
+            if number == "?":
+                problems.append(f"citim pa referencë: «{text[:50]}»")
+            elif number not in cited:
+                cited.append(number)
+
+    for position, number in enumerate(cited, start=1):
+        if number != str(position):
+            problems.append(f"citimi i parë i [{number}] vjen aty ku pritej [{position}]")
+            break
+    if listed != list(range(1, len(listed) + 1)):
+        problems.append(f"lista e referencave nuk numërohet 1, 2, 3…: {listed[:8]}…")
+    for number in sorted({str(n) for n in listed} - set(cited), key=int):
+        problems.append(f"referenca [{number}] nuk citohet te kapitujt")
+    for number in sorted(set(cited) - {str(n) for n in listed}, key=int):
+        problems.append(f"citimi [{number}] nuk ka hyrje në listë")
+    return problems
+
+
+def _check_cover_breaks(doc: Document) -> list[str]:
+    """Faqja e brendshme hapet me ndarje te paragrafi i saj i parë, jo me paragraf bosh.
+
+    Paragrafi bosh me ndërprerje faqeje, që ndërtimi e vinte mes dy kopertinave, dilte
+    si faqe e zbrazët pas kopertinës kur ajo mbushej deri në fund; mentorja e hoqi më
+    16 tetor 2026 dhe ia vuri ndarjen logos së faqes së brendshme (VD-152).
+    """
+    problems = []
+    breaks = 0
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name == FRONT_TITLE:
+            break
+        if paragraph._p.xpath(".//w:br[@w:type='page']"):
+            problems.append("kopertinat ndahen me një paragraf me ndërprerje faqeje")
+        if paragraph.paragraph_format.page_break_before:
+            breaks += 1
+    if breaks != 1:
+        problems.append(f"kopertinat kanë {breaks} ndarje «page break before», pritej 1")
+    return problems
+
+
 def _check_update_fields(doc: Document) -> list[str]:
     """Word e plotëson përmbajtjen kur hapet, e nuk e lë tekstin zëvendësues."""
     flag = doc.settings.element.find(qn("w:updateFields"))
@@ -518,7 +648,9 @@ def report(path: Path) -> list[str]:
         _check_page_breaks,
         _check_front_titles,
         _check_cover_font,
+        _check_cover_breaks,
         _check_mentioned_in_text,
+        _check_citations,
         _check_update_fields,
         _check_abstract_length,
     ):

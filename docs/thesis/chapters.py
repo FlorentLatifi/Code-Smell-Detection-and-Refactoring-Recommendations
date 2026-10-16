@@ -2283,7 +2283,9 @@ def _literature_comparison(h: dict) -> list:
         "këtu me mesoren "
         "më të mirë të MCC-së që raportojnë ata.",
         ("table", "Krahasimi i MCC-së me Madeyski dhe Lewowski (2023), mbi MLCQ",
-         ["Erë", "Qasja A", "Qasja B", "M&L 2023, DS1"], _literature_rows(h)),
+         # Citimi në kllapë i jep kolonës numrin IEEE: «M&L [24], DS1» (VD-152).
+         ["Erë", "Qasja A", "Qasja B", "M&L (Madeyski & Lewowski, 2023), DS1"],
+         _literature_rows(h)),
         _madeyski_position(h),
         _feature_envy_against_madeyski(h),
         "Rezultatet janë shumë larg atyre të Arcelli Fontana et al. (2016), ku "
@@ -2579,8 +2581,9 @@ def _strategy_source(title: str) -> str:
     Titujt janë në anglisht dhe të formave të ndryshme: «God Class (Lanza &
     Marinescu, p. 80)», «Long Method (Fowler): …», «Deeply nested control flow».
     Tabela i shkruante copat siç binin, ndaj dilte «Fowler): size alone…». Këtu
-    merret vetëm kllapa, me vitin e referencës dhe «f.» për faqen, në trajtën
-    narrative të APA-s: «Lanza dhe Marinescu (2006, f. 80)».
+    merret vetëm kllapa, me vitin e referencës që e bën citim narrativ: «Lanza dhe
+    Marinescu (2006, p. 80)», që punimi e shtyp si «Lanza dhe Marinescu [5, p. 80]»
+    (VD-152).
     """
     match = re.search(r"\(([^)]*)\)", title)
     if match is None:
@@ -2590,7 +2593,7 @@ def _strategy_source(title: str) -> str:
     author = author.replace(" & ", " dhe ")
     if year is None:
         return author
-    return f"{author} ({year}, f. {page})" if page else f"{author} ({year})"
+    return f"{author} ({year}, p. {page})" if page else f"{author} ({year})"
 
 
 def _rewrite_failures() -> dict | None:

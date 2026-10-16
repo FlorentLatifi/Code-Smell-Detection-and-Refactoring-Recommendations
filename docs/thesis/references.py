@@ -1,15 +1,23 @@
-"""Referencat e punimit, në stilin APA (botimi i 7-të).
+"""Referencat e punimit, në stilin IEEE.
 
-Mentorja kërkoi më 15 tetor 2026 që referencat dhe citimet të harmonizohen sipas
-një stili të vetëm, APA. Lista nuk numërohet më: renditet alfabetikisht sipas
-mbiemrit të autorit të parë, me dhëmbëzim të varur, dhe citimi në tekst është
-«(Mbiemri, viti)» ose «Mbiemri (viti)». Elementet bibliografike që nuk janë pjesë e
-titullit shkruhen shqip, si numri i faqes te teksti («f. 80»): «Në», «f.», «bot.»,
-«Artikulli», «[Softuer]». Titujt mbeten në gjuhën e burimit.
+Mentorja kërkoi më 16 tetor 2026 stilin IEEE, një ditë pasi kishte kërkuar APA-n
+(VD-151), dhe ndryshimet i bëri vetë te kopja e punimit që dërgoi. Hyrjet këtu janë
+ato të asaj kopjeje, fjalë për fjalë; vetëm numri para tyre mungon (VD-152).
 
-Pjesët me `*...*` shtypen me shkronja të pjerrëta: titulli i librit, emri i revistës
-me vëllimin, dhe emri i përmbledhjes së konferencës. `build_references` e lexon këtë
-shenjë; teksti i kapitujve nuk e përdor.
+Çdo hyrje është një çift: etiketa «Mbiemri vit» dhe teksti. Etiketa është çelësi me të
+cilin teksti e citon burimin. Kapitujt shkruajnë «Fowler (2018)» ose «(Lanza &
+Marinescu, 2006)», dhe `build_thesis` i kthen në «Fowler [2]» dhe «[5]». Numri nuk
+shkruhet as këtu as te kapitujt: lista numërohet sipas radhës në të cilën burimi
+citohet për herë të parë, duke nisur nga Kapitulli 1, dhe ajo radhë është veti e
+tekstit. Një paragraf i zhvendosur e rinumëron listën vetë, në vend që ta lërë me
+numra që nuk ndjekin më leximin.
+
+Shkurtimet janë ato standarde të IEEE-së (vol., no., pp., ed., Art. no., doi:), emrat
+e revistave shkruhen të plotë, dhe vendi i botuesit të një libri jepet si «Qyteti, ST,
+Shteti». Me më shumë se gjashtë autorë hyrja mban vetëm të parin dhe «et al.». Pjesët
+me `*...*` shtypen me shkronja të pjerrëta: titulli i librit dhe emri i revistës ose i
+përmbledhjes së konferencës. `build_references` e lexon këtë shenjë; teksti i
+kapitujve nuk e përdor.
 
 Ndarja në lista nuk është stilistike. `CITED_BY_SYSTEM` janë burimet që kodi i
 zbaton drejtpërdrejt — çdo prag, çdo përkufizim metrike dhe e vërteta bazë — dhe
@@ -26,49 +34,54 @@ VERIFIKIM: shih shënimet mbi `PAGES_VERIFIED` në fund të skedarit.
 
 from __future__ import annotations
 
-import unicodedata
-
 # ---------------------------------------------------------------------
 # Burimet që sistemi i zbaton drejtpërdrejt
 # ---------------------------------------------------------------------
 CITED_BY_SYSTEM = [
     (
-        "Bieman, J. M., & Kang, B.-K. (1995). Cohesion and reuse in an object-oriented "
-        "system. Në *Proceedings of the 1995 Symposium on Software Reusability (SSR ’95)* "
-        "(f. 259–262). ACM. https://doi.org/10.1145/211782.211856"
+        "Bieman & Kang 1995",
+        "J. M. Bieman and B.-K. Kang, “Cohesion and reuse in an object-oriented system,” in "
+        "*Proceedings of the 1995 Symposium on Software Reusability (SSR ’95)*, 1995, pp. "
+        "259–262, doi: 10.1145/211782.211856."
     ),
     (
-        "Chidamber, S. R., & Kemerer, C. F. (1994). A metrics suite for object oriented "
-        "design. *IEEE Transactions on Software Engineering, 20*(6), 476–493. "
-        "https://doi.org/10.1109/32.295895"
+        "Chidamber & Kemerer 1994",
+        "S. R. Chidamber and C. F. Kemerer, “A metrics suite for object oriented design,” "
+        "*IEEE Transactions on Software Engineering*, vol. 20, no. 6, pp. 476–493, 1994, "
+        "doi: 10.1109/32.295895."
     ),
     (
-        "Fowler, M. (2018). *Refactoring: Improving the design of existing code* (bot. i "
-        "2-të). Addison-Wesley."
+        "Fowler 2018",
+        "M. Fowler, *Refactoring: Improving the Design of Existing Code*, 2nd ed. Boston, "
+        "MA, USA: Addison-Wesley, 2018."
     ),
     (
-        "Henderson-Sellers, B. (1996). *Object-oriented metrics: Measures of complexity*. "
-        "Prentice Hall."
+        "Henderson-Sellers 1996",
+        "B. Henderson-Sellers, *Object-Oriented Metrics: Measures of Complexity*. Upper "
+        "Saddle River, NJ, USA: Prentice Hall, 1996."
     ),
     (
-        "Lanza, M., & Marinescu, R. (2006). *Object-oriented metrics in practice: Using "
-        "software metrics to characterize, evaluate, and improve the design of "
-        "object-oriented systems*. Springer. https://doi.org/10.1007/3-540-39538-5"
+        "Lanza & Marinescu 2006",
+        "M. Lanza and R. Marinescu, *Object-Oriented Metrics in Practice: Using Software "
+        "Metrics to Characterize, Evaluate, and Improve the Design of Object-Oriented "
+        "Systems*. Berlin, Germany: Springer, 2006, doi: 10.1007/3-540-39538-5."
     ),
     (
-        "Madeyski, L., & Lewowski, T. (2020). MLCQ: Industry-relevant code smell data set. "
-        "Në *Proceedings of the 24th International Conference on Evaluation and Assessment "
-        "in Software Engineering (EASE ’20)* (f. 342–347). ACM. "
-        "https://doi.org/10.1145/3383219.3383264"
+        "Madeyski & Lewowski 2020",
+        "L. Madeyski and T. Lewowski, “MLCQ: Industry-relevant code smell data set,” in "
+        "*Proceedings of the 24th International Conference on Evaluation and Assessment in "
+        "Software Engineering (EASE ’20)*, 2020, pp. 342–347, doi: 10.1145/3383219.3383264."
     ),
     (
-        "McCabe, T. J. (1976). A complexity measure. *IEEE Transactions on Software "
-        "Engineering, SE-2*(4), 308–320. https://doi.org/10.1109/TSE.1976.233837"
+        "McCabe 1976",
+        "T. J. McCabe, “A complexity measure,” *IEEE Transactions on Software Engineering*, "
+        "vol. SE-2, no. 4, pp. 308–320, 1976, doi: 10.1109/TSE.1976.233837."
     ),
     (
-        "Park, R. E. (1992). *Software size measurement: A framework for counting source "
-        "statements* (Raport teknik CMU/SEI-92-TR-020). Software Engineering Institute, "
-        "Carnegie Mellon University."
+        "Park 1992",
+        "R. E. Park, “Software size measurement: A framework for counting source "
+        "statements,” Software Engineering Institute, Carnegie Mellon University, "
+        "Pittsburgh, PA, USA, Tech. Rep. CMU/SEI-92-TR-020, 1992."
     ),
 ]
 
@@ -77,76 +90,86 @@ CITED_BY_SYSTEM = [
 # ---------------------------------------------------------------------
 METHODOLOGY = [
     (
-        "Breiman, L. (2001). Random forests. *Machine Learning, 45*(1), 5–32. "
-        "https://doi.org/10.1023/A:1010933404324"
+        "Breiman 2001",
+        "L. Breiman, “Random forests,” *Machine Learning*, vol. 45, no. 1, pp. 5–32, 2001, "
+        "doi: 10.1023/A:1010933404324."
     ),
     (
-        "Brown, L. D., Cai, T. T., & DasGupta, A. (2001). Interval estimation for a "
-        "binomial proportion. *Statistical Science, 16*(2), 101–133. "
-        "https://doi.org/10.1214/ss/1009213286"
-    ),
-    # Shtuar më 15 tetor 2026 për kufizimin që kërkoi mentorja: zgjedhja e modelit më
-    # të mirë mbi të njëjtat parashikime mbi të cilat raportohet shifra.
-    (
-        "Cawley, G. C., & Talbot, N. L. C. (2010). On over-fitting in model selection and "
-        "subsequent selection bias in performance evaluation. *Journal of Machine Learning "
-        "Research, 11*(70), 2079–2107. https://www.jmlr.org/papers/v11/cawley10a.html"
+        "Brown et al. 2001",
+        "L. D. Brown, T. T. Cai, and A. DasGupta, “Interval estimation for a binomial "
+        "proportion,” *Statistical Science*, vol. 16, no. 2, pp. 101–133, 2001, doi: "
+        "10.1214/ss/1009213286."
     ),
     (
-        "Chicco, D., & Jurman, G. (2020). The advantages of the Matthews correlation "
-        "coefficient (MCC) over F1 score and accuracy in binary classification "
-        "evaluation. *BMC Genomics, 21*(1), Artikulli 6. "
-        "https://doi.org/10.1186/s12864-019-6413-7"
+        "Cawley & Talbot 2010",
+        "G. C. Cawley and N. L. C. Talbot, “On over-fitting in model selection and "
+        "subsequent selection bias in performance evaluation,” *Journal of Machine Learning "
+        "Research*, vol. 11, no. 70, pp. 2079–2107, 2010. [Online]. Available: "
+        "https://www.jmlr.org/papers/v11/cawley10a.html"
     ),
     (
-        "Cohen, J. (1960). A coefficient of agreement for nominal scales. *Educational "
-        "and Psychological Measurement, 20*(1), 37–46. "
-        "https://doi.org/10.1177/001316446002000104"
+        "Chicco & Jurman 2020",
+        "D. Chicco and G. Jurman, “The advantages of the Matthews correlation coefficient "
+        "(MCC) over F1 score and accuracy in binary classification evaluation,” *BMC "
+        "Genomics*, vol. 21, no. 1, Art. no. 6, 2020, doi: 10.1186/s12864-019-6413-7."
     ),
     (
-        "Efron, B., & Tibshirani, R. J. (1993). *An introduction to the bootstrap*. "
-        "Chapman & Hall."
+        "Cohen 1960",
+        "J. Cohen, “A coefficient of agreement for nominal scales,” *Educational and "
+        "Psychological Measurement*, vol. 20, no. 1, pp. 37–46, 1960, doi: "
+        "10.1177/001316446002000104."
     ),
     (
-        "Friedman, J. H. (2001). Greedy function approximation: A gradient boosting "
-        "machine. *The Annals of Statistics, 29*(5), 1189–1232. "
-        "https://doi.org/10.1214/aos/1013203451"
+        "Efron & Tibshirani 1993",
+        "B. Efron and R. J. Tibshirani, *An Introduction to the Bootstrap*. New York, NY, "
+        "USA: Chapman & Hall, 1993."
     ),
     (
-        "Kaufman, S., Rosset, S., Perlich, C., & Stitelman, O. (2012). Leakage in data "
-        "mining: Formulation, detection, and avoidance. *ACM Transactions on Knowledge "
-        "Discovery from Data, 6*(4), Artikulli 15. https://doi.org/10.1145/2382577.2382579"
+        "Friedman 2001",
+        "J. H. Friedman, “Greedy function approximation: A gradient boosting machine,” *The "
+        "Annals of Statistics*, vol. 29, no. 5, pp. 1189–1232, 2001, doi: "
+        "10.1214/aos/1013203451."
     ),
     (
-        "Matthews, B. W. (1975). Comparison of the predicted and observed secondary "
-        "structure of T4 phage lysozyme. *Biochimica et Biophysica Acta (BBA) – Protein "
-        "Structure, 405*(2), 442–451. https://doi.org/10.1016/0005-2795(75)90109-9"
+        "Kaufman et al. 2012",
+        "S. Kaufman, S. Rosset, C. Perlich, and O. Stitelman, “Leakage in data mining: "
+        "Formulation, detection, and avoidance,” *ACM Transactions on Knowledge Discovery "
+        "from Data*, vol. 6, no. 4, Art. no. 15, 2012, doi: 10.1145/2382577.2382579."
     ),
     (
-        "PMD Team. (2026). *PMD: An extensible cross-language static code analyzer* "
-        "(Versioni 7.27.0) [Softuer]. https://pmd.github.io/"
+        "Matthews 1975",
+        "B. W. Matthews, “Comparison of the predicted and observed secondary structure of T4 "
+        "phage lysozyme,” *Biochimica et Biophysica Acta (BBA) – Protein Structure*, vol. "
+        "405, no. 2, pp. 442–451, 1975, doi: 10.1016/0005-2795(75)90109-9."
     ),
     (
-        "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., "
-        "Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J., Passos, "
-        "A., Cournapeau, D., Brucher, M., Perrot, M., & Duchesnay, É. (2011). "
-        "Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, "
-        "12*(85), 2825–2830. https://jmlr.org/papers/v12/pedregosa11a.html"
+        "Pedregosa et al. 2011",
+        "F. Pedregosa et al., “Scikit-learn: Machine learning in Python,” *Journal of "
+        "Machine Learning Research*, vol. 12, no. 85, pp. 2825–2830, 2011. [Online]. "
+        "Available: https://jmlr.org/papers/v12/pedregosa11a.html"
     ),
     (
-        "Strobl, C., Boulesteix, A.-L., Zeileis, A., & Hothorn, T. (2007). Bias in random "
-        "forest variable importance measures: Illustrations, sources and a solution. "
-        "*BMC Bioinformatics, 8*(1), Artikulli 25. https://doi.org/10.1186/1471-2105-8-25"
+        "PMD Team 2026",
+        "PMD Team, *PMD: An Extensible Cross-Language Static Code Analyzer*, version 7.27.0. "
+        "(2026). [Online]. Available: https://pmd.github.io/"
     ),
     (
-        "Wilson, E. B. (1927). Probable inference, the law of succession, and statistical "
-        "inference. *Journal of the American Statistical Association, 22*(158), 209–212. "
-        "https://doi.org/10.1080/01621459.1927.10502953"
+        "Strobl et al. 2007",
+        "C. Strobl, A.-L. Boulesteix, A. Zeileis, and T. Hothorn, “Bias in random forest "
+        "variable importance measures: Illustrations, sources and a solution,” *BMC "
+        "Bioinformatics*, vol. 8, no. 1, Art. no. 25, 2007, doi: 10.1186/1471-2105-8-25."
     ),
     (
-        "Wohlin, C., Runeson, P., Höst, M., Ohlsson, M. C., Regnell, B., & Wesslén, A. "
-        "(2012). *Experimentation in software engineering*. Springer. "
-        "https://doi.org/10.1007/978-3-642-29044-2"
+        "Wilson 1927",
+        "E. B. Wilson, “Probable inference, the law of succession, and statistical "
+        "inference,” *Journal of the American Statistical Association*, vol. 22, no. 158, "
+        "pp. 209–212, 1927, doi: 10.1080/01621459.1927.10502953."
+    ),
+    (
+        "Wohlin et al. 2012",
+        "C. Wohlin, P. Runeson, M. Höst, M. C. Ohlsson, B. Regnell, and A. Wesslén, "
+        "*Experimentation in Software Engineering*. Berlin, Germany: Springer, 2012, doi: "
+        "10.1007/978-3-642-29044-2."
     ),
 ]
 
@@ -155,156 +178,164 @@ METHODOLOGY = [
 # ---------------------------------------------------------------------
 RELATED_WORK = [
     (
-        "Arcelli Fontana, F., Mäntylä, M. V., Zanoni, M., & Marino, A. (2016). Comparing "
-        "and experimenting machine learning techniques for code smell detection. "
-        "*Empirical Software Engineering, 21*(3), 1143–1191. "
-        "https://doi.org/10.1007/s10664-015-9378-4"
+        "Arcelli Fontana et al. 2016",
+        "F. Arcelli Fontana, M. V. Mäntylä, M. Zanoni, and A. Marino, “Comparing and "
+        "experimenting machine learning techniques for code smell detection,” *Empirical "
+        "Software Engineering*, vol. 21, no. 3, pp. 1143–1191, 2016, doi: "
+        "10.1007/s10664-015-9378-4."
     ),
     (
-        "Azeem, M. I., Palomba, F., Shi, L., & Wang, Q. (2019). Machine learning "
-        "techniques for code smell detection: A systematic literature review and "
-        "meta-analysis. *Information and Software Technology, 108*, 115–138. "
-        "https://doi.org/10.1016/j.infsof.2018.12.009"
+        "Azeem et al. 2019",
+        "M. I. Azeem, F. Palomba, L. Shi, and Q. Wang, “Machine learning techniques for code "
+        "smell detection: A systematic literature review and meta-analysis,” *Information "
+        "and Software Technology*, vol. 108, pp. 115–138, 2019, doi: "
+        "10.1016/j.infsof.2018.12.009."
     ),
     (
-        "Bavota, G., De Lucia, A., Di Penta, M., Oliveto, R., & Palomba, F. (2015). An "
-        "experimental investigation on the innate relationship between quality and "
-        "refactoring. *Journal of Systems and Software, 107*, 1–14. "
-        "https://doi.org/10.1016/j.jss.2015.05.024"
+        "Bavota et al. 2015",
+        "G. Bavota, A. De Lucia, M. Di Penta, R. Oliveto, and F. Palomba, “An experimental "
+        "investigation on the innate relationship between quality and refactoring,” *Journal "
+        "of Systems and Software*, vol. 107, pp. 1–14, 2015, doi: 10.1016/j.jss.2015.05.024."
     ),
     (
-        "Cunningham, W. (1992). The WyCash portfolio management system. Në *Addendum to "
-        "the Proceedings on Object-Oriented Programming Systems, Languages, and "
-        "Applications (OOPSLA ’92)* (f. 29–30). ACM. https://doi.org/10.1145/157709.157715"
+        "Cunningham 1992",
+        "W. Cunningham, “The WyCash portfolio management system,” in *Addendum to the "
+        "Proceedings on Object-Oriented Programming Systems, Languages, and Applications "
+        "(OOPSLA ’92)*, 1992, pp. 29–30, doi: 10.1145/157709.157715."
     ),
     (
-        "Di Nucci, D., Palomba, F., Tamburri, D. A., Serebrenik, A., & De Lucia, A. "
-        "(2018). Detecting code smells using machine learning techniques: Are we there "
-        "yet? Në *Proceedings of the 25th IEEE International Conference on Software "
-        "Analysis, Evolution and Reengineering (SANER ’18)* (f. 612–621). IEEE. "
-        "https://doi.org/10.1109/SANER.2018.8330266"
+        "Di Nucci et al. 2018",
+        "D. Di Nucci, F. Palomba, D. A. Tamburri, A. Serebrenik, and A. De Lucia, “Detecting "
+        "code smells using machine learning techniques: Are we there yet?” in *Proceedings "
+        "of the 25th IEEE International Conference on Software Analysis, Evolution and "
+        "Reengineering (SANER ’18)*, 2018, pp. 612–621, doi: 10.1109/SANER.2018.8330266."
     ),
     (
-        "Khomh, F., Di Penta, M., Guéhéneuc, Y.-G., & Antoniol, G. (2012). An "
-        "exploratory study of the impact of antipatterns on class change- and "
-        "fault-proneness. *Empirical Software Engineering, 17*(3), 243–275. "
-        "https://doi.org/10.1007/s10664-011-9171-y"
+        "Khomh et al. 2012",
+        "F. Khomh, M. Di Penta, Y.-G. Guéhéneuc, and G. Antoniol, “An exploratory study of "
+        "the impact of antipatterns on class change- and fault-proneness,” *Empirical "
+        "Software Engineering*, vol. 17, no. 3, pp. 243–275, 2012, doi: "
+        "10.1007/s10664-011-9171-y."
     ),
     (
-        "Lehman, M. M. (1980). Programs, life cycles, and laws of software evolution. "
-        "*Proceedings of the IEEE, 68*(9), 1060–1076. "
-        "https://doi.org/10.1109/PROC.1980.11805"
+        "Lehman 1980",
+        "M. M. Lehman, “Programs, life cycles, and laws of software evolution,” *Proceedings "
+        "of the IEEE*, vol. 68, no. 9, pp. 1060–1076, 1980, doi: 10.1109/PROC.1980.11805."
     ),
     (
-        "Madeyski, L., & Lewowski, T. (2023). Detecting code smells using "
-        "industry-relevant data. *Information and Software Technology, 155*, Artikulli "
-        "107112. https://doi.org/10.1016/j.infsof.2022.107112"
+        "Madeyski & Lewowski 2023",
+        "L. Madeyski and T. Lewowski, “Detecting code smells using industry-relevant data,” "
+        "*Information and Software Technology*, vol. 155, Art. no. 107112, 2023, doi: "
+        "10.1016/j.infsof.2022.107112."
     ),
     (
-        "Mäntylä, M. V., & Lassenius, C. (2006). Subjective evaluation of software "
-        "evolvability using code smells: An empirical study. *Empirical Software "
-        "Engineering, 11*(3), 395–431. https://doi.org/10.1007/s10664-006-9002-8"
+        "Marinescu 2004",
+        "R. Marinescu, “Detection strategies: Metrics-based rules for detecting design "
+        "flaws,” in *Proceedings of the 20th IEEE International Conference on Software "
+        "Maintenance (ICSM ’04)*, 2004, pp. 350–359, doi: 10.1109/ICSM.2004.1357820."
     ),
     (
-        "Marinescu, R. (2004). Detection strategies: Metrics-based rules for detecting "
-        "design flaws. Në *Proceedings of the 20th IEEE International Conference on "
-        "Software Maintenance (ICSM ’04)* (f. 350–359). IEEE. "
-        "https://doi.org/10.1109/ICSM.2004.1357820"
+        "Mens & Tourwé 2004",
+        "T. Mens and T. Tourwé, “A survey of software refactoring,” *IEEE Transactions on "
+        "Software Engineering*, vol. 30, no. 2, pp. 126–139, 2004, doi: "
+        "10.1109/TSE.2004.1265817."
     ),
     (
-        "Mens, T., & Tourwé, T. (2004). A survey of software refactoring. *IEEE "
-        "Transactions on Software Engineering, 30*(2), 126–139. "
-        "https://doi.org/10.1109/TSE.2004.1265817"
+        "Moha et al. 2010",
+        "N. Moha, Y.-G. Guéhéneuc, L. Duchien, and A.-F. Le Meur, “DECOR: A method for the "
+        "specification and detection of code and design smells,” *IEEE Transactions on "
+        "Software Engineering*, vol. 36, no. 1, pp. 20–36, 2010, doi: 10.1109/TSE.2009.50."
     ),
     (
-        "Moha, N., Guéhéneuc, Y.-G., Duchien, L., & Le Meur, A.-F. (2010). DECOR: A "
-        "method for the specification and detection of code and design smells. *IEEE "
-        "Transactions on Software Engineering, 36*(1), 20–36. "
-        "https://doi.org/10.1109/TSE.2009.50"
+        "Murphy-Hill et al. 2012",
+        "E. Murphy-Hill, C. Parnin, and A. P. Black, “How we refactor, and how we know it,” "
+        "*IEEE Transactions on Software Engineering*, vol. 38, no. 1, pp. 5–18, 2012, doi: "
+        "10.1109/TSE.2011.41."
     ),
     (
-        "Murphy-Hill, E., Parnin, C., & Black, A. P. (2012). How we refactor, and how we "
-        "know it. *IEEE Transactions on Software Engineering, 38*(1), 5–18. "
-        "https://doi.org/10.1109/TSE.2011.41"
+        "Mäntylä & Lassenius 2006",
+        "M. V. Mäntylä and C. Lassenius, “Subjective evaluation of software evolvability "
+        "using code smells: An empirical study,” *Empirical Software Engineering*, vol. 11, "
+        "no. 3, pp. 395–431, 2006, doi: 10.1007/s10664-006-9002-8."
     ),
     (
-        "Opdyke, W. F. (1992). *Refactoring object-oriented frameworks* [Disertacion "
-        "doktorature, University of Illinois at Urbana-Champaign]."
+        "Opdyke 1992",
+        "W. F. Opdyke, “Refactoring object-oriented frameworks,” Ph.D. dissertation, "
+        "University of Illinois at Urbana-Champaign, Urbana, IL, USA, 1992."
     ),
     (
-        "Palomba, F., Bavota, G., Di Penta, M., Oliveto, R., Poshyvanyk, D., & De Lucia, "
-        "A. (2015). Mining version histories for detecting code smells. *IEEE "
-        "Transactions on Software Engineering, 41*(5), 462–489. "
-        "https://doi.org/10.1109/TSE.2014.2372760"
+        "Palomba et al. 2015",
+        "F. Palomba, G. Bavota, M. Di Penta, R. Oliveto, D. Poshyvanyk, and A. De Lucia, "
+        "“Mining version histories for detecting code smells,” *IEEE Transactions on "
+        "Software Engineering*, vol. 41, no. 5, pp. 462–489, 2015, doi: "
+        "10.1109/TSE.2014.2372760."
     ),
     (
-        "Palomba, F., Bavota, G., Di Penta, M., Fasano, F., Oliveto, R., & De Lucia, A. "
-        "(2018). On the diffuseness and the impact on maintainability of code smells: A "
-        "large scale empirical investigation. *Empirical Software Engineering, 23*(3), "
-        "1188–1221. https://doi.org/10.1007/s10664-017-9535-z"
+        "Palomba et al. 2018",
+        "F. Palomba, G. Bavota, M. Di Penta, F. Fasano, R. Oliveto, and A. De Lucia, “On the "
+        "diffuseness and the impact on maintainability of code smells: A large scale "
+        "empirical investigation,” *Empirical Software Engineering*, vol. 23, no. 3, pp. "
+        "1188–1221, 2018, doi: 10.1007/s10664-017-9535-z."
     ),
     (
-        "Sharma, T., & Spinellis, D. (2018). A survey on software smells. *Journal of "
-        "Systems and Software, 138*, 158–173. https://doi.org/10.1016/j.jss.2017.12.034"
+        "Sharma & Spinellis 2018",
+        "T. Sharma and D. Spinellis, “A survey on software smells,” *Journal of Systems and "
+        "Software*, vol. 138, pp. 158–173, 2018, doi: 10.1016/j.jss.2017.12.034."
     ),
     (
-        "Silva, D., Tsantalis, N., & Valente, M. T. (2016). Why we refactor? Confessions "
-        "of GitHub contributors. Në *Proceedings of the 24th ACM SIGSOFT International "
-        "Symposium on Foundations of Software Engineering (FSE ’16)* (f. 858–870). ACM. "
-        "https://doi.org/10.1145/2950290.2950305"
+        "Silva et al. 2016",
+        "D. Silva, N. Tsantalis, and M. T. Valente, “Why we refactor? Confessions of GitHub "
+        "contributors,” in *Proceedings of the 24th ACM SIGSOFT International Symposium on "
+        "Foundations of Software Engineering (FSE ’16)*, 2016, pp. 858–870, doi: "
+        "10.1145/2950290.2950305."
     ),
     (
-        "Sjøberg, D. I. K., Yamashita, A., Anda, B. C. D., Mockus, A., & Dybå, T. (2013). "
-        "Quantifying the effect of code smells on maintenance effort. *IEEE Transactions "
-        "on Software Engineering, 39*(8), 1144–1156. https://doi.org/10.1109/TSE.2012.89"
+        "Sjøberg et al. 2013",
+        "D. I. K. Sjøberg, A. Yamashita, B. C. D. Anda, A. Mockus, and T. Dybå, “Quantifying "
+        "the effect of code smells on maintenance effort,” *IEEE Transactions on Software "
+        "Engineering*, vol. 39, no. 8, pp. 1144–1156, 2013, doi: 10.1109/TSE.2012.89."
     ),
     (
-        "Tsantalis, N., & Chatzigeorgiou, A. (2009). Identification of Move Method "
-        "refactoring opportunities. *IEEE Transactions on Software Engineering, 35*(3), "
-        "347–367. https://doi.org/10.1109/TSE.2009.1"
+        "Tsantalis & Chatzigeorgiou 2009",
+        "N. Tsantalis and A. Chatzigeorgiou, “Identification of Move Method refactoring "
+        "opportunities,” *IEEE Transactions on Software Engineering*, vol. 35, no. 3, pp. "
+        "347–367, 2009, doi: 10.1109/TSE.2009.1."
     ),
     (
-        "Tufano, M., Palomba, F., Bavota, G., Oliveto, R., Di Penta, M., De Lucia, A., & "
-        "Poshyvanyk, D. (2015). When and why your code starts to smell bad. Në "
-        "*Proceedings of the 37th IEEE/ACM International Conference on Software "
-        "Engineering (ICSE ’15)* (f. 403–414). IEEE. https://doi.org/10.1109/ICSE.2015.59"
+        "Tufano et al. 2015",
+        "M. Tufano et al., “When and why your code starts to smell bad,” in *Proceedings of "
+        "the 37th IEEE/ACM International Conference on Software Engineering (ICSE ’15)*, "
+        "2015, pp. 403–414, doi: 10.1109/ICSE.2015.59."
     ),
     (
-        "Yamashita, A., & Moonen, L. (2013). Do developers care about code smells? An "
-        "exploratory survey. Në *Proceedings of the 20th Working Conference on Reverse "
-        "Engineering (WCRE ’13)* (f. 242–251). IEEE. "
-        "https://doi.org/10.1109/WCRE.2013.6671299"
+        "Yamashita & Moonen 2013",
+        "A. Yamashita and L. Moonen, “Do developers care about code smells? An exploratory "
+        "survey,” in *Proceedings of the 20th Working Conference on Reverse Engineering "
+        "(WCRE ’13)*, 2013, pp. 242–251, doi: 10.1109/WCRE.2013.6671299."
     ),
 ]
 
 # ---------------------------------------------------------------------
-# Mjetet, të cituara si softuer sipas APA-s
+# Mjetet, të cituara si softuer
 # ---------------------------------------------------------------------
 # Tree-sitter nuk publikon skedar citimi; autori është krijuesi i tij dhe mbajtësi
-# i të drejtave në licencë, siç e do APA për softuerin pa autor kolektiv.
+# i të drejtave në licencë.
 TOOLS = [
     (
-        "Brunsfeld, M. (2026). *Tree-sitter: An incremental parsing system for "
-        "programming tools* (Versioni 0.26) [Softuer]. "
+        "Brunsfeld 2026",
+        "M. Brunsfeld, *Tree-sitter: An Incremental Parsing System for Programming Tools*, "
+        "version 0.26. (2026). [Online]. Available: "
         "https://tree-sitter.github.io/tree-sitter/"
     ),
 ]
 
 
-def _sort_key(reference: str) -> str:
-    """Renditje alfabetike që nuk e prish diakritika.
+def all_references() -> list[tuple[str, str]]:
+    """Të gjitha referencat si çifte (etiketa, hyrja), pa renditje.
 
-    Pa këtë, «Mäntylä» bie pas «Murphy-Hill», sepse «ä» renditet pas çdo shkronje
-    ASCII. Dekompozimi i heq shenjat dhe e lë emrin aty ku e pret lexuesi. Shenja e
-    shkronjave të pjerrëta hiqet po ashtu, që të mos renditet si shkronjë.
+    Renditja i përket tekstit, jo listës: `build_thesis` i rendit sipas citimit të parë.
     """
-    stripped = unicodedata.normalize("NFKD", reference.replace("*", ""))
-    return "".join(c for c in stripped if not unicodedata.combining(c)).lower()
-
-
-def all_references() -> list[str]:
-    """Të gjitha referencat, të renditura alfabetikisht si një listë e vetme."""
-    return sorted(CITED_BY_SYSTEM + METHODOLOGY + RELATED_WORK + TOOLS, key=_sort_key)
+    return CITED_BY_SYSTEM + METHODOLOGY + RELATED_WORK + TOOLS
 
 
 # Vëllimi dhe faqet e rikontrolluara më 2026-08-31 kundrejt regjistrit të botuesit:
@@ -330,6 +361,11 @@ def all_references() -> list[str]:
 # e 16 autorëve të Pedregosa et al. 2011 u kontrolluan te faqja e JMLR-së, që nuk
 # cakton DOI. Mäntylä & Lassenius mban vitin e fashikullit (2006); Crossref jep 2007
 # si vit të botimit në letër të të njëjtit fashikull.
+#
+# Më 2026-10-16, me kalimin në IEEE, hyrjet u morën nga kopja e mentores. Çdo DOI,
+# vëllim, fashikull, faqe dhe vit i tyre u krahasua me hyrjen APA që zëvendësuan, 45
+# nga 45, dhe asnjë nuk ndryshonte; verifikimet më lart vlejnë pra edhe për to. Shtesat
+# e IEEE-së (qyteti i botuesit, «2nd ed.», «[Online]») nuk kanë burim të dytë.
 PAGES_VERIFIED = (
     "Arcelli Fontana et al. 2016",
     "Azeem et al. 2019",

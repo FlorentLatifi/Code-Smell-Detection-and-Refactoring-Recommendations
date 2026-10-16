@@ -27,9 +27,13 @@ from docx.text.paragraph import Paragraph
 
 CAPTION = re.compile(r"^Tabela \d+\. (.+)$")
 
+# Citimi IEEE brenda një titulli, « [24]». Hiqet nga çelësi, sepse numri lëviz sa herë
+# shtohet një citim më herët në tekst, ndërsa tabela mbetet e njëjta (VD-152).
+CITATION_NUMBER = re.compile(r" \[\d+(?:, p\. \d+)?\]")
+
 
 def tables_by_title(path: Path) -> dict[str, list[list[str]]]:
-    """Çdo tabelë e dokumentit, sipas titullit që e paraprin."""
+    """Çdo tabelë e dokumentit, sipas titullit që e paraprin, pa numrat e citimeve."""
     document = Document(str(path))
     found: dict[str, list[list[str]]] = {}
     title = None
@@ -37,7 +41,7 @@ def tables_by_title(path: Path) -> dict[str, list[list[str]]]:
         tag = child.tag.rsplit("}", 1)[-1]
         if tag == "p":
             match = CAPTION.match(Paragraph(child, document).text.strip())
-            title = match.group(1) if match else title
+            title = CITATION_NUMBER.sub("", match.group(1)) if match else title
         elif tag == "tbl" and title is not None:
             rows = [[cell.text.strip() for cell in row.cells] for row in Table(child, document).rows]
             found[title] = rows
@@ -139,7 +143,7 @@ def check(tables: dict[str, list[list[str]]]) -> list[str]:
     intervals = need("Intervale besimi 95% për MCC-në")
     agreement = need("Pajtimi mes dy qasjeve")
     severity = need("Recall-i sipas ashpërsisë")
-    literature = need("Krahasimi i MCC-së me Madeyski dhe Lewowski (2023), mbi MLCQ")
+    literature = need("Krahasimi i MCC-së me Madeyski dhe Lewowski, mbi MLCQ")
     combined = need("Të dyja qasjet së bashku")
 
     strategy = {r[0]: r for r in rules[1:] if "(+" not in r[0]} if rules else {}

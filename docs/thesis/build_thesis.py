@@ -23,12 +23,14 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Emu, Inches, Pt
+from docx.shared import Emu, Inches, Pt, RGBColor
 
 from ubt_format import (
     BODY_SIZE,
     CAPTION_SIZE,
     FONT,
+    HEADING_2_SIZE,
+    HEADING_3_SIZE,
     MARGIN_BOTTOM,
     MARGIN_LEFT,
     MARGIN_RIGHT,
@@ -54,7 +56,6 @@ from chapters import (  # noqa: E402
     chapter_5,
     chapter_8,
 )
-from references import all_references  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.docx")
 
@@ -62,7 +63,12 @@ OUTPUT = os.path.join(os.path.dirname(__file__), "Punim_Diplome_Florent_Latifi.d
 # mirënjohja nuk paraqiten në përmbajtje». Duket si kreu i kapitullit, por nuk ka
 # nivel skicimi, ndaj fusha TOC nuk e mbledh (VD-112).
 FRONT_TITLE = "Titull ballinë"
-LOGO = os.path.join(os.path.dirname(__file__), "assets", "ubt_logo.jpg")
+# Vula e UBT-së, ajo e shabllonit, që autori e solli te kopertinat në Word më 15 tetor
+# 2026 dhe mentorja e mbajti. Më parë kopertinat mbanin banderolën `ubt_logo.jpg`.
+LOGO = os.path.join(os.path.dirname(__file__), "assets", "ubt_vula.png")
+# Madhësia e vulës te kopertinat e korrigjuara: 1.05 inç e gjerë, 0.98 e lartë.
+LOGO_WIDTH = Emu(960120)
+LOGO_HEIGHT = Emu(899160)
 
 # Anything the author still has to supply is marked so it cannot be missed
 # during a final read-through.
@@ -97,23 +103,54 @@ def _set_font(run, size=BODY_SIZE, bold=False, caps=False):
     run._element.rPr.rFonts.set(qn("w:eastAsia"), FONT)
 
 
-def _field(paragraph, instruction: str, placeholder: str = "") -> None:
-    """Insert a Word field (PAGE, TOC, ...) that Word evaluates on open."""
-    run = paragraph.add_run()
-    begin = OxmlElement("w:fldChar")
-    begin.set(qn("w:fldCharType"), "begin")
+def _field_char(run, kind: str) -> None:
+    """One field boundary: «begin», «separate» or «end»."""
+    char = OxmlElement("w:fldChar")
+    char.set(qn("w:fldCharType"), kind)
+    run._r.append(char)
+
+
+def _field_code(run, instruction: str) -> None:
     instr = OxmlElement("w:instrText")
     instr.set(qn("xml:space"), "preserve")
     instr.text = instruction
-    separate = OxmlElement("w:fldChar")
-    separate.set(qn("w:fldCharType"), "separate")
+    run._r.append(instr)
+
+
+def _field(paragraph, instruction: str, placeholder: str = "", size=BODY_SIZE) -> None:
+    """Insert a Word field (PAGE, TOC, SEQ, ...) that Word evaluates on open."""
+    run = paragraph.add_run()
+    _field_char(run, "begin")
+    _field_code(run, instruction)
+    _field_char(run, "separate")
     text = OxmlElement("w:t")
     text.text = placeholder
-    end = OxmlElement("w:fldChar")
-    end.set(qn("w:fldCharType"), "end")
-    for element in (begin, instr, separate, text, end):
-        run._r.append(element)
-    _set_font(run)
+    run._r.append(text)
+    _field_char(run, "end")
+    _set_font(run, size=size)
+
+
+def _field_lines(doc: Document, instruction: str, lines: list[str]) -> None:
+    """Një fushë që shtrihet në disa paragrafë, me `lines` si rezultatin e saj.
+
+    Lista e figurave dhe e tabelave janë fusha TOC që Word-i i mbush nga fushat SEQ
+    të përshkrimeve, dhe rezultatin e mban një paragraf për hyrje, me fushën që hapet
+    te i pari dhe mbyllet te i fundit. Ndërtimi e shkruan të njëjtin rezultat pa
+    numrat e faqeve, që i njeh vetëm Word-i, ndaj lista lexohet edhe para se Word-i
+    t'i rifreskojë fushat.
+    """
+    paragraphs = [doc.add_paragraph() for _ in lines] or [doc.add_paragraph()]
+    opening = paragraphs[0].add_run()
+    _field_char(opening, "begin")
+    _field_code(opening, instruction)
+    _field_char(opening, "separate")
+    _set_font(opening)
+    for paragraph, line in zip(paragraphs, lines, strict=False):
+        paragraph.paragraph_format.line_spacing = LINE_SPACING
+        _set_font(paragraph.add_run(line))
+    closing = paragraphs[-1].add_run()
+    _field_char(closing, "end")
+    _set_font(closing)
 
 
 # Elementet që skema e `w:settings` i vendos pas `w:updateFields`. Word e refuzon
@@ -222,14 +259,20 @@ def configure_styles(doc: Document) -> None:
     fmt.space_after = Pt(6)
 
     # Heading styles carry the required look *and* feed the table of contents,
-    # so the TOC field can build itself instead of being typed by hand.
-    for name, size, caps in (("Heading 1", TITLE_SIZE, True), ("Heading 2", BODY_SIZE, False)):
+    # so the TOC field can build itself instead of being typed by hand. Heading 2 and
+    # Heading 3 are black, as the mentor set them (VD-152); Heading 1 keeps no colour of
+    # its own and takes Normal's.
+    for name, size, caps, color in (
+        ("Heading 1", TITLE_SIZE, True, None),
+        ("Heading 2", HEADING_2_SIZE, False, RGBColor(0, 0, 0)),
+        ("Heading 3", HEADING_3_SIZE, False, RGBColor(0, 0, 0)),
+    ):
         style = doc.styles[name]
         style.font.name = FONT
         style.font.size = size
         style.font.bold = True
         style.font.all_caps = caps
-        style.font.color.rgb = None
+        style.font.color.rgb = color
         style.element.rPr.rFonts.set(qn("w:eastAsia"), FONT)
         # Stilet e titujve të python-docx e marrin shkronjën nga tema («majorHAnsi»),
         # dhe Word-i e vë temën mbi emrin e shkronjës. PDF-ja që komentoi mentorja i
@@ -255,14 +298,12 @@ def configure_styles(doc: Document) -> None:
     front.paragraph_format.space_after = Pt(6)
     front.paragraph_format.keep_with_next = True
 
-
-def centered(doc: Document, text: str, *, size=BODY_SIZE, bold=False, caps=False, space_after=0):
-    paragraph = doc.add_paragraph()
-    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    paragraph.paragraph_format.line_spacing = LINE_SPACING
-    paragraph.paragraph_format.space_after = Pt(space_after)
-    _set_font(paragraph.add_run(text), size=size, bold=bold, caps=caps)
-    return paragraph
+    # Hyrjet e listës së figurave dhe të tabelave. Word-i ua vë këtë stil kur i
+    # rifreskon fushat, dhe pa një përkufizim në dokument merr të vetin, më të ngjeshur
+    # se lista e mentores. Ky është ai i kopjes së korrigjuar: Normal, me 5pt pas (VD-152).
+    entries = doc.styles.add_style("table of figures", WD_STYLE_TYPE.PARAGRAPH, builtin=True)
+    entries.base_style = normal
+    entries.paragraph_format.space_after = Pt(5)
 
 
 def blank(doc: Document, count: int = 1) -> None:
@@ -344,7 +385,7 @@ def chapter(doc: Document, number: int, text: str) -> None:
 
 def section_heading(doc: Document, number: str, text: str) -> None:
     heading = doc.add_heading(level=2)
-    _set_font(heading.add_run(f"{number} {text}"), size=BODY_SIZE, bold=True)
+    _set_font(heading.add_run(f"{number} {text}"), size=HEADING_2_SIZE, bold=True)
 
 
 def bullet(doc: Document, text: str) -> None:
@@ -388,7 +429,7 @@ def figure(
     else:
         _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
     numbering.figure += 1
-    caption(doc, f"Figura {numbering.figure}. {text}")
+    caption(doc, "Figura", numbering.figure, text)
 
 
 def equation(doc: Document, text: str, numbering: Numbering) -> None:
@@ -423,7 +464,7 @@ def table(
     """
     numbering.table += 1
     # Titulli qëndron me tabelën, për të njëjtën arsye si figura me përshkrimin.
-    caption(doc, f"Tabela {numbering.table}. {text}").paragraph_format.keep_with_next = True
+    caption(doc, "Tabela", numbering.table, text).paragraph_format.keep_with_next = True
     grid = doc.add_table(rows=1, cols=len(headers))
     grid.style = "Table Grid"
     for cell, header in zip(grid.rows[0].cells, headers, strict=True):
@@ -439,24 +480,66 @@ def table(
     blank(doc)
 
 
-def caption(doc: Document, text: str):
+def caption(doc: Document, kind: str, number: int, text: str):
+    """«Figura 3. …» ose «Tabela 3. …», me numrin si fushë SEQ.
+
+    Lista e figurave dhe ajo e tabelave janë fusha TOC që Word-i i mbush nga fushat
+    SEQ me të njëjtin emër (`\\c "Figura"`), ndaj një përshkrim pa fushën nuk do të
+    dilte në listë. Mentorja i shtoi fushat me dorë më 16 tetor 2026 (VD-152). Brenda
+    fushës shkruhet numri që Word-i do të llogariste vetë, që dokumenti të jetë i
+    saktë edhe para rifreskimit.
+    """
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     paragraph.paragraph_format.line_spacing = 1.0
-    _set_font(paragraph.add_run(text), size=CAPTION_SIZE)
+    _set_font(paragraph.add_run(f"{kind} "), size=CAPTION_SIZE)
+    _field(paragraph, f" SEQ {kind} \\* ARABIC ", str(number), size=CAPTION_SIZE)
+    _set_font(paragraph.add_run(f". {text}"), size=CAPTION_SIZE)
     return paragraph
 
 
 # ----------------------------------------------------------------------
 # Document sections
 # ----------------------------------------------------------------------
-def build_logo(doc: Document) -> None:
-    """The university banner that heads both cover pages of the template."""
-    holder = doc.add_paragraph()
-    holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    holder.paragraph_format.space_after = Pt(12)
+def cover_line(
+    doc: Document, text: str, *, bold: bool = False, caps: bool = False, size=TITLE_SIZE
+):
+    """Një rresht i kopertinës: në qendër, me hapësirë 1.5 dhe pa hapësirë mes paragrafëve.
+
+    Kështu i ka paragrafët shablloni i UBT-së, prej nga autori i solli kopertinat në Word
+    më 15 tetor 2026. Vetëm titulli është i trashë; deri atëherë ishte çdo rresht.
+    """
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph.paragraph_format.line_spacing = LINE_SPACING
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(0)
+    _set_font(paragraph.add_run(text), size=size, bold=bold, caps=caps)
+    return paragraph
+
+
+def cover_blank(doc: Document, count: int = 1, size=TITLE_SIZE) -> None:
+    """Rreshta bosh të kopertinës, të lartë sa një rresht teksti me madhësinë `size`.
+
+    Shablloni e mban rreshtin bosh me një hapësirë të pandashme, që lartësinë ta japë
+    shkronja e saj. Kopertinat e mentores kanë rreshta bosh të dy lartësive, 14 dhe 12,
+    dhe radha e tyre i vendos rreshtat e tekstit aty ku janë.
+    """
+    for _ in range(count):
+        cover_line(doc, NBSP, size=size)
+
+
+def build_logo(doc: Document, *, new_page: bool = False) -> None:
+    """Vula e universitetit, në krye të të dy kopertinave.
+
+    Faqja e brendshme hapet me `new_page`: deri te VD-152 i paraprinte një paragraf bosh
+    me ndërprerje faqeje, që dilte si faqe e zbrazët e dytë kur kopertina mbushej deri
+    në fund. Mentorja e hoqi atë paragraf dhe ia vuri ndarjen vetë logos.
+    """
+    holder = cover_line(doc, "")
+    holder.paragraph_format.page_break_before = new_page
     if os.path.exists(LOGO):
-        holder.add_run().add_picture(LOGO, width=Inches(5.9))
+        holder.add_run().add_picture(LOGO, width=LOGO_WIDTH, height=LOGO_HEIGHT)
     else:
         _set_font(holder.add_run(f"{TODO}: mungon logoja e UBT-së"), size=TITLE_SIZE, bold=True)
 
@@ -466,53 +549,64 @@ def build_cover(doc: Document) -> None:
 
     Every line on this page and the next is 14pt, not only the title: UBT's rule is
     «I gjithë teksti në këto 2 faqe: Times New Roman 14». The build had the title at
-    14 and the rest at body size until VD-113.
+    14 and the rest at body size until VD-113. The layout below is the one in the
+    mentor's corrected copy of 16 October 2026, line for line (VD-152).
     """
     build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
-    blank(doc, 8)
-    centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
-    blank(doc, 2)
-    centered(doc, "Shkalla Bachelor", size=TITLE_SIZE, bold=True)
-    blank(doc, 8)
-    centered(doc, AUTHOR, size=TITLE_SIZE, bold=True)
-    blank(doc, 6)
-    centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
-    centered(doc, "Prishtinë", size=TITLE_SIZE)
+    cover_line(doc, PROGRAMME)
+    cover_blank(doc, 7)
+    cover_line(doc, TITLE_SQ, bold=True, caps=True)
+    cover_line(doc, "Shkalla Bachelor")
+    cover_blank(doc, 4)
+    cover_line(doc, AUTHOR)
+    cover_blank(doc, 3, size=BODY_SIZE)
+    cover_blank(doc)
+    cover_line(doc, COVER_DATE)
+    cover_line(doc, PLACE)
 
 
 def build_inner_page(doc: Document) -> None:
     """Page 2: adds the academic year, the supervisor and the degree statement."""
-    doc.add_page_break()
-    build_logo(doc)
-    centered(doc, "Programi për Shkenca Kompjuterike dhe Inxhinierisë", size=TITLE_SIZE, bold=True)
-    blank(doc, 2)
-    centered(doc, "Punim Diplome", size=TITLE_SIZE, bold=True)
-    centered(doc, f"Viti akademik {ACADEMIC_YEAR}", size=TITLE_SIZE)
-    blank(doc, 4)
-    centered(doc, AUTHOR, size=TITLE_SIZE, bold=True)
-    blank(doc, 2)
-    centered(doc, TITLE_SQ, size=TITLE_SIZE, bold=True, caps=True)
-    blank(doc, 3)
-    centered(doc, f"Mentore: {SUPERVISOR}", size=TITLE_SIZE, bold=True)
-    blank(doc, 5)
-    centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
-    # Vendi i shtoi autori në Word më 15 tetor 2026, që faqja e brendshme ta mbyllë
-    # datën si kopertina.
-    centered(doc, "Prishtinë", size=TITLE_SIZE)
-    blank(doc, 3)
-    centered(
+    build_logo(doc, new_page=True)
+    cover_line(doc, PROGRAMME)
+    cover_blank(doc)
+    cover_line(doc, "Punim Diplome")
+    cover_line(doc, f"Viti akademik {ACADEMIC_YEAR}")
+    cover_blank(doc, 2)
+    cover_line(doc, AUTHOR)
+    cover_line(doc, TITLE_SQ, bold=True, caps=True)
+    cover_blank(doc, size=BODY_SIZE)
+    cover_line(doc, f"Mentore: {SUPERVISOR}")
+    cover_blank(doc, size=BODY_SIZE)
+    cover_blank(doc, 2)
+    cover_line(doc, COVER_DATE)
+    if INNER_PAGE_PLACE:
+        # Vendi i shtoi autori në Word më 15 tetor 2026, që faqja e brendshme ta mbyllë
+        # datën si kopertina. Kopja e mentores e ka pa të (VD-152).
+        cover_line(doc, PLACE)
+    else:
+        cover_blank(doc, 2, size=BODY_SIZE)
+    cover_blank(doc, 3)
+    cover_line(
         doc,
         "Ky punim është përpiluar dhe dorëzuar në përmbushjen e kërkesave "
         "të pjesshme për Shkallën Bachelor",
-        size=TITLE_SIZE,
     )
 
 
-def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> None:
+def build_front_matter(
+    doc: Document, figures: list[str], tables: list[str], citations: dict
+) -> None:
+    """Abstrakti, mirënjohja, përmbajtja, dy listat dhe fjalori.
+
+    `citations` janë numrat IEEE të kapitujve. Ballina nuk numëron burime vetë, por i
+    citon me të njëjtat numra: fjalori e quan DECOR «nga Moha et al. [19]».
+    """
+    from check_citations import numeric
+
     front_title(doc, "Abstrakt")
     for paragraph in abstract():
-        body(doc, paragraph)
+        body(doc, numeric(paragraph, citations))
     blank(doc)
     body(doc, f"**Fjalë kyçe:** {KEYWORDS}")
 
@@ -531,13 +625,14 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
     )
     _update_fields_on_open(doc)
 
+    # Dy listat janë fusha që Word-i i mbush nga përshkrimet, si përmbajtja nga
+    # titujt: kështu i bëri mentorja më 16 tetor 2026, dhe kështu marrin edhe faqen
+    # (VD-152). `\c` mbledh fushat SEQ me atë emër, `\h` i bën hyrjet lidhje.
     unnumbered_heading(doc, "Lista e figurave")
-    for entry in figures:
-        body(doc, entry)
+    _field_lines(doc, ' TOC \\h \\z \\c "Figura" ', figures)
 
     unnumbered_heading(doc, "Lista e tabelave", new_page=False)
-    for entry in tables:
-        body(doc, entry)
+    _field_lines(doc, ' TOC \\h \\z \\c "Tabela" ', tables)
 
     unnumbered_heading(doc, "Fjalori i termave")
     # Renditur alfabetikisht kur renderohet, jo kur shkruhet: lista u rrit në dy
@@ -545,7 +640,7 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
     # «HHI – Herfindahl-Hirschman Index» (VD-114).
     for term in sorted(GLOSSARY, key=str.lower):
         term = term.replace(" - ", " – ", 1)
-        bullet(doc, term)
+        bullet(doc, numeric(term, citations))
 
 
 def _element_mentions(paragraphs: list, numbering: Numbering) -> dict[int, list[str]]:
@@ -614,10 +709,12 @@ def render_sections(doc: Document, sections: list, numbering: Numbering) -> None
 def caption_lists(chapters: list) -> tuple[list[str], list[str]]:
     """Lista e figurave dhe e tabelave, e ndërtuar nga vetë kapitujt.
 
-    Ballina renderohet para kapitujve, ndaj listat duhen ditur para se elementet
-    të numërohen. Ecja këtu është e njëjta që bën `render_sections`, dhe pikërisht
-    kjo e bën listën të pamundur ta humbasë një tabelë: e vetmja mënyrë për ta
-    shtuar një tabelë në dokument është ta shtosh te kapitulli, të cilin e lexon
+    Që nga VD-152 listat janë fusha që Word-i i rindërton nga përshkrimet; këto hyrje
+    janë rezultati i tyre para rifreskimit, ai që Word-i do të shkruante pa numrat e
+    faqeve. Ballina renderohet para kapitujve, ndaj listat duhen ditur para se
+    elementet të numërohen. Ecja këtu është e njëjta që bën `render_sections`, dhe
+    pikërisht kjo e bën listën të pamundur ta humbasë një tabelë: e vetmja mënyrë për
+    ta shtuar një tabelë në dokument është ta shtosh te kapitulli, të cilin e lexon
     edhe kjo funksion. Përputhja verifikohet nga `check_format.py`.
     """
     figures: list[str] = []
@@ -634,70 +731,71 @@ def caption_lists(chapters: list) -> tuple[list[str], list[str]]:
     return figures, tables
 
 
-def build_introduction(doc: Document, numbering: Numbering) -> None:
+def build_introduction(doc: Document, sections: list, numbering: Numbering) -> None:
     chapter(doc, 1, "Hyrje")
-    render_sections(doc, INTRODUCTION, numbering)
+    render_sections(doc, sections, numbering)
 
 
-def build_references(doc: Document, only_cited_in: str | None = None) -> None:
-    """Chapter 7, alphabetical and unnumbered, in APA style.
+def build_references(doc: Document, citations: dict) -> None:
+    """Chapter 7 in IEEE style, numbered in the order of first citation.
 
     Only cited sources belong here; anything read but not cited goes under
     Bibliografia. The list is rendered from references.py rather than typed into
     the document, so a citation added to the text and a citation added to the
-    list cannot drift apart.
+    list cannot drift apart. `citations` holds the numbers the chapters were
+    rendered with, so the list carries exactly the sources they cite, in the same
+    order; for the partial build that is only the chapters it contains.
 
-    APA wants a hanging indent and no numbers, and it sets book titles and journal
-    names in italics. The list marks those spans with single asterisks; odd pieces
-    of a split are the italic ones, the same convention `body()` uses for bold.
-    The paragraph is left-aligned rather than justified, because a justified line
-    that ends in a long DOI opens wide gaps between the words before it.
+    Each entry is «[n]», a tab, then the entry, with a 0.5 inch hanging indent and a
+    tab stop at the indent, as in the mentor's corrected copy (VD-152). Journal,
+    proceedings and book titles are italic; the list marks those spans with single
+    asterisks, and odd pieces of a split are the italic ones, the same convention
+    `body()` uses for bold. The paragraph is left-aligned rather than justified,
+    because a justified line that ends in a long DOI opens wide gaps between the
+    words before it.
     """
-    references = all_references()
-    if only_cited_in is not None:
-        references = _cited_in(only_cited_in, references)
-    for reference in references:
+    from check_citations import listed
+
+    entries = listed()
+    for key, number in sorted(citations.items(), key=lambda item: item[1]):
         paragraph = doc.add_paragraph()
         paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         paragraph.paragraph_format.line_spacing = LINE_SPACING
         paragraph.paragraph_format.left_indent = Inches(0.5)
         paragraph.paragraph_format.first_line_indent = Inches(-0.5)
-        for index, piece in enumerate(reference.split("*")):
+        paragraph.paragraph_format.tab_stops.add_tab_stop(Inches(0.5))
+        _set_font(paragraph.add_run(f"[{number}]\t"))
+        for index, piece in enumerate(entries[key].split("*")):
             if piece:
                 run = paragraph.add_run(piece)
                 _set_font(run)
                 run.font.italic = index % 2 == 1
 
 
-def _cited_in(text: str, references: list[str]) -> list[str]:
-    """Referencat që i citon një pjesë e tekstit, me të njëjtin krahasim si kontrolli.
+def _with_numeric_citations(item, citations: dict):
+    """Një kapitull me çdo citim në trajtën IEEE, me strukturën e tij të paprekur.
 
-    Versioni i pjesshëm për mentoren mban vetëm kapitujt 1–4, dhe shablloni lejon te
-    «Referencat» vetëm burimet e cituara. Krahasimi merret nga `check_citations`,
-    që lista e pjesshme dhe kontrolli i plotë të mos kenë dy rregulla të ndryshme.
+    Kapitujt citojnë me autor dhe vit, që është çelësi i burimit (VD-152); numri
+    caktohet vetëm pasi dihet radha e tyre. Çdo varg kalon nga `numeric`, edhe
+    titujt e tabelave dhe qelizat, sepse një citim atje është citim njësoj.
     """
-    from check_citations import _fold, _undeclined, citations, reference_key
+    from check_citations import numeric
 
-    keys = {reference: reference_key(reference) for reference in references}
-    known = {author for author, _ in keys.values()}
-    cited = {(_undeclined(author, known), year) for author, year in citations(text)}
-    folded = _fold(text)
-    return [
-        reference
-        for reference, (author, year) in keys.items()
-        if (author in folded if year == "" else (author, year) in cited)
-    ]
-
-
-def _chapter_text(chapters: dict) -> str:
-    """Teksti i kapitujve si një varg, për të gjetur cilat burime citohen aty."""
-    from check_citations import _strings
-
-    return "\n".join(_strings([chapters[number] for number in sorted(chapters)]))
+    if isinstance(item, str):
+        return numeric(item, citations)
+    if isinstance(item, tuple):
+        return tuple(_with_numeric_citations(element, citations) for element in item)
+    if isinstance(item, list):
+        return [_with_numeric_citations(element, citations) for element in item]
+    return item
 
 
 def build_remaining_chapters(
-    doc: Document, chapters: dict, numbering: Numbering, last_chapter: int | None = None
+    doc: Document,
+    chapters: dict,
+    numbering: Numbering,
+    citations: dict,
+    last_chapter: int | None = None,
 ) -> None:
     """Every chapter after the introduction.
 
@@ -713,14 +811,14 @@ def build_remaining_chapters(
                 chapter(doc, number, title)
                 render_sections(doc, chapters[number], numbering)
         unnumbered_heading(doc, "Referencat")
-        build_references(doc, only_cited_in=_chapter_text(chapters))
+        build_references(doc, citations)
         return
     for number, title in REMAINING_CHAPTERS:
         chapter(doc, number, title)
         if number in chapters:
             render_sections(doc, chapters[number], numbering)
         elif title == "Referencat":
-            build_references(doc)
+            build_references(doc, citations)
         else:
             body(doc, f"{TODO}")
 
@@ -748,6 +846,12 @@ def build(last_chapter: int | None = None) -> str:
     if last_chapter is not None:
         chapters = {n: c for n, c in chapters.items() if n <= last_chapter}
         output = OUTPUT.replace(".docx", f"_Kapitujt_1-{last_chapter}.docx")
+    # Numrat IEEE dalin nga radha e leximit të kapitujve që hyjnë në këtë dokument,
+    # ndaj versioni i pjesshëm numëron vetëm burimet e kapitujve të vet.
+    from check_citations import _strings, citation_numbers
+
+    citations = citation_numbers("\n".join(_strings([chapters[n] for n in sorted(chapters)])))
+    chapters = {n: _with_numeric_citations(c, citations) for n, c in chapters.items()}
     figures, tables = caption_lists([chapters[n] for n in sorted(chapters)])
     numbering = Numbering()
 
@@ -769,15 +873,15 @@ def build(last_chapter: int | None = None) -> str:
     _page_geometry(front)
     _page_numbering(front, "upperRoman", 1)
     _footer_page_number(front, enabled=True)
-    build_front_matter(doc, figures, tables)
+    build_front_matter(doc, figures, tables, citations)
 
     # --- Section 3: chapters, arabic restarting at 1 --------------------
     main = doc.add_section(WD_SECTION.NEW_PAGE)
     _page_geometry(main)
     _page_numbering(main, "decimal", 1)
     _footer_page_number(main, enabled=True)
-    build_introduction(doc, numbering)
-    build_remaining_chapters(doc, chapters, numbering, last_chapter)
+    build_introduction(doc, chapters[1], numbering)
+    build_remaining_chapters(doc, chapters, numbering, citations, last_chapter)
 
     doc.save(output)
     return output
@@ -797,6 +901,14 @@ SUPERVISOR = "MSc. Altina Salihu"
 # dorëzohet në tetor, jo në nëntor siç ishte planifikuar.
 ACADEMIC_YEAR = "2023-2024"
 SUBMISSION_DATE = "Tetor 2026"
+PROGRAMME = "Programi për Shkenca Kompjuterike dhe Inxhinierisë"
+PLACE = "Prishtinë"
+NBSP = " "
+# Kopja e korrigjuar e mentores (16 tetor 2026) shkruan «Tetor / 2026» te të dy
+# kopertinat dhe nuk e ka vendin te faqja e brendshme. Të dyja i kthejnë mbrapsht
+# vendimet e autorit të VD-148 dhe VD-151, ndaj nuk merren pa pëlqimin e tij (VD-152).
+COVER_DATE = SUBMISSION_DATE
+INNER_PAGE_PLACE = True
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "
     "mësim i makinës, analizë statike, Java"

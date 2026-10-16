@@ -36,6 +36,12 @@ require a numbered caption on every figure and table but never state its size.
 11pt was the author's own choice — smaller than body text, as captions
 conventionally are — and is kept here unchanged rather than invented a
 provenance it doesn't have.
+
+`HEADING_2_SIZE` and `HEADING_3_SIZE` come from a third source, the mentor, who
+on 2026-10-16 set Heading 2 to Times New Roman 13pt and Heading 3 to Times New
+Roman 12pt, both black, in the mentor's own copy of the thesis (VD-152). The template's
+«subheadings 12pt» therefore still holds for Heading 3 and is overridden for
+Heading 2, which is one point larger so the two levels can be told apart.
 """
 
 from __future__ import annotations
@@ -46,6 +52,8 @@ FONT = "Times New Roman"
 BODY_SIZE = Pt(12)
 TITLE_SIZE = Pt(14)
 CAPTION_SIZE = Pt(11)  # not in the instructions; the author's own choice (see above)
+HEADING_2_SIZE = Pt(13)  # the mentor's, not the template's (see above)
+HEADING_3_SIZE = Pt(12)
 MIN_LINE_SPACING = 1.5
 
 PAGE_WIDTH = Inches(8.5)

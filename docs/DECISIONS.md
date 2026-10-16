@@ -6157,3 +6157,81 @@ Dy fjali u ndreqën: «nga ato të lexuara me dorë 62.9%» (të lexuarat e pran
 33 nga 60, pra 55%; 62.9% është vlerësimi i ripeshuar), dhe «nuk e provonte dot
 sigurinë», që bëhet «parakushtet». Fjalia e parë e 6.8 u rishkrua, sepse përsëriste
 fjalë për fjalë pyetjen me të cilën hapet abstrakti.
+
+### VD-152: Referencat në IEEE, dhe ndërtuesi sipas kopjes së korrigjuar të mentores
+
+**Konteksti.** Më 16 tetor 2026 mentorja kërkoi me email pesë ndryshime dhe i bëri vetë
+te kopja e punimit që dërgoi, jo te ndërtimi i depos: (1) të hiqet faqja e zbrazët pas
+kopertinës; (2) lista e figurave dhe ajo e tabelave të jenë automatike; (3) Heading 2 në
+Times New Roman 13pt dhe Heading 3 në Times New Roman 12pt; (4) referencat dhe citimet në
+IEEE; (5) të përditësohet përmbajtja. Kërkesa (4) e kthen mbrapsht atë të një dite më
+parë, kur mentorja kërkoi APA (VD-151). Kopja e korrigjuar u verifikua me renderim në
+PDF, por `build_thesis.py` prodhonte ende APA dhe faqosjen e vjetër, ndaj një rindërtim
+do t'i fshinte të pesë korrigjimet.
+
+**Vendimi.** Ndërtuesi sillet te kopja e korrigjuar, e cila mbetet burimi i së vërtetës.
+- **IEEE.** `references.py` mban 45 hyrjet e kopjes së mentores fjalë për fjalë, secila me
+  një etiketë «Mbiemri vit». Lista numërohet [1]–[45] sipas citimit të parë, duke nisur
+  nga Kapitulli 1. Numri nuk shkruhet askund: llogaritet nga radha e leximit të
+  kapitujve (`check_citations.citation_numbers`), ndaj një paragraf i zhvendosur e
+  rinumëron listën vetë. Kapitujt mbeten të shkruar me autor dhe vit, «Fowler (2018)»,
+  «(Lanza & Marinescu, 2006)», sepse ajo trajtë është çelësi i burimit; ndërtimi i
+  kthen në «Fowler [2]» dhe «[5]», faqet në «[5, p. 80]», dhe kolona «M&L 2023» e Tabelës
+  27 në «M&L [24]». Ballina përdor të njëjtat numra (fjalori: «Moha et al. [19]»), dhe
+  versioni i pjesshëm (`--deri`) numëron vetëm kapitujt që përmban. Një citim pa
+  referencë shtypet «[?]». Çdo DOI, vëllim, fashikull, faqe dhe vit i 45 hyrjeve u
+  krahasua me hyrjen APA të verifikuar te Crossref (VD-151): asnjë nuk ndryshonte.
+- **Listat dhe përshkrimet.** Përshkrimet e figurave dhe të tabelave e mbajnë numrin si
+  fushë SEQ. «Lista e figurave» dhe «Lista e tabelave» janë fusha `TOC \h \z \c "Figura"`
+  dhe `\c "Tabela"`, që Word-i i mbush me faqe kur i rifreskon. Ndërtimi shkruan si
+  rezultat të tyre hyrjet pa faqe, dhe përkufizon stilin «table of figures» si te kopja e
+  mentores (Normal, 5pt pas), që Word-i të mos marrë të vetin, më të ngjeshur.
+- **Titujt.** Heading 2 në Times New Roman 13pt, Heading 3 në 12pt, të dy të zinj.
+  Shablloni thotë 12pt për nëntitujt; 13 vjen nga mentorja dhe `ubt_format.py` e shënon
+  si të tillë.
+- **Kopertinat.** Faqja e brendshme nuk paraprihet më nga një paragraf bosh me ndërprerje
+  faqeje: logoja e saj merr «page break before». Kopertinat ndjekin rresht për rresht ato
+  të kopjes së korrigjuar, që autori i solli nga shablloni në Word më 15 tetor dhe
+  mentorja i mbajti: vula e UBT-së (`assets/ubt_vula.png`) në vend të banderolës, 14pt pa
+  të trasha përveç titullit, hapësirë 1.5 dhe rreshtat bosh në vendet e tyre. «Mentore:»
+  nuk është më i trashë, siç e la mentorja.
+- **Kontrollet.** `check_citations` lexon etiketat dhe raporton edhe një burim të cituar
+  vetëm te ballina, i cili do të mbetej pa numër. `check_format` kontrollon madhësitë dhe
+  ngjyrën e titujve, fushën SEQ te çdo përshkrim, fushat e të dy listave, numërimin IEEE
+  te vetë dokumenti (citimi i parë i [n] vjen pas atij të [n-1], lista ecën 1…N, asnjë
+  citim autor-vit apo «[?]» i mbetur), dhe ndërprerjen me paragraf te kopertinat.
+  `check_tables` e gjen tabelën e Madeyski & Lewowski pa numrin e citimit, që lëviz.
+
+**Dallimet që nuk u sollën, në pritje të autorit.**
+- «Tetor / 2026» te të dy kopertinat dhe mungesa e «Prishtinë» te faqja e brendshme. Të
+  dyja janë ndryshime të mentores mbi tekstin e autorit, dhe të dyja kthejnë mbrapsht
+  vendime të tij: VD-148 e lexon «Muaji / Viti» të shabllonit si vend për muajin dhe
+  vitin, dhe VD-151 e shtoi vendin te faqja e brendshme. `COVER_DATE` dhe
+  `INNER_PAGE_PLACE` te `build_thesis.py` i ndryshojnë.
+- Margjinat 1699 twips (84.95pt) të kopjes së mentores, kundrejt 1701 (85.05pt, 3cm) të
+  shabllonit (VD-62). Dallimi është 0.1pt, por mjafton që nënkapitulli 5.1 të kalojë nga
+  faqja 34 te 35 dhe që pikat drejtuese të përmbajtjes e të listave të bien ndryshe
+  (faqet 5–10 dhe 46–47 të renderimit). Me margjinat e mentores, renderimi i ndërtimit
+  përputhet me PDF-në e mentores në çdo faqe përveç dy kopertinave.
+
+**Dallime pa efekt, që nuk u sollën.** Word-i e ruajti kopjen pa formatimin e
+drejtpërdrejtë që përsërit stilin (shkronja, madhësia dhe rreshtimi i çdo run-i, numërimi
+«decimal» i seksionit të tretë), dhe pa flamurin `updateFields`. Asnjëra nuk duket në
+faqe. Ndërtimi i mban, sepse `check_format` dhe rifreskimi i fushave mbështeten te to.
+
+**Verifikimi.** Teksti i dokumentit të rindërtuar përputhet paragraf për paragraf me
+kopjen e korrigjuar, përveç dy pikave të kopertinave dhe tekstit zëvendësues të
+përmbajtjes, që Word-i e mbush. Të 45 numrat, hyrjet e listës, përshkrimet dhe qelizat e
+tabelave janë identike. Renderimi me Word jep 100 faqe, si kopja, me dy listat të njohura
+si «Table of Figures». Kalojnë `check_citations` (45/45), `check_format` (edhe për
+versionin `--deri 4`), `check_tables` dhe `check_repetition`. `check_format` u provua
+edhe mbi katër kopje të prishura me qëllim (citim i zhvendosur, përshkrim pa SEQ,
+ndërprerje faqeje te kopertina, citim autor-vit i mbetur) dhe i raportoi të katra.
+
+**Çfarë nuk u verifikua.** Skedari `Punim_Diplome_Florent_Latifi.docx` i depos nuk u
+rindërtua: pret dy vendimet e mësipërme, dhe kopja e autorit në dosjen kryesore ka
+ndryshime të paruajtura. `check_format` mbi vetë kopjen e mentores raporton ende stile pa
+shkronjë, seksion pa numërim dhe mungesë të `updateFields`, sepse Word-i i heq vlerat e
+parazgjedhura kur ruan; ndodhte njësoj me kopjen e autorit të 15 tetorit. Prezantimi për
+konferencën (`build_conference.py`) citon ende me autor dhe vit: kërkesa e mentores
+ishte për punimin.

@@ -14,6 +14,13 @@ prozë dhe referenca në një listë Python.
 
     python docs/thesis/check_citations.py
 
+Që nga VD-152 punimi citon me numra IEEE, por kapitujt mbeten të shkruar me autor dhe
+vit: «Fowler (2018)», «(Lanza & Marinescu, 2006)». Ajo trajtë është çelësi që lidh
+citimin me hyrjen e `references.py`; numri nuk caktohet dot pa e lexuar tekstin, sepse
+del nga radha e citimit të parë. Prandaj gramatika e citimit jeton këtu, dhe
+`build_thesis` merr prej saj si numrat (`citation_numbers`) ashtu edhe tekstin me numra
+(`numeric`). Kontrolli dhe ndërtimi e lexojnë citimin njësoj, ose nuk e lexojnë fare.
+
 Kontrollohet edhe auditimi i numrave të faqeve: `references.py` deklaron cilat hyrje
 janë rikontrolluar kundrejt botuesit dhe cilat jo, dhe një hyrje e re me faqe nuk
 guxon të rrijë jashtë të dyja listave.
@@ -21,7 +28,7 @@ guxon të rrijë jashtë të dyja listave.
 Del me kod jo-zero nëse ndonjëra anë ka diçka që tjetra nuk e ka, që kontrolli të
 mund të hyjë në CI. Nuk e prek dokumentin dhe nuk e ndalon ndërtimin: gjatë shkrimit
 një citim pa referencë është gjendje kalimtare normale, ndërsa para dorëzimit është
-gabim.
+gabim. Ndërtimi e shtyp një citim të tillë si «[?]», që të mos kalojë pa u parë.
 """
 
 from __future__ import annotations
@@ -45,8 +52,8 @@ from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 
 # Një mbiemër: fillon me shkronjë të madhe dhe mund të jetë i përbërë
 # («Di Nucci», «Arcelli Fontana», «Henderson-Sellers»), i lidhur me «&» ose me «dhe»,
-# ose i ndjekur nga «et al.». APA-ja e do «&» brenda kllapave dhe lidhëzën e gjuhës
-# së tekstit jashtë tyre: «(Lanza & Marinescu, 2006)», por «Lanza dhe Marinescu
+# ose i ndjekur nga «et al.». Kapitujt e shkruajnë «&» brenda kllapave dhe lidhëzën e
+# gjuhës së tekstit jashtë tyre: «(Lanza & Marinescu, 2006)», por «Lanza dhe Marinescu
 # (2006)». Apostrofi tipografik hyn si escape sepse ndryshe nuk
 # dallohet nga apostrofi ASCII që qëndron pranë tij në të njëjtën klasë.
 #
@@ -58,9 +65,14 @@ GAP = r"[^\S\n]+"
 WORD = r"[A-ZÇË][\w\u2019'\-]*"
 NAME = rf"{WORD}(?:{GAP}(?:(?:&|dhe){GAP})?(?:et{GAP}al\.|{WORD}))*"
 
-# Dy format e APA-s: «Fowler (2018)» dhe «(Fowler, 2018)».
-NARRATIVE = re.compile(rf"({NAME})\s+\((\d{{4}})\)")
-PARENTHETICAL = re.compile(rf"\(({NAME}),\s*(\d{{4}})\)")
+# Dy format e citimit në burim: «(Fowler, 2018)» dhe «Fowler (2018)», secila me faqe
+# të mundshme, «(2006, p. 80)», që në IEEE bëhet «[5, p. 80]». Një shprehje e vetme, që
+# citimet të dalin sipas radhës në tekst: numri IEEE është pikërisht ajo radhë. Format
+# nuk mbivendosen, sepse e para fillon me kllapë dhe e dyta me shkronjë të madhe.
+CITATION = re.compile(
+    rf"\((?P<p_name>{NAME}),\s*(?P<p_year>\d{{4}})(?:,\s*p\.\s*(?P<p_page>\d+))?\)"
+    rf"|(?P<n_name>{NAME})(?P<gap>\s+)\((?P<n_year>\d{{4}})(?:,\s*p\.\s*(?P<n_page>\d+))?\)"
+)
 
 # Ndarësit pas të cilëve nuk ka më mbiemër: gjithçka para tyre është autori i parë.
 COAUTHOR_MARKERS = ("&", "dhe", "et")
@@ -70,8 +82,8 @@ COAUTHOR_MARKERS = ("&", "dhe", "et")
 # përbërë: «Henderson-Sellers» nuk shkurtohet, «Henderson-Sellers-it» po.
 MAX_SUFFIX = 3
 
-# Një varg faqesh në listë: APA i lidh me vizë të mesme («1143–1191»), ndërsa DOI-të
-# përdorin vizë të shkurtër, ndaj një DOI nuk ngatërrohet me faqe.
+# Një varg faqesh në listë: IEEE i lidh me vizë të mesme («pp. 1143–1191»), ndërsa
+# DOI-të përdorin vizë të shkurtër, ndaj një DOI nuk ngatërrohet me faqe.
 PAGE_RANGE = re.compile(r"\d+–\d+")
 
 
@@ -110,12 +122,13 @@ def _strings(item: object) -> Iterator[str]:
             yield from _strings(element)
 
 
-def thesis_text() -> str:
-    """I tërë teksti që shkon në dokument, si një varg i vetëm."""
+def chapter_text() -> str:
+    """Kapitujt sipas radhës së leximit, si një varg; numrat IEEE dalin prej tij.
+
+    Kapitulli 7 është vetë lista, ndaj mungon. Ballina mungon me qëllim: numërimi
+    nis nga Kapitulli 1, edhe pse fjalori, para tij, citon Moha et al.
+    """
     sources = [
-        abstract(),
-        ACKNOWLEDGEMENTS,
-        GLOSSARY,
         INTRODUCTION,
         CHAPTER_2,
         CHAPTER_3,
@@ -127,35 +140,76 @@ def thesis_text() -> str:
     return "\n".join(_strings(sources))
 
 
+def thesis_text(chapters: str) -> str:
+    """I tërë teksti që shkon në dokument, si një varg i vetëm."""
+    return "\n".join(_strings([abstract(), ACKNOWLEDGEMENTS, GLOSSARY])) + "\n" + chapters
+
+
+def _name_and_year(match: re.Match[str]) -> tuple[str, str]:
+    """Mbiemri i autorit të parë dhe viti i një citimi, në cilëndo nga dy format."""
+    if match["p_name"] is not None:
+        return _first_author(match["p_name"]), match["p_year"]
+    return _first_author(match["n_name"]), match["n_year"]
+
+
 def citations(text: str) -> set[tuple[str, str]]:
     """Çiftet (mbiemri i autorit të parë, viti) që teksti i citon."""
-    found = set()
-    for pattern in (NARRATIVE, PARENTHETICAL):
-        for name, year in pattern.findall(text):
-            found.add((_first_author(name), year))
-    return found
+    return {_name_and_year(match) for match in CITATION.finditer(text)}
 
 
 def listed() -> dict[tuple[str, str], str]:
-    """Çiftet (mbiemri, viti) të listës së referencave, te referenca e plotë.
+    """Çiftet (mbiemri, viti) të listës së referencave, te hyrja e plotë.
 
-    APA e vë vitin në kllapë menjëherë pas autorëve, ndaj çelësi lexohet që andej e
-    jo nga numri i parë katërshifror i hyrjes. Një burim pa vit mbetet me vit bosh
-    dhe krahasohet vetëm me mbiemrin.
+    Çelësi lexohet nga etiketa e hyrjes, «Lanza & Marinescu 2006», e jo nga vetë
+    hyrja: IEEE e vë vitin në fund dhe mbiemrin pas inicialeve, dhe autori kolektiv
+    («PMD Team») nuk ka inicialë fare.
     """
-    return {reference_key(reference): reference for reference in all_references()}
+    return {reference_key(label): entry for label, entry in all_references()}
 
 
-def reference_key(reference: str) -> tuple[str, str]:
-    """(Mbiemri i autorit të parë, viti) i një hyrjeje në stilin APA.
+def reference_key(label: str) -> tuple[str, str]:
+    """«Bieman & Kang 1995» -> ('bieman', '1995'), çelësi me të cilin krahasohet citimi."""
+    author, _, year = label.rpartition(" ")
+    return _first_author(author), year
 
-    Autori është gjithçka para kllapës së vitit, deri te presja e parë: «Lanza, M.,
-    & Marinescu, R. (2006)» jep «lanza», ndërsa autori kolektiv «PMD Team. (2026)»
-    nuk ka presje dhe jep «pmd team». Viti është ai brenda kllapës së parë.
+
+def citation_numbers(text: str) -> dict[tuple[str, str], int]:
+    """Numri IEEE i çdo burimi të listuar: radha e citimit të tij të parë te `text`.
+
+    Një citim që nuk gjendet në listë nuk merr numër, që numrat e listës të mbeten
+    1, 2, 3 pa vrima. Atë e raporton `report`, dhe `numeric` e shtyp si «[?]».
     """
-    author, _, rest = reference.partition(" (")
-    year = re.match(r"(\d{4})", rest)
-    return _first_author(author.split(",")[0].rstrip(".")), year.group(1) if year else ""
+    references = listed()
+    known = {author for author, _ in references}
+    numbers: dict[tuple[str, str], int] = {}
+    for match in CITATION.finditer(text):
+        author, year = _name_and_year(match)
+        key = (_undeclined(author, known), year)
+        if key in references and key not in numbers:
+            numbers[key] = len(numbers) + 1
+    return numbers
+
+
+def numeric(text: str, numbers: dict[tuple[str, str], int]) -> str:
+    """Citimet e `text` në trajtën IEEE, me numrat e `citation_numbers`.
+
+    «Fowler (2018)» bëhet «Fowler [2]», «(Lanza & Marinescu, 2006)» bëhet «[5]», dhe
+    «Lanza dhe Marinescu (2006, p. 80)» bëhet «Lanza dhe Marinescu [5, p. 80]». Te
+    citimi narrativ emri mbetet, sepse është pjesë e fjalisë; mbaresa shqipe e një
+    emri të lakuar mbetet bashkë me të.
+    """
+    known = {author for author, _ in numbers}
+
+    def replace(match: re.Match[str]) -> str:
+        author, year = _name_and_year(match)
+        number = numbers.get((_undeclined(author, known), year), "?")
+        page = match["p_page"] or match["n_page"]
+        label = f"[{number}, p. {page}]" if page else f"[{number}]"
+        if match["p_name"] is not None:
+            return label
+        return f"{match['n_name']}{match['gap']}{label}"
+
+    return CITATION.sub(replace, text)
 
 
 def _undeclined(author: str, known: set[str]) -> str:
@@ -174,12 +228,6 @@ def _undeclined(author: str, known: set[str]) -> str:
     return author
 
 
-def _audit_key(name: str) -> tuple[str, str]:
-    """«Bieman & Kang 1995» -> ('bieman', '1995'), çelësi i njëjtë si te `listed`."""
-    author, _, year = name.rpartition(" ")
-    return (_first_author(author), year)
-
-
 def _check_page_audit(references: dict[tuple[str, str], str]) -> list[str]:
     """Çdo referencë me numra faqesh është ose e verifikuar ose e shënuar si jo.
 
@@ -191,7 +239,7 @@ def _check_page_audit(references: dict[tuple[str, str], str]) -> list[str]:
     problems = []
     audited = {}
     for name in PAGES_VERIFIED + PAGES_UNVERIFIED:
-        key = _audit_key(name)
+        key = reference_key(name)
         if key not in references:
             problems.append(f"  auditimi i faqeve përmend një burim që s'është në listë: {name}")
         audited[key] = name
@@ -204,25 +252,26 @@ def _check_page_audit(references: dict[tuple[str, str], str]) -> list[str]:
 
 def report() -> list[str]:
     """Mospërputhjet mes tekstit dhe listës, si rreshta gati për t'u shtypur."""
-    text = thesis_text()
+    chapters = chapter_text()
     references = listed()
     known_authors = {author for author, _ in references}
-    cited = {(_undeclined(author, known_authors), year) for author, year in citations(text)}
-
-    # Një burim elektronik citohet pa vit, ndaj për të kërkohet vetëm mbiemri diku
-    # në tekst. Kjo është kontroll më i dobët se çifti (mbiemër, vit), por është i
-    # vetmi që i përshtatet një burimi që nuk ka vit botimi.
-    folded = _fold(text)
+    cited = {
+        (_undeclined(author, known_authors), year)
+        for author, year in citations(thesis_text(chapters))
+    }
+    # Një burim i cituar vetëm te ballina do të ishte në listë pa numër, sepse numrat
+    # nisin nga Kapitulli 1.
+    numbered = citation_numbers(chapters)
     problems = []
 
     for key, reference in sorted(references.items()):
-        author, year = key
-        found = author in folded if year == "" else key in cited
-        if not found:
+        if key not in cited:
             problems.append(f"  e listuar por e pacituar: {reference}")
+        elif key not in numbered:
+            problems.append(f"  e cituar vetëm jashtë kapitujve, pa numër: {reference}")
 
     for author, year in sorted(cited):
-        if (author, year) in references or (author, "") in references:
+        if (author, year) in references:
             continue
         hint = " (viti nuk përputhet me listën)" if author in known_authors else ""
         problems.append(f"  e cituar por e palistuar: {author} {year}{hint}")
