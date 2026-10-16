@@ -6202,17 +6202,23 @@ do t'i fshinte të pesë korrigjimet.
   citim autor-vit apo «[?]» i mbetur), dhe ndërprerjen me paragraf te kopertinat.
   `check_tables` e gjen tabelën e Madeyski & Lewowski pa numrin e citimit, që lëviz.
 
-**Dallimet që nuk u sollën, në pritje të autorit.**
-- «Tetor / 2026» te të dy kopertinat dhe mungesa e «Prishtinë» te faqja e brendshme. Të
-  dyja janë ndryshime të mentores mbi tekstin e autorit, dhe të dyja kthejnë mbrapsht
-  vendime të tij: VD-148 e lexon «Muaji / Viti» të shabllonit si vend për muajin dhe
-  vitin, dhe VD-151 e shtoi vendin te faqja e brendshme. `COVER_DATE` dhe
-  `INNER_PAGE_PLACE` te `build_thesis.py` i ndryshojnë.
-- Margjinat 1699 twips (84.95pt) të kopjes së mentores, kundrejt 1701 (85.05pt, 3cm) të
-  shabllonit (VD-62). Dallimi është 0.1pt, por mjafton që nënkapitulli 5.1 të kalojë nga
-  faqja 34 te 35 dhe që pikat drejtuese të përmbajtjes e të listave të bien ndryshe
-  (faqet 5–10 dhe 46–47 të renderimit). Me margjinat e mentores, renderimi i ndërtimit
-  përputhet me PDF-në e mentores në çdo faqe përveç dy kopertinave.
+**Tri ndryshime të mentores që kthejnë mbrapsht vendime të mëparshme.** Ndërtuesi i
+la fillimisht jashtë dhe ia paraqiti autorit, i cili më 16 tetor 2026 vendosi t'i marrë
+të treja:
+- «Tetor / 2026» te të dy kopertinat (`COVER_DATE`), në vend të «Tetor 2026». VD-148 e
+  kishte lexuar «Muaji / Viti» të shabllonit si vend për muajin dhe vitin; mentorja e
+  shtyp vijën. Nënshkrimi nën mirënjohjen mbetet «Prishtinë, Tetor 2026», si te kopja.
+- Faqja e brendshme pa «Prishtinë» pas datës, që autori e kishte shtuar te VD-151.
+- Margjinat 1699 twips (84.95pt, 2.997cm) të kopjes së mentores, në vend të 1701
+  (85.05pt, 3cm) që VD-62 mati te shablloni. `ubt_format.py` e ruan matjen si histori dhe
+  e merr vlerën nga mentorja. Dallimi është 0.1pt, por vendos ku thyhet faqja: me 1701,
+  nënkapitulli 5.1 binte te faqja 35 në vend të 34, dhe pikat drejtuese të përmbajtjes e
+  të listave (faqet 5–10) binin ndryshe nga PDF-ja e mentores.
+
+Për t'i përputhur pozicionet e kopertinave me PDF-në e mentores, rreshtat bosh pa
+shkronjë të shabllonit (Word-i i mat sa një rresht 14pt, 24.1pt) dalin si rreshta 14pt,
+dhe rreshti i vulës mbyllet me një hapësirë të pandashme 12pt, si te shablloni; pa të,
+çdo rresht i kopertinës dilte 2.6pt më lart.
 
 **Dallime pa efekt, që nuk u sollën.** Word-i e ruajti kopjen pa formatimin e
 drejtpërdrejtë që përsërit stilin (shkronja, madhësia dhe rreshtimi i çdo run-i, numërimi
@@ -6220,18 +6226,23 @@ drejtpërdrejtë që përsërit stilin (shkronja, madhësia dhe rreshtimi i çdo
 faqe. Ndërtimi i mban, sepse `check_format` dhe rifreskimi i fushave mbështeten te to.
 
 **Verifikimi.** Teksti i dokumentit të rindërtuar përputhet paragraf për paragraf me
-kopjen e korrigjuar, përveç dy pikave të kopertinave dhe tekstit zëvendësues të
-përmbajtjes, që Word-i e mbush. Të 45 numrat, hyrjet e listës, përshkrimet dhe qelizat e
-tabelave janë identike. Renderimi me Word jep 100 faqe, si kopja, me dy listat të njohura
-si «Table of Figures». Kalojnë `check_citations` (45/45), `check_format` (edhe për
+kopjen e korrigjuar, përveç tekstit zëvendësues të përmbajtjes, që Word-i e mbush. Të 45
+numrat, hyrjet e listës, përshkrimet dhe qelizat e tabelave janë identike. Renderimi me
+Word jep 100 faqe, me dy listat të njohura si «Table of Figures», dhe përputhet me
+PDF-në e mentores faqe për faqe: i njëjti tekst në secilën nga 100 faqet, çdo fjalë e
+trupit në të njëjtin vend (lëkundje deri 0.35pt te dy-tri fjalë të justifikuara), dhe
+çdo rresht i kopertinave në të njëjtën lartësi. Kalojnë `check_citations` (45/45), `check_format` (edhe për
 versionin `--deri 4`), `check_tables` dhe `check_repetition`. `check_format` u provua
 edhe mbi katër kopje të prishura me qëllim (citim i zhvendosur, përshkrim pa SEQ,
 ndërprerje faqeje te kopertina, citim autor-vit i mbetur) dhe i raportoi të katra.
 
-**Çfarë nuk u verifikua.** Skedari `Punim_Diplome_Florent_Latifi.docx` i depos nuk u
-rindërtua: pret dy vendimet e mësipërme, dhe kopja e autorit në dosjen kryesore ka
-ndryshime të paruajtura. `check_format` mbi vetë kopjen e mentores raporton ende stile pa
-shkronjë, seksion pa numërim dhe mungesë të `updateFields`, sepse Word-i i heq vlerat e
-parazgjedhura kur ruan; ndodhte njësoj me kopjen e autorit të 15 tetorit. Prezantimi për
+**Çfarë mbetet ndryshe.** Rreshtat e kopertinave dalin 1.5pt më djathtas se te
+mentorja (3pt te dy prej tyre), sepse shablloni i ngjitur e mbyll çdo rresht me një
+hapësirë të pandashme, ndonjëherë me dy, dhe ajo e zhvendos tekstin e qendërzuar. Nuk
+duket në letër dhe nuk u imitua. `check_format` mbi vetë kopjen e mentores raporton ende
+stile pa shkronjë, seksion pa numërim dhe mungesë të `updateFields`, sepse Word-i i heq
+vlerat e parazgjedhura kur ruan; ndodhte njësoj me kopjen e autorit të 15 tetorit.
+Kopja e autorit në Word në dosjen kryesore (e 15 tetorit, e paruajtur) mbetet e
+paprekur. Prezantimi për
 konferencën (`build_conference.py`) citon ende me autor dhe vit: kërkesa e mentores
 ishte për punimin.

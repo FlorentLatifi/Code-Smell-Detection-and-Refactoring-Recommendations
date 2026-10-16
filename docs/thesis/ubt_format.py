@@ -42,11 +42,18 @@ on 2026-10-16 set Heading 2 to Times New Roman 13pt and Heading 3 to Times New
 Roman 12pt, both black, in the mentor's own copy of the thesis (VD-152). The template's
 «subheadings 12pt» therefore still holds for Heading 3 and is overridden for
 Heading 2, which is one point larger so the two levels can be told apart.
+
+The margins come from the mentor's copy too, and no longer from the template
+measurement above. That copy stores 1699 twips (84.95pt, 2.997cm) on every side
+instead of 1701, and the author chose to follow it (VD-152). The 0.1pt cannot be
+seen, but it decides where pages break: with the template's 1701, heading 5.1 fell
+one page later than in the mentor's PDF. The measurement is kept above as the
+record of where «3cm» came from.
 """
 
 from __future__ import annotations
 
-from docx.shared import Inches, Pt
+from docx.shared import Inches, Pt, Twips
 
 FONT = "Times New Roman"
 BODY_SIZE = Pt(12)
@@ -59,7 +66,8 @@ MIN_LINE_SPACING = 1.5
 PAGE_WIDTH = Inches(8.5)
 PAGE_HEIGHT = Inches(11)
 
-MARGIN_TOP = Pt(85.05)
-MARGIN_BOTTOM = Pt(85.05)
-MARGIN_LEFT = Pt(85.05)
-MARGIN_RIGHT = Pt(85.05)
+# The mentor's 1699 twips, not the template's 1701 (see above).
+MARGIN_TOP = Twips(1699)
+MARGIN_BOTTOM = Twips(1699)
+MARGIN_LEFT = Twips(1699)
+MARGIN_RIGHT = Twips(1699)

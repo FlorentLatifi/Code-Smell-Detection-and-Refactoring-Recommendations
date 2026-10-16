@@ -514,7 +514,8 @@ def cover_line(
     paragraph.paragraph_format.line_spacing = LINE_SPACING
     paragraph.paragraph_format.space_before = Pt(0)
     paragraph.paragraph_format.space_after = Pt(0)
-    _set_font(paragraph.add_run(text), size=size, bold=bold, caps=caps)
+    if text:
+        _set_font(paragraph.add_run(text), size=size, bold=bold, caps=caps)
     return paragraph
 
 
@@ -523,7 +524,9 @@ def cover_blank(doc: Document, count: int = 1, size=TITLE_SIZE) -> None:
 
     Shablloni e mban rreshtin bosh me një hapësirë të pandashme, që lartësinë ta japë
     shkronja e saj. Kopertinat e mentores kanë rreshta bosh të dy lartësive, 14 dhe 12,
-    dhe radha e tyre i vendos rreshtat e tekstit aty ku janë.
+    dhe radha e tyre i vendos rreshtat e tekstit aty ku janë. Paragrafët bosh të ngjitur
+    nga shablloni, pa asnjë shkronjë, Word-i i mat sa një rresht 14pt: renderimi i
+    kopjes së mentores i ka pikërisht 24.1pt.
     """
     for _ in range(count):
         cover_line(doc, NBSP, size=size)
@@ -540,6 +543,9 @@ def build_logo(doc: Document, *, new_page: bool = False) -> None:
     holder.paragraph_format.page_break_before = new_page
     if os.path.exists(LOGO):
         holder.add_run().add_picture(LOGO, width=LOGO_WIDTH, height=LOGO_HEIGHT)
+        # Shablloni e mbyll rreshtin e vulës me një hapësirë të pandashme 12pt. Pa të
+        # rreshti del 2.6pt më i ulët, dhe çdo rresht i kopertinës ngjitet po aq.
+        _set_font(holder.add_run(NBSP), size=BODY_SIZE)
     else:
         _set_font(holder.add_run(f"{TODO}: mungon logoja e UBT-së"), size=TITLE_SIZE, bold=True)
 
@@ -559,8 +565,7 @@ def build_cover(doc: Document) -> None:
     cover_line(doc, "Shkalla Bachelor")
     cover_blank(doc, 4)
     cover_line(doc, AUTHOR)
-    cover_blank(doc, 3, size=BODY_SIZE)
-    cover_blank(doc)
+    cover_blank(doc, 4)
     cover_line(doc, COVER_DATE)
     cover_line(doc, PLACE)
 
@@ -580,13 +585,9 @@ def build_inner_page(doc: Document) -> None:
     cover_blank(doc, size=BODY_SIZE)
     cover_blank(doc, 2)
     cover_line(doc, COVER_DATE)
-    if INNER_PAGE_PLACE:
-        # Vendi i shtoi autori në Word më 15 tetor 2026, që faqja e brendshme ta mbyllë
-        # datën si kopertina. Kopja e mentores e ka pa të (VD-152).
-        cover_line(doc, PLACE)
-    else:
-        cover_blank(doc, 2, size=BODY_SIZE)
-    cover_blank(doc, 3)
+    # Pa vendin pas datës, si te kopja e mentores; autori e kishte shtuar më 15 tetor
+    # (VD-151) dhe pranoi ta heqë (VD-152).
+    cover_blank(doc, 5)
     cover_line(
         doc,
         "Ky punim është përpiluar dhe dorëzuar në përmbushjen e kërkesave "
@@ -895,20 +896,20 @@ AUTHOR = "Florent Latifi"
 # Shablloni: «Mentori: Titulli. Emri dhe Mbiemri». Titulli u dha nga autori (VD-115).
 SUPERVISOR = "MSc. Altina Salihu"
 # Shablloni: «Viti akademik XXXX-YYYY (VITI I REGJISTRIMIT)», pra viti kur autori
-# u regjistrua (2023), jo viti i dorëzimit. «Muaji / Viti» te kopertina është vend
-# për muajin dhe vitin, jo një vijë e pjerrët që shtypet (VD-148).
+# u regjistrua (2023), jo viti i dorëzimit. «Muaji / Viti» te kopertina u lexua si vend
+# për muajin dhe vitin (VD-148); kopja e mentores e shtyp vijën, dhe kopertinat e
+# ndjekin (`COVER_DATE`, VD-152).
 # Vizë e shkurtër dhe tetor, ashtu si i ndreqi autori në Word më 15 tetor 2026: punimi
 # dorëzohet në tetor, jo në nëntor siç ishte planifikuar.
 ACADEMIC_YEAR = "2023-2024"
 SUBMISSION_DATE = "Tetor 2026"
 PROGRAMME = "Programi për Shkenca Kompjuterike dhe Inxhinierisë"
 PLACE = "Prishtinë"
-NBSP = " "
-# Kopja e korrigjuar e mentores (16 tetor 2026) shkruan «Tetor / 2026» te të dy
-# kopertinat dhe nuk e ka vendin te faqja e brendshme. Të dyja i kthejnë mbrapsht
-# vendimet e autorit të VD-148 dhe VD-151, ndaj nuk merren pa pëlqimin e tij (VD-152).
-COVER_DATE = SUBMISSION_DATE
-INNER_PAGE_PLACE = True
+NBSP = "\N{NO-BREAK SPACE}"
+# Data e kopertinave, ashtu si te kopja e korrigjuar e mentores (16 tetor 2026). Kthen
+# mbrapsht «Tetor 2026» të VD-148 dhe VD-151, me pëlqimin e autorit (VD-152). Nënshkrimi
+# nën mirënjohjen mban «Tetor 2026», si te kopja.
+COVER_DATE = "Tetor / 2026"
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "
     "mësim i makinës, analizë statike, Java"
