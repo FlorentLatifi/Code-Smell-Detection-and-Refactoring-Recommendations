@@ -3,10 +3,16 @@
     PYTHONPATH=backend python docs/thesis/build_conference.py
 
 Shkruan te `docs/konferenca/`:
-- `UBT2026_Florent_Latifi.pptx`: nëntë sllajde për dhjetë minuta, me tekstin folës
-  anglisht te shënimet, dhe sllajde rezervë për pyetjet;
-- `UBT2026_pergatitja.docx`: koha për sllajd, pyetjet e mundshme me përgjigje,
-  shqiptimi i termave dhe lista për ditën e konferencës.
+- `UBT2026_Florent_Latifi.pptx`: nëntë sllajde, me tekstin folës anglisht te shënimet
+  (rreth shtatë minuta), dhe sllajde rezervë për pyetjet;
+- `UBT2026_Florent_Latifi_9min.pptx`: të njëjtat sllajde, me një tekst folës më të gjatë
+  (rreth nëntë minuta e gjysmë) për rastin kur kryesuesi jep vërtet dhjetë minuta;
+- `UBT2026_pergatitja.docx`: koha për sllajd për të dy versionet, pyetjet e mundshme me
+  përgjigje, shqiptimi i termave dhe lista për ditën e konferencës.
+
+Dy versionet ndërtohen nga i njëjti tekst: i gjati është i shkurtri plus disa fjali
+shtesë, që pjesa e provuar të mbetet e njëjtë dhe shtesat të mund të lihen jashtë në
+sallë pa humbur fillin.
 
 Si `build_slides.py`, çdo shifër lexohet nga `data/results/` me të njëjtët ngarkues si
 punimi, që prezantimi, abstrakti i konferencës dhe punimi të mos thonë tre numra të
@@ -20,6 +26,7 @@ dhe një grafik vendas mund të ndryshohet në PowerPoint pa e rivizatuar.
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 from build_slides import (
@@ -55,6 +62,7 @@ from chapters import (
 )
 from docx import Document
 from docx.shared import Pt as DocPt
+from docx.shared import RGBColor as DocRGB
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
@@ -67,6 +75,7 @@ from pptx.util import Emu, Inches, Pt
 HERE = os.path.dirname(__file__)
 OUT_DIR = os.path.join(HERE, "..", "konferenca")
 DECK = os.path.join(OUT_DIR, "UBT2026_Florent_Latifi.pptx")
+DECK_LONG = os.path.join(OUT_DIR, "UBT2026_Florent_Latifi_9min.pptx")
 SHEET = os.path.join(OUT_DIR, "UBT2026_pergatitja.docx")
 
 TITLE = (
@@ -75,7 +84,9 @@ TITLE = (
 )
 AUTHORS = "Florent Latifi  ·  Altina Salihu"
 AFFILIATION = "UBT – Higher Education Institution, Kosovo"
-EVENT = "15th UBT International Conference  ·  IC-CSCE 2026"
+# Emri siç e shkruan agjenda e konferencës: email-i dhe faqja e saj përdorin shkurtesa
+# të ndryshme, dhe agjenda është dokumenti që ka salla.
+EVENT = "15th UBT Annual International Conference on Computer Science and Engineering  ·  2026"
 
 # Gri për rregullat, blu për modelin: e njëjta ndarje si te figurat e punimit, që
 # lexohet edhe kur projektori i zbeh ngjyrat.
@@ -97,6 +108,37 @@ MODEL_EN = {
 # Ritmi i një folësi jo-amtar që flet qetë. Koha e çdo sllajdi llogaritet nga fjalët e
 # shënimit, që fleta e kohës të ndjekë tekstin e jo një vlerësim me sy.
 WORDS_PER_MINUTE = 115
+# Autori flet shpejt, dhe nervozizmi në sallë e shpejton më tej. Ky është një supozim,
+# jo një matje: fleta i thotë ta zëvendësojë me ritmin e vet, të matur me kronometër.
+FAST_WORDS_PER_MINUTE = 145
+
+# Emrat e refaktorimeve siç thuhen me gojë, jo siç janë në kod.
+SPOKEN_REFACTORING = {"ReplaceNestedConditionalWithGuardClauses": "Guard Clauses"}
+
+
+class Extra(str):
+    """Një fjali që thuhet vetëm në versionin nëntë-minutësh.
+
+    Shtesat janë pjesë e të njëjtit tekst e jo një tekst i dytë, që versioni i gjatë të
+    mos i ndryshojë fjalitë e provuara: në sallë, kur koha mbaron, ato thjesht lihen.
+    """
+
+
+def _spoken(parts: list[str], long: bool) -> list[str]:
+    return [part for part in parts if long or not isinstance(part, Extra)]
+
+
+def _word_count(parts: list[str]) -> int:
+    return len(" ".join(parts).split())
+
+
+def _clock(seconds: int) -> str:
+    return f"{seconds // 60}:{seconds % 60:02d}"
+
+
+def _words(name: str) -> str:
+    """`LongParameterList` → `Long Parameter List`, siç e thotë folësi."""
+    return SPOKEN_REFACTORING.get(name, re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name))
 
 
 # ----------------------------------------------------------------------
@@ -148,6 +190,19 @@ def _pct(value: float, digits: int = 1) -> str:
 # ----------------------------------------------------------------------
 # Elementet e sllajdeve që `build_slides.py` nuk i ka
 # ----------------------------------------------------------------------
+def _speech(slide, parts: list[str]) -> None:
+    """Shënimi i folësit, me fjalitë shtesë të pjerrëta.
+
+    Pamja e folësit në PowerPoint e ruan stilin, ndaj në sallë dallohet me një shikim cila
+    fjali mund të lihet kur koha nuk mjafton.
+    """
+    paragraph = slide.notes_slide.notes_text_frame.paragraphs[0]
+    for index, part in enumerate(parts):
+        run = paragraph.add_run()
+        run.text = part if index == 0 else " " + part
+        run.font.italic = isinstance(part, Extra)
+
+
 def _number(slide, index: int) -> None:
     """Numri i sllajdit poshtë djathtas, që pyetjet të mund t'i referohen."""
     frame = _text(slide, WIDTH - Inches(1.4), HEIGHT - Inches(0.55), Inches(1.0), Inches(0.4),
@@ -284,11 +339,16 @@ def _notes_words(deck: Presentation) -> list[int]:
     return [len(slide.notes_slide.notes_text_frame.text.split()) for slide in deck.slides]
 
 
-def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
+def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[str]]]]:
+    """Prezantimi; me `long` shënimet mbajnë edhe fjalitë `Extra`.
+
+    Kthen tekstin e plotë të çdo sllajdi kryesor, me shtesat të shënuara, që fleta e
+    përgatitjes të llogarisë kohën e të dy versioneve nga i njëjti burim.
+    """
     deck = Presentation()
     deck.slide_width = WIDTH
     deck.slide_height = HEIGHT
-    timing: list[tuple[str, int]] = []
+    script: list[tuple[str, list[str]]] = []
     refactoring, quality, smells = f["refactoring"], f["quality"], f["smells"]
     recall = [f["strategy"][s]["recall"] for s in smells]
     model_mcc = [f["best"][s]["mcc"] for s in smells]
@@ -299,12 +359,27 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
     refused = sum(refactoring["refused_by_reason"].values()) / detected
     moderate = [s for s in smells if f["reviewers"][s] > 0.1]
     chance = [s for s in smells if f["reviewers"][s] <= 0.1]
+    # Krahasimi me PMD-në: ndryshimi është yni minus i PMD-së, dhe vetëm një interval që
+    # e përjashton zeron lejon të thuhet se njëri është përpara.
+    pmd = _load("pmd_comparison.json")
+    differences = {
+        key: entry["difference"] for key, entry in pmd["by_smell"].items() if "difference" in entry
+    }
+    pmd_ahead = [SMELL_SQ[key.split("/")[0]] for key, d in differences.items()
+                 if d["excludes_zero"] and d["median"] < 0]  # fmt: skip
+    pmd_behind = [SMELL_SQ[key.split("/")[0]] for key, d in differences.items()
+                  if key.endswith("/strategy") and d["excludes_zero"]
+                  and d["median"] > 0]  # fmt: skip
+    introduced = refactoring["introduced_smells"]
+    by_refactoring = quality["by_refactoring"]
+    always = [_words(name) for name, entry in by_refactoring.items() if entry["acceptable"] == 1.0]
+    never = [_words(name) for name, entry in by_refactoring.items() if entry["acceptable"] == 0.0]
 
-    def add(title: str, notes: str):
+    def add(title: str, *parts: str):
         slide = _blank(deck)
-        _note(slide, notes)
+        _speech(slide, _spoken(list(parts), long))
         _number(slide, len(deck.slides))
-        timing.append((title, len(notes.split())))
+        script.append((title, list(parts)))
         return slide
 
     # --- 1. titulli ---
@@ -372,8 +447,13 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "literature, such as Lanza and Marinescu and Fowler. B trains machine learning "
         "classifiers on the same metrics. And C is a refactoring engine. It rewrites code "
         "only when it can prove its preconditions from the syntax tree, and then it checks "
-        "the result with the Java compiler. On the right you can see the web interface. It "
-        "also has a plain-language mode for people without a technical background.",
+        "the result with the Java compiler.",
+        Extra(
+            "Every detection also shows the conditions it checked, so a developer can see why "
+            "a class was flagged, not only that it was."
+        ),
+        "On the right you can see the web interface. It also has a plain-language mode for "
+        "people without a technical background.",
     )
     _title(slide, "What we built: JavaSmell", "One Java analyzer, three approaches")
     left_width = Inches(5.3)
@@ -415,9 +495,14 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "For a fair test, we need labels from people. We used MLCQ, a public dataset where "
         "professional developers reviewed real open-source Java code. After matching the "
         f"samples to our tool, we have {f['samples']:,} labeled samples from "
-        f"{f['repositories']} repositories, for four smells. One important detail is how "
-        "we split the data. Code from the same project looks very similar, so we grouped "
-        "the data by repository: a model is never tested on a project it learned from. And "
+        f"{f['repositories']} repositories, for four smells.",
+        Extra(
+            "Blob is a class that does too much. Data Class only holds data and has almost "
+            "no behavior. Long Method is a method that has grown too long, and Feature Envy "
+            "is a method that uses another class more than its own."
+        ),
+        "One important detail is how we split the data. Code from the same project looks "
+        "very similar, so we grouped the data by repository: a model is never tested on a project it learned from. And "
         "we report the Matthews correlation coefficient, MCC. Most samples are clean, so "
         "simple accuracy would look very good even for a detector that never fires.",
     )
@@ -454,6 +539,12 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         f"{max(model_mcc):.2f}. We also computed 95 percent confidence intervals by "
         "resampling repositories. The improvement is clearly above zero for "
         f"{_and(f['sure'])}. For {_and(f['unsure'])}, the difference could be chance.",
+        Extra(
+            "We also compared with PMD, a popular open-source analyzer, on the same samples. "
+            "Once the confidence interval is considered, "
+            + ("PMD is never ahead" if not pmd_ahead else f"PMD is ahead for {_and(pmd_ahead)}")
+            + f", and for {_and(pmd_behind)} our rules are clearly better."
+        ),
     )
     _title(slide, "Rules vs. machine learning", "MCC on the same samples, with the same scoring code")
     _bar_chart(
@@ -481,7 +572,16 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "Why is Feature Envy so hard? We measured how much the human reviewers agree with "
         f"each other. For {_and([SMELL_SQ[s] for s in moderate])}, two reviewers agree only "
         f"moderately. For {_and([SMELL_SQ[s] for s in chance])}, they agree no better than "
-        "chance. So the problem is not only the algorithm. It is the definition of the "
+        "chance.",
+        Extra(
+            " ".join(
+                f"For {SMELL_SQ[s]}, their MCC is {f['reviewers'][s]:.2f}, practically zero."
+                for s in chance
+            )
+            + f" This matches the previous slide: {_and(f['unsure'])} is where the model "
+            "could not clearly beat the rules."
+        ),
+        "So the problem is not only the algorithm. It is the definition of the "
         "smell itself. If experts do not agree on what a smell is, no detector can learn it "
         "well. For me, this is the main lesson of the detection part.",
     )
@@ -520,13 +620,28 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "Replace Nested Conditional with Guard Clauses, and Introduce Parameter Object. On "
         f"the whole corpus it found {detected:,} sites and rewrote {applied:,} of them, "
         f"which is {applied / detected * 100:.0f} percent. The rest were refused, each with "
-        "a reason. For us, refusing is a correct result, not a failure. After rewriting, "
+        "a reason.",
+        Extra(
+            f"In {refactoring['refused_by_reason']['shape_not_matched'] / detected * 100:.0f} "
+            "percent of the sites, the reason is simply that the code does not have the shape "
+            "the transformation needs."
+        ),
+        "For us, refusing is a correct result, not a failure. After rewriting, "
         f"the smell disappeared in {resolved * 100:.0f} percent of the cases. Only "
         f"{broken * 100:.1f} percent of the rewrites introduced a new type of compilation "
         "error, and those never reach the code, because the tool only writes verified "
         f"rewrites. I also read {quality['reviewed']} rewrites by hand: after reweighting, "
         f"about {quality['acceptable_reweighted'] * 100:.0f} percent would be acceptable "
         "to a developer.",
+        Extra(
+            f"Refactoring can also create new smells: {sum(introduced.values()):,} appeared "
+            f"after rewriting, most often {_words(max(introduced, key=introduced.get))}, "
+            "because Extract Method passes every input as a parameter."
+        ),
+        Extra(
+            f"In that review, {_and(always)} were always acceptable, and {_and(never)} never, "
+            "because it only moves the long list into a new class."
+        ),
     )
     _title(slide, "Automatic refactoring", "Rewrite only when the preconditions are proven")
     _figures(
@@ -557,8 +672,13 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "Here is one real example from Apache Geode. Before, the whole method is wrapped in "
         "one if statement, so everything is nested deeply. After the rewrite, the condition "
         "becomes a guard clause with an early return, and the rest of the method moves one "
-        "level up. The rewrite passed the compiler check, and in my review it was "
-        "acceptable as it is.",
+        "level up.",
+        Extra(
+            "The engine accepts only exactly this shape: a void method whose whole body is one "
+            "if statement, without else. It also wraps the condition in a not, instead of "
+            "inverting it by hand, so it stays correct for every condition."
+        ),
+        "The rewrite passed the compiler check, and in my review it was acceptable as it is.",
     )
     _title(slide, "Example from real code",
            "Apache Geode · DistributedRegion.checkForLimitedOrNoAccess · Guard Clauses")  # fmt: skip
@@ -591,8 +711,16 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         "Limitations and takeaways",
         "To be honest about the limits: compiling is not the same as behaving the same. We "
         "did not run the projects' test suites, so behavior preservation is future work. We "
-        "also used one dataset, four smells, and only Java. To summarize: learned "
-        "boundaries beat fixed thresholds. Safe automatic refactoring is possible, but "
+        "also used one dataset, four smells, and only Java.",
+        Extra(
+            "And the best model was chosen on the same predictions it is scored on, so its "
+            "numbers are slightly optimistic."
+        ),
+        Extra(
+            "As next steps, I would add a small symbol resolver to support more refactorings, "
+            "and ask independent reviewers to judge the rewrites."
+        ),
+        "To summarize: learned boundaries beat fixed thresholds. Safe automatic refactoring is possible, but "
         "narrow, and it should be reviewed by a developer. The tool is open source, and "
         "every number in this talk can be regenerated with a script. Thank you. I am happy "
         "to take your questions.",
@@ -695,7 +823,6 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
         top=Inches(2.0),
     )  # fmt: skip
 
-    pmd = _load("pmd_comparison.json")
     names = {"blob/strategy": "Blob (strategy)", "blob/with_size": "Blob (with size)",
              "data class/strategy": "Data Class", "long method/strategy": "Long Method",
              "feature envy/law_of_demeter": "Feature Envy (LawOfDemeter)"}  # fmt: skip
@@ -760,8 +887,9 @@ def build_deck(f: dict) -> tuple[str, list[tuple[str, int]]]:
     )  # fmt: skip
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    deck.save(DECK)
-    return DECK, timing[:main]
+    path = DECK_LONG if long else DECK
+    deck.save(path)
+    return path, script[:main]
 
 
 # ----------------------------------------------------------------------
@@ -873,9 +1001,10 @@ PRONUNCIATION = [
 CONFIDENCE = [
     "Mëso përmendësh vetëm dy fjalitë e para dhe dy të fundit. Fillimi i sigurt e qetëson "
     "zërin, dhe fundi i sigurt lë përshtypjen e fundit; mesin e mban sllajdi.",
-    "Provoje me zë të lartë, me kronometër, të paktën pesë herë. Synimi është 8 deri 9 "
-    "minuta: në sallë flitet më shpejt nga nervozizmi, dhe kryesuesi mund të ta ndërpresë "
-    "te minuta e dhjetë.",
+    "Provoje me zë të lartë, me kronometër, të paktën pesë herë, dhe të dy versionet. Nëse "
+    "i gjati, me pauzat, të del mbi 9½ minuta, hiqi disa fjali të gjelbra që në provë: në "
+    "sallë flitet më shpejt nga nervozizmi, por kryesuesi mund të ta ndërpresë te minuta "
+    "e dhjetë.",
     "Regjistrohu një herë me telefon dhe dëgjoje. Do të vëresh vetë ku nxiton dhe ku "
     "ngec; një provë para një shoku a familjari vlen sa tri vetëm.",
     "Mos e lexo sllajdin. Shiko titullin, thuaj mesazhin me fjalët e tua, pastaj trego "
@@ -898,34 +1027,42 @@ CONFIDENCE = [
 ]
 
 CHECKLIST = [
-    "Konfirmo me mentoren ditën, orën, sallën dhe seancën (vitin e kaluar punimet e "
-    "inxhinierisë softuerike ishin në seancën «Software Engineering»).",
-    "Merr prezantimin në USB, si .pptx dhe si PDF, dhe dërgoje edhe me email vetes.",
-    "Arrij 30 minuta herët, hape prezantimin në kompjuterin e sallës dhe kontrollo që "
-    "kodi në sllajdin 8 duket njësoj (shkronja Consolas).",
-    "Prezantohu te kryesuesi i seancës dhe pyet si të sinjalizon kohën.",
+    "Të mërkurën, 21 tetor: shiko agjendën përfundimtare dhe kontrollo radhën, orën dhe "
+    "sallën.",
+    "Merr të dy versionet në USB, si .pptx dhe si PDF, dhe dërgoji edhe me email vetes.",
+    "Arrij te salla I-302 rreth 08:30, para se të fillojë seanca. Hape prezantimin në "
+    "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 8 duket njësoj (shkronja "
+    "Consolas).",
+    "Prezantohu te kryesuesi i seancës (Blerim Zylifu). Pyete sa minuta ka çdo prezantim "
+    "dhe si ta sinjalizon kohën. Me 9 minuta ose më shumë merr versionin e gjatë; me më "
+    "pak, të shkurtrin.",
     "Ujë pranë, telefoni pa zë, fleta e pyetjeve në xhep.",
-    "Nëse në minutën e tetë je ende te sllajdi 6, kalo sllajdin 8 me një fjali dhe "
-    "mbyll me sllajdin 9.",
+    "Me versionin e shkurtër, kur vendi është 7 minuta: nëse në minutën e pestë je ende te "
+    "sllajdi 6, kalo sllajdin 8 me një fjali dhe mbyll me sllajdin 9.",
+    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 6, lëri të gjitha "
+    "fjalitë e gjelbra që mbeten dhe vazhdo me tekstin e shkurtër.",
 ]
 
+# Nga agjenda paraprake që dërguan organizatorët; agjenda përfundimtare vjen më 21 tetor.
 CONFERENCE = [
-    "Konferenca e 15-të Ndërkombëtare e UBT-së, nënkonferenca IC-CSCE (Computer Science "
-    "and Communication Engineering), 23–25 tetor 2026, UBT SMART City – Science and "
-    "Innovation Park (conferences.ubt-uni.net).",
-    "Më 2025 nënkonferenca kishte seancat «Software Engineering» (9 prezantime), «Artificial "
-    "Intelligence» (8) dhe «Network Communications and Security» (6), secila me kryesues "
-    "dhe bashkëkryesues, plus një seancë postere. Mentorja jote prezantoi atje «The Use of "
-    "Artificial Intelligence for Fake News Detection».",
-    "Agjenda e një nënkonference motër më 2025 kishte vende prej 10–12 minutash për "
-    "prezantim. Teksti i përgatitur zgjat rreth 7 minuta me ritëm të qetë, dhe me pauzat "
-    "e kalimet rreth 8: mbetet kohë rezervë para kufirit të 10 minutave.",
+    "15th UBT Annual International Conference on Computer Science and Engineering, 23–25 "
+    "tetor 2026. Ceremonia e hapjes është të premten, 23 tetor, në UBT Innovation Campus "
+    "– Lipjan. Prezantimi mund të mbahet fizikisht ose online.",
+    "Seanca jote: «Session 1 – Software Engineering», e shtunë 24 tetor, 09:00–11:00, "
+    "salla I-302 në UBT Campus. Kryesues Blerim Zylifu, bashkëkryesues Lavdim Menxhiqi.",
+    "Je i 14-ti nga 17 prezantime në seancë. Email-i thotë 10 minuta për prezantim, por "
+    "17 prezantime në 120 minuta lënë rreth 7 për secilin. Prandaj ke dy versione, dhe "
+    "zgjedh njërin sipas kohës që jep kryesuesi.",
+    "Në të njëjtën seancë ka tri punime për kodin dhe modelet gjuhësore: optimizimi i kodit "
+    "Java me LLM, besueshmëria e kodit të gjeneruar nga AI, dhe punimi i mentores «Trust "
+    "but Verify». Pyetja «pse jo një LLM?» ka gjasa të dalë; përgjigjen e ke më poshtë.",
+    "Agjenda përfundimtare vjen të mërkurën, 21 tetor: kontrollo radhën, orën dhe sallën.",
     "Abstraktet botohen në «Abstract Book» me ISBN dhe DOI në UBT Knowledge Center. "
     "Pyete mentoren nëse kërkohet më vonë edhe punim i plotë (6 faqe, formati Springer).",
 ]
 
 
-def build_sheet(f: dict, timing: list[tuple[str, int]]) -> str:
+def build_sheet(f: dict, script: list[tuple[str, list[str]]]) -> str:
     doc = Document()
     normal = doc.styles["Normal"]
     normal.font.name = "Calibri"
@@ -938,21 +1075,56 @@ def build_sheet(f: dict, timing: list[tuple[str, int]]) -> str:
     for line in CONFERENCE:
         doc.add_paragraph(line, style="List Bullet")
 
+    words = {
+        long: sum(_word_count(_spoken(parts, long)) for _, parts in script) for long in (False, True)
+    }
+
+    def minutes(long: bool, rate: int) -> str:
+        return _clock(round(words[long] / rate * 60))
+
+    doc.add_heading("Dy versione", level=1)
+    for line in [
+        f"{os.path.basename(DECK)}: versioni i shkurtër, {words[False]} fjalë, rreth "
+        f"{minutes(False, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur kryesuesi jep "
+        "7 minuta ose më pak.",
+        f"{os.path.basename(DECK_LONG)}: versioni i gjatë, {words[True]} fjalë, rreth "
+        f"{minutes(True, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur jep vërtet 10 "
+        "minuta, siç thotë email-i.",
+        "Sllajdet janë të njëjta; ndryshon vetëm teksti folës. I gjati është i shkurtri plus "
+        "disa fjali shtesë, që te shënimet e PowerPoint-it janë me shkronja të pjerrëta e "
+        "këtu më poshtë me të gjelbër: kur koha nuk mjafton, i lë dhe je te versioni i "
+        "shkurtër pa humbur fillin.",
+        f"Me ritëm të shpejtë ({FAST_WORDS_PER_MINUTE} fjalë në minutë) i shkurtri zgjat "
+        f"{minutes(False, FAST_WORDS_PER_MINUTE)} dhe i gjati "
+        f"{minutes(True, FAST_WORDS_PER_MINUTE)}, pa pauzat. Ky ritëm është supozim. Për ta matur tëndin, lexo me zë tekstin e "
+        "sllajdit 2 me kronometër: fjalët e tij (te tabela) pjesëtuar me minutat janë "
+        "ritmi yt.",
+    ]:  # fmt: skip
+        doc.add_paragraph(line, style="List Bullet")
+
     doc.add_heading("Koha për sllajd", level=1)
     doc.add_paragraph(
-        f"E llogaritur nga fjalët e shënimeve folëse, me {WORDS_PER_MINUTE} fjalë në minutë."
+        f"E llogaritur nga fjalët e shënimeve folëse, me {WORDS_PER_MINUTE} fjalë në minutë, "
+        "pa pauzat dhe kalimet mes sllajdeve (zakonisht edhe rreth një minutë gjithsej)."
     )
-    table = doc.add_table(rows=1, cols=4)
+    headers = ["#", "Sllajdi", "Fjalë",
+               "Shkurt: sek.", "Shkurt: gjithsej", "9 min: sek.", "9 min: gjithsej"]  # fmt: skip
+    table = doc.add_table(rows=1, cols=len(headers))
     table.style = "Light Grid Accent 1"
-    for cell, text in zip(table.rows[0].cells, ["#", "Sllajdi", "Sekonda", "Gjithsej"], strict=True):
+    for cell, text in zip(table.rows[0].cells, headers, strict=True):
         cell.text = text
-    total = 0
-    for index, (title, words) in enumerate(timing, 1):
-        seconds = round(words / WORDS_PER_MINUTE * 60)
-        total += seconds
+    # Gjithsej nga fjalët e grumbulluara, jo nga sekondat e rrumbullakuara të çdo sllajdi,
+    # që rreshti i fundit të thotë të njëjtën kohë si përmbledhja më lart.
+    spoken_so_far = {False: 0, True: 0}
+    for index, (title, parts) in enumerate(script, 1):
         row = table.add_row().cells
         row[0].text, row[1].text = str(index), title
-        row[2].text, row[3].text = str(seconds), f"{total // 60}:{total % 60:02d}"
+        counts = [_word_count(_spoken(parts, long)) for long in (False, True)]
+        row[2].text = str(counts[0]) if counts[0] == counts[1] else f"{counts[0]} / {counts[1]}"
+        for column, long in ((3, False), (5, True)):
+            spoken_so_far[long] += counts[long]
+            row[column].text = str(round(counts[long] / WORDS_PER_MINUTE * 60))
+            row[column + 1].text = _clock(round(spoken_so_far[long] / WORDS_PER_MINUTE * 60))
 
     doc.add_heading("Si të marrësh vetëbesim", level=1)
     for line in CONFIDENCE:
@@ -983,11 +1155,19 @@ def build_sheet(f: dict, timing: list[tuple[str, int]]) -> str:
         doc.add_paragraph(line, style="List Bullet")
 
     doc.add_heading("Teksti i plotë që thua (shënimet e sllajdeve)", level=1)
-    deck = Presentation(DECK)
-    for index, slide in enumerate(list(deck.slides)[: len(timing)], 1):
+    doc.add_paragraph(
+        "Fjalitë me të gjelbër dhe të pjerrëta thuhen vetëm në versionin 9-minutësh. Pa to, "
+        "mbetet saktësisht teksti i versionit të shkurtër."
+    )
+    for index, (title, parts) in enumerate(script, 1):
         paragraph = doc.add_paragraph()
-        paragraph.add_run(f"{index}. {timing[index - 1][0]}").bold = True
-        doc.add_paragraph(slide.notes_slide.notes_text_frame.text)
+        paragraph.add_run(f"{index}. {title}").bold = True
+        paragraph = doc.add_paragraph()
+        for position, part in enumerate(parts):
+            run = paragraph.add_run(part if position == 0 else " " + part)
+            if isinstance(part, Extra):
+                run.italic = True
+                run.font.color.rgb = DocRGB(*ADDED)
 
     doc.save(SHEET)
     return SHEET
@@ -997,11 +1177,14 @@ def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     facts = _facts()
-    deck, timing = build_deck(facts)
-    sheet = build_sheet(facts, timing)
-    words = sum(count for _, count in timing)
-    print(f"U gjenerua: {deck}\nU gjenerua: {sheet}")
-    print(f"Fjalë në tekstin folës: {words}, rreth {words / WORDS_PER_MINUTE:.1f} minuta")
+    for long in (False, True):
+        deck, script = build_deck(facts, long)
+        words = sum(_word_count(_spoken(parts, long)) for _, parts in script)
+        print(f"U gjenerua: {deck}")
+        print(f"  Fjalë në tekstin folës: {words}, rreth {words / WORDS_PER_MINUTE:.1f} minuta "
+              f"me ritëm të qetë, {words / FAST_WORDS_PER_MINUTE:.1f} me të shpejtë")  # fmt: skip
+    sheet = build_sheet(facts, script)
+    print(f"U gjenerua: {sheet}")
     return 0
 
 
