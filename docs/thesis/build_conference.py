@@ -36,26 +36,16 @@ from dataclasses import dataclass, field
 
 from build_slides import (
     ACCENT,
-    BODY_SIZE,
     CRITICAL,
-    FAINT,
     FIGURES,
     HEIGHT,
     INK,
     MARGIN,
-    SANS,
-    SERIF,
-    SMALL_SIZE,
     SOFT,
     WIDTH,
     _blank,
-    _bullets,
-    _figures,
     _mean,
     _note,
-    _table,
-    _text,
-    _title,
 )
 from chapters import (
     MADEYSKI_2023_DS1,
@@ -96,16 +86,15 @@ AFFILIATION = "UBT – Higher Education Institution, Kosovo"
 # Emri siç e shkruan agjenda e konferencës: email-i dhe faqja e saj përdorin shkurtesa
 # të ndryshme, dhe agjenda është dokumenti që ka salla.
 EVENT = "15th UBT Annual International Conference on Computer Science and Engineering  ·  2026"
+# Nga agjenda paraprake; salla nuk shkruhet, sepse agjenda përfundimtare mund ta ndryshojë.
+SESSION = "Session 1  ·  Software Engineering  ·  24 October 2026"
 
 # Gri për rregullat, blu për modelin: e njëjta ndarje si te figurat e punimit, që
-# lexohet edhe kur projektori i zbeh ngjyrat.
-MUTED = RGBColor(0xA6, 0xA6, 0xA6)
+# lexohet edhe kur projektori i zbeh ngjyrat. Gria është e errët sa të kalojë kontrastin
+# 3:1 që i duhet një grafiku kundrejt të bardhës.
+MUTED = RGBColor(0x87, 0x91, 0x9C)
 ADDED = RGBColor(0x2F, 0x6F, 0x45)
-CODE_FILL = RGBColor(0xF4, 0xF5, 0xF7)
 MONO = "Consolas"
-CODE_SIZE = Pt(12)
-# Rreshti i kodit me hapësirë të saktë, që lartësia e kutisë të llogaritet e jo të hamendësohet.
-CODE_LINE = Pt(13.6)
 
 MODEL_EN = {
     "majority": "Majority",
@@ -277,27 +266,22 @@ def _speech(slide, parts: list[str]) -> None:
         run.font.italic = isinstance(part, Extra)
 
 
-def _number(slide, index: int) -> None:
-    """Numri i sllajdit poshtë djathtas, që pyetjet të mund t'i referohen."""
-    frame = _text(slide, WIDTH - Inches(1.4), HEIGHT - Inches(0.55), Inches(1.0), Inches(0.4),
-                  Pt(12), FAINT)  # fmt: skip
-    frame.paragraphs[0].text = str(index)
-
-
-def _bar_chart(slide, categories, series, top, height, minimum=0.0, maximum=1.0) -> None:
+def _bar_chart(slide, categories, series, top, height, minimum=0.0, maximum=1.0, left=MARGIN,
+               width=None):  # fmt: skip
     """Shtylla të grupuara me vlerën mbi secilën, pa rrjetë dhe pa bosht të tepërt."""
     data = CategoryChartData()
     data.categories = categories
     for name, values, _ in series:
         data.add_series(name, values, number_format="0.00")
     frame = slide.shapes.add_chart(
-        XL_CHART_TYPE.COLUMN_CLUSTERED, MARGIN, top, WIDTH - 2 * MARGIN, height, data
+        XL_CHART_TYPE.COLUMN_CLUSTERED, left, top, width or WIDTH - 2 * MARGIN, height, data
     )
     chart = frame.chart
     # Me një seri të vetme PowerPoint-i i vë grafikut emrin e serisë si titull.
     chart.has_title = False
-    chart.font.name = SANS
+    chart.font.name = FONT
     chart.font.size = Pt(16)
+    chart.font.color.rgb = INK
     chart.has_legend = len(series) > 1
     if chart.has_legend:
         chart.legend.position = XL_LEGEND_POSITION.TOP
@@ -308,8 +292,9 @@ def _bar_chart(slide, categories, series, top, height, minimum=0.0, maximum=1.0)
     axis.maximum_scale = maximum
     axis.has_major_gridlines = False
     axis.visible = False
-    chart.category_axis.tick_labels.font.size = Pt(18)
+    chart.category_axis.tick_labels.font.size = Pt(16)
     chart.category_axis.has_major_gridlines = False
+    chart.category_axis.format.line.color.rgb = FRAME
     # Emrat e erërave poshtë grafikut, jo te boshti zero, ku një shtyllë negative i mbulon.
     chart.category_axis.tick_label_position = XL_TICK_LABEL_POSITION.LOW
     plot = chart.plots[0]
@@ -320,6 +305,7 @@ def _bar_chart(slide, categories, series, top, height, minimum=0.0, maximum=1.0)
     labels.number_format = "0.00"
     labels.number_format_is_linked = False
     labels.font.size = Pt(16)
+    labels.font.name = FONT_STRONG
     for index, (_, _, colour) in enumerate(series):
         plot.series[index].invert_if_negative = False
         fill = plot.series[index].format.fill
@@ -328,53 +314,8 @@ def _bar_chart(slide, categories, series, top, height, minimum=0.0, maximum=1.0)
     return chart
 
 
-def _panel(slide, left, top, width, height):
-    """Një kuti e mbushur, pa vijë dhe pa hije: hija e parazgjedhur e bën të duket buton."""
-    box = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
-    box.fill.solid()
-    box.fill.fore_color.rgb = CODE_FILL
-    box.line.fill.background()
-    box.shadow.inherit = False
-    box.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
-    return box
-
-
-def _bullets_at(slide, lines, left, top, width, size):
-    """`_bullets` i build_slides.py, por në një kolonë të caktuar e jo te margjina."""
-    frame = _bullets(slide, lines, top=top, width=width, size=size)
-    list(slide.shapes)[-1].left = left
-    return frame
-
-
-def _code_block(slide, label, lines, marked, colour, left, top, width) -> Emu:
-    """Kod me shkronja me gjerësi të njëtrajtshme; rreshtat e ndryshuar të theksuar."""
-    caption = _text(slide, left, top, width, Inches(0.35), SMALL_SIZE, SOFT, SANS, bold=True)
-    caption.paragraphs[0].text = label
-    top = top + Inches(0.38)
-    height = Emu(int(CODE_LINE * len(lines) + Inches(0.2)))
-    box = _panel(slide, left, top, width, height)
-    frame = box.text_frame
-    frame.vertical_anchor = MSO_ANCHOR.TOP
-    frame.word_wrap = False
-    frame.margin_left = frame.margin_right = Inches(0.12)
-    frame.margin_top = frame.margin_bottom = Inches(0.08)
-    for index, line in enumerate(lines):
-        paragraph = frame.paragraphs[0] if index == 0 else frame.add_paragraph()
-        paragraph.line_spacing = CODE_LINE
-        paragraph.space_after = Pt(0)
-        paragraph.alignment = PP_ALIGN.LEFT
-        run = paragraph.add_run()
-        run.text = line
-        run.font.name = MONO
-        run.font.size = CODE_SIZE
-        changed = index in marked
-        run.font.bold = changed
-        run.font.color.rgb = colour if changed else INK
-    return Emu(int(top + height))
-
-
 def _elided(lines: list[str], marked: set[int]) -> tuple[list[str], set[int]]:
-    """Trupi i bllokut synchronized zëvendësohet me një koment që thotë sa rreshta ka.
+    """Blloku synchronized mblidhet në një rresht me një koment që thotë sa rreshta fsheh.
 
     Ai pjesë nuk ndryshon nga rishkrimi, dhe e plotë nuk hyn në një sllajd me shkronja
     që lexohen nga salla. Shkurtimi shënohet në vetë kodin, që askush të mos e lexojë
@@ -387,9 +328,9 @@ def _elided(lines: list[str], marked: set[int]) -> tuple[list[str], set[int]]:
         if depth == 0:
             break
     inner = lines[start + 1 : end]
-    indent = len(inner[0]) - len(inner[0].lstrip())
-    shown = lines[: start + 1] + [" " * indent + f"// … {len(inner)} unchanged lines"] + lines[end:]
-    kept = {i if i <= start else i - len(inner) + 1 for i in marked if i <= start or i >= end}
+    folded = f"{lines[start].rstrip()} /* … {len(inner)} unchanged lines */ {lines[end].strip()}"
+    shown = lines[:start] + [folded] + lines[end + 1 :]
+    kept = {i if i < start else start if i <= end else i - (end - start) for i in marked}
     return shown, kept
 
 
@@ -406,11 +347,924 @@ def _example() -> tuple[list[str], set[int], list[str], set[int]] | None:
     return before, removed, after, added
 
 
+def _script(f: dict) -> list[tuple]:
+    """Teksti folës i nëntë sllajdeve kryesore, me radhë: emri i brendshëm dhe fjalitë.
+
+    I ndarë nga paraqitja e sllajdeve, që një sllajd të rindërtohet pa e prekur tekstin
+    që folësi e ka provuar.
+    """
+    refactoring, quality = f["refactoring"], f["quality"]
+    recall, model_mcc = f["recall"], f["model_mcc"]
+    applied, detected = f["applied"], f["detected"]
+    resolved, broken = f["resolved"], f["broken"]
+    moderate, chance = f["moderate"], f["chance"]
+    pmd_ahead, pmd_behind = f["pmd_ahead"], f["pmd_behind"]
+    introduced, always, never = f["introduced"], f["always"], f["never"]
+    lowest, highest = min(recall) * 100, max(recall) * 100
+    shape = refactoring["refused_by_reason"]["shape_not_matched"] / detected * 100
+    newest = _words(max(introduced, key=introduced.get))
+    return [
+        (
+            "Title",
+            Line("Good morning, everyone.", "Mirëmëngjes të gjithëve."),
+            Line(
+                "My name is Florent Latifi, and this work comes from my bachelor thesis at UBT, "
+                "supervised by Altina Salihu.",
+                "Unë quhem Florent Latifi, dhe kjo punë vjen nga teza ime e bachelorit në UBT, me "
+                "mentore Altina Salihu.",
+            ),
+            Line(
+                "In the next ten minutes I will show how we can detect code smells in Java "
+                "automatically, how accurate that detection really is, and how far we can go in "
+                "fixing them.",
+                "Në dhjetë minutat në vijim do të tregoj si mund t'i gjejmë automatikisht erërat e "
+                "kodit në Java, sa e saktë është vërtet kjo gjetje, dhe deri ku mund të shkojmë me "
+                "ndreqjen e tyre.",
+            ),
+        ),
+        (
+            "The problem",
+            Line(
+                "Every developer knows the class that nobody wants to touch.",
+                "Çdo programues e njeh klasën që askush nuk do ta prekë.",
+            ),
+            Line(
+                "The program works, but every change takes longer than it should.",
+                "Programi punon, por çdo ndryshim zgjat më shumë se ç'duhet.",
+            ),
+            Line("These design problems are called code smells.",
+                 "Këto probleme të ndërtimit të kodit quhen erëra të kodit."),
+            Line("They are not bugs, but they make maintenance expensive.",
+                 "Nuk janë gabime, por e bëjnë mirëmbajtjen të shtrenjtë."),
+            Line("Most tools find them with fixed thresholds.",
+                 "Shumica e mjeteve i gjejnë me pragje fikse, pra me numra të caktuar njëherë e "
+                 "përgjithmonë."),
+            Line(
+                "For example, if a method is longer than a certain number of lines, it is a Long "
+                "Method.",
+                "Për shembull, nëse një metodë është më e gjatë se një numër i caktuar rreshtash, "
+                "ajo quhet Long Method.",
+            ),
+            Line(
+                "But these numbers were calibrated on other code, and most tools only point at the "
+                "problem.",
+                "Por këta numra janë përcaktuar duke parë kod tjetër, dhe shumica e mjeteve vetëm e "
+                "tregojnë problemin.",
+            ),
+            Line("They do not fix it.", "Nuk e ndreqin."),
+            Line("So we asked three questions.", "Prandaj bëmë tri pyetje."),
+            Line("First, how accurate are the published detection rules?",
+                 "E para: sa të sakta janë rregullat e botuara për gjetjen e erërave?"),
+            Line("Second, can machine learning do better with the same metrics?",
+                 "E dyta: a mund të bëjë më mirë mësimi makinerik, me të njëjtat metrika?"),
+            Line("And third, can we fix smells automatically without breaking the code?",
+                 "Dhe e treta: a mund t'i ndreqim erërat automatikisht, pa e prishur kodin?"),
+        ),
+        (
+            "What we built",
+            Line("To answer them, I built a tool called JavaSmell.",
+                 "Për t'iu përgjigjur këtyre pyetjeve, ndërtova një mjet që quhet JavaSmell."),
+            Line(f"It reads Java code and measures {f['metrics']} metrics for every class and method.",
+                 f"E lexon kodin Java dhe mat {f['metrics']} metrika, pra numra, për çdo klasë dhe "
+                 "metodë."),
+            Line("On top of these metrics there are three approaches.",
+                 "Mbi këto metrika ndërtohen tri qasje."),
+            Line(
+                f"A uses {f['strategies']} detection strategies from the literature, such as "
+                "Lanza and Marinescu and Fowler.",
+                f"A përdor {f['strategies']} rregulla gjetjeje nga literatura, si ato të Lanza-s e "
+                "Marinescu-t dhe të Fowler-it.",
+            ),
+            Line("B trains machine learning classifiers on the same metrics.",
+                 "B trajnon modele të mësimit makinerik mbi të njëjtat metrika."),
+            Line("And C is a refactoring engine.", "Dhe C është një motor që e ndreq kodin."),
+            Line(
+                "It rewrites code only when it can prove its preconditions from the syntax tree, "
+                "and then it checks the result with the Java compiler.",
+                "E rishkruan kodin vetëm kur mund ta vërtetojë nga pema e sintaksës që ndryshimi "
+                "është i sigurt, dhe pastaj e kontrollon rezultatin me kompajlerin e Java-s.",
+            ),
+            Extra(
+                "Every detection also shows the conditions it checked, so a developer can see why a "
+                "class was flagged, not only that it was.",
+                "Çdo gjetje tregon edhe kushtet që kontrolloi, që programuesi të shohë pse u shënua "
+                "një klasë, jo vetëm që u shënua.",
+            ),
+            Line("On the right you can see the web interface.", "Djathtas shihni ndërfaqen web."),
+            Line("It also has a plain-language mode for people without a technical background.",
+                 "Ka edhe një mënyrë me gjuhë të thjeshtë, për njerëzit pa përgatitje teknike."),
+        ),
+        (
+            "Data and evaluation",
+            Line("For a fair test, we need labels from people.",
+                 "Për një provë të drejtë, na duhen etiketa nga njerëzit, pra dikush që thotë "
+                 "«ky kod ka erë» ose «nuk ka»."),
+            Line(
+                "We used MLCQ, a public dataset where professional developers reviewed real "
+                "open-source Java code.",
+                "Përdorëm MLCQ, një bazë publike të dhënash ku programues profesionistë shqyrtuan "
+                "kod të vërtetë Java me burim të hapur.",
+            ),
+            Line(
+                f"After matching the samples to our tool, we have {f['samples']:,} labeled samples "
+                f"from {f['repositories']} repositories, for four smells.",
+                f"Pasi i gjetëm mostrat në kod me mjetin tonë, kemi {f['samples']:,} mostra me "
+                f"etiketë nga {f['repositories']} projekte, për katër erëra.",
+            ),
+            Extra("Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
+            Extra("Data Class only holds data and has almost no behavior.",
+                  "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
+            Extra(
+                "Long Method is a method that has grown too long, and Feature Envy is a method that "
+                "uses another class more than its own.",
+                "Long Method është një metodë që është zgjatur shumë, dhe Feature Envy është një "
+                "metodë që përdor një klasë tjetër më shumë se klasën e vet.",
+            ),
+            Line("One important detail is how we split the data.",
+                 "Një detaj i rëndësishëm është si i ndamë të dhënat për mësim dhe për provë."),
+            Line(
+                "Code from the same project looks very similar, so we grouped the data by "
+                "repository: a model is never tested on a project it learned from.",
+                "Kodi i të njëjtit projekt ngjan shumë, ndaj i grupuam të dhënat sipas projektit: "
+                "një model nuk provohet kurrë mbi një projekt nga i cili ka mësuar.",
+            ),
+            Line("And we report the Matthews correlation coefficient, MCC.",
+                 "Dhe si notë kryesore raportojmë koeficientin e korrelacionit Matthews, MCC."),
+            Line(
+                "Most samples are clean, so simple accuracy would look very good even for a "
+                "detector that never fires.",
+                "Shumica e mostrave janë të pastra, ndaj saktësia e thjeshtë do të dukej shumë e "
+                "mirë edhe për një detektor që nuk alarmon kurrë.",
+            ),
+        ),
+        (
+            "Rules vs. machine learning",
+            Line("Here are the main results.", "Ja rezultatet kryesore."),
+            Line(
+                "The gray bars are the published rules, and the blue bars are the best machine "
+                "learning model for each smell.",
+                "Shtyllat gri janë rregullat e botuara, dhe shtyllat blu janë modeli më i mirë i "
+                "mësimit makinerik për secilën erë.",
+            ),
+            Line(
+                f"The rules are often correct when they fire, but they catch only {lowest:.0f} to "
+                f"{highest:.0f} percent of the smells that developers marked.",
+                f"Rregullat zakonisht kanë të drejtë kur alarmojnë, por kapin vetëm {lowest:.0f} deri "
+                f"{highest:.0f} për qind të erërave që shënuan programuesit.",
+            ),
+            Line(
+                f"The models are better on all four smells, with MCC from {min(model_mcc):.2f} to "
+                f"{max(model_mcc):.2f}.",
+                f"Modelet janë më të mira te të katër erërat, me MCC nga {min(model_mcc):.2f} deri "
+                f"{max(model_mcc):.2f}.",
+            ),
+            Line("We also computed 95 percent confidence intervals by resampling repositories.",
+                 "Llogaritëm edhe intervale besimi 95 për qind, duke i rizgjedhur projektet rastësisht "
+                 "shumë herë."),
+            Line(f"The improvement is clearly above zero for {_and(f['sure'])}.",
+                 f"Përmirësimi është qartë mbi zero për {_dhe(f['sure'])}: nuk është fat."),
+            Line(f"For {_and(f['unsure'])}, the difference could be chance.",
+                 f"Për {_dhe(f['unsure'])}, ndryshimi mund të jetë edhe rastësi."),
+            Extra("We also compared with PMD, a popular open-source analyzer, on the same samples.",
+                  "E krahasuam edhe me PMD-në, një mjet i njohur falas për analizën e kodit, mbi të "
+                  "njëjtat mostra."),
+            Extra(
+                "Once the confidence interval is considered, "
+                + ("PMD is never ahead" if not pmd_ahead else f"PMD is ahead for {_and(pmd_ahead)}")
+                + f", and for {_and(pmd_behind)} our rules are clearly better.",
+                "Kur merret parasysh intervali i besimit, "
+                + ("PMD nuk del kurrë përpara" if not pmd_ahead
+                   else f"PMD del përpara për {_dhe(pmd_ahead)}")
+                + f", dhe për {_dhe(pmd_behind)} rregullat tona janë qartë më të mira.",
+            ),
+        ),
+        (
+            "Human agreement",
+            Line("Why is Feature Envy so hard?", "Pse është Feature Envy kaq e vështirë?"),
+            Line("We measured how much the human reviewers agree with each other.",
+                 "Matëm sa pajtohen rishikuesit njerëzorë me njëri-tjetrin."),
+            Line(f"For {_and([SMELL_SQ[s] for s in moderate])}, two reviewers agree only moderately.",
+                 f"Për {_dhe([SMELL_SQ[s] for s in moderate])}, dy rishikues pajtohen vetëm "
+                 "mesatarisht."),
+            Line(f"For {_and([SMELL_SQ[s] for s in chance])}, they agree no better than chance.",
+                 f"Për {_dhe([SMELL_SQ[s] for s in chance])}, pajtohen jo më shumë se sa po të "
+                 "hamendësonin."),
+            *[
+                Extra(f"For {SMELL_SQ[s]}, their MCC is {f['reviewers'][s]:.2f}, practically zero.",
+                      f"Për {SMELL_SQ[s]}, MCC-ja e tyre është {f['reviewers'][s]:.2f}, praktikisht "
+                      "zero.")
+                for s in chance
+            ],
+            Extra(
+                f"This matches the previous slide: {_and(f['unsure'])} is where the model could not "
+                "clearly beat the rules.",
+                f"Kjo përputhet me sllajdin e mëparshëm: te {_dhe(f['unsure'])} modeli nuk arriti "
+                "t'i mundë qartë rregullat.",
+            ),
+            Line("So the problem is not only the algorithm.", "Pra problemi nuk është vetëm algoritmi."),
+            Line("It is the definition of the smell itself.", "Është vetë përkufizimi i erës."),
+            Line("If experts do not agree on what a smell is, no detector can learn it well.",
+                 "Nëse ekspertët nuk pajtohen se çka është një erë, asnjë detektor nuk mund ta mësojë "
+                 "mirë."),
+            Line("For me, this is the main lesson of the detection part.",
+                 "Për mua, ky është mësimi kryesor i pjesës së gjetjes së erërave."),
+        ),
+        (
+            "Automatic refactoring",
+            Line("Now the refactoring engine.", "Tani motori që e ndreq kodin."),
+            Line(
+                "It supports three transformations: Extract Method, Replace Nested Conditional with "
+                "Guard Clauses, and Introduce Parameter Object.",
+                "Ai di tri ndreqje: nxjerrjen e një metode, zëvendësimin e if-ave të futur thellë me "
+                "dalje të hershme, dhe mbledhjen e shumë parametrave në një objekt.",
+            ),
+            Line(
+                f"On the whole corpus it found {detected:,} sites and rewrote {applied:,} of them, "
+                f"which is {applied / detected * 100:.0f} percent.",
+                f"Në gjithë korpusin gjeti {detected:,} vende ku mund të ndreqte dhe rishkroi "
+                f"{applied:,} prej tyre, pra {applied / detected * 100:.0f} për qind.",
+            ),
+            Line("The rest were refused, each with a reason.",
+                 "Të tjerat i refuzoi, secilën me një arsye."),
+            Extra(
+                f"In {shape:.0f} percent of the sites, the reason is simply that the code does not "
+                "have the shape the transformation needs.",
+                f"Në {shape:.0f} për qind të vendeve, arsyeja është thjesht se kodi nuk ka formën që "
+                "i duhet ndreqjes.",
+            ),
+            Line("For us, refusing is a correct result, not a failure.",
+                 "Për ne, refuzimi është rezultat i saktë, jo dështim."),
+            Line(f"After rewriting, the smell disappeared in {resolved * 100:.0f} percent of the cases.",
+                 f"Pas rishkrimit, era u zhduk në {resolved * 100:.0f} për qind të rasteve."),
+            Line(
+                f"Only {broken * 100:.1f} percent of the rewrites introduced a new type of "
+                "compilation error, and those never reach the code, because the tool only writes "
+                "verified rewrites.",
+                f"Vetëm {broken * 100:.1f} për qind e rishkrimeve shtuan një lloj të ri gabimi "
+                "kompilimi, dhe ato nuk arrijnë kurrë te kodi, sepse mjeti shkruan vetëm rishkrime "
+                "të kontrolluara.",
+            ),
+            Line(
+                f"I also read {quality['reviewed']} rewrites by hand: after reweighting, about "
+                f"{quality['acceptable_reweighted'] * 100:.0f} percent would be acceptable to a "
+                "developer.",
+                f"Lexova edhe {quality['reviewed']} rishkrime me dorë: pasi i peshova sipas sa të "
+                f"shpeshtë janë, rreth {quality['acceptable_reweighted'] * 100:.0f} për qind do të "
+                "ishin të pranueshme për një programues.",
+            ),
+            Extra(
+                f"Refactoring can also create new smells: {sum(introduced.values()):,} appeared "
+                f"after rewriting, most often {newest}, because Extract Method passes every input "
+                "as a parameter.",
+                f"Ndreqja mund të krijojë edhe erëra të reja: {sum(introduced.values()):,} u shfaqën "
+                f"pas rishkrimit, më shpesh {newest}, sepse metoda e nxjerrë i merr të gjitha "
+                "hyrjet si parametra.",
+            ),
+            Extra(
+                f"In that review, {_and(always)} were always acceptable, and {_and(never)} never, "
+                "because it only moves the long list into a new class.",
+                f"Në atë rishikim, {_dhe(always)} ishin gjithmonë të pranueshme, dhe {_dhe(never)} "
+                "kurrë, sepse vetëm e zhvendos listën e gjatë në një klasë të re.",
+            ),
+        ),
+        (
+            "Example",
+            Line("Here is one real example from Apache Geode.",
+                 "Ja një shembull i vërtetë nga Apache Geode, një projekt i madh me burim të hapur."),
+            Line("Before, the whole method is wrapped in one if statement, so everything is nested "
+                 "deeply.",
+                 "Më parë, e gjithë metoda është brenda një if-i, ndaj gjithçka është e futur thellë."),
+            Line(
+                "After the rewrite, the condition becomes a guard clause with an early return, and "
+                "the rest of the method moves one level up.",
+                "Pas rishkrimit, kushti bëhet një «roje» që del herët nga metoda me return, dhe pjesa "
+                "tjetër e metodës ngjitet një nivel lart.",
+            ),
+            Extra(
+                "The engine accepts only exactly this shape: a void method whose whole body is one "
+                "if statement, without else.",
+                "Motori pranon vetëm saktësisht këtë formë: një metodë void, e cila nuk kthen vlerë, "
+                "dhe trupi i saj është i gjithi një if, pa else.",
+            ),
+            Extra(
+                "It also wraps the condition in a not, instead of inverting it by hand, so it stays "
+                "correct for every condition.",
+                "Gjithashtu e mbështjell kushtin me një «jo» (!), në vend që ta kthejë së prapthi me "
+                "dorë, ndaj mbetet i saktë për çdo kusht.",
+            ),
+            Line("The rewrite passed the compiler check, and in my review it was acceptable as it is.",
+                 "Rishkrimi e kaloi kontrollin e kompajlerit, dhe në rishikimin tim ishte i "
+                 "pranueshëm ashtu siç është."),
+        ),
+        (
+            "Limitations and takeaways",
+            Line("To be honest about the limits: compiling is not the same as behaving the same.",
+                 "Për të qenë i sinqertë për kufijtë: që kodi kompilohet nuk do të thotë që sillet "
+                 "njësoj si më parë."),
+            Line("We did not run the projects' test suites, so behavior preservation is future work.",
+                 "Nuk i ekzekutuam testet e projekteve, ndaj vërtetimi që sjellja mbetet e njëjtë "
+                 "është punë për më vonë."),
+            Line("We also used one dataset, four smells, and only Java.",
+                 "Përdorëm gjithashtu vetëm një bazë të dhënash, katër erëra dhe vetëm Java."),
+            Extra(
+                "And the best model was chosen on the same predictions it is scored on, so its "
+                "numbers are slightly optimistic.",
+                "Dhe modeli më i mirë u zgjodh mbi të njëjtat parashikime me të cilat vlerësohet, "
+                "ndaj numrat e tij janë pak më të mirë se në realitet.",
+            ),
+            Extra(
+                "As next steps, I would add a small symbol resolver to support more refactorings, "
+                "and ask independent reviewers to judge the rewrites.",
+                "Si hapa të ardhshëm, do të shtoja një pjesë të vogël që i kupton emrat në kod, për "
+                "të mbështetur më shumë ndreqje, dhe do t'u kërkoja rishikuesve të pavarur t'i "
+                "gjykojnë rishkrimet.",
+            ),
+            Line("To summarize: learned boundaries beat fixed thresholds.",
+                 "Për ta përmbledhur: kufijtë që i mëson modeli i mundin pragjet fikse."),
+            Line("Safe automatic refactoring is possible, but narrow, and it should be reviewed by a "
+                 "developer.",
+                 "Ndreqja automatike e sigurt është e mundshme, por vetëm për pak raste, dhe duhet ta "
+                 "shohë një programues."),
+            Line("The tool is open source, and every number in this talk can be regenerated with a "
+                 "script.",
+                 "Mjeti është me burim të hapur, dhe çdo numër në këtë prezantim mund të rimerret me "
+                 "një skript."),
+            Line("Thank you.", "Faleminderit."),
+            Line("I am happy to take your questions.", "Me kënaqësi i pres pyetjet tuaja."),
+        ),
+    ]  # fmt: skip
+
+
+# ----------------------------------------------------------------------
+# Sistemi vizual i prezantimit
+# ----------------------------------------------------------------------
+# Segoe UI ndodhet në çdo Windows, ndaj kompjuteri i sallës e vizaton sllajdin ashtu siç
+# u ndërtua; një font i shkarkuar mund të zëvendësohet atje dhe ta prishë faqosjen.
+FONT = "Segoe UI"
+FONT_STRONG = "Segoe UI Semibold"
+
+# Ngjyrat janë të projektit: blu e figurave të punimit dhe e ndërfaqes, e kuqja vetëm për
+# atë që nuk funksionon. Sfondi i errët vetëm për hapjen dhe mbylljen, që salla ta ndiejë
+# fillimin dhe fundin pa e lexuar.
+NAVY = RGBColor(0x0E, 0x27, 0x40)
+ON_DARK = RGBColor(0xF4, 0xF6, 0xF9)
+ON_DARK_SOFT = RGBColor(0xA9, 0xB8, 0xC9)
+ACCENT_ON_DARK = RGBColor(0x8D, 0xBB, 0xE6)
+DANGER_ON_DARK = RGBColor(0xF0, 0x8A, 0x7E)
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+PANEL = RGBColor(0xF2, 0xF4, 0xF7)
+TINT = RGBColor(0xE4, 0xED, 0xF6)
+REFUSED = RGBColor(0xDD, 0xE2, 0xE8)
+FRAME = RGBColor(0xC9, 0xD0, 0xD8)
+# Gri e rregullave si tekst: më e errët se shtylla, që të lexohet nga fundi i sallës.
+RULE_TEXT = RGBColor(0x5E, 0x68, 0x74)
+REMOVED_TINT = RGBColor(0xF7, 0xE1, 0xDC)
+ADDED_TINT = RGBColor(0xDF, 0xEF, 0xE3)
+
+# Shkalla e shkronjave: titulli lexohet nga rreshti i fundit, teksti nga mesi i sallës.
+SIZE_TITLE = Pt(28)
+SIZE_LEAD = Pt(20)
+SIZE_CAPTION = Pt(16)
+SIZE_SMALL = Pt(14)
+SIZE_FOOT = Pt(12)
+SIZE_STAT = Pt(40)
+SIZE_NUMBER = Pt(56)
+RADIUS = Inches(0.08)
+STAT_HEIGHT = Inches(1.7)
+# Kodi: rreshti më i gjatë i shembullit duhet të hyjë në dy të tretat e sllajdit.
+CODE_SIZE = Pt(13)
+GAP = Inches(0.3)
+CONTENT = WIDTH - 2 * MARGIN
+# Titulli lë vend djathtas për hartën e pyetjeve, në çdo sllajd në të njëjtin vend.
+TITLE_WIDTH = WIDTH - 2 * MARGIN - Inches(2.75)
+TOP = Inches(2.0)
+# Maja e boshtit MCC, e njëjtë te dy grafikët që salla t'i krahasojë me sy.
+MCC_TOP = 0.9
+
+# Pjesa e fotos së ndërfaqes që tregon dy gjetje me kushtet e tyre, në pikselat e origjinalit:
+# e plotë, teksti i saj del sa një gjilpërë në projektor.
+INTERFACE_CROP = (195, 1090, 1300, 1640)
+
+
+def _frame(slide, left, top, width, height, anchor=MSO_ANCHOR.TOP):
+    """Një kuti teksti pa kufi të brendshëm, që teksti të rreshtohet me format përreth."""
+    frame = slide.shapes.add_textbox(left, top, width, height).text_frame
+    frame.word_wrap = True
+    frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
+    frame.vertical_anchor = anchor
+    return frame
+
+
+def _run(paragraph, text: str, size, colour, strong: bool = False):
+    run = paragraph.add_run()
+    run.text = text
+    run.font.size = size
+    run.font.color.rgb = colour
+    run.font.name = FONT_STRONG if strong else FONT
+    return run
+
+
+def _put(frame, text: str, size, colour, *, strong=False, new=False, align=PP_ALIGN.LEFT,
+         before=0, after=0):  # fmt: skip
+    paragraph = frame.add_paragraph() if new else frame.paragraphs[0]
+    paragraph.alignment = align
+    paragraph.space_before = Pt(before)
+    paragraph.space_after = Pt(after)
+    _run(paragraph, text, size, colour, strong)
+    return paragraph
+
+
+def _shape(slide, left, top, width, height, fill, kind=MSO_SHAPE.ROUNDED_RECTANGLE, line=None):
+    """Një formë e mbushur, pa hije: rrumbullakimi është i njëjtë në gjithë prezantimin."""
+    shape = slide.shapes.add_shape(kind, left, top, width, height)
+    if kind == MSO_SHAPE.ROUNDED_RECTANGLE:
+        shape.adjustments[0] = min(RADIUS / min(width, height), 0.5)
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = fill
+    if line is None:
+        shape.line.fill.background()
+    else:
+        shape.line.color.rgb = line
+        shape.line.width = Pt(0.75)
+    shape.shadow.inherit = False
+    frame = shape.text_frame
+    frame.word_wrap = True
+    frame.margin_left = frame.margin_right = Inches(0.18)
+    frame.margin_top = frame.margin_bottom = Inches(0.1)
+    return shape
+
+
+def _background(slide, colour) -> None:
+    fill = slide.background.fill
+    fill.solid()
+    fill.fore_color.rgb = colour
+
+
+def _heading(slide, title: str, subtitle: str = "", dark: bool = False, kicker: str = ""):
+    """Titulli në të njëjtin vend në çdo sllajd; titulli thotë gjetjen, nëntitulli burimin."""
+    frame = _frame(slide, MARGIN, Inches(0.45), TITLE_WIDTH, Inches(1.4))
+    paragraph = frame.paragraphs[0]
+    if kicker:
+        _run(paragraph, kicker, SIZE_TITLE, ON_DARK_SOFT if dark else SOFT, strong=True)
+    _run(paragraph, title, SIZE_TITLE, ON_DARK if dark else INK, strong=True)
+    if subtitle:
+        _put(frame, subtitle, SIZE_CAPTION, ON_DARK_SOFT if dark else SOFT, new=True, before=6)
+    return frame
+
+
+def _map(slide, active: set[int]) -> None:
+    """Tri pyetjet e kërkimit lart djathtas; ndizet ajo për të cilën flet sllajdi.
+
+    Salla nuk e mban mend skeletin e një prezantimi dhjetë-minutësh; harta ia kujton në
+    çdo sllajd pa asnjë fjalë më shumë.
+    """
+    width, height, gap = Inches(0.78), Inches(0.36), Inches(0.1)
+    left = WIDTH - MARGIN - 3 * width - 2 * gap
+    for index in (1, 2, 3):
+        on = index in active
+        pill = _shape(slide, Emu(int(left + (index - 1) * (width + gap))), Inches(0.5), width,
+                      height, ACCENT if on else PANEL)  # fmt: skip
+        pill.adjustments[0] = 0.5
+        frame = pill.text_frame
+        frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
+        frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        _put(frame, f"RQ{index}", SIZE_SMALL, WHITE if on else SOFT, strong=True,
+             align=PP_ALIGN.CENTER)  # fmt: skip
+
+
+def _footer(slide, index: int, dark: bool = False) -> None:
+    """Emri dhe numri i sllajdit, që një pyetje të mund të thotë «te sllajdi 5»."""
+    colour = ON_DARK_SOFT if dark else SOFT
+    top, height = HEIGHT - Inches(0.55), Inches(0.3)
+    _put(_frame(slide, MARGIN, top, Inches(4), height), "Florent Latifi  ·  UBT 2026", SIZE_FOOT,
+         colour)  # fmt: skip
+    _put(_frame(slide, WIDTH - MARGIN - Inches(1), top, Inches(1), height), str(index), SIZE_FOOT,
+         colour, align=PP_ALIGN.RIGHT)  # fmt: skip
+
+
+def _bullet(paragraph, colour) -> None:
+    """Një pikë e vërtetë e PowerPoint-it, me dhëmbëzim të varur, jo një «·» në tekst."""
+    properties = paragraph._p.get_or_add_pPr()
+    indent = int(Inches(0.3))
+    properties.set("marL", str(indent))
+    properties.set("indent", str(-indent))
+    tint = properties.makeelement(qn("a:buClr"), {})
+    tint.append(tint.makeelement(qn("a:srgbClr"), {"val": str(colour)}))
+    properties.append(tint)
+    properties.append(properties.makeelement(qn("a:buFont"), {"typeface": "Arial"}))
+    properties.append(properties.makeelement(qn("a:buChar"), {"char": "•"}))
+
+
+def _bullet_list(slide, left, top, width, height, lines, size=SIZE_LEAD, colour=INK, mark=ACCENT,
+                 after=12):  # fmt: skip
+    frame = _frame(slide, left, top, width, height)
+    for index, line in enumerate(lines):
+        _bullet(_put(frame, line, size, colour, new=index > 0, after=after), mark)
+    return frame
+
+
+def _stat(slide, left, top, width, number: str, caption: str, colour=ACCENT, size=SIZE_NUMBER,
+          caption_colour=SOFT, height=STAT_HEIGHT):  # fmt: skip
+    """Një shifër e madhe me nënshkrimin e saj: syri e gjen shifrën para se ta dëgjojë."""
+    frame = _frame(slide, left, top, width, height)
+    _put(frame, number, size, colour, strong=True)
+    _put(frame, caption, SIZE_CAPTION, caption_colour, new=True, before=2)
+    return frame
+
+
+def _badge(slide, left, top, letter: str, fill) -> None:
+    """Shkronja e qasjes (A, B, C) në një rreth: e njëjta shenjë në çdo sllajd ku shfaqet."""
+    size = Inches(0.36)
+    circle = _shape(slide, left, top, size, size, fill, kind=MSO_SHAPE.OVAL)
+    frame = circle.text_frame
+    frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
+    frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    _put(frame, letter, SIZE_SMALL, WHITE, strong=True, align=PP_ALIGN.CENTER)
+
+
+def _node(slide, left, top, width, height, text: str, fill=PANEL, letter="", letter_fill=ACCENT):
+    """Një hap i rrjedhës, me shkronjën e qasjes kur hapi i përket njërës prej tyre."""
+    _shape(slide, left, top, width, height, fill)
+    inset = Inches(0.16)
+    if letter:
+        _badge(slide, Emu(int(left + inset)), Emu(int(top + (height - Inches(0.36)) / 2)), letter,
+               letter_fill)  # fmt: skip
+        inset = Inches(0.66)
+    frame = _frame(slide, Emu(int(left + inset)), top, Emu(int(width - inset - Inches(0.14))),
+                   height, MSO_ANCHOR.MIDDLE)  # fmt: skip
+    _put(frame, text, SIZE_CAPTION, INK)
+
+
+def _arrow(slide, centre, top, height) -> None:
+    arrow = slide.shapes.add_shape(MSO_SHAPE.DOWN_ARROW, Emu(int(centre - Inches(0.1))), top,
+                                   Inches(0.2), height)  # fmt: skip
+    arrow.fill.solid()
+    arrow.fill.fore_color.rgb = FRAME
+    arrow.line.fill.background()
+    arrow.shadow.inherit = False
+
+
+def _diff(slide, label, lines, marked, tint, colour, left, top, width, size=CODE_SIZE) -> Emu:
+    """Kod me rreshtat e ndryshuar në një brez ngjyre, si në një pamje ndryshimesh.
+
+    Lartësia e rreshtit është e saktë, ndaj brezi bie mbi rreshtin e vet pa u matur me sy.
+    """
+    line = Pt(round(size.pt * 1.15, 1))
+    _put(_frame(slide, left, top, width, Inches(0.3)), label, SIZE_SMALL, SOFT, strong=True)
+    top = Emu(int(top + Inches(0.34)))
+    pad_x, pad_y = Inches(0.16), Inches(0.1)
+    height = Emu(int(line * len(lines) + 2 * pad_y))
+    _shape(slide, left, top, width, height, PANEL)
+    for index in sorted(marked):
+        _shape(slide, left, Emu(int(top + pad_y + line * index)), width, line, tint,
+               kind=MSO_SHAPE.RECTANGLE)  # fmt: skip
+    frame = _frame(slide, Emu(int(left + pad_x)), Emu(int(top + pad_y)),
+                   Emu(int(width - 2 * pad_x)), Emu(int(height - 2 * pad_y)))  # fmt: skip
+    frame.word_wrap = False
+    for index, text in enumerate(lines):
+        paragraph = frame.add_paragraph() if index else frame.paragraphs[0]
+        paragraph.line_spacing = line
+        paragraph.space_before = paragraph.space_after = Pt(0)
+        run = paragraph.add_run()
+        run.text = text or " "
+        run.font.name = MONO
+        run.font.size = size
+        run.font.bold = index in marked
+        run.font.color.rgb = colour if index in marked else INK
+    return Emu(int(top + height))
+
+
+def _data_table(slide, headers, rows, top=TOP, size=SIZE_CAPTION):
+    """Tabelat rezervë: koka me blu, rreshtat me një nuancë të lehtë në çdo të dytin."""
+    shape = slide.shapes.add_table(len(rows) + 1, len(headers), MARGIN, top, CONTENT,
+                                   Inches(0.5 * (len(rows) + 1)))  # fmt: skip
+    table = shape.table
+    # Kolonat sipas tekstit më të gjatë të secilës: me gjerësi të barabarta, «Feature Envy»
+    # dhe emrat e modeleve thyhen në dy rreshta ndërsa kolonat e numrave mbeten gjysmë bosh.
+    longest = [max(max(len(str(row[column])) for row in rows), len(headers[column]), 6)
+               for column in range(len(headers))]  # fmt: skip
+    for column, length in zip(table.columns, longest, strict=True):
+        column.width = Emu(int(CONTENT * length / sum(longest)))
+    for line, values in enumerate([headers, *rows]):
+        for column, value in enumerate(values):
+            cell = table.cell(line, column)
+            cell.fill.solid()
+            cell.fill.fore_color.rgb = ACCENT if line == 0 else (PANEL if line % 2 == 0 else WHITE)
+            cell.margin_left = cell.margin_right = Inches(0.12)
+            cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+            frame = cell.text_frame
+            frame.paragraphs[0].text = ""
+            _put(frame, str(value), size if line else SIZE_SMALL, WHITE if line == 0 else INK,
+                 strong=line == 0 or column == 0,
+                 align=PP_ALIGN.LEFT if column == 0 else PP_ALIGN.RIGHT)  # fmt: skip
+    return table
+
+
 # ----------------------------------------------------------------------
 # Sllajdet
 # ----------------------------------------------------------------------
-def _notes_words(deck: Presentation) -> list[int]:
-    return [len(slide.notes_slide.notes_text_frame.text.split()) for slide in deck.slides]
+def _headings(f: dict) -> list[str]:
+    """Titulli i çdo sllajdi kryesor: gjetja në një fjali, që salla ta lexojë para se ta dëgjojë.
+
+    Prezantimi dhe udhëzuesi i fjalimit i marrin nga këtu, që të mos thonë dy tituj.
+    """
+    better = sum(f["best"][s]["mcc"] > f["strategy"][s]["mcc"] for s in f["smells"])
+    count = "all four" if better == len(f["smells"]) == 4 else f"{better} of {len(f['smells'])}"
+    chance = _and([SMELL_SQ[s] for s in f["chance"]])
+    return [
+        TITLE,
+        "Code smells make every change expensive, and today's tools only point at them",
+        f"JavaSmell measures {f['metrics']} metrics once and answers with three approaches",
+        "Professional developers label the code; no model is tested on a project it saw",
+        f"Learned models beat the rules on {count} smells",
+        f"For {chance}, even two experts agree no better than chance",
+        "The engine rewrites only what it can prove, and refuses the rest with a reason",
+        "Real code: the outer if becomes an early return",
+        "Limitations and takeaways",
+    ]
+
+
+def _slide_title(slide, f, heading) -> None:
+    _background(slide, NAVY)
+    _put(_frame(slide, MARGIN, Inches(0.6), CONTENT, Inches(0.4)), EVENT, SIZE_SMALL, ON_DARK_SOFT)
+    _put(_frame(slide, MARGIN, Inches(1.75), Inches(11.0), Inches(2.4)), heading, Pt(40), ON_DARK,
+         strong=True)  # fmt: skip
+    frame = _frame(slide, MARGIN, Inches(4.45), CONTENT, Inches(1.0))
+    _put(frame, AUTHORS, SIZE_LEAD, ON_DARK)
+    _put(frame, AFFILIATION, SIZE_CAPTION, ON_DARK_SOFT, new=True, before=4)
+    _put(_frame(slide, MARGIN, Inches(6.55), CONTENT, Inches(0.4)), SESSION, SIZE_SMALL,
+         ON_DARK_SOFT)  # fmt: skip
+
+
+def _slide_problem(slide, f, heading) -> None:
+    _heading(slide, heading, "Code smells are design problems, not bugs")
+    _bullet_list(slide, MARGIN, TOP, CONTENT, Inches(1.5), [
+        "The program works, but every change costs more than it should.",
+        "Existing tools use fixed thresholds, calibrated on other code.",
+        "They point at the problem, but rarely fix it.",
+    ], after=8)  # fmt: skip
+    questions = [
+        ("RQ1", "How accurate are published detection rules?", "A", "Rules", MUTED),
+        ("RQ2", "Does machine learning on the same metrics do better?", "B", "Machine learning",
+         ACCENT),
+        ("RQ3", "Can fixes be applied automatically without breaking compilation?", "C",
+         "Refactoring engine", ACCENT),
+    ]  # fmt: skip
+    width = Emu(int((CONTENT - 2 * GAP) / 3))
+    top, height = Inches(3.85), Inches(2.6)
+    for index, (label, question, letter, approach, fill) in enumerate(questions):
+        left = Emu(int(MARGIN + index * (width + GAP)))
+        _shape(slide, left, top, width, height, PANEL)
+        frame = _frame(slide, Emu(int(left + Inches(0.25))), Emu(int(top + Inches(0.25))),
+                       Emu(int(width - Inches(0.5))), Inches(1.6))  # fmt: skip
+        _put(frame, label, SIZE_CAPTION, ACCENT, strong=True)
+        _put(frame, question, SIZE_LEAD, INK, strong=True, new=True, before=6)
+        badge_top = Emu(int(top + height - Inches(0.6)))
+        _badge(slide, Emu(int(left + Inches(0.25))), badge_top, letter, fill)
+        _put(_frame(slide, Emu(int(left + Inches(0.72))), badge_top, Inches(2.6), Inches(0.36),
+                    MSO_ANCHOR.MIDDLE), approach, SIZE_SMALL, SOFT)  # fmt: skip
+
+
+def _slide_system(slide, f, heading) -> None:
+    _heading(slide, heading, "One analyzer: A rules · B machine learning · C refactoring engine")
+    left, width, height, gap = MARGIN, Inches(6.2), Inches(0.52), Inches(0.2)
+    half = Emu(int((width - Inches(0.2)) / 2))
+    centre = Emu(int(left + width / 2))
+    rows = [
+        ("Java source code", None),
+        (f"{f['metrics']} metrics for every class and method", None),
+        ("split", None),
+        ("Smells, each with the conditions that fired", None),
+        ("Refactoring engine: rewrites only what it can prove", "C"),
+        ("javac check, then a patch — never written in place", None),
+    ]
+    # Rreshti i ndarë (A dhe B) merr dy shigjeta, një për secilën kuti, që rrjedha të mos
+    # duket sikur kalon mes tyre.
+    halves = [Emu(int(left + half / 2)), Emu(int(left + half + Inches(0.2) + half / 2))]
+    top = TOP
+    for index, (text, letter) in enumerate(rows):
+        if index:
+            split = "split" in (text, rows[index - 1][0])
+            for centre_x in halves if split else [centre]:
+                _arrow(slide, centre_x, Emu(int(top - gap + Inches(0.03))),
+                       Emu(int(gap - Inches(0.06))))  # fmt: skip
+        if text == "split":
+            _node(slide, left, top, half, height, f"{f['strategies']} published rules", PANEL, "A",
+                  MUTED)  # fmt: skip
+            _node(slide, Emu(int(left + half + Inches(0.2))), top, half, height,
+                  "Machine learning", TINT, "B")  # fmt: skip
+        else:
+            _node(slide, left, top, width, height, text, TINT if letter else PANEL, letter or "")
+        top = Emu(int(top + height + gap))
+    picture_left = Emu(int(MARGIN + width + Inches(0.45)))
+    picture_width = Emu(int(WIDTH - MARGIN - picture_left))
+    path = os.path.join(FIGURES, "nderfaqja_paneli.png")
+    x0, y0, x1, y1 = INTERFACE_CROP
+    picture = slide.shapes.add_picture(path, picture_left, Inches(2.55), width=picture_width,
+                                       height=Emu(int(picture_width * (y1 - y0) / (x1 - x0))))  # fmt: skip
+    pixels_w, pixels_h = picture.image.size
+    picture.crop_left, picture.crop_right = x0 / pixels_w, 1 - x1 / pixels_w
+    picture.crop_top, picture.crop_bottom = y0 / pixels_h, 1 - y1 / pixels_h
+    picture.line.color.rgb = FRAME
+    picture.line.width = Pt(0.75)
+    _put(_frame(slide, picture_left, Emu(int(picture.top + picture.height + Inches(0.15))),
+                picture_width, Inches(0.9)),
+         "Web interface, plain-language mode (Albanian): every finding shows the conditions "
+         "that fired", SIZE_SMALL, SOFT)  # fmt: skip
+
+
+def _slide_data(slide, f, heading) -> None:
+    _heading(slide, heading, "MLCQ (Madeyski & Lewowski, 2020): reviewed by 26 professional "
+                             "developers")  # fmt: skip
+    _map(slide, {1, 2})
+    width = Emu(int((CONTENT - 2 * GAP) / 3))
+    for index, (number, caption) in enumerate([
+        (f"{f['samples']:,}", "labeled samples: a class or a method judged by a person"),
+        (f"{f['repositories']}", "repositories, each one an open-source project"),
+        (f"{len(f['smells'])}", "code smells: " + ", ".join(SMELL_SQ[s] for s in f["smells"])),
+    ]):  # fmt: skip
+        _stat(slide, Emu(int(MARGIN + index * (width + GAP))), TOP, width, number, caption)
+    # Pesë grupet e projekteve: modeli mëson nga katër dhe provohet te i pesti.
+    folds, top, fold_w, fold_h = 5, Inches(4.0), Inches(1.22), Inches(1.6)
+    gap, tile, tile_gap = Inches(0.17), Inches(0.24), Inches(0.1)
+    for index in range(folds):
+        left = Emu(int(MARGIN + index * (fold_w + gap)))
+        test = index == folds - 1
+        _shape(slide, left, top, fold_w, fold_h, TINT if test else PANEL)
+        grid = 3 * tile + 2 * tile_gap
+        x0 = Emu(int(left + (fold_w - grid) / 2))
+        for cell in range(9):
+            row, column = divmod(cell, 3)
+            _shape(slide, Emu(int(x0 + column * (tile + tile_gap))),
+                   Emu(int(top + Inches(0.22) + row * (tile + tile_gap))), tile, tile,
+                   ACCENT if test else MUTED)  # fmt: skip
+        _put(_frame(slide, left, Emu(int(top + fold_h - Inches(0.42))), fold_w, Inches(0.3)),
+             "test" if test else "train", SIZE_SMALL, ACCENT if test else SOFT, strong=test,
+             align=PP_ALIGN.CENTER)  # fmt: skip
+    diagram_w = Emu(int(folds * fold_w + (folds - 1) * gap))
+    _put(_frame(slide, MARGIN, Emu(int(top + fold_h + Inches(0.15))), diagram_w, Inches(0.7)),
+         f"{f['ml']['folds']} folds grouped by repository: each project sits in exactly one. "
+         "Train on four, test on the fifth, five times.", SIZE_SMALL, SOFT)  # fmt: skip
+    majority = f["ml"]["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
+    panel_left = Emu(int(MARGIN + diagram_w + Inches(0.45)))
+    panel_w = Emu(int(WIDTH - MARGIN - panel_left))
+    _shape(slide, panel_left, top, panel_w, Inches(2.3), PANEL)
+    frame = _frame(slide, Emu(int(panel_left + Inches(0.25))), Emu(int(top + Inches(0.2))),
+                   Emu(int(panel_w - Inches(0.5))), Inches(2.0))  # fmt: skip
+    _put(frame, "Why MCC, not accuracy", SIZE_CAPTION, INK, strong=True)
+    _put(frame, f"{majority:.1%}", SIZE_STAT, CRITICAL, strong=True, new=True, before=4)
+    _put(frame, "accuracy of a detector that always says “clean” on Feature Envy. Its MCC is 0.",
+         SIZE_CAPTION, INK, new=True, before=2)  # fmt: skip
+
+
+def _slide_results(slide, f, heading) -> None:
+    _heading(slide, heading, "MCC on the same samples, same scoring code · 95% bootstrap interval "
+                             "by repository")  # fmt: skip
+    _map(slide, {1, 2})
+    # Vendimi statistikor nën emrin e erës: grafiku e thotë vetë cila fitore është e sigurt.
+    names = [f"{SMELL_SQ[s]}\n({'significant' if SMELL_SQ[s] in f['sure'] else 'could be chance'})"
+             for s in f["smells"]]  # fmt: skip
+    _bar_chart(slide, names, [("Published rules (A)", f["rule_mcc"], MUTED),
+                              ("Best ML model (B)", f["model_mcc"], ACCENT)],
+               top=TOP, height=Inches(4.7), width=Inches(8.2), maximum=MCC_TOP)  # fmt: skip
+    left = Emu(int(MARGIN + Inches(8.6)))
+    width = Emu(int(WIDTH - MARGIN - left))
+    lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
+    _stat(slide, left, Inches(2.3), width, f"{lowest:.0f}–{highest:.0f}%",
+          "of the smells developers marked, caught by the rules", RULE_TEXT, SIZE_STAT)  # fmt: skip
+    _stat(slide, left, Inches(4.3), width, f"{min(f['model_mcc']):.2f}–{max(f['model_mcc']):.2f}",
+          "MCC of the best model, per smell", ACCENT, SIZE_STAT)  # fmt: skip
+
+
+def _slide_agreement(slide, f, heading) -> None:
+    _heading(slide, heading, "Agreement between two human reviewers of the same code, as MCC · "
+                             "0 = chance")  # fmt: skip
+    _map(slide, {2})
+    smells, chance = f["smells"], f["chance"]
+    chart = _bar_chart(slide, f["names"], [("Two reviewers", [f["reviewers"][s] for s in smells],
+                                            ACCENT)],
+                       top=TOP, height=Inches(4.7), width=Inches(8.2), minimum=-0.2,
+                       maximum=MCC_TOP)  # fmt: skip
+    # Erët ku pajtimi është në nivelin e rastësisë dalin me ngjyrë tjetër: për to flet sllajdi.
+    for index, smell in enumerate(smells):
+        if smell in chance:
+            point = chart.plots[0].series[0].points[index]
+            point.format.fill.solid()
+            point.format.fill.fore_color.rgb = CRITICAL
+            # Një pikë me format të vetin nuk e trashëgon `invertIfNegative` të serisë, dhe
+            # PowerPoint-i e vizaton shtyllën negative bosh nëse pika nuk e thotë vetë.
+            dpt = point.format._element
+            flag = dpt.makeelement(qn("c:invertIfNegative"), {"val": "0"})
+            dpt.find(qn("c:idx")).addnext(flag)
+    left = Emu(int(MARGIN + Inches(8.6)))
+    width = Emu(int(WIDTH - MARGIN - left))
+    for s in chance[:1]:
+        _stat(slide, left, Inches(2.3), width, f"{f['reviewers'][s]:.2f}".replace("-", "−"),
+              f"{SMELL_SQ[s]}: two reviewers agree at chance level", CRITICAL)  # fmt: skip
+    _put(_frame(slide, left, Inches(4.5), width, Inches(1.6)),
+         "If experts do not agree on what a smell is, no detector can learn it well.",
+         SIZE_LEAD, INK, strong=True)  # fmt: skip
+
+
+def _slide_engine(slide, f, heading) -> None:
+    _heading(slide, heading, "Three transformations: Extract Method · Guard Clauses · Introduce "
+                             "Parameter Object")  # fmt: skip
+    _map(slide, {3})
+    applied, detected, quality = f["applied"], f["detected"], f["quality"]
+    refused = sum(f["refactoring"]["refused_by_reason"].values())
+    frame = _frame(slide, MARGIN, TOP, CONTENT, Inches(0.7), MSO_ANCHOR.BOTTOM)
+    paragraph = frame.paragraphs[0]
+    _run(paragraph, f"{detected:,}", SIZE_STAT, INK, strong=True)
+    _run(paragraph, "   sites where a transformation could apply", SIZE_CAPTION, SOFT)
+    top, height = Inches(2.85), Inches(0.75)
+    rewritten_w = Emu(int(CONTENT * applied / detected))
+    refused_w = Emu(int(CONTENT * refused / detected) - Inches(0.05))
+    # Gjerësia e çdo pjese është pjesa e vendeve: shiriti e tregon raportin pa e lexuar.
+    for segment_left, segment_w, fill, colour, label, share in (
+        (MARGIN, rewritten_w, ACCENT, WHITE, f"{applied:,} rewritten", applied / detected),
+        (Emu(int(MARGIN + rewritten_w + Inches(0.05))), refused_w, REFUSED, INK,
+         f"{refused:,} refused, each with a reason", refused / detected),
+    ):  # fmt: skip
+        frame = _shape(slide, segment_left, top, segment_w, height, fill).text_frame
+        frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        frame.margin_top = frame.margin_bottom = Inches(0.04)
+        _put(frame, label, SIZE_CAPTION, colour, strong=True)
+        _put(frame, _pct(share), SIZE_SMALL, colour, new=True)
+    _put(_frame(slide, MARGIN, Inches(3.95), CONTENT, Inches(0.3)), f"Of the {applied:,} rewrites",
+         SIZE_SMALL, SOFT, strong=True)  # fmt: skip
+    width = Emu(int((CONTENT - 2 * GAP) / 3))
+    tiles = [
+        (_pct(f["resolved"]), "removed the smell they were made for"),
+        (_pct(f["broken"]), "added a new kind of compile error, and are never written"),
+        (_pct(quality["acceptable_reweighted"]),
+         f"acceptable to a developer in a manual review of {quality['reviewed']} (reweighted)"),
+    ]  # fmt: skip
+    for index, (number, caption) in enumerate(tiles):
+        left = Emu(int(MARGIN + index * (width + GAP)))
+        _shape(slide, left, Inches(4.35), width, Inches(1.8), PANEL)
+        _stat(slide, Emu(int(left + Inches(0.25))), Inches(4.55), Emu(int(width - Inches(0.5))),
+              number, caption, ACCENT, SIZE_STAT, INK)  # fmt: skip
+
+
+def _slide_example(slide, f, heading) -> None:
+    _heading(slide, heading, "Apache Geode · DistributedRegion.checkForLimitedOrNoAccess · Guard "
+                             "Clauses")  # fmt: skip
+    _map(slide, {3})
+    code = _example()
+    if code is None:
+        _put(_frame(slide, MARGIN, TOP, CONTENT, Inches(0.6)),
+             "[Corpus missing: run build_code_example.py]", SIZE_LEAD, CRITICAL)  # fmt: skip
+        return
+    before, removed, after, added = code
+    width = Inches(8.3)
+    bottom = _diff(slide, "Before", before, removed, REMOVED_TINT, CRITICAL, MARGIN,
+                   Inches(1.65), width)  # fmt: skip
+    _diff(slide, "After", after, added, ADDED_TINT, ADDED, MARGIN, Emu(int(bottom + Inches(0.12))),
+          width)  # fmt: skip
+    left = Emu(int(MARGIN + width + Inches(0.4)))
+    column = Emu(int(WIDTH - MARGIN - left))
+    steps = [
+        "The outer condition becomes a guard clause with an early return.",
+        "The rest of the method moves one level up.",
+        "Passed the javac check; judged acceptable as-is in the review.",
+    ]
+    top = Inches(2.05)
+    for index, text in enumerate(steps, 1):
+        _badge(slide, left, top, str(index), ADDED if index < 3 else ACCENT)
+        _put(_frame(slide, Emu(int(left + Inches(0.5))), top, Emu(int(column - Inches(0.5))),
+                    Inches(1.2)), text, SIZE_CAPTION, INK)  # fmt: skip
+        top = Emu(int(top + Inches(1.35)))
+
+
+def _slide_closing(slide, f, heading) -> None:
+    _background(slide, NAVY)
+    _heading(slide, heading, dark=True)
+    width = Emu(int((CONTENT - Inches(0.6)) / 2))
+    for index, (title, lines, colour) in enumerate([
+        ("Limitations", [
+            "Compiles ≠ behaves the same: project tests were not run.",
+            "One dataset, four smells, Java only.",
+            "Best model chosen on the same predictions: slightly optimistic.",
+        ], DANGER_ON_DARK),
+        ("Takeaways", [
+            "Learned boundaries beat fixed thresholds.",
+            "Safe automation is narrow, but measurable.",
+            "Open source and reproducible: every number comes from a script.",
+        ], ACCENT_ON_DARK),
+    ]):  # fmt: skip
+        left = Emu(int(MARGIN + index * (width + Inches(0.6))))
+        _put(_frame(slide, left, Inches(1.6), width, Inches(0.45)), title, SIZE_LEAD, colour,
+             strong=True)  # fmt: skip
+        _bullet_list(slide, left, Inches(2.2), width, Inches(2.8), lines, SIZE_LEAD, ON_DARK,
+                     colour)  # fmt: skip
+    frame = _frame(slide, MARGIN, Inches(5.35), CONTENT, Inches(1.2))
+    _put(frame, "Thank you  ·  Questions?", Pt(40), ON_DARK, strong=True)
+    _put(frame, REPOSITORY.replace("https://", ""), SIZE_CAPTION, ON_DARK_SOFT, new=True, before=4)
+
+
+LAYOUTS = [_slide_title, _slide_problem, _slide_system, _slide_data, _slide_results,
+           _slide_agreement, _slide_engine, _slide_example, _slide_closing]  # fmt: skip
+DARK = {0, len(LAYOUTS) - 1}
 
 
 def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], list[str]]:
@@ -423,579 +1277,17 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     deck = Presentation()
     deck.slide_width = WIDTH
     deck.slide_height = HEIGHT
-    script: list[tuple[str, list[str]]] = []
-    refactoring, quality, smells = f["refactoring"], f["quality"], f["smells"]
-    recall, model_mcc, rule_mcc = f["recall"], f["model_mcc"], f["rule_mcc"]
-    applied, detected = f["applied"], f["detected"]
-    resolved, broken, refused = f["resolved"], f["broken"], f["refused"]
-    moderate, chance = f["moderate"], f["chance"]
-    pmd, pmd_ahead, pmd_behind = f["pmd"], f["pmd_ahead"], f["pmd_behind"]
-    introduced, always, never = f["introduced"], f["always"], f["never"]
-    lowest, highest = min(recall) * 100, max(recall) * 100
-    shape = refactoring["refused_by_reason"]["shape_not_matched"] / detected * 100
-    newest = _words(max(introduced, key=introduced.get))
-
-    def add(title: str, *parts: Line):
+    script = [(title, list(parts)) for title, *parts in _script(f)]
+    for index, ((_, parts), layout, heading) in enumerate(
+        zip(script, LAYOUTS, _headings(f), strict=True)
+    ):
         slide = _blank(deck)
-        _speech(slide, _spoken(list(parts), long))
-        _number(slide, len(deck.slides))
-        script.append((title, list(parts)))
-        return slide
-
-    # --- 1. titulli ---
-    slide = add(
-        "Title",
-        Line("Good morning, everyone.", "Mirëmëngjes të gjithëve."),
-        Line(
-            "My name is Florent Latifi, and this work comes from my bachelor thesis at UBT, "
-            "supervised by Altina Salihu.",
-            "Unë quhem Florent Latifi, dhe kjo punë vjen nga teza ime e bachelorit në UBT, me "
-            "mentore Altina Salihu.",
-        ),
-        Line(
-            "In the next ten minutes I will show how we can detect code smells in Java "
-            "automatically, how accurate that detection really is, and how far we can go in "
-            "fixing them.",
-            "Në dhjetë minutat në vijim do të tregoj si mund t'i gjejmë automatikisht erërat e "
-            "kodit në Java, sa e saktë është vërtet kjo gjetje, dhe deri ku mund të shkojmë me "
-            "ndreqjen e tyre.",
-        ),
-    )
-    frame = _text(slide, MARGIN, Inches(2.0), WIDTH - 2 * MARGIN, Inches(2.0), Pt(36), INK, SERIF)
-    frame.paragraphs[0].text = TITLE
-    frame = _text(slide, MARGIN, Inches(4.4), WIDTH - 2 * MARGIN, Inches(1.6), BODY_SIZE, SOFT)
-    frame.paragraphs[0].text = AUTHORS
-    for line in (AFFILIATION, EVENT):
-        paragraph = frame.add_paragraph()
-        paragraph.text = line
-        paragraph.font.size = SMALL_SIZE
-        paragraph.font.color.rgb = FAINT
-        paragraph.font.name = SANS
-
-    # --- 2. problemi ---
-    slide = add(
-        "The problem",
-        Line(
-            "Every developer knows the class that nobody wants to touch.",
-            "Çdo programues e njeh klasën që askush nuk do ta prekë.",
-        ),
-        Line(
-            "The program works, but every change takes longer than it should.",
-            "Programi punon, por çdo ndryshim zgjat më shumë se ç'duhet.",
-        ),
-        Line("These design problems are called code smells.",
-             "Këto probleme të ndërtimit të kodit quhen erëra të kodit."),
-        Line("They are not bugs, but they make maintenance expensive.",
-             "Nuk janë gabime, por e bëjnë mirëmbajtjen të shtrenjtë."),
-        Line("Most tools find them with fixed thresholds.",
-             "Shumica e mjeteve i gjejnë me pragje fikse, pra me numra të caktuar njëherë e "
-             "përgjithmonë."),
-        Line(
-            "For example, if a method is longer than a certain number of lines, it is a Long "
-            "Method.",
-            "Për shembull, nëse një metodë është më e gjatë se një numër i caktuar rreshtash, "
-            "ajo quhet Long Method.",
-        ),
-        Line(
-            "But these numbers were calibrated on other code, and most tools only point at the "
-            "problem.",
-            "Por këta numra janë përcaktuar duke parë kod tjetër, dhe shumica e mjeteve vetëm e "
-            "tregojnë problemin.",
-        ),
-        Line("They do not fix it.", "Nuk e ndreqin."),
-        Line("So we asked three questions.", "Prandaj bëmë tri pyetje."),
-        Line("First, how accurate are the published detection rules?",
-             "E para: sa të sakta janë rregullat e botuara për gjetjen e erërave?"),
-        Line("Second, can machine learning do better with the same metrics?",
-             "E dyta: a mund të bëjë më mirë mësimi makinerik, me të njëjtat metrika?"),
-        Line("And third, can we fix smells automatically without breaking the code?",
-             "Dhe e treta: a mund t'i ndreqim erërat automatikisht, pa e prishur kodin?"),
-    )  # fmt: skip
-    _title(slide, "The class nobody wants to touch", "Code smells are design problems, not bugs")
-    _bullets(
-        slide,
-        [
-            "The program works, but every change costs more than it should.",
-            "Existing tools use fixed thresholds, calibrated on other code.",
-            "They point at the problem, but rarely fix it.",
-        ],
-        top=Inches(1.8),
-    )
-    frame = _text(slide, MARGIN, Inches(4.25), WIDTH - 2 * MARGIN, Inches(2.4), BODY_SIZE, ACCENT)
-    questions = [
-        "RQ1  How accurate are published detection rules?",
-        "RQ2  Does machine learning on the same metrics do better?",
-        "RQ3  Can fixes be applied automatically without breaking compilation?",
-    ]
-    for index, line in enumerate(questions):
-        paragraph = frame.paragraphs[0] if index == 0 else frame.add_paragraph()
-        paragraph.text = line
-        paragraph.font.size = BODY_SIZE
-        paragraph.font.color.rgb = ACCENT
-        paragraph.font.name = SANS
-        paragraph.space_after = Pt(8)
-
-    # --- 3. sistemi ---
-    slide = add(
-        "What we built",
-        Line("To answer them, I built a tool called JavaSmell.",
-             "Për t'iu përgjigjur këtyre pyetjeve, ndërtova një mjet që quhet JavaSmell."),
-        Line(f"It reads Java code and measures {f['metrics']} metrics for every class and method.",
-             f"E lexon kodin Java dhe mat {f['metrics']} metrika, pra numra, për çdo klasë dhe "
-             "metodë."),
-        Line("On top of these metrics there are three approaches.",
-             "Mbi këto metrika ndërtohen tri qasje."),
-        Line(
-            f"A uses {f['strategies']} detection strategies from the literature, such as "
-            "Lanza and Marinescu and Fowler.",
-            f"A përdor {f['strategies']} rregulla gjetjeje nga literatura, si ato të Lanza-s e "
-            "Marinescu-t dhe të Fowler-it.",
-        ),
-        Line("B trains machine learning classifiers on the same metrics.",
-             "B trajnon modele të mësimit makinerik mbi të njëjtat metrika."),
-        Line("And C is a refactoring engine.", "Dhe C është një motor që e ndreq kodin."),
-        Line(
-            "It rewrites code only when it can prove its preconditions from the syntax tree, "
-            "and then it checks the result with the Java compiler.",
-            "E rishkruan kodin vetëm kur mund ta vërtetojë nga pema e sintaksës që ndryshimi "
-            "është i sigurt, dhe pastaj e kontrollon rezultatin me kompajlerin e Java-s.",
-        ),
-        Extra(
-            "Every detection also shows the conditions it checked, so a developer can see why a "
-            "class was flagged, not only that it was.",
-            "Çdo gjetje tregon edhe kushtet që kontrolloi, që programuesi të shohë pse u shënua "
-            "një klasë, jo vetëm që u shënua.",
-        ),
-        Line("On the right you can see the web interface.", "Djathtas shihni ndërfaqen web."),
-        Line("It also has a plain-language mode for people without a technical background.",
-             "Ka edhe një mënyrë me gjuhë të thjeshtë, për njerëzit pa përgatitje teknike."),
-    )  # fmt: skip
-    _title(slide, "What we built: JavaSmell", "One Java analyzer, three approaches")
-    left_width = Inches(5.3)
-    parts = [
-        ("A  Rules", f"{f['strategies']} published detection strategies over {f['metrics']} metrics"),
-        ("B  Machine learning", "classifiers trained on the same metrics"),
-        ("C  Refactoring engine", "AST rewrites only when preconditions are proven, then javac"),
-    ]
-    top = Inches(1.9)
-    for name, detail in parts:
-        box = _panel(slide, MARGIN, top, left_width, Inches(1.35))
-        frame = box.text_frame
-        frame.word_wrap = True
-        frame.margin_left = Inches(0.2)
-        paragraph = frame.paragraphs[0]
-        paragraph.alignment = PP_ALIGN.LEFT
-        paragraph.text = name
-        paragraph.font.size = Pt(21)
-        paragraph.font.bold = True
-        paragraph.font.color.rgb = ACCENT
-        paragraph.font.name = SANS
-        line = frame.add_paragraph()
-        line.alignment = PP_ALIGN.LEFT
-        line.text = detail
-        line.font.size = Pt(16)
-        line.font.color.rgb = INK
-        line.font.name = SANS
-        top = Emu(int(top + Inches(1.55)))
-    path = os.path.join(FIGURES, "nderfaqja_paneli.png")
-    picture = slide.shapes.add_picture(path, MARGIN + left_width + Inches(0.35), Inches(2.1),
-                                       width=Inches(6.0))  # fmt: skip
-    caption = _text(slide, picture.left, Emu(int(picture.top + picture.height + Inches(0.08))),
-                    Inches(6.0), Inches(0.4), Pt(13), FAINT)  # fmt: skip
-    caption.paragraphs[0].text = "Web interface on the jsoup library (plain-language mode, Albanian)"
-
-    # --- 4. të dhënat ---
-    slide = add(
-        "Data and evaluation",
-        Line("For a fair test, we need labels from people.",
-             "Për një provë të drejtë, na duhen etiketa nga njerëzit, pra dikush që thotë "
-             "«ky kod ka erë» ose «nuk ka»."),
-        Line(
-            "We used MLCQ, a public dataset where professional developers reviewed real "
-            "open-source Java code.",
-            "Përdorëm MLCQ, një bazë publike të dhënash ku programues profesionistë shqyrtuan "
-            "kod të vërtetë Java me burim të hapur.",
-        ),
-        Line(
-            f"After matching the samples to our tool, we have {f['samples']:,} labeled samples "
-            f"from {f['repositories']} repositories, for four smells.",
-            f"Pasi i gjetëm mostrat në kod me mjetin tonë, kemi {f['samples']:,} mostra me "
-            f"etiketë nga {f['repositories']} projekte, për katër erëra.",
-        ),
-        Extra("Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
-        Extra("Data Class only holds data and has almost no behavior.",
-              "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
-        Extra(
-            "Long Method is a method that has grown too long, and Feature Envy is a method that "
-            "uses another class more than its own.",
-            "Long Method është një metodë që është zgjatur shumë, dhe Feature Envy është një "
-            "metodë që përdor një klasë tjetër më shumë se klasën e vet.",
-        ),
-        Line("One important detail is how we split the data.",
-             "Një detaj i rëndësishëm është si i ndamë të dhënat për mësim dhe për provë."),
-        Line(
-            "Code from the same project looks very similar, so we grouped the data by "
-            "repository: a model is never tested on a project it learned from.",
-            "Kodi i të njëjtit projekt ngjan shumë, ndaj i grupuam të dhënat sipas projektit: "
-            "një model nuk provohet kurrë mbi një projekt nga i cili ka mësuar.",
-        ),
-        Line("And we report the Matthews correlation coefficient, MCC.",
-             "Dhe si notë kryesore raportojmë koeficientin e korrelacionit Matthews, MCC."),
-        Line(
-            "Most samples are clean, so simple accuracy would look very good even for a "
-            "detector that never fires.",
-            "Shumica e mostrave janë të pastra, ndaj saktësia e thjeshtë do të dukej shumë e "
-            "mirë edhe për një detektor që nuk alarmon kurrë.",
-        ),
-    )  # fmt: skip
-    _title(slide, "Data and a fair test", "MLCQ: real Java code labeled by professional developers")
-    _figures(
-        slide,
-        [
-            (f"{f['samples']:,}", "labeled samples"),
-            (f"{f['repositories']}", "repositories"),
-            (f"{len(smells)}", "code smells"),
-            (f"{f['metrics']}", "metrics"),
-        ],
-        top=Inches(1.9),
-    )
-    _bullets(
-        slide,
-        [
-            "Labels from MLCQ (Madeyski & Lewowski, 2020): open-source Java reviewed by "
-            "26 professional developers.",
-            "Grouped by repository: a model is never tested on a project it learned from.",
-            "Main score: Matthews correlation coefficient (MCC), because most samples are clean.",
-        ],
-        top=Inches(4.0),
-    )
-
-    # --- 5. rregullat kundrejt modelit ---
-    slide = add(
-        "Rules vs. machine learning",
-        Line("Here are the main results.", "Ja rezultatet kryesore."),
-        Line(
-            "The gray bars are the published rules, and the blue bars are the best machine "
-            "learning model for each smell.",
-            "Shtyllat gri janë rregullat e botuara, dhe shtyllat blu janë modeli më i mirë i "
-            "mësimit makinerik për secilën erë.",
-        ),
-        Line(
-            f"The rules are often correct when they fire, but they catch only {lowest:.0f} to "
-            f"{highest:.0f} percent of the smells that developers marked.",
-            f"Rregullat zakonisht kanë të drejtë kur alarmojnë, por kapin vetëm {lowest:.0f} deri "
-            f"{highest:.0f} për qind të erërave që shënuan programuesit.",
-        ),
-        Line(
-            f"The models are better on all four smells, with MCC from {min(model_mcc):.2f} to "
-            f"{max(model_mcc):.2f}.",
-            f"Modelet janë më të mira te të katër erërat, me MCC nga {min(model_mcc):.2f} deri "
-            f"{max(model_mcc):.2f}.",
-        ),
-        Line("We also computed 95 percent confidence intervals by resampling repositories.",
-             "Llogaritëm edhe intervale besimi 95 për qind, duke i rizgjedhur projektet rastësisht "
-             "shumë herë."),
-        Line(f"The improvement is clearly above zero for {_and(f['sure'])}.",
-             f"Përmirësimi është qartë mbi zero për {_dhe(f['sure'])}: nuk është fat."),
-        Line(f"For {_and(f['unsure'])}, the difference could be chance.",
-             f"Për {_dhe(f['unsure'])}, ndryshimi mund të jetë edhe rastësi."),
-        Extra("We also compared with PMD, a popular open-source analyzer, on the same samples.",
-              "E krahasuam edhe me PMD-në, një mjet i njohur falas për analizën e kodit, mbi të "
-              "njëjtat mostra."),
-        Extra(
-            "Once the confidence interval is considered, "
-            + ("PMD is never ahead" if not pmd_ahead else f"PMD is ahead for {_and(pmd_ahead)}")
-            + f", and for {_and(pmd_behind)} our rules are clearly better.",
-            "Kur merret parasysh intervali i besimit, "
-            + ("PMD nuk del kurrë përpara" if not pmd_ahead
-               else f"PMD del përpara për {_dhe(pmd_ahead)}")
-            + f", dhe për {_dhe(pmd_behind)} rregullat tona janë qartë më të mira.",
-        ),
-    )  # fmt: skip
-    _title(slide, "Rules vs. machine learning", "MCC on the same samples, with the same scoring code")
-    _bar_chart(
-        slide,
-        f["names"],
-        [("Published rules (A)", rule_mcc, MUTED), ("Best ML model (B)", model_mcc, ACCENT)],
-        top=Inches(1.7),
-        height=Inches(4.2),
-    )
-    _bullets(
-        slide,
-        [
-            f"Rules: precise when they fire, but catch only {min(recall) * 100:.0f}–"
-            f"{max(recall) * 100:.0f}% of the cases.",
-            f"Models: better on all four smells; significant on {_and(f['sure'])} "
-            "(95% bootstrap CI by repository).",
-        ],
-        top=Inches(6.0),
-        size=Pt(17),
-    )
-
-    # --- 6. pajtimi i njerëzve ---
-    slide = add(
-        "Human agreement",
-        Line("Why is Feature Envy so hard?", "Pse është Feature Envy kaq e vështirë?"),
-        Line("We measured how much the human reviewers agree with each other.",
-             "Matëm sa pajtohen rishikuesit njerëzorë me njëri-tjetrin."),
-        Line(f"For {_and([SMELL_SQ[s] for s in moderate])}, two reviewers agree only moderately.",
-             f"Për {_dhe([SMELL_SQ[s] for s in moderate])}, dy rishikues pajtohen vetëm "
-             "mesatarisht."),
-        Line(f"For {_and([SMELL_SQ[s] for s in chance])}, they agree no better than chance.",
-             f"Për {_dhe([SMELL_SQ[s] for s in chance])}, pajtohen jo më shumë se sa po të "
-             "hamendësonin."),
-        *[
-            Extra(f"For {SMELL_SQ[s]}, their MCC is {f['reviewers'][s]:.2f}, practically zero.",
-                  f"Për {SMELL_SQ[s]}, MCC-ja e tyre është {f['reviewers'][s]:.2f}, praktikisht "
-                  "zero.")
-            for s in chance
-        ],
-        Extra(
-            f"This matches the previous slide: {_and(f['unsure'])} is where the model could not "
-            "clearly beat the rules.",
-            f"Kjo përputhet me sllajdin e mëparshëm: te {_dhe(f['unsure'])} modeli nuk arriti "
-            "t'i mundë qartë rregullat.",
-        ),
-        Line("So the problem is not only the algorithm.", "Pra problemi nuk është vetëm algoritmi."),
-        Line("It is the definition of the smell itself.", "Është vetë përkufizimi i erës."),
-        Line("If experts do not agree on what a smell is, no detector can learn it well.",
-             "Nëse ekspertët nuk pajtohen se çka është një erë, asnjë detektor nuk mund ta mësojë "
-             "mirë."),
-        Line("For me, this is the main lesson of the detection part.",
-             "Për mua, ky është mësimi kryesor i pjesës së gjetjes së erërave."),
-    )  # fmt: skip
-    _title(slide, "Why some smells stay hard", "Agreement between two human reviewers of the same code (MCC)")
-    chart = _bar_chart(
-        slide,
-        f["names"],
-        [("Two reviewers", [f["reviewers"][s] for s in smells], ACCENT)],
-        top=Inches(1.8),
-        height=Inches(3.9),
-        minimum=-0.2,
-        maximum=1.0,
-    )
-    # Erët ku pajtimi është në nivelin e rastësisë dalin me ngjyrë tjetër: për to flet sllajdi.
-    for index, smell in enumerate(smells):
-        if smell in chance:
-            point = chart.plots[0].series[0].points[index]
-            point.format.fill.solid()
-            point.format.fill.fore_color.rgb = CRITICAL
-            # Një pikë me format të vetin nuk e trashëgon `invertIfNegative` të serisë, dhe
-            # PowerPoint-i e vizaton shtyllën negative bosh nëse pika nuk e thotë vetë.
-            dpt = point.format._element
-            flag = dpt.makeelement(qn("c:invertIfNegative"), {"val": "0"})
-            dpt.find(qn("c:idx")).addnext(flag)
-    _bullets(
-        slide,
-        ["The limit is not only the algorithm, but the definition of the smell itself."],
-        top=Inches(6.0),
-        size=Pt(19),
-    )
-
-    # --- 7. refaktorimi ---
-    slide = add(
-        "Automatic refactoring",
-        Line("Now the refactoring engine.", "Tani motori që e ndreq kodin."),
-        Line(
-            "It supports three transformations: Extract Method, Replace Nested Conditional with "
-            "Guard Clauses, and Introduce Parameter Object.",
-            "Ai di tri ndreqje: nxjerrjen e një metode, zëvendësimin e if-ave të futur thellë me "
-            "dalje të hershme, dhe mbledhjen e shumë parametrave në një objekt.",
-        ),
-        Line(
-            f"On the whole corpus it found {detected:,} sites and rewrote {applied:,} of them, "
-            f"which is {applied / detected * 100:.0f} percent.",
-            f"Në gjithë korpusin gjeti {detected:,} vende ku mund të ndreqte dhe rishkroi "
-            f"{applied:,} prej tyre, pra {applied / detected * 100:.0f} për qind.",
-        ),
-        Line("The rest were refused, each with a reason.",
-             "Të tjerat i refuzoi, secilën me një arsye."),
-        Extra(
-            f"In {shape:.0f} percent of the sites, the reason is simply that the code does not "
-            "have the shape the transformation needs.",
-            f"Në {shape:.0f} për qind të vendeve, arsyeja është thjesht se kodi nuk ka formën që "
-            "i duhet ndreqjes.",
-        ),
-        Line("For us, refusing is a correct result, not a failure.",
-             "Për ne, refuzimi është rezultat i saktë, jo dështim."),
-        Line(f"After rewriting, the smell disappeared in {resolved * 100:.0f} percent of the cases.",
-             f"Pas rishkrimit, era u zhduk në {resolved * 100:.0f} për qind të rasteve."),
-        Line(
-            f"Only {broken * 100:.1f} percent of the rewrites introduced a new type of "
-            "compilation error, and those never reach the code, because the tool only writes "
-            "verified rewrites.",
-            f"Vetëm {broken * 100:.1f} për qind e rishkrimeve shtuan një lloj të ri gabimi "
-            "kompilimi, dhe ato nuk arrijnë kurrë te kodi, sepse mjeti shkruan vetëm rishkrime "
-            "të kontrolluara.",
-        ),
-        Line(
-            f"I also read {quality['reviewed']} rewrites by hand: after reweighting, about "
-            f"{quality['acceptable_reweighted'] * 100:.0f} percent would be acceptable to a "
-            "developer.",
-            f"Lexova edhe {quality['reviewed']} rishkrime me dorë: pasi i peshova sipas sa të "
-            f"shpeshtë janë, rreth {quality['acceptable_reweighted'] * 100:.0f} për qind do të "
-            "ishin të pranueshme për një programues.",
-        ),
-        Extra(
-            f"Refactoring can also create new smells: {sum(introduced.values()):,} appeared "
-            f"after rewriting, most often {newest}, because Extract Method passes every input "
-            "as a parameter.",
-            f"Ndreqja mund të krijojë edhe erëra të reja: {sum(introduced.values()):,} u shfaqën "
-            f"pas rishkrimit, më shpesh {newest}, sepse metoda e nxjerrë i merr të gjitha "
-            "hyrjet si parametra.",
-        ),
-        Extra(
-            f"In that review, {_and(always)} were always acceptable, and {_and(never)} never, "
-            "because it only moves the long list into a new class.",
-            f"Në atë rishikim, {_dhe(always)} ishin gjithmonë të pranueshme, dhe {_dhe(never)} "
-            "kurrë, sepse vetëm e zhvendos listën e gjatë në një klasë të re.",
-        ),
-    )  # fmt: skip
-    _title(slide, "Automatic refactoring", "Rewrite only when the preconditions are proven")
-    _figures(
-        slide,
-        [
-            (f"{detected:,}", "sites with a transformation"),
-            (f"{applied:,}", f"rewritten ({_pct(applied / detected)})"),
-            (_pct(resolved), "smell removed"),
-            (_pct(broken), "new compile-error types"),
-        ],
-        top=Inches(1.9),
-    )
-    _bullets(
-        slide,
-        [
-            "Three transformations: Extract Method, Guard Clauses, Introduce Parameter Object.",
-            f"Refusing is a correct outcome: {_pct(refused)} of the sites were refused, "
-            "each with a reason.",
-            f"Manual review of {quality['reviewed']} rewrites: "
-            f"{_pct(quality['acceptable_reweighted'])} acceptable to a developer (reweighted).",
-        ],
-        top=Inches(4.0),
-    )
-
-    # --- 8. shembulli ---
-    slide = add(
-        "Example",
-        Line("Here is one real example from Apache Geode.",
-             "Ja një shembull i vërtetë nga Apache Geode, një projekt i madh me burim të hapur."),
-        Line("Before, the whole method is wrapped in one if statement, so everything is nested "
-             "deeply.",
-             "Më parë, e gjithë metoda është brenda një if-i, ndaj gjithçka është e futur thellë."),
-        Line(
-            "After the rewrite, the condition becomes a guard clause with an early return, and "
-            "the rest of the method moves one level up.",
-            "Pas rishkrimit, kushti bëhet një «roje» që del herët nga metoda me return, dhe pjesa "
-            "tjetër e metodës ngjitet një nivel lart.",
-        ),
-        Extra(
-            "The engine accepts only exactly this shape: a void method whose whole body is one "
-            "if statement, without else.",
-            "Motori pranon vetëm saktësisht këtë formë: një metodë void, e cila nuk kthen vlerë, "
-            "dhe trupi i saj është i gjithi një if, pa else.",
-        ),
-        Extra(
-            "It also wraps the condition in a not, instead of inverting it by hand, so it stays "
-            "correct for every condition.",
-            "Gjithashtu e mbështjell kushtin me një «jo» (!), në vend që ta kthejë së prapthi me "
-            "dorë, ndaj mbetet i saktë për çdo kusht.",
-        ),
-        Line("The rewrite passed the compiler check, and in my review it was acceptable as it is.",
-             "Rishkrimi e kaloi kontrollin e kompajlerit, dhe në rishikimin tim ishte i "
-             "pranueshëm ashtu siç është."),
-    )  # fmt: skip
-    _title(slide, "Example from real code",
-           "Apache Geode · DistributedRegion.checkForLimitedOrNoAccess · Guard Clauses")  # fmt: skip
-    code = _example()
-    if code is None:
-        _text(slide, MARGIN, Inches(2.0), WIDTH - 2 * MARGIN, Inches(0.6), BODY_SIZE,
-              CRITICAL).paragraphs[0].text = "[Corpus missing: run build_code_example.py]"  # fmt: skip
-    else:
-        before, removed, after, added = code
-        code_width = Inches(7.6)
-        bottom = _code_block(slide, "Before", before, removed, CRITICAL, MARGIN, Inches(1.55),
-                             code_width)  # fmt: skip
-        _code_block(slide, "After", after, added, ADDED, MARGIN, Emu(int(bottom + Inches(0.12))),
-                    code_width)  # fmt: skip
-        _bullets_at(
-            slide,
-            [
-                "The outer condition becomes a guard clause with an early return.",
-                "The rest of the method moves one level up.",
-                "Passed the javac check; judged acceptable as-is in the manual review.",
-            ],
-            left=Emu(int(MARGIN + code_width + Inches(0.35))),
-            top=Inches(2.0),
-            width=Inches(3.6),
-            size=Pt(17),
-        )
-
-    # --- 9. kufizimet dhe mesazhi ---
-    slide = add(
-        "Limitations and takeaways",
-        Line("To be honest about the limits: compiling is not the same as behaving the same.",
-             "Për të qenë i sinqertë për kufijtë: që kodi kompilohet nuk do të thotë që sillet "
-             "njësoj si më parë."),
-        Line("We did not run the projects' test suites, so behavior preservation is future work.",
-             "Nuk i ekzekutuam testet e projekteve, ndaj vërtetimi që sjellja mbetet e njëjtë "
-             "është punë për më vonë."),
-        Line("We also used one dataset, four smells, and only Java.",
-             "Përdorëm gjithashtu vetëm një bazë të dhënash, katër erëra dhe vetëm Java."),
-        Extra(
-            "And the best model was chosen on the same predictions it is scored on, so its "
-            "numbers are slightly optimistic.",
-            "Dhe modeli më i mirë u zgjodh mbi të njëjtat parashikime me të cilat vlerësohet, "
-            "ndaj numrat e tij janë pak më të mirë se në realitet.",
-        ),
-        Extra(
-            "As next steps, I would add a small symbol resolver to support more refactorings, "
-            "and ask independent reviewers to judge the rewrites.",
-            "Si hapa të ardhshëm, do të shtoja një pjesë të vogël që i kupton emrat në kod, për "
-            "të mbështetur më shumë ndreqje, dhe do t'u kërkoja rishikuesve të pavarur t'i "
-            "gjykojnë rishkrimet.",
-        ),
-        Line("To summarize: learned boundaries beat fixed thresholds.",
-             "Për ta përmbledhur: kufijtë që i mëson modeli i mundin pragjet fikse."),
-        Line("Safe automatic refactoring is possible, but narrow, and it should be reviewed by a "
-             "developer.",
-             "Ndreqja automatike e sigurt është e mundshme, por vetëm për pak raste, dhe duhet ta "
-             "shohë një programues."),
-        Line("The tool is open source, and every number in this talk can be regenerated with a "
-             "script.",
-             "Mjeti është me burim të hapur, dhe çdo numër në këtë prezantim mund të rimerret me "
-             "një skript."),
-        Line("Thank you.", "Faleminderit."),
-        Line("I am happy to take your questions.", "Me kënaqësi i pres pyetjet tuaja."),
-    )  # fmt: skip
-    _title(slide, "Limitations and takeaways")
-    column = Emu(int((WIDTH - 2 * MARGIN - Inches(0.4)) / 2))
-    for index, (heading, lines, colour) in enumerate(
-        [
-            ("Limitations", [
-                "Compiles ≠ behaves the same: project tests were not run.",
-                "One dataset, four smells, Java only.",
-                "Best model chosen on the same predictions: slightly optimistic.",
-            ], CRITICAL),
-            ("Takeaways", [
-                "Learned boundaries beat fixed thresholds.",
-                "Safe automation is narrow, but measurable.",
-                "Open source and reproducible: every number comes from a script.",
-            ], ACCENT),
-        ]
-    ):  # fmt: skip
-        left = Emu(int(MARGIN + index * (column + Inches(0.4))))
-        frame = _text(slide, left, Inches(1.6), column, Inches(0.5), Pt(22), colour, SANS, bold=True)
-        frame.paragraphs[0].text = heading
-        _bullets_at(slide, lines, left=left, top=Inches(2.2), width=column, size=Pt(18))
-    frame = _text(slide, MARGIN, Inches(5.45), WIDTH - 2 * MARGIN, Inches(1.2), Pt(30), INK, SERIF)
-    frame.paragraphs[0].text = "Thank you!  Questions?"
-    link = frame.add_paragraph()
-    link.text = REPOSITORY.replace("https://", "")
-    link.font.size = Pt(14)
-    link.font.color.rgb = FAINT
-    link.font.name = SANS
-
+        _speech(slide, _spoken(parts, long))
+        layout(slide, f, heading)
+        if index:
+            _footer(slide, index + 1, dark=index in DARK)
     main = len(deck.slides)
+    refactoring, smells, detected, pmd = f["refactoring"], f["smells"], f["detected"], f["pmd"]
 
     # ------------------------------------------------------------------
     # Rezervë: vetëm për pyetjet, nuk thuhen në dhjetë minutat
@@ -1005,15 +1297,15 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     def backup(title: str, subtitle: str, notes: str):
         slide = _blank(deck)
         backups.append(title)
-        _title(slide, f"Backup · {title}", subtitle)
+        _heading(slide, title, subtitle, kicker="Backup · ")
         _note(slide, notes)
-        _number(slide, len(deck.slides))
+        _footer(slide, len(deck.slides))
         return slide
 
-    ml, rules = f["ml"], f["rules"]
+    ml = f["ml"]
     slide = backup("Full detection results", "Precision, recall and MCC for both approaches",
                    "Use when asked for precision or recall per smell.")  # fmt: skip
-    _table(
+    _data_table(
         slide,
         ["Smell", "Rules P", "Rules R", "Rules MCC", "Model", "Model P", "Model R", "Model MCC"],
         [
@@ -1029,14 +1321,13 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             ]
             for s in smells
         ],
-        top=Inches(2.0),
     )
 
     intervals = _load("bootstrap_intervals.json")["per_smell"]
     slide = backup("Confidence intervals", "95% bootstrap intervals, resampling whole repositories",
                    "Above zero means the model's advantage is not explained by which projects "
                    "happen to be in the sample.")  # fmt: skip
-    _table(
+    _data_table(
         slide,
         ["Smell", "Rules (A)", "Model (B)", "B − A", "Above zero"],
         [
@@ -1049,13 +1340,12 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             ]
             for s in smells
         ],
-        top=Inches(2.0),
     )  # fmt: skip
 
     slide = backup("Every algorithm", "MCC of each classifier, same folds",
                    "If asked whether choosing the best model inflates the result: yes, slightly. "
                    "Even the weakest learning algorithm beats the rules on three of four smells.")  # fmt: skip
-    _table(
+    _data_table(
         slide,
         ["Smell", *[MODEL_EN[m] for m in ("logistic", "random_forest", "gradient_boosting")], "Rules (A)"],
         [
@@ -1065,14 +1355,13 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             + [f"{f['strategy'][s]['mcc']:.3f}"]
             for s in smells
         ],
-        top=Inches(2.0),
     )  # fmt: skip
 
     names = PMD_NAMES
     slide = backup("Comparison with PMD", f"PMD {pmd['pmd_version']} with its default thresholds, same samples",
                    "PMD is never ahead once the confidence interval is considered. PMD has no "
                    "Feature Envy rule.")  # fmt: skip
-    _table(
+    _data_table(
         slide,
         ["Smell", "PMD MCC", "Our MCC", "Difference, 95% CI"],
         [
@@ -1085,7 +1374,6 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             ]
             for key, entry in pmd["by_smell"].items()
         ],
-        top=Inches(2.0),
     )  # fmt: skip
 
     verify = _load("verify_with_project.json")
@@ -1096,8 +1384,12 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     slide = backup("Verification in detail", "Why sites were refused, and what compiling inside the project shows",
                    "Isolated files often cannot compile because their neighbours are missing; "
                    "inside the project many more compile fully.")  # fmt: skip
-    _bullets(
+    _bullet_list(
         slide,
+        MARGIN,
+        TOP,
+        CONTENT,
+        Inches(4.6),
         [f"{reason_en.get(name, name)}: {count:,} sites ({_pct(count / detected)})"
          for name, count in reasons]
         + [
@@ -1108,25 +1400,24 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             f"After rewriting, {sum(refactoring['introduced_smells'].values()):,} new smells "
             "appeared, mostly Long Parameter List from Extract Method.",
         ],
-        top=Inches(1.9),
-        size=Pt(18),
     )  # fmt: skip
 
     slide = backup("Extract Method in the interface", "jsoup · NodeTraversor.traverse, preview before any file is touched",
                    "The extracted method is named 'extracted'; choosing a meaningful name is "
                    "left to the developer.")  # fmt: skip
     path = os.path.join(FIGURES, "nderfaqja_rishkrimi.png")
-    slide.shapes.add_picture(path, MARGIN, Inches(2.0), width=WIDTH - 2 * MARGIN)
+    picture = slide.shapes.add_picture(path, MARGIN, TOP, width=CONTENT)
+    picture.line.color.rgb = FRAME
+    picture.line.width = Pt(0.75)
 
     slide = backup("Comparison with the literature", "Madeyski & Lewowski (2023), same MLCQ dataset, DS1",
                    "They used random 5-fold cross-validation and tuned hyperparameters; we "
                    "grouped by repository and did not tune. Our results are in the same range.")  # fmt: skip
-    _table(
+    _data_table(
         slide,
         ["Smell", "Rules (A)", "Model (B)", "Madeyski & Lewowski 2023"],
         [[SMELL_SQ[s], f"{f['strategy'][s]['mcc']:.3f}", f"{f['best'][s]['mcc']:.3f}",
           MADEYSKI_2023_DS1[s]] for s in smells],
-        top=Inches(2.0),
     )  # fmt: skip
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -1499,8 +1790,13 @@ class SlideGuide:
 
 
 def _slide_guides(f: dict) -> list[SlideGuide]:
-    """Një udhëzim për secilin nga nëntë sllajdet kryesore, me radhën e prezantimit."""
+    """Një udhëzim për secilin nga nëntë sllajdet kryesore, me radhën e prezantimit.
+
+    Titujt vijnë nga `_headings`, të njëjtët që vë prezantimi, dhe «Çka shihet» përshkruan
+    pamjen që vizatojnë funksionet `_slide_*`: kur ndryshon një sllajd, ndryshon edhe këtu.
+    """
     smells, ml = f["smells"], f["ml"]
+    titles = _headings(f)
     lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
     pairs = "; ".join(
         f"{SMELL_SQ[s]} {f['strategy'][s]['mcc']:.2f} → {f['best'][s]['mcc']:.2f}" for s in smells
@@ -1511,19 +1807,21 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
     )
     majority = ml["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
     applied, detected = f["applied"], f["detected"]
+    refused = sum(f["refactoring"]["refused_by_reason"].values())
     extract = f["refactoring"]["applied_by_refactoring"]["ExtractMethod"] / applied
     chance = _dhe([SMELL_SQ[s] for s in f["chance"]])
     moderate = _dhe([SMELL_SQ[s] for s in f["moderate"]])
+    quality = f["quality"]
     return [
         SlideGuide(
-            heading=TITLE,
+            heading=titles[0],
             message="Kush je, nga vjen puna, dhe tri gjërat që do të dëgjojnë: si gjenden "
             "erërat, sa saktë, dhe sa mund të ndreqen.",
             shows=[
-                "Titulli i punimit, me shkronja të mëdha.",
-                f"Poshtë: emrat ({AUTHORS}), UBT dhe emri i konferencës.",
-                "Numri i sllajdit poshtë djathtas. Çdo sllajd e ka, që dikush të mund të "
-                "thotë «te sllajdi 5…».",
+                "Sfond blu i errët: kështu duken vetëm sllajdi i parë dhe i fundit, që salla ta "
+                "ndiejë fillimin dhe mbylljen.",
+                "Lart, me shkronja të vogla: emri i konferencës. Në mes: titulli i punimit.",
+                f"Poshtë titullit: emrat ({AUTHORS}) dhe UBT. Në fund: seanca dhe data.",
             ],
             point=[
                 "Mos e lexo titullin: salla e lexon vetë. Shiko sallën dhe thuaj hyrjen "
@@ -1533,25 +1831,28 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             keywords="emri · teza në UBT · gjej / sa saktë / ndreq",
         ),
         SlideGuide(
-            heading="The class nobody wants to touch",
+            heading=titles[1],
             message="Erërat e kodit nuk janë gabime, por e bëjnë çdo ndryshim të shtrenjtë. "
             "Mjetet e sotme përdorin numra fiksë dhe nuk ndreqin, prandaj tri pyetje.",
             shows=[
-                "Titulli: «Klasa që askush nuk do ta prekë». Nëntitulli: erërat janë probleme "
-                "të ndërtimit të kodit, jo gabime.",
+                "Titulli e thotë problemin në një fjali: erërat e bëjnë çdo ndryshim të "
+                "shtrenjtë, dhe mjetet e sotme vetëm i tregojnë. Nëntitulli: janë probleme "
+                "ndërtimi, jo gabime.",
                 "Tri pika: programi punon, por çdo ndryshim kushton më shumë se ç'duhet; mjetet "
                 "përdorin pragje fikse, të përcaktuara mbi kod tjetër; e tregojnë problemin, "
                 "por rrallë e ndreqin.",
-                "Me blu, tri pyetjet e kërkimit (RQ = research question). RQ1: sa të sakta janë "
-                "rregullat e botuara? RQ2: a bën më mirë mësimi makinerik me të njëjtat "
-                "metrika? RQ3: a mund të ndreqen automatikisht pa e prishur kompilimin?",
-                "Këto tri pyetje janë skeleti i gjithë prezantimit: sllajdet 5 dhe 6 u "
-                "përgjigjen RQ1 dhe RQ2, sllajdet 7 dhe 8 RQ3.",
+                "Poshtë, tri karta: tri pyetjet e kërkimit (RQ = research question). RQ1: sa të "
+                "sakta janë rregullat e botuara? RQ2: a bën më mirë mësimi makinerik me të "
+                "njëjtat metrika? RQ3: a mund të ndreqen automatikisht pa e prishur kompilimin?",
+                "Në fund të çdo karte, një rreth me shkronjë: A (gri) rregullat, B (blu) mësimi "
+                "makinerik, C (blu) motori. Janë të njëjtat shkronja që shfaqen te sllajdi 3.",
+                "Nga sllajdi 4 deri te 8, lart djathtas ka tri etiketa RQ1 · RQ2 · RQ3. Ajo me "
+                "blu është pyetja për të cilën flet sllajdi: kjo është harta e prezantimit.",
             ],
             point=[
                 "Kur thua fjalitë e para, trego tri pikat me radhë.",
-                "Te «So we asked three questions», trego listën blu dhe ndalu një sekondë te "
-                "secila pyetje.",
+                "Te «So we asked three questions», trego tri kartat nga e majta në të djathtë "
+                "dhe ndalu një sekondë te secila.",
             ],
             keywords="punon, por kushton · pragje fikse · nuk ndreqin · tri pyetje",
             asked=[
@@ -1562,22 +1863,25 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="What we built: JavaSmell",
+            heading=titles[2],
             message=f"Një mjet, {f['metrics']} metrika, tri qasje: A rregulla, B modele, C një "
             "motor që ndreq dhe çdo ndreqje e kontrollon me javac.",
             shows=[
-                f"Majtas, tri kuti. A Rules: {f['strategies']} rregulla nga literatura mbi "
-                f"{f['metrics']} metrika. B Machine learning: modele të trajnuara mbi të "
-                "njëjtat metrika. C Refactoring engine: rishkrime mbi pemën e sintaksës (AST), "
-                "vetëm kur kushtet vërtetohen, pastaj kontroll me javac.",
+                "Majtas, rrjedha e mjetit nga lart poshtë: kodi Java → "
+                f"{f['metrics']} metrika për çdo klasë e metodë → dy kuti krah për krah, "
+                f"A ({f['strategies']} rregulla të botuara) dhe B (mësimi makinerik) → erërat, "
+                "secila me kushtet që e shkaktuan → C, motori që rishkruan vetëm atë që "
+                "vërteton → kontrolli me javac dhe një patch, pa e prekur origjinalin.",
                 "AST është pema e sintaksës: kodi i kthyer në pemë, si analiza gramatikore e një "
                 "fjalie. javac është kompajleri i Java-s: programi që e kthen kodin në program "
                 "të ekzekutueshëm dhe tregon gabimet.",
-                "Djathtas, një foto e ndërfaqes web gjatë analizës së jsoup-it (një librari e "
-                "njohur Java për faqet HTML), në mënyrën me gjuhë të thjeshtë, shqip.",
+                "Djathtas, një copë e zmadhuar e ndërfaqes web gjatë analizës së jsoup-it (një "
+                "librari e njohur Java për faqet HTML), shqip: dy gjetje, secila me kushtet e "
+                "veta, p.sh. «Rreshtat e kodit të metodës: 53 (problem kur është mbi 30)».",
             ],
             point=[
-                "Trego kutitë A, B dhe C me radhë, kur thua fjalinë për secilën.",
+                "Ndiqe rrjedhën me dorë nga lart poshtë: te «A uses…» kutia A, te «B trains…» "
+                "kutia B, te «And C is a refactoring engine» kutia C.",
                 "Te «On the right you can see the web interface», trego foton djathtas.",
             ],
             keywords=f"{f['metrics']} metrika · A rregulla · B modele · C ndreqje + javac · "
@@ -1594,22 +1898,27 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Data and a fair test",
+            heading=titles[3],
             message="Etiketat vijnë nga programues profesionistë (MLCQ), dhe prova bëhet e "
             "drejtë duke i ndarë të dhënat sipas projektit dhe duke përdorur MCC.",
             shows=[
-                f"Katër numra të mëdhenj: {f['samples']:,} mostra me etiketë (një mostër është "
+                "Lart djathtas ndizen RQ1 dhe RQ2: ky sllajd tregon si u provuan rregullat dhe "
+                "modelet.",
+                f"Tre numra të mëdhenj: {f['samples']:,} mostra me etiketë (një mostër është "
                 f"një klasë ose një metodë që e ka vlerësuar një njeri), {f['repositories']} "
-                f"projekte (repository), 4 erëra, {f['metrics']} metrika.",
-                "Pika 1: etiketat vijnë nga MLCQ (Madeyski & Lewowski, 2020), kod Java me burim "
-                "të hapur i shqyrtuar nga 26 programues profesionistë.",
-                "Pika 2: ndarja sipas projektit. Modeli nuk provohet mbi projektin nga i cili "
-                "mësoi.",
-                "Pika 3: nota kryesore është MCC, sepse shumica e mostrave janë të pastra.",
+                "projekte (repository) dhe 4 erëra.",
+                f"Poshtë majtas, {ml['folds']} kuti me katrorë: çdo kuti është një grup "
+                "projektesh. Katër gri janë «train», ku modeli mëson; e pesta, blu, është "
+                "«test», ku provohet. Një projekt ndodhet vetëm në një kuti.",
+                f"Poshtë djathtas, kutia «Why MCC, not accuracy»: {majority:.1%} me të kuqe "
+                "është saktësia e një detektori që thotë gjithmonë «i pastër» te Feature Envy. "
+                "MCC-ja e tij është 0.",
             ],
             point=[
                 "Kur thua numrat, trego numrat e mëdhenj, njërin pas tjetrit.",
-                "Kur flet për ndarjen dhe për MCC, trego pikat 2 dhe 3.",
+                "Te «we grouped the data by repository», trego kutitë: «mëson nga këto katër, "
+                "provohet te kjo».",
+                "Te «simple accuracy would look very good», trego numrin e kuq.",
             ],
             keywords=f"MLCQ · 26 programues · {f['samples']:,} mostra · ndarje sipas projektit "
             "· MCC",
@@ -1623,22 +1932,26 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Rules vs. machine learning",
+            heading=titles[4],
             message="Rregullat kanë të drejtë kur alarmojnë, por humbasin shumicën e rasteve; "
             f"modelet janë më të mira te të katër erërat, dhe qartë te {_dhe(f['sure'])}.",
             shows=[
-                "Grafik me shtylla. Poshtë janë katër erërat. Për secilën ka dy shtylla krah "
-                "për krah: gri janë rregullat e botuara (A), blu është modeli më i mirë (B).",
+                "Grafik me shtylla. Për çdo erë ka dy shtylla krah për krah: gri janë rregullat "
+                "e botuara (A), blu është modeli më i mirë (B).",
                 "Numri mbi çdo shtyllë është MCC: 0 do të thotë jo më mirë se hamendja, 1 do të "
                 "thotë i përsosur. Sa më e lartë shtylla, aq më mirë.",
                 f"Numrat, rregullat → modeli: {pairs}.",
-                f"Poshtë grafikut dy pika: rregullat kapin vetëm {lowest:.0f}–{highest:.0f}% të "
-                "rasteve; modelet janë më të mira te të katërta, me dallim të sigurt "
-                f"statistikisht te {_dhe(f['sure'])} (interval besimi 95% sipas projektit).",
+                "Nën emrin e çdo ere: «(significant)» do të thotë që fitorja e modelit është e "
+                "sigurt statistikisht; «(could be chance)» do të thotë që mund të jetë rastësi.",
+                f"Djathtas, dy numra: {lowest:.0f}–{highest:.0f}% me gri, sa nga erërat e "
+                f"vërteta kapin rregullat; {min(f['model_mcc']):.2f}–"
+                f"{max(f['model_mcc']):.2f} me blu, MCC-ja e modelit më të mirë.",
             ],
             point=[
                 "Te «The gray bars… and the blue bars…», trego një shtyllë gri dhe një blu, që "
                 "salla ta lidhë ngjyrën me kuptimin.",
+                f"Te «they catch only {lowest:.0f} to {highest:.0f} percent», trego numrin gri "
+                "djathtas.",
                 f"Te «For {_and(f['unsure'])}, the difference could be chance», trego dy "
                 "shtyllat e saj: janë më të ulëtat dhe më afër njëra-tjetrës.",
             ],
@@ -1655,22 +1968,24 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Why some smells stay hard",
+            heading=titles[5],
             message=f"Për {chance} edhe ekspertët nuk pajtohen me njëri-tjetrin; kufiri nuk është "
             "vetëm algoritmi, por vetë përkufizimi i erës.",
             shows=[
                 "Grafik me një shtyllë për çdo erë: sa pajtohen dy rishikues njerëzorë që panë "
-                "të njëjtin kod, i matur me MCC.",
+                "të njëjtin kod, i matur me MCC. Vija e hollë horizontale është zero, pra "
+                "hamendja.",
                 f"Numrat: {agree}.",
                 f"Shtylla e {chance} është e kuqe dhe nën zero: pajtimi është sa me hamendje. "
                 f"Për {moderate} pajtimi është mesatar.",
-                "Poshtë: kufiri nuk është vetëm algoritmi, por përkufizimi i erës.",
+                "Djathtas: i njëjti numër i madh me të kuqe, dhe fjalia kryesore e sllajdit me "
+                "shkronja të trasha.",
             ],
             point=[
                 f"Te «For {_and([SMELL_SQ[s] for s in f['chance']])}, they agree no better than "
                 "chance», trego shtyllën e kuqe.",
                 "Fjalinë «If experts do not agree…» thuaje ngadalë, duke parë sallën: është "
-                "mesazhi kryesor i pjesës së parë.",
+                "mesazhi kryesor i pjesës së parë, dhe e ke të shkruar djathtas.",
             ],
             keywords="sa pajtohen njerëzit · Feature Envy sa hamendja · problemi është "
             "përkufizimi",
@@ -1682,32 +1997,35 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Automatic refactoring",
+            heading=titles[6],
             message=f"Motori ndreq vetëm kur është i sigurt: rishkruan {applied / detected:.0%} të "
             f"vendeve, refuzon të tjerat me arsye, era zhduket në {f['resolved']:.0%}, dhe asnjë "
             "rishkrim me gabim nuk shkruhet.",
             shows=[
-                f"Katër numra. {detected:,}: vende ku mund të zbatohej një ndreqje (një «site» "
-                f"është një vend konkret në kod). {applied:,}: të rishkruara "
-                f"({_pct(applied / detected)}). {_pct(f['resolved'])}: era u zhduk pas "
-                f"rishkrimit. {_pct(f['broken'])}: shtuan një lloj të ri gabimi kompilimi, dhe "
-                "këto nuk shkruhen kurrë.",
-                "Tri ndreqjet me fjalë të thjeshta. Extract Method: një pjesë e metodës së gjatë "
-                "kalon në një metodë të re. Guard Clauses: if-i i madh që mbështjell gjithë "
-                "metodën bëhet dalje e hershme. Introduce Parameter Object: shumë parametra "
-                "mblidhen në një objekt.",
-                f"Pikat poshtë: tri ndreqjet; refuzimi është rezultat i saktë "
-                f"({_pct(f['refused'])} u refuzuan, secila me arsye); rishikimi me dorë i "
-                f"{f['quality']['reviewed']} rishkrimeve: "
-                f"{_pct(f['quality']['acceptable_reweighted'])} të pranueshme (të peshuara).",
+                f"Lart: {detected:,} vende ku mund të zbatohej një ndreqje (një «site» është një "
+                "vend konkret në kod).",
+                f"Shiriti poshtë tij: pjesa blu janë {applied:,} të rishkruarat "
+                f"({_pct(applied / detected)}), pjesa gri janë {refused:,} të refuzuarat "
+                f"({_pct(refused / detected)}). Gjatësia e secilës pjese është sa pjesa e saj.",
+                f"Tri kartat «Of the {applied:,} rewrites»: {_pct(f['resolved'])} e hoqën erën; "
+                f"{_pct(f['broken'])} shtuan një lloj të ri gabimi kompilimi dhe nuk shkruhen "
+                f"kurrë; {_pct(quality['acceptable_reweighted'])} ishin të pranueshme në "
+                f"rishikimin me dorë të {quality['reviewed']} rishkrimeve.",
+                "Tri ndreqjet, në nëntitull. Extract Method: një pjesë e metodës së gjatë kalon "
+                "në një metodë të re. Guard Clauses: if-i i madh që mbështjell gjithë metodën "
+                "bëhet dalje e hershme. Introduce Parameter Object: shumë parametra mblidhen në "
+                "një objekt.",
             ],
             point=[
-                "Trego katër numrat me radhë, kur thua fjalinë për secilin.",
-                "Te «For us, refusing is a correct result», trego pikën e dytë.",
+                "Te «it found … sites and rewrote …», trego numrin e madh, pastaj pjesën blu të "
+                "shiritit.",
+                "Te «The rest were refused», trego pjesën gri. Te «For us, refusing is a correct "
+                "result», mos lëviz: thuaje duke parë sallën.",
+                "Te tri numrat e fundit, trego tri kartat me radhë.",
             ],
             keywords=f"tri ndreqje · {detected:,} → {applied:,} · refuzimi është i saktë · "
             f"era zhduket {f['resolved']:.0%} · gabimet nuk shkruhen · "
-            f"{f['quality']['acceptable_reweighted']:.0%} të pranueshme",
+            f"{quality['acceptable_reweighted']:.0%} të pranueshme",
             asked=[
                 ("Si e dini që sjellja nuk ndryshon?",
                  "Nuk e pretendojmë. Vërtetojmë kushtet në pemën e sintaksës dhe kontrollojmë me "
@@ -1723,22 +2041,23 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Example from real code",
+            heading=titles[7],
             message="Një shembull i vërtetë: if-i i madh bëhet dalje e hershme, kodi ngjitet një "
             "nivel lart, kompilohet dhe është i pranueshëm.",
             shows=[
                 "Lart, «Before»: kodi origjinal nga Apache Geode, metoda "
-                "checkForLimitedOrNoAccess. Rreshtat me të kuqe janë ata që ndryshojnë.",
-                "Poshtë, «After»: kodi pas rishkrimit. Rreshtat me të gjelbër janë të rinj: "
+                "checkForLimitedOrNoAccess. Rreshtat në brez të kuq janë ata që ndryshojnë: if-i "
+                "i jashtëm dhe kllapa e tij e fundit.",
+                "Poshtë, «After»: kodi pas rishkrimit. Rreshtat në brez të gjelbër janë të rinj: "
                 "kushti me «!( … )» dhe «return;».",
-                "Komenti «// … unchanged lines» do të thotë që një pjesë e gjatë që nuk ndryshon "
-                "është hequr nga sllajdi, që kodi të lexohet nga salla.",
-                "Djathtas, tri pika: kushti i jashtëm bëhet guard clause me dalje të hershme; "
-                "pjesa tjetër ngjitet një nivel; e kaloi javac dhe u gjykua e pranueshme.",
+                "Komenti «/* … unchanged lines */» do të thotë që një pjesë e gjatë që nuk "
+                "ndryshon është mbledhur në një rresht, që kodi të lexohet nga salla.",
+                "Djathtas, tri hapa me numër: kushti bëhet dalje e hershme; pjesa tjetër ngjitet "
+                "një nivel; e kaloi javac dhe u gjykua e pranueshme.",
             ],
             point=[
-                "Te «Before…», trego rreshtin e parë me if në kutinë lart.",
-                "Te «After…», trego «if (!( … )) { return; }» në kutinë poshtë.",
+                "Te «Before…», trego brezin e kuq lart.",
+                "Te «After…», trego brezin e gjelbër poshtë, pastaj hapat djathtas.",
             ],
             keywords="Apache Geode · if i madh → dalje e hershme · një nivel lart · kompilohet",
             asked=[
@@ -1749,18 +2068,19 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading="Limitations and takeaways",
+            heading=titles[8],
             message="Kufizimet i thua vetë, para se të pyesin. Pastaj mbyll me dy mesazhe: "
             "kufijtë e mësuar i mundin pragjet fikse, dhe ndreqja e sigurt është e mundshme, por "
             "e ngushtë.",
             shows=[
+                "Sfond blu i errët, si sllajdi i parë: salla e kupton që po mbyll.",
                 "Majtas, me të kuqe, «Limitations»: kompilohet ≠ sillet njësoj (testet e "
                 "projekteve nuk u ekzekutuan); një bazë të dhënash, katër erëra, vetëm Java; "
                 "modeli më i mirë u zgjodh mbi të njëjtat parashikime, ndaj është pak optimist.",
-                "Djathtas, me blu, «Takeaways», mesazhet që merr salla me vete: kufijtë e "
-                "mësuar i mundin pragjet fikse; automatizimi i sigurt është i ngushtë, por i "
+                "Djathtas, me blu të çelët, «Takeaways», mesazhet që merr salla me vete: kufijtë "
+                "e mësuar i mundin pragjet fikse; automatizimi i sigurt është i ngushtë, por i "
                 "matshëm; burim i hapur dhe i riprodhueshëm.",
-                "Poshtë: «Thank you! Questions?» dhe adresa e projektit në GitHub.",
+                "Poshtë: «Thank you · Questions?» dhe adresa e projektit në GitHub.",
             ],
             point=[
                 "Trego kolonën e kuqe kur flet për kufizimet, pastaj kolonën blu te «To "
@@ -1872,6 +2192,9 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         "vetëm hyrjen e mbylljen fjalë për fjalë (në fund të dokumentit).",
         "Lexoje një herë të gjithin me zë, me sllajdet hapur pranë, dhe trego me gisht atë që "
         "thotë «Ku të tregosh».",
+        "Lart djathtas, nga sllajdi 4 te 8, etiketat RQ1 · RQ2 · RQ3 tregojnë për cilën pyetje "
+        "flet sllajdi; ajo me blu është pyetja e tanishme. Nuk ke nevojë ta thuash: salla e "
+        "sheh vetë.",
     ])  # fmt: skip
 
     doc.add_heading("Historia e prezantimit në një faqe", level=1)
@@ -1888,7 +2211,7 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
             cells.append(_clock(round(totals[long] / WORDS_PER_MINUTE * 60)))
         rows.append(cells)
     _grid(doc, ["#", "Sllajdi", "Mesazhi", "Shkurt: deri këtu", "9 min: deri këtu"], rows,
-          widths=[0.8, 3.4, 8.6, 1.8, 1.8])  # fmt: skip
+          widths=[0.8, 5.0, 7.0, 1.8, 1.8])  # fmt: skip
 
     doc.add_heading("Para se të fillosh", level=1)
     verification = len(script) + 1 + backups.index("Verification in detail")
