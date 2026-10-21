@@ -79,6 +79,7 @@ DECK_LONG = os.path.join(OUT_DIR, "UBT2026_Florent_Latifi_9min.pptx")
 SHEET = os.path.join(OUT_DIR, "UBT2026_pergatitja.docx")
 SPEECH = os.path.join(OUT_DIR, "UBT2026_cka_te_flas.docx")
 BOOK = os.path.join(OUT_DIR, "Punimi_nga_e_para.docx")
+QUESTIONS = os.path.join(OUT_DIR, "UBT2026_pyetjet_e_shpjeguara.docx")
 
 TITLE = (
     "Automated Code Smell Detection and Refactoring Recommendations "
@@ -3988,6 +3989,492 @@ def build_book(f: dict) -> str:
     return BOOK
 
 
+# ----------------------------------------------------------------------
+# Dokumenti i pyetjeve të shpjeguara
+# ----------------------------------------------------------------------
+@dataclass
+class DeepQuestion:
+    """Një pyetje që nuk mbyllet me një fjali: përgjigjja e shkurtër, dhe shpjegimi pas saj.
+
+    Tabela, kur ka, vihet pas paragrafit që e paralajmëron me dy pika; kodi, pas paragrafit
+    të parë, që shembulli të jetë para syve kur lexohet numërimi.
+    """
+
+    question: Question
+    explanation: list[str]
+    table: tuple[list[str], list[list[str]]] | None = None
+    code: str = ""
+
+
+def _deep_questions(f: dict) -> list[DeepQuestion]:
+    """Pyetjet që salla bën më shpesh dhe që kërkojnë më shumë se një fjali.
+
+    Shifrat lexohen nga `data/results/`, dhe shembulli i Long Method matet me vetë mjetin,
+    si te libri, që dokumenti të mos thotë një numër që mjeti nuk e jep.
+    """
+    smells, t = f["smells"], f["reference"]["thresholds"]
+    limit = t["long_method_loc"]
+    sweep_rows = _load("threshold_sweep.json")["per_smell"]["long method"]["long_method_loc"]
+    sweep = {row["value"]: row for row in sweep_rows}
+    shortest, longest = min(sweep), max(sweep)
+    calibration = _load("threshold_calibration.json")["per_smell"]
+    chosen = sorted(float(v) for v in calibration["long method"]["chosen"]["long_method_loc"])
+    chosen_en, chosen_sq = _and([f"{v:g}" for v in chosen]), _dhe([f"{v:g}" for v in chosen])
+    still_ahead = sum(f["best"][s]["mcc"] > calibration[s]["calibrated"]["mcc"] for s in smells)
+    intervals = _load("bootstrap_intervals.json")["per_smell"]
+    quality = f["quality"]
+    as_is = sum(e["acceptance"]["as_is"] for e in quality["by_refactoring"].values())
+    after_edit = sum(e["acceptance"]["after_edit"] for e in quality["by_refactoring"].values())
+    _, shop_methods, _ = _measured(EXAMPLE_SHOP)
+    total = shop_methods["Shop.total"]
+    # Metoda total() nis te rreshti me emrin e saj dhe mbaron para «}» së fundit të klasës.
+    shop = EXAMPLE_SHOP.splitlines()
+    method = shop[next(i for i, line in enumerate(shop) if "int total(" in line) : -1]
+    braces = sum(line.strip() == "}" for line in method)
+    n = len(smells)
+    return [
+        DeepQuestion(
+            Question(1, "Why do we need this tool at all?", "Pse na duhet fare ky mjet?",
+                     "Because smelly code costs time every time it changes, and finding these "
+                     "places by hand in thousands of files is slow. Existing tools use fixed "
+                     "numbers and fix nothing; this one explains every finding in plain words, "
+                     "fixes the safe cases automatically, and is free.",
+                     "Sepse kodi me erë kushton kohë sa herë ndryshohet, dhe gjetja e këtyre "
+                     "vendeve me dorë në mijëra skedarë është e ngadaltë. Mjetet ekzistuese "
+                     "përdorin numra fiksë dhe nuk ndreqin asgjë; ky e shpjegon çdo gjetje me "
+                     "fjalë të thjeshta, i ndreq vetë rastet e sigurta, dhe është falas.",
+                     "The problem"),
+            [
+                "Një program mirëmbahet për vite. Sa herë ndryshohet, programuesi duhet ta "
+                "lexojë dhe ta kuptojë kodin ekzistues. Kodi me erë e bën këtë më të ngadaltë "
+                "dhe më të rrezikshëm, edhe pse programi punon.",
+                "Në një projekt me qindra klasa, askush nuk i lexon dot të gjitha për të gjetur "
+                "ku janë problemet. Një mjet që i gjen automatikisht ia kursen këtë kohë "
+                "programuesit dhe i tregon ku të shikojë së pari, sipas rëndësisë.",
+                "Mjetet e sotme kanë tri mangësi që ky punim i mat: përdorin numra fiksë, të "
+                f"caktuar mbi kod tjetër, që gjejnë vetëm {min(f['recall']) * 100:.0f}–"
+                f"{max(f['recall']) * 100:.0f} nga çdo 100 erëra; nuk shpjegojnë pse një gjetje "
+                "ka rëndësi; dhe nuk ndreqin asgjë. JavaSmell e shpjegon çdo gjetje me numra dhe "
+                "me gjuhë të thjeshtë, mëson kufijtë nga njerëzit, dhe ndreq vetë rastet që mund "
+                "t'i vërtetojë si të sigurta.",
+            ],
+        ),
+        DeepQuestion(
+            Question(1, "Couldn't an AI like ChatGPT do all of this?",
+                     "A nuk mund ta bënte gjithë këtë një AI si ChatGPT?",
+                     "It can give suggestions, but not the same guarantees. Its answer can change "
+                     "each time, it cannot prove that a change is safe, your code would leave your "
+                     "computer, and it usually costs money. This tool gives the same answer every "
+                     "time, explains it with numbers, and runs offline for free. A good next step "
+                     "would be to let an AI suggest and let this engine check.",
+                     "Mund të japë sugjerime, por jo të njëjtat garanci. Përgjigjja e saj mund të "
+                     "ndryshojë çdo herë, nuk e vërteton dot që një ndryshim është i sigurt, kodi "
+                     "yt do të dilte nga kompjuteri yt, dhe zakonisht kushton. Ky mjet jep të "
+                     "njëjtën përgjigje çdo herë, e shpjegon me numra, dhe punon pa internet e "
+                     "falas. Një hap i mirë më pas: AI të sugjerojë, dhe ky motor të kontrollojë.",
+                     "What we built"),
+            [
+                "Një model gjuhësor (LLM) si ChatGPT mund ta lexojë një metodë dhe të thotë «kjo "
+                "është shumë e gjatë», ose të propozojë një version më të pastër. Kjo është e "
+                "dobishme, por për një punim shkencor dhe për një mjet që e rishkruan kodin e "
+                "dikujt ka katër probleme.",
+                "E para, përsëritshmëria: e njëjta pyetje mund të marrë përgjigje të ndryshme në "
+                "dy ekzekutime. Një rezultat që nuk përsëritet nuk mund të raportohet si numër "
+                "në punim.",
+                "E dyta, siguria: LLM-ja shkruan kod që duket i saktë, por nuk e vërteton që "
+                "sjellja mbetet e njëjtë. Motori i këtij punimi ndryshon vetëm kur kushtet "
+                "vërtetohen nga pema e sintaksës, dhe pastaj e kontrollon me javac.",
+                "E treta, privatësia dhe kostoja: kodi i një kompanie do t'i dërgohej një "
+                "shërbimi në internet, dhe çdo analizë kushton. Punimi kishte kusht zero kosto "
+                "dhe punë pa internet.",
+                "E katërta, shpjegimi: rregullat e punimit thonë pse, me numra: çdo kusht, si "
+                f"«MLOC > {limit:g}», tregohet me vlerën e matur pranë. Një LLM jep një arsye "
+                "me fjalë, që nuk mund të kontrollohet njësoj.",
+                "Kjo nuk do të thotë që AI nuk ka vend. Një kombinim i arsyeshëm për të ardhmen: "
+                "AI propozon një ndryshim, dhe motori i këtij punimi e kontrollon para se të "
+                "pranohet. Vendimi për të mos përdorur LLM në produkt është VD-03 te "
+                "docs/DECISIONS.md.",
+            ],
+        ),
+        DeepQuestion(
+            Question(1, "Why Java, and not another language?", "Pse Java, dhe jo një gjuhë tjetër?",
+                     "Three reasons. The only large dataset of smells judged by professional "
+                     "developers, MLCQ, is Java code. The classic smell rules were written for "
+                     "object-oriented languages like Java. And Java has a strict compiler, javac, "
+                     "that I use to check every change. The parser supports other languages, so "
+                     "the approach could be extended later.",
+                     "Tri arsye. E vetmja bazë e madhe me erëra të gjykuara nga programues "
+                     "profesionistë, MLCQ, është kod Java. Rregullat klasike u shkruan për gjuhë "
+                     "të orientuara nga objektet, si Java. Dhe Java ka një kompajler të rreptë, "
+                     "javac, me të cilin kontrolloj çdo ndryshim. Parseri i mbështet edhe gjuhë të "
+                     "tjera, ndaj qasja mund të zgjerohet më vonë.", "Data and evaluation"),
+            [
+                "Arsyeja e parë është e dhëna. Për të matur sa i saktë është një detektor, duhen "
+                "përgjigje nga njerëz. Në MLCQ, 26 programues profesionistë dhanë rreth 15 mijë "
+                "vlerësime, dhe të gjitha janë për kod Java. Për gjuhë të tjera nuk ka një bazë "
+                "të tillë me këtë madhësi.",
+                "Arsyeja e dytë janë rregullat. Libri i Lanza-s dhe Marinescu-t dhe katalogu i "
+                "Fowler-it i përshkruajnë erërat me klasa, metoda dhe fusha: koncepte të "
+                "gjuhëve si Java. Në një gjuhë pa klasa, God Class ose Data Class nuk kanë të "
+                "njëjtin kuptim.",
+                "Arsyeja e tretë është kontrolli. Java ka tipe të rrepta dhe një kompajler që e "
+                "refuzon kodin e gabuar. Kjo e bën të mundur kontrollin e çdo ndryshimi të "
+                "motorit. Në një gjuhë pa kompajler të tillë, si Python, ky kontroll do të ishte "
+                "shumë më i dobët.",
+                "Parseri tree-sitter i mbështet shumë gjuhë, ndaj leximi i kodit mund të "
+                "zgjerohet. Metrikat dhe motori i ndreqjeve janë shkruar për Java, dhe për një "
+                "gjuhë tjetër do të duheshin edhe të dhëna të reja me etiketa.",
+            ],
+        ),
+        DeepQuestion(
+            Question(1, "Who would use this tool?", "Kush do ta përdorte këtë mjet?",
+                     "A developer or a team before changing old code, to see where the problems "
+                     "are and fix the simple ones. And students or teachers, thanks to the "
+                     "plain-language mode in Albanian.",
+                     "Një programues ose një ekip para se të ndryshojë kod të vjetër, që të shohë "
+                     "ku janë problemet dhe t'i ndreqë të thjeshtat. Dhe studentë ose mësues, "
+                     "falë mënyrës me gjuhë të thjeshtë shqip.", "What we built"),
+            [
+                "Rasti kryesor: një ekip merr një projekt të vjetër dhe duhet të shtojë diçka. "
+                "Mjeti i tregon cilat klasa dhe metoda janë më të rrezikshme, sipas rëndësisë, "
+                "dhe pse. Për disa raste përgatit vetë ndryshimin, që programuesi ta shikojë dhe "
+                "ta pranojë.",
+                "Rasti i dytë: mësimi. Mënyra me gjuhë të thjeshtë e shpjegon çdo erë dhe çdo "
+                "metrikë shqip, pa zhargon. Një student mund ta përdorë mbi kodin e vet për të "
+                "parë çka nuk shkon dhe pse.",
+                "Mjeti punon në kompjuterin e përdoruesit, pa internet dhe falas, ndaj mund ta "
+                "përdorë edhe një kompani që nuk do ta nxjerrë kodin jashtë.",
+            ],
+        ),
+        DeepQuestion(
+            Question(1, "Is the tool better than a human reviewer?",
+                     "A është mjeti më i mirë se një rishikues njeri?",
+                     "It is not meant to replace one. It shows where to look and explains why, so "
+                     "a developer can decide faster. For the fixes, a developer still reviews the "
+                     "change before it is applied.",
+                     "Nuk është menduar ta zëvendësojë. Tregon ku të shikosh dhe pse, që "
+                     "programuesi të vendosë më shpejt. Edhe për ndreqjet, një programues e shikon "
+                     "ndryshimin para se të zbatohet.", "What we built"),
+            [
+                "Mjeti mëson nga njerëzit dhe krahasohet me ta, ndaj nuk ka kuptim të thuhet se "
+                "është «më i mirë» se ata. Dobia e tij është shpejtësia dhe qëndrueshmëria: e "
+                "kontrollon gjithë projektin në sekonda, dhe e gjykon çdo klasë me të njëjtin "
+                "rregull.",
+                "Për ndreqjet, mjeti përgatit një skedar ndryshimesh dhe nuk e prek kodin vetë. "
+                f"Në rishikimin me dorë të {quality['reviewed']} ndryshimeve, vetëm {as_is} u "
+                f"pranuan ashtu siç ishin, dhe {after_edit} pas një ndreqjeje të vogël, si një "
+                "emër më i mirë për metodën e re. Prandaj fjala e fundit mbetet te programuesi.",
+            ],
+        ),
+        DeepQuestion(
+            Question(1, "How does the tool decide that a method is a Long Method?",
+                     "Si vendos mjeti që një metodë është Long Method?",
+                     f"It counts the lines of the method that contain code. The first line, with "
+                     f"the method's name, counts; empty lines, comments and lines with only a "
+                     f"closing brace do not. If there are more than {limit:g} such lines, it is a "
+                     "Long Method.",
+                     f"Numëron rreshtat e metodës që kanë kod. Rreshti i parë, me emrin e metodës, "
+                     f"numërohet; rreshtat bosh, komentet dhe rreshtat me vetëm një «}}» jo. Nëse "
+                     f"ka më shumë se {limit:g} rreshta të tillë, është Long Method.", "The problem"),
+            [
+                "Metrika quhet MLOC (rreshtat e kodit të metodës). Ajo nuk numëron rreshtat e "
+                "ekranit, por rreshtat që kanë një udhëzim: kështu një metodë nuk bëhet «e gjatë» "
+                "vetëm sepse ka shumë rreshta bosh ose komente. Shembull:",
+                f"Metoda total() ka {len(method)} rreshta në ekran, por MLOC = {total['MLOC']:g}. "
+                "Numërohen emri i metodës, int sum, for, if, sum += p, if-i i dytë, sum = …, dhe "
+                f"return. {braces} rreshtat me vetëm «}}» nuk numërohen. Këtë vlerë e jep vetë "
+                "mjeti kur e mat këtë kod.",
+                f"Rregulli është i thjeshtë: MLOC > {limit:g}. Pse pikërisht {limit:g}, e "
+                "shpjegon pyetja e Nivelit 3 më poshtë.",
+            ],
+            code=EXAMPLE_SHOP,
+        ),
+        DeepQuestion(
+            Question(2, "How does the tool decide that a class is a Blob or a Data Class?",
+                     "Si vendos mjeti që një klasë është Blob ose Data Class?",
+                     f"With rules from Lanza and Marinescu. A Blob does a lot of work (WMC at least "
+                     f"{t['god_class_wmc']}), its methods do not share data (TCC below one third), "
+                     f"and it uses data of other classes (ATFD above {t['god_class_atfd']}). A Data "
+                     "Class has many public fields or get and set methods, and almost no real "
+                     "work.",
+                     f"Me rregullat e Lanza-s dhe Marinescu-t. Një Blob bën shumë punë (WMC së "
+                     f"paku {t['god_class_wmc']}), metodat e saj nuk ndajnë të dhëna (TCC nën një "
+                     f"të tretën), dhe përdor të dhëna të klasave të tjera (ATFD mbi "
+                     f"{t['god_class_atfd']}). Një Data Class ka shumë fusha publike ose metoda "
+                     "get e set, dhe pothuajse asnjë punë të vërtetë.", "Four smells"),
+            [
+                "Rregulli i Blob-it (God Class) ka tri kushte, dhe duhet të plotësohen të tria. "
+                f"WMC ≥ {t['god_class_wmc']}: shuma e kompleksitetit të metodave është shumë e "
+                "lartë, pra klasa bën shumë punë. TCC < 1/3: më pak se një e treta e çifteve të "
+                "metodave përdorin fusha të përbashkëta, pra pjesët e klasës nuk lidhen me "
+                f"njëra-tjetrën. ATFD > {t['god_class_atfd']}: klasa lexon shumë të dhëna nga "
+                "klasa të tjera.",
+                "Rregulli i Data Class ka dy pjesë. WOC < 1/3: më pak se një e treta e pjesës "
+                "publike të klasës bën punë të vërtetë; pjesa tjetër vetëm jep ose vendos "
+                f"vlera. Dhe: ose klasa ka më shumë se {t['data_class_public_members']} fusha "
+                f"publike dhe metoda get/set me pak logjikë (WMC < {t['data_class_wmc_low']}), "
+                f"ose më shumë se {t['data_class_public_members_many']} me pak më shumë logjikë "
+                f"(WMC < {t['data_class_wmc_high']}).",
+                "Mjeti nuk thotë vetëm «Blob»: tregon secilin kusht me vlerën e matur, që "
+                "programuesi ta shohë vetë pse.",
+            ],
+        ),
+        DeepQuestion(
+            Question(2, "What did you build yourself, and what did you reuse?",
+                     "Çka ndërtove vetë, dhe çka ripërdore?",
+                     "I wrote the analysis, the metrics, the rules, the training and the "
+                     "evaluation, the refactoring engine and the interface. I reused the "
+                     "tree-sitter parser, the scikit-learn library for the models, the MLCQ "
+                     "labels, the Java compiler, and PMD only for comparison.",
+                     "Shkrova vetë analizën, metrikat, rregullat, trajnimin dhe vlerësimin, motorin "
+                     "e ndreqjeve dhe ndërfaqen. Ripërdora parserin tree-sitter, librarinë "
+                     "scikit-learn për modelet, etiketat e MLCQ-së, kompajlerin e Java-s, dhe "
+                     "PMD-në vetëm për krahasim."),
+            [
+                "Ripërdorimi është i qëllimshëm: një parser, një librari modelesh dhe një "
+                "kompajler janë mjete të provuara nga mijëra njerëz, dhe rishkrimi i tyre do "
+                "të sillte gabime pa fitim. Etiketat e MLCQ-së janë ripërdorur sepse etiketimi "
+                "nga vetë autori do ta bënte provën të njëanshme.",
+                "Pjesa e re e punimit është mënyra si lidhen: metrikat e llogaritura nga faktet "
+                "e sintaksës, rregullat që kthejnë kushtet me vlerat, krahasimi i drejtë me "
+                "ndarje sipas projektit, dhe motori që refuzon kur nuk vërteton dot sigurinë.",
+            ],
+        ),
+        DeepQuestion(
+            Question(2, "What is the biggest weakness of the work?",
+                     "Cila është dobësia më e madhe e punimit?",
+                     "That compiling is not the same as behaving the same. The projects come "
+                     "without their build files, so I could not run their own tests after each "
+                     "change. That is the first thing I would add.",
+                     "Që kompilimi nuk është njësoj si sjellja e njëjtë. Projektet vijnë pa "
+                     "skedarët e ndërtimit, ndaj nuk munda t'i ekzekutoj testet e tyre pas çdo "
+                     "ndryshimi. Kjo është gjëja e parë që do ta shtoja.",
+                     "Limitations and takeaways"),
+            [
+                "Një ndryshim që kompilohet mund ta ndryshojë prapë sjelljen, p.sh. nëse e "
+                "ndryshon radhën e dy veprimeve. Testet e projektit do ta kapnin këtë, por "
+                "korpusi mban vetëm skedarët .java, pa skedarët që e ndërtojnë projektin dhe pa "
+                "libraritë.",
+                "Punimi nuk e fsheh: thotë «kompilohet, ose nuk shton lloj të ri gabimi», jo "
+                "«sillet njësoj». Në rishikimin me dorë, një ndryshim Extract Method dukej se e "
+                "ndryshonte sjelljen, dhe pikërisht kjo e tregon pse kufizimi ka rëndësi.",
+                "Dobësi të tjera, më të vogla: një bazë të dhënash, katër erëra, vetëm Java, dhe "
+                "rishikimi me dorë i bërë vetëm nga autori.",
+            ],
+        ),
+        DeepQuestion(
+            Question(3, f"Why exactly {limit:g} lines? How did you arrive at that limit?",
+                     f"Pse saktësisht {limit:g} rreshta? Si arrite te ky kufi?",
+                     f"No published source gives a number, so {limit:g} is my choice, and the "
+                     f"thesis says so. Then I measured what happens when it moves, from "
+                     f"{shortest:g} to {longest:g} lines: the MCC goes from "
+                     f"{sweep[shortest]['mcc']:.2f} down to {sweep[longest]['mcc']:.2f}. When I "
+                     f"calibrate it inside each training group, the best value is {chosen_en} "
+                     f"lines: the developers in MLCQ call a method long earlier than {limit:g}.",
+                     f"Asnjë burim i botuar nuk jep një numër, ndaj {limit:g} është zgjedhja ime, "
+                     f"dhe punimi e thotë hapur. Pastaj mata çka ndodh kur lëviz, nga "
+                     f"{shortest:g} deri në {longest:g} rreshta: MCC-ja bie nga "
+                     f"{sweep[shortest]['mcc']:.2f} në {sweep[longest]['mcc']:.2f}. Kur e "
+                     f"kalibroj brenda çdo grupi mësimi, vlera më e mirë del {chosen_sq} rreshta: "
+                     f"programuesit e MLCQ-së e quajnë një metodë të gjatë më herët se "
+                     f"{limit:g}.", "The problem"),
+            [
+                "Fowler e përshkruan Long Method pa dhënë një numër, dhe mjetet e ndryshme "
+                f"përdorin vlera të ndryshme. Punimi zgjodhi {limit:g} rreshta dhe e thotë hapur "
+                "që kjo është zgjedhje e autorit, jo një vlerë nga literatura (vendimi VD-133).",
+                "Një zgjedhje e tillë nuk mund të mbetet pa u matur. Prandaj kufiri u provua me "
+                f"{len(sweep_rows)} vlera, nga gjysma deri në dyfishin e tij, dhe për secilën u "
+                "mat sa metoda shënon dhe sa pajtohet me njerëzit:",
+                "Kufiri i ulët kap shumicën e metodave të gjata (recall i lartë), por shënon edhe "
+                "disa që njerëzit nuk i quajnë të gjata (precision më i ulët). Kufiri i lartë "
+                "bën të kundërtën: shënon pak, por ato pak janë pothuajse gjithmonë të sakta.",
+                f"Kur kufiri zgjidhet vetëm mbi grupet e mësimit, dhe provohet te grupi që nuk u "
+                f"pa, vlera më e mirë del {chosen_sq} rreshta. Përfundimi: programuesit e "
+                f"MLCQ-së e quajnë një metodë «të gjatë» më herët se {limit:g} rreshta.",
+            ],
+            (["Kufiri (rreshta)", "Sa metoda shënon", "Precision", "Recall", "MCC"],
+             [[f"{row['value']:g}", f"{row['fired']}", f"{row['precision']:.0%}",
+               f"{row['recall']:.0%}", f"{row['mcc']:.2f}"] for row in sweep_rows]),
+        ),
+        DeepQuestion(
+            Question(3, "How reliable are your results?", "Sa të besueshme janë rezultatet e tua?",
+                     f"As reliable as a fair test allows, and I say where they are not. Every "
+                     f"model is tested on projects it has never seen, every difference is checked "
+                     f"with {f['resamples']:,} resamples, and every number can be recreated by a "
+                     "script. The limits are the labels themselves for Feature Envy, one dataset, "
+                     "and that compiling is not the same as behaving the same.",
+                     f"Aq të besueshme sa e lejon një provë e drejtë, dhe them hapur ku nuk janë. "
+                     f"Çdo model provohet mbi projekte që nuk i ka parë kurrë, çdo ndryshim "
+                     f"kontrollohet me {f['resamples']:,} rizgjedhje, dhe çdo numër rikrijohet me "
+                     "një skript. Kufijtë janë vetë etiketat te Feature Envy, një bazë e vetme "
+                     "të dhënash, dhe që kompilimi nuk është njësoj si sjellja e njëjtë.",
+                     "Rules vs. machine learning", "Confidence intervals"),
+            [
+                "Punimi ka katër mbrojtje kundër rezultateve të fryra. E para: etiketat vijnë nga "
+                "26 programues profesionistë, jo nga autori. E dyta: projektet ndahen në "
+                f"{f['ml']['folds']} grupe, dhe asnjë model nuk provohet mbi një projekt nga i "
+                "cili mësoi. E treta: nota është MCC, që nuk mashtrohet kur erërat janë të "
+                f"rralla. E katërta: çdo ndryshim model − rregulla rillogaritet {f['resamples']:,} "
+                "herë mbi projekte të rizgjedhura.",
+                "Ja intervalet 95% të ndryshimit model − rregulla. Kur i gjithë intervali është "
+                "mbi zero, përmirësimi nuk është fat:",
+                "Ku rezultatet janë më pak të forta, punimi e thotë: te Feature Envy edhe "
+                "njerëzit nuk pajtohen, ndaj as etiketat nuk janë të sigurta; modeli më i mirë "
+                "u zgjodh mbi të njëjtat parashikime, ndaj është pak optimist (por edhe më i "
+                f"dobëti i mund rregullat te {f['weakest']} nga {n}); dhe ndreqjet kontrollohen "
+                "me kompajlerin, jo me testet e projekteve.",
+            ],
+            (["Era", "Ndryshimi model − rregulla, 95%", "Mbi zero?"],
+             [[SMELL_SQ[s], "{low:+.2f} … {high:+.2f}".format(
+                 **intervals[s]["intervals"]["difference_model_minus_rules"]),
+               "po" if intervals[s]["intervals"]["difference_model_minus_rules"]["low"] > 0
+               else "jo"] for s in smells]),
+        ),
+        DeepQuestion(
+            Question(3, "Why these three refactorings, and not others?",
+                     "Pse këto tri ndreqje, dhe jo të tjera?",
+                     "Because they can be proven safe from the code of one file. Others, like "
+                     "Move Method or Extract Class, need every place in the project that uses the "
+                     "moved code, and the tool cannot find those places with certainty.",
+                     "Sepse mund të vërtetohen si të sigurta nga kodi i një skedari. Të tjerat, si "
+                     "Move Method ose Extract Class, kërkojnë çdo vend në projekt që e përdor "
+                     "kodin e zhvendosur, dhe mjeti nuk i gjen dot me siguri ato vende.",
+                     "Automatic refactoring"),
+            [
+                "Extract Method, Guard Clauses dhe Introduce Parameter Object ndryshojnë vetëm "
+                "brenda një metode ose rreth saj. Kushtet e tyre mund të kontrollohen nga pema e "
+                "sintaksës: a del një return nga blloku, a ka vlera që nuk janë caktuar, a ndryshon "
+                "pjesa më shumë se një variabël.",
+                "Move Method ose Extract Class e zhvendosin kodin në një klasë tjetër. Për t'i bërë "
+                "të sigurta, duhet gjetur çdo vend në gjithë projektin që e thërret metodën ose e "
+                "përdor fushën. Kjo kërkon zgjidhjen e emrave në gjithë projektin, që mjeti me "
+                "qëllim nuk e bën. Prandaj ato vetëm propozohen.",
+                "Ky është parimi i motorit: më mirë një ndreqje më pak, se sa një ndreqje që "
+                "prish kodin.",
+            ],
+        ),
+        DeepQuestion(
+            Question(4, "If you change the thresholds, does your conclusion change?",
+                     "Nëse i ndryshon pragjet, a ndryshon përfundimi yt?",
+                     f"The rules change a lot: for Long Method the MCC moves between "
+                     f"{sweep[longest]['mcc']:.2f} and {sweep[shortest]['mcc']:.2f}. But even when "
+                     f"I calibrate the rules' thresholds inside each training group, the models "
+                     f"stay ahead on {_count_word(still_ahead, n)} smells, so the conclusion "
+                     "holds. The rule catches up only for Long Method, and only if I pick the "
+                     "limit after looking at the test data.",
+                     f"Rregullat ndryshojnë shumë: për Long Method MCC-ja lëviz mes "
+                     f"{sweep[longest]['mcc']:.2f} dhe {sweep[shortest]['mcc']:.2f}. Por edhe kur "
+                     f"i kalibroj pragjet e rregullave brenda çdo grupi mësimi, modelet mbeten "
+                     f"përpara te {still_ahead} nga {n} erërat, ndaj përfundimi qëndron. Rregulla "
+                     "e arrin modelin vetëm te Long Method, dhe vetëm nëse kufirin e zgjedh pasi "
+                     "i shoh të dhënat e provës.",
+                     "Rules vs. machine learning"),
+            [
+                "Kjo është pyetja më e fortë që mund të bëjë një recensent: «modelet fitojnë vetëm "
+                "sepse rregullat kanë pragje të këqija?». Për t'u përgjigjur, punimi i kalibroi "
+                "pragjet e rregullave mbi MLCQ, pa e shkelur ndarjen: vlera zgjidhet vetëm mbi "
+                "grupet e mësimit dhe provohet te grupi që nuk u pa.",
+                "Tabela krahason rregullat me pragjet e botuara, rregullat me pragjet e "
+                "kalibruara, dhe modelin më të mirë:",
+                "Kalibrimi i ndihmon rregullat, sidomos te Long Method, por modeli mbetet përpara "
+                f"te {still_ahead} nga {n} erërat. Pra përparësia e mësimit makinerik nuk vjen "
+                "vetëm nga pragjet e këqija.",
+                f"Një kujdes që duhet thënë hapur: te Long Method, me kufirin {shortest:g} "
+                f"rregulla arrin MCC {sweep[shortest]['mcc']:.3f}, dhe modeli "
+                f"{f['best']['long method']['mcc']:.3f}, pra janë të barabartë. Por {shortest:g} "
+                "u gjet duke i parë të gjitha të dhënat, edhe ato të provës. Kur kufiri zgjidhet "
+                "vetëm mbi grupet e mësimit, rregulla bie në "
+                f"{calibration['long method']['calibrated']['mcc']:.3f}. Krahasimi i drejtë është "
+                "kolona e kalibruar.",
+            ],
+            (["Era", "Rregullat, pragje të botuara", "Rregullat, pragje të kalibruara",
+              "Modeli më i mirë"],
+             [[SMELL_SQ[s], f"{calibration[s]['published']['mcc']:.2f}",
+               f"{calibration[s]['calibrated']['mcc']:.2f}", f"{f['best'][s]['mcc']:.2f}"]
+              for s in smells]),
+        ),
+        DeepQuestion(
+            Question(4, "Why not just tune the rules' thresholds on your data?",
+                     "Pse thjesht nuk i akordove pragjet e rregullave mbi të dhënat e tua?",
+                     "Because Approach A measures the published rules as people actually use them. "
+                     "Tuning them on the same data I test on would be tuning to the test. I report "
+                     "the calibration separately, done only on the training groups.",
+                     "Sepse qasja A i mat rregullat e botuara ashtu siç i përdorin njerëzit. T'i "
+                     "akordoja mbi të njëjtat të dhëna me të cilat provoj, do të ishte akordim "
+                     "sipas provës. Kalibrimin e raportoj veçmas, të bërë vetëm mbi grupet e "
+                     "mësimit.", "Rules vs. machine learning"),
+            [
+                "Pyetja e parë e punimit (Q1) është: sa të sakta janë rregullat e botuara? Për "
+                "t'iu përgjigjur, rregullat duhet të maten me vlerat që përdorin njerëzit, jo me "
+                "vlera të zgjedhura që të dalin mirë mbi këto të dhëna.",
+                "Nëse pragjet do të zgjidheshin mbi të gjitha të dhënat dhe pastaj do të "
+                "provoheshin mbi të njëjtat, rezultati do të ishte i fryrë: do të ishte si një "
+                "student që i sheh pyetjet para provimit. Prandaj kalibrimi bëhet vetëm mbi "
+                "grupet e mësimit, dhe raportohet si rezultat më vete.",
+            ],
+        ),
+    ]  # fmt: skip
+
+
+def _explanation(doc, entry: DeepQuestion) -> None:
+    heading = doc.add_paragraph()
+    heading.paragraph_format.space_after = DocPt(2)
+    run = heading.add_run("Shpjegimi")
+    run.bold = True
+    run.font.color.rgb = DocRGB(*ACCENT)
+    for index, text in enumerate(entry.explanation):
+        doc.add_paragraph(text)
+        if entry.code and index == 0:
+            _code(doc, entry.code.splitlines())
+        if entry.table and text.endswith(":"):
+            _grid(doc, *entry.table)
+    doc.add_paragraph()
+
+
+def build_questions(f: dict, backups: list[str], main: int) -> str:
+    """Pyetjet më të shpeshta me shpjegim të gjerë, dhe pas tyre të gjitha të tjerat.
+
+    Një dokument më vete, që udhëzuesi i fjalimit dhe libri të mbeten siç janë provuar.
+    """
+    deep = _deep_questions(f)
+    doc = _document()
+    doc.add_heading("Pyetjet e konferencës, të shpjeguara", level=0)
+    doc.add_paragraph(f"{TITLE}\n{AUTHORS}")
+    _list(doc, [
+        "Pjesa e parë ka pyetjet që salla bën më shpesh dhe që nuk mbyllen me një fjali: pse na "
+        "duhet mjeti, pse jo me AI, pse Java, si vendoset Long Method dhe pse "
+        f"{f['reference']['thresholds']['long_method_loc']:g} rreshta, sa të besueshme janë "
+        "rezultatet.",
+        "Për secilën: pyetja anglisht dhe shqip, përgjigjja e shkurtër që e thua në sallë (me "
+        "të zeza anglisht, me gri shqip), dhe pastaj «Shpjegimi», që e lexon ti për ta kuptuar "
+        "deri në fund.",
+        "Pjesa e dytë ka pyetjet e udhëzuesit të fjalimit, sipas nivelit, me përgjigjen e "
+        "shkurtër, që të gjitha të jenë në një vend.",
+        "Në sallë thuaj vetëm përgjigjen e shkurtër. Nëse dikush pyet më tej, shpjegimi të jep "
+        "çka të shtosh.",
+    ])  # fmt: skip
+    doc.add_heading("Pjesa e parë: pyetjet që kërkojnë shpjegim", level=1)
+    for level, (name, _) in LEVELS.items():
+        entries = [entry for entry in deep if entry.question.level == level]
+        if entries:
+            doc.add_heading(f"Niveli {level}: {name}", level=2)
+        for entry in entries:
+            _answer(doc, entry.question, backups, main)
+            _explanation(doc, entry)
+    doc.add_page_break()
+    doc.add_heading("Pjesa e dytë: pyetjet e udhëzuesit të fjalimit, sipas nivelit", level=1)
+    bank = _question_bank(f)
+    for level, (name, who) in LEVELS.items():
+        doc.add_heading(f"Niveli {level}: {name}", level=2)
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(who).italic = True
+        for question in bank:
+            if question.level == level:
+                _answer(doc, question, backups, main)
+    doc.save(QUESTIONS)
+    return QUESTIONS
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -4002,6 +4489,7 @@ def main() -> int:
         build_sheet(facts, script),
         build_speech_guide(facts, script, backups),
         build_book(facts),
+        build_questions(facts, backups, len(script)),
     ):
         print(f"U gjenerua: {path}")
     return 0
