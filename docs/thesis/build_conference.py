@@ -64,7 +64,7 @@ from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_TICK_LABEL_POSITION
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
 from pptx.util import Emu, Inches, Pt
@@ -361,6 +361,8 @@ def _script(f: dict) -> list[tuple]:
     pmd_ahead, pmd_behind = f["pmd_ahead"], f["pmd_behind"]
     introduced, always, never = f["introduced"], f["always"], f["never"]
     lowest, highest = min(recall) * 100, max(recall) * 100
+    found_low, found_high = (bound(f["best"][s]["recall"] for s in f["smells"]) * 100
+                             for bound in (min, max))  # fmt: skip
     shape = refactoring["refused_by_reason"]["shape_not_matched"] / detected * 100
     newest = _words(max(introduced, key=introduced.get))
     return [
@@ -421,8 +423,21 @@ def _script(f: dict) -> list[tuple]:
                  "Dhe e treta: a mund t'i ndreqim erërat automatikisht, pa e prishur kodin?"),
         ),
         (
+            "Four smells",
+            Line("This study looks at four of them.", "Ky studim shqyrton katër prej tyre."),
+            Line("Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
+            Line("Data Class only holds data and has almost no behavior.",
+                 "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
+            Line(
+                "Long Method is a method that has grown too long, and Feature Envy is a method that "
+                "uses another class more than its own.",
+                "Long Method është një metodë që është zgjatur shumë, dhe Feature Envy është një "
+                "metodë që përdor një klasë tjetër më shumë se klasën e vet.",
+            ),
+        ),
+        (
             "What we built",
-            Line("To answer them, I built a tool called JavaSmell.",
+            Line("To answer these questions, I built a tool called JavaSmell.",
                  "Për t'iu përgjigjur këtyre pyetjeve, ndërtova një mjet që quhet JavaSmell."),
             Line(f"It reads Java code and measures {f['metrics']} metrics for every class and method.",
                  f"E lexon kodin Java dhe mat {f['metrics']} metrika, pra numra, për çdo klasë dhe "
@@ -471,15 +486,6 @@ def _script(f: dict) -> list[tuple]:
                 f"Pasi i gjetëm mostrat në kod me mjetin tonë, kemi {f['samples']:,} mostra me "
                 f"etiketë nga {f['repositories']} projekte, për katër erëra.",
             ),
-            Extra("Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
-            Extra("Data Class only holds data and has almost no behavior.",
-                  "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
-            Extra(
-                "Long Method is a method that has grown too long, and Feature Envy is a method that "
-                "uses another class more than its own.",
-                "Long Method është një metodë që është zgjatur shumë, dhe Feature Envy është një "
-                "metodë që përdor një klasë tjetër më shumë se klasën e vet.",
-            ),
             Line("One important detail is how we split the data.",
                  "Një detaj i rëndësishëm është si i ndamë të dhënat për mësim dhe për provë."),
             Line(
@@ -517,6 +523,12 @@ def _script(f: dict) -> list[tuple]:
                 f"{max(model_mcc):.2f}.",
                 f"Modelet janë më të mira te të katër erërat, me MCC nga {min(model_mcc):.2f} deri "
                 f"{max(model_mcc):.2f}.",
+            ),
+            Line(
+                f"Out of every 100 smells, they find {found_low:.0f} to {found_high:.0f}; the price "
+                "is usually more false alarms.",
+                f"Nga çdo 100 erëra, ato gjejnë {found_low:.0f} deri {found_high:.0f}; çmimi "
+                "zakonisht është më shumë alarme të rreme.",
             ),
             Line("We also computed 95 percent confidence intervals by resampling repositories.",
                  "Llogaritëm edhe intervale besimi 95 për qind, duke i rizgjedhur projektet rastësisht "
@@ -731,6 +743,8 @@ SIZE_STAT = Pt(40)
 SIZE_NUMBER = Pt(56)
 RADIUS = Inches(0.08)
 STAT_HEIGHT = Inches(1.7)
+# Trashësia e një metode ose fushe në vizatimet e erërave.
+BAR_HEIGHT = Inches(0.09)
 # Kodi: rreshti më i gjatë i shembullit duhet të hyjë në dy të tretat e sllajdit.
 CODE_SIZE = Pt(13)
 GAP = Inches(0.3)
@@ -812,11 +826,13 @@ def _heading(slide, title: str, subtitle: str = "", dark: bool = False, kicker: 
     return frame
 
 
-def _map(slide, active: set[int]) -> None:
-    """Tri pyetjet e kërkimit lart djathtas; ndizet ajo për të cilën flet sllajdi.
+def _map(slide, active: set[int], role: str = "") -> None:
+    """Tri pyetjet lart djathtas; ndizet ajo për të cilën flet sllajdi.
 
     Salla nuk e mban mend skeletin e një prezantimi dhjetë-minutësh; harta ia kujton në
-    çdo sllajd pa asnjë fjalë më shumë.
+    çdo sllajd pa asnjë fjalë më shumë. «Q» e jo «RQ», sepse shkurtesa e kërkimit nuk i
+    thotë asgjë një studenti nga një fushë tjetër. `role` thotë çka bën sllajdi me
+    pyetjen, p.sh. «answers», që salla ta dijë kur dëgjon një përgjigje.
     """
     width, height, gap = Inches(0.78), Inches(0.36), Inches(0.1)
     left = WIDTH - MARGIN - 3 * width - 2 * gap
@@ -828,8 +844,28 @@ def _map(slide, active: set[int]) -> None:
         frame = pill.text_frame
         frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
         frame.vertical_anchor = MSO_ANCHOR.MIDDLE
-        _put(frame, f"RQ{index}", SIZE_SMALL, WHITE if on else SOFT, strong=True,
+        _put(frame, f"Q{index}", SIZE_SMALL, WHITE if on else SOFT, strong=True,
              align=PP_ALIGN.CENTER)  # fmt: skip
+    if role:
+        label = f"{role} " + " · ".join(f"Q{index}" for index in sorted(active))
+        _put(_frame(slide, left, Inches(0.94), Emu(int(WIDTH - MARGIN - left)), Inches(0.3)),
+             label, SIZE_SMALL, ACCENT, strong=True, align=PP_ALIGN.RIGHT)  # fmt: skip
+
+
+def _mcc_key(slide, left, top, width) -> None:
+    """Shkalla e MCC-së: pa të, «0.54» nuk i thotë sallës nëse është mirë apo keq."""
+    _shape(slide, left, Emu(int(top + Inches(0.08))), width, Inches(0.04), FRAME,
+           kind=MSO_SHAPE.RECTANGLE)  # fmt: skip
+    for share, label, align in ((0.0, "0 = guessing", PP_ALIGN.LEFT),
+                                (1.0, "1 = perfect", PP_ALIGN.RIGHT)):  # fmt: skip
+        x = Emu(int(left + width * share))
+        # Shenja e skajit të djathtë hyn brenda vijës, që të mos dalë përtej kolonës.
+        tick = x if share == 0 else Emu(int(x - Inches(0.04)))
+        _shape(slide, tick, top, Inches(0.04), Inches(0.2), SOFT, kind=MSO_SHAPE.RECTANGLE)
+        box_w = Emu(int(width / 2))
+        box_left = x if align == PP_ALIGN.LEFT else Emu(int(x - box_w))
+        _put(_frame(slide, box_left, Emu(int(top + Inches(0.26))), box_w, Inches(0.3)), label,
+             SIZE_SMALL, SOFT, strong=True, align=align)  # fmt: skip
 
 
 def _footer(slide, index: int, dark: bool = False) -> None:
@@ -974,25 +1010,33 @@ def _headings(f: dict) -> list[str]:
     return [
         TITLE,
         "Code smells make every change expensive, and today's tools only point at them",
+        "Four code smells, each a different design problem",
         f"JavaSmell measures {f['metrics']} metrics once and answers with three approaches",
         "Professional developers label the code; no model is tested on a project it saw",
         f"Learned models beat the rules on {count} smells",
         f"For {chance}, even two experts agree no better than chance",
         "The engine rewrites only what it can prove, and refuses the rest with a reason",
         "Real code: the outer if becomes an early return",
-        "Limitations and takeaways",
+        "Three answers, and their limits",
     ]
+
+
+def _count_word(count: int, total: int) -> str:
+    """«three», «all four»: një numër i vogël lexohet më shpejt si fjalë në një fjali."""
+    words = {1: "one", 2: "two", 3: "three", 4: "four"}
+    return f"all {words.get(total, str(total))}" if count == total else words.get(count, str(count))
 
 
 def _slide_title(slide, f, heading) -> None:
     _background(slide, NAVY)
-    _put(_frame(slide, MARGIN, Inches(0.6), CONTENT, Inches(0.4)), EVENT, SIZE_SMALL, ON_DARK_SOFT)
+    _put(_frame(slide, MARGIN, Inches(0.6), CONTENT, Inches(0.4)), EVENT, SIZE_CAPTION,
+         ON_DARK_SOFT)  # fmt: skip
     _put(_frame(slide, MARGIN, Inches(1.75), Inches(11.0), Inches(2.4)), heading, Pt(40), ON_DARK,
          strong=True)  # fmt: skip
     frame = _frame(slide, MARGIN, Inches(4.45), CONTENT, Inches(1.0))
     _put(frame, AUTHORS, SIZE_LEAD, ON_DARK)
     _put(frame, AFFILIATION, SIZE_CAPTION, ON_DARK_SOFT, new=True, before=4)
-    _put(_frame(slide, MARGIN, Inches(6.55), CONTENT, Inches(0.4)), SESSION, SIZE_SMALL,
+    _put(_frame(slide, MARGIN, Inches(6.5), CONTENT, Inches(0.4)), SESSION, SIZE_CAPTION,
          ON_DARK_SOFT)  # fmt: skip
 
 
@@ -1004,10 +1048,10 @@ def _slide_problem(slide, f, heading) -> None:
         "They point at the problem, but rarely fix it.",
     ], after=8)  # fmt: skip
     questions = [
-        ("RQ1", "How accurate are published detection rules?", "A", "Rules", MUTED),
-        ("RQ2", "Does machine learning on the same metrics do better?", "B", "Machine learning",
-         ACCENT),
-        ("RQ3", "Can fixes be applied automatically without breaking compilation?", "C",
+        ("Question 1", "How accurate are published detection rules?", "A", "Rules", MUTED),
+        ("Question 2", "Does machine learning on the same metrics do better?", "B",
+         "Machine learning", ACCENT),
+        ("Question 3", "Can fixes be applied automatically without breaking compilation?", "C",
          "Refactoring engine", ACCENT),
     ]  # fmt: skip
     width = Emu(int((CONTENT - 2 * GAP) / 3))
@@ -1017,12 +1061,120 @@ def _slide_problem(slide, f, heading) -> None:
         _shape(slide, left, top, width, height, PANEL)
         frame = _frame(slide, Emu(int(left + Inches(0.25))), Emu(int(top + Inches(0.25))),
                        Emu(int(width - Inches(0.5))), Inches(1.6))  # fmt: skip
-        _put(frame, label, SIZE_CAPTION, ACCENT, strong=True)
+        _put(frame, f"Q{index + 1}  ·  {label}", SIZE_CAPTION, ACCENT, strong=True)
         _put(frame, question, SIZE_LEAD, INK, strong=True, new=True, before=6)
         badge_top = Emu(int(top + height - Inches(0.6)))
         _badge(slide, Emu(int(left + Inches(0.25))), badge_top, letter, fill)
         _put(_frame(slide, Emu(int(left + Inches(0.72))), badge_top, Inches(2.6), Inches(0.36),
-                    MSO_ANCHOR.MIDDLE), approach, SIZE_SMALL, SOFT)  # fmt: skip
+                    MSO_ANCHOR.MIDDLE), approach, SIZE_CAPTION, SOFT)  # fmt: skip
+
+
+def _box(slide, left, top, width, height, fill=WHITE):
+    return _shape(slide, left, top, width, height, fill, line=FRAME)
+
+
+def _bar(slide, left, top, width, colour, height=BAR_HEIGHT) -> None:
+    _shape(slide, left, top, width, height, colour, kind=MSO_SHAPE.RECTANGLE)
+
+
+def _field(slide, left, top, width) -> None:
+    """Një fushë: pikë gri dhe një vijë. Metodat janë vija blu, që dallohen pa legjendë."""
+    _shape(slide, left, Emu(int(top - Inches(0.02))), Inches(0.13), Inches(0.13), MUTED,
+           kind=MSO_SHAPE.OVAL)  # fmt: skip
+    _bar(slide, Emu(int(left + Inches(0.2))), top, Emu(int(width - Inches(0.2))), REFUSED)
+
+
+def _link(slide, x1, y1, x2, y2, colour) -> None:
+    line = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, x1, y1, x2, y2)
+    line.line.color.rgb = colour
+    line.line.width = Pt(1.5)
+
+
+def _caption(slide, left, top, width, text) -> None:
+    """Një etiketë e qendërzuar mbi një kuti, më e gjerë se kutia që të mos thyhet."""
+    spare = Inches(0.2)
+    _put(_frame(slide, Emu(int(left - spare)), top, Emu(int(width + 2 * spare)), Inches(0.3)), text,
+         SIZE_SMALL, SOFT, align=PP_ALIGN.CENTER)  # fmt: skip
+
+
+def _draw_blob(slide, x, y) -> None:
+    """Një klasë e madhe me shumë metoda, që merr edhe të dhëna nga dy klasa të vogla."""
+    _box(slide, x, y, Inches(1.4), Inches(2.0))
+    for row in range(9):
+        _bar(slide, Emu(int(x + Inches(0.18))), Emu(int(y + Inches(0.2) + row * Inches(0.18))),
+             Inches(1.04), ACCENT)  # fmt: skip
+    for row in (0, 1):
+        top = Emu(int(y + Inches(0.3) + row * Inches(1.05)))
+        _box(slide, Emu(int(x + Inches(1.7))), top, Inches(0.42), Inches(0.42))
+        _link(slide, Emu(int(x + Inches(1.4))), Emu(int(top + Inches(0.21))),
+              Emu(int(x + Inches(1.7))), Emu(int(top + Inches(0.21))), FRAME)  # fmt: skip
+
+
+def _draw_data_class(slide, x, y) -> None:
+    """Një klasë vetëm me fusha, dhe një klasë tjetër me metodën që punon me to."""
+    _box(slide, x, Emu(int(y + Inches(0.1))), Inches(1.3), Inches(1.5))
+    for row in range(5):
+        _field(slide, Emu(int(x + Inches(0.18))), Emu(int(y + Inches(0.35) + row * Inches(0.25))),
+               Inches(0.95))  # fmt: skip
+    other_x, other_y = Emu(int(x + Inches(1.55))), Emu(int(y + Inches(1.2)))
+    _box(slide, other_x, other_y, Inches(0.6), Inches(0.8))
+    _bar(slide, Emu(int(other_x + Inches(0.1))), Emu(int(other_y + Inches(0.35))), Inches(0.4),
+         ACCENT)  # fmt: skip
+    _link(slide, Emu(int(other_x + Inches(0.1))), Emu(int(other_y + Inches(0.39))),
+          Emu(int(x + Inches(1.3))), Emu(int(y + Inches(0.9))), ACCENT)  # fmt: skip
+
+
+def _draw_long_method(slide, x, y) -> None:
+    """Një metodë e vetme si një kolonë e gjatë rreshtash kodi."""
+    _box(slide, Emu(int(x + Inches(0.35))), y, Inches(1.45), Inches(2.1))
+    lengths = [0.9, 0.7, 1.0, 0.55, 0.85, 0.95, 0.6, 1.0, 0.75, 0.5, 0.9, 0.8, 0.65, 0.95, 0.7]
+    for row, length in enumerate(lengths):
+        _bar(slide, Emu(int(x + Inches(0.5) + Inches(0.12 if row % 4 else 0))),
+             Emu(int(y + Inches(0.15) + row * Inches(0.12))), Inches(length), RULE_TEXT,
+             Inches(0.05))  # fmt: skip
+
+
+def _draw_feature_envy(slide, x, y) -> None:
+    """Një metodë në klasën e vet që zgjatet te fushat e një klase tjetër."""
+    own_x, other_x, top = x, Emu(int(x + Inches(1.3))), Emu(int(y + Inches(0.4)))
+    _caption(slide, own_x, y, Inches(0.85), "own class")
+    _caption(slide, other_x, y, Inches(0.85), "other class")
+    _box(slide, own_x, top, Inches(0.85), Inches(1.4))
+    _box(slide, other_x, top, Inches(0.85), Inches(1.4))
+    method_y = Emu(int(top + Inches(0.65)))
+    _bar(slide, Emu(int(own_x + Inches(0.12))), method_y, Inches(0.6), ACCENT)
+    for row in range(3):
+        field_y = Emu(int(top + Inches(0.3) + row * Inches(0.38)))
+        _field(slide, Emu(int(other_x + Inches(0.12))), field_y, Inches(0.6))
+        _link(slide, Emu(int(own_x + Inches(0.72))), Emu(int(method_y + Inches(0.045))),
+              Emu(int(other_x + Inches(0.12))), Emu(int(field_y + Inches(0.045))), ACCENT)  # fmt: skip
+
+
+def _slide_smells(slide, f, heading) -> None:
+    _heading(slide, heading, "All four are labeled by professional developers in the MLCQ dataset")
+    cards = [
+        ("Blob", "A class that does too much.", _draw_blob),
+        ("Data Class", "Only holds data; almost no behavior.", _draw_data_class),
+        ("Long Method", "A method that has grown too long.", _draw_long_method),
+        ("Feature Envy", "A method that uses another class more than its own.",
+         _draw_feature_envy),
+    ]  # fmt: skip
+    width = Emu(int((CONTENT - 3 * GAP) / 4))
+    height = Inches(3.85)
+    for index, (name, definition, draw) in enumerate(cards):
+        left = Emu(int(MARGIN + index * (width + GAP)))
+        _shape(slide, left, TOP, width, height, PANEL)
+        draw(slide, Emu(int(left + Inches(0.25))), Emu(int(TOP + Inches(0.3))))
+        frame = _frame(slide, Emu(int(left + Inches(0.25))), Emu(int(TOP + Inches(2.65))),
+                       Emu(int(width - Inches(0.5))), Inches(1.5))  # fmt: skip
+        _put(frame, name, SIZE_LEAD, INK, strong=True)
+        _put(frame, definition, SIZE_CAPTION, INK, new=True, before=4)
+    legend = _frame(slide, MARGIN, Inches(6.05), CONTENT, Inches(0.3))
+    paragraph = legend.paragraphs[0]
+    _run(paragraph, "Blue line", SIZE_SMALL, ACCENT, strong=True)
+    _run(paragraph, " = method   ·   ", SIZE_SMALL, SOFT)
+    _run(paragraph, "gray dot", SIZE_SMALL, RULE_TEXT, strong=True)
+    _run(paragraph, " = field (a piece of data)   ·   box = class", SIZE_SMALL, SOFT)
 
 
 def _slide_system(slide, f, heading) -> None:
@@ -1032,7 +1184,7 @@ def _slide_system(slide, f, heading) -> None:
     centre = Emu(int(left + width / 2))
     rows = [
         ("Java source code", None),
-        (f"{f['metrics']} metrics for every class and method", None),
+        (f"{f['metrics']} metrics: lines, complexity, coupling, …", None),
         ("split", None),
         ("Smells, each with the conditions that fired", None),
         ("Refactoring engine: rewrites only what it can prove", "C"),
@@ -1060,7 +1212,7 @@ def _slide_system(slide, f, heading) -> None:
     picture_width = Emu(int(WIDTH - MARGIN - picture_left))
     path = os.path.join(FIGURES, "nderfaqja_paneli.png")
     x0, y0, x1, y1 = INTERFACE_CROP
-    picture = slide.shapes.add_picture(path, picture_left, Inches(2.55), width=picture_width,
+    picture = slide.shapes.add_picture(path, picture_left, Inches(2.45), width=picture_width,
                                        height=Emu(int(picture_width * (y1 - y0) / (x1 - x0))))  # fmt: skip
     pixels_w, pixels_h = picture.image.size
     picture.crop_left, picture.crop_right = x0 / pixels_w, 1 - x1 / pixels_w
@@ -1069,23 +1221,20 @@ def _slide_system(slide, f, heading) -> None:
     picture.line.width = Pt(0.75)
     _put(_frame(slide, picture_left, Emu(int(picture.top + picture.height + Inches(0.15))),
                 picture_width, Inches(0.9)),
-         "Web interface, plain-language mode (Albanian): every finding shows the conditions "
-         "that fired", SIZE_SMALL, SOFT)  # fmt: skip
+         "Web interface in plain language (Albanian): every finding shows the conditions that "
+         "fired", SIZE_CAPTION, SOFT)  # fmt: skip
 
 
 def _slide_data(slide, f, heading) -> None:
     _heading(slide, heading, "MLCQ (Madeyski & Lewowski, 2020): reviewed by 26 professional "
                              "developers")  # fmt: skip
-    _map(slide, {1, 2})
-    width = Emu(int((CONTENT - 2 * GAP) / 3))
-    for index, (number, caption) in enumerate([
-        (f"{f['samples']:,}", "labeled samples: a class or a method judged by a person"),
-        (f"{f['repositories']}", "repositories, each one an open-source project"),
-        (f"{len(f['smells'])}", "code smells: " + ", ".join(SMELL_SQ[s] for s in f["smells"])),
-    ]):  # fmt: skip
-        _stat(slide, Emu(int(MARGIN + index * (width + GAP))), TOP, width, number, caption)
+    _map(slide, {1, 2}, "testing")
+    _stat(slide, MARGIN, TOP, Inches(6.0), f"{f['samples']:,}",
+          "pieces of code (classes or methods) judged by professional developers")  # fmt: skip
+    _stat(slide, Emu(int(MARGIN + Inches(6.4))), Emu(int(TOP + Inches(0.12))), Inches(5.0),
+          f"{f['repositories']}", "open-source projects they come from", ACCENT, SIZE_STAT)  # fmt: skip
     # Pesë grupet e projekteve: modeli mëson nga katër dhe provohet te i pesti.
-    folds, top, fold_w, fold_h = 5, Inches(4.0), Inches(1.22), Inches(1.6)
+    folds, top, fold_w, fold_h = 5, Inches(3.95), Inches(1.22), Inches(1.6)
     gap, tile, tile_gap = Inches(0.17), Inches(0.24), Inches(0.1)
     for index in range(folds):
         left = Emu(int(MARGIN + index * (fold_w + gap)))
@@ -1096,50 +1245,62 @@ def _slide_data(slide, f, heading) -> None:
         for cell in range(9):
             row, column = divmod(cell, 3)
             _shape(slide, Emu(int(x0 + column * (tile + tile_gap))),
-                   Emu(int(top + Inches(0.22) + row * (tile + tile_gap))), tile, tile,
+                   Emu(int(top + Inches(0.2) + row * (tile + tile_gap))), tile, tile,
                    ACCENT if test else MUTED)  # fmt: skip
-        _put(_frame(slide, left, Emu(int(top + fold_h - Inches(0.42))), fold_w, Inches(0.3)),
-             "test" if test else "train", SIZE_SMALL, ACCENT if test else SOFT, strong=test,
+        _put(_frame(slide, left, Emu(int(top + fold_h - Inches(0.44))), fold_w, Inches(0.34)),
+             "test" if test else "learn", SIZE_CAPTION, ACCENT if test else SOFT, strong=test,
              align=PP_ALIGN.CENTER)  # fmt: skip
     diagram_w = Emu(int(folds * fold_w + (folds - 1) * gap))
-    _put(_frame(slide, MARGIN, Emu(int(top + fold_h + Inches(0.15))), diagram_w, Inches(0.7)),
-         f"{f['ml']['folds']} folds grouped by repository: each project sits in exactly one. "
-         "Train on four, test on the fifth, five times.", SIZE_SMALL, SOFT)  # fmt: skip
+    _put(_frame(slide, MARGIN, Emu(int(top + fold_h + Inches(0.15))), diagram_w, Inches(0.8)),
+         f"Projects split into {f['ml']['folds']} groups: learn from four, test on the fifth, "
+         "which the model has never seen. Five times.", SIZE_CAPTION, SOFT)  # fmt: skip
     majority = f["ml"]["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
     panel_left = Emu(int(MARGIN + diagram_w + Inches(0.45)))
     panel_w = Emu(int(WIDTH - MARGIN - panel_left))
-    _shape(slide, panel_left, top, panel_w, Inches(2.3), PANEL)
+    _shape(slide, panel_left, top, panel_w, Inches(2.45), PANEL)
     frame = _frame(slide, Emu(int(panel_left + Inches(0.25))), Emu(int(top + Inches(0.2))),
-                   Emu(int(panel_w - Inches(0.5))), Inches(2.0))  # fmt: skip
-    _put(frame, "Why MCC, not accuracy", SIZE_CAPTION, INK, strong=True)
-    _put(frame, f"{majority:.1%}", SIZE_STAT, CRITICAL, strong=True, new=True, before=4)
-    _put(frame, "accuracy of a detector that always says “clean” on Feature Envy. Its MCC is 0.",
-         SIZE_CAPTION, INK, new=True, before=2)  # fmt: skip
+                   Emu(int(panel_w - Inches(0.5))), Inches(2.1))  # fmt: skip
+    _put(frame, "Why the score is MCC, not accuracy", SIZE_CAPTION, INK, strong=True)
+    _put(frame, f"{majority:.1%}", SIZE_STAT, CRITICAL, strong=True, new=True, before=2)
+    _put(frame, "accuracy of a detector that always says “clean” on Feature Envy. Its MCC is 0, "
+         "the same as guessing.", SIZE_CAPTION, INK, new=True, before=2)  # fmt: skip
+
+
+def _side(slide):
+    """Kolona djathtas e grafikëve: e njëjta gjerësi dhe e njëjta shkallë në të dy sllajdet."""
+    left = Emu(int(MARGIN + Inches(8.6)))
+    width = Emu(int(WIDTH - MARGIN - left))
+    _put(_frame(slide, left, Inches(1.95), width, Inches(0.3)), "How to read MCC", SIZE_SMALL, INK,
+         strong=True)  # fmt: skip
+    _mcc_key(slide, left, Inches(2.3), width)
+    return left, width
 
 
 def _slide_results(slide, f, heading) -> None:
-    _heading(slide, heading, "MCC on the same samples, same scoring code · 95% bootstrap interval "
-                             "by repository")  # fmt: skip
-    _map(slide, {1, 2})
+    _heading(slide, heading, f"Same {f['samples']:,} samples, same scoring · higher is better")
+    _map(slide, {1, 2}, "answers")
     # Vendimi statistikor nën emrin e erës: grafiku e thotë vetë cila fitore është e sigurt.
     names = [f"{SMELL_SQ[s]}\n({'significant' if SMELL_SQ[s] in f['sure'] else 'could be chance'})"
              for s in f["smells"]]  # fmt: skip
     _bar_chart(slide, names, [("Published rules (A)", f["rule_mcc"], MUTED),
                               ("Best ML model (B)", f["model_mcc"], ACCENT)],
                top=TOP, height=Inches(4.7), width=Inches(8.2), maximum=MCC_TOP)  # fmt: skip
-    left = Emu(int(MARGIN + Inches(8.6)))
-    width = Emu(int(WIDTH - MARGIN - left))
-    lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
-    _stat(slide, left, Inches(2.3), width, f"{lowest:.0f}–{highest:.0f}%",
-          "of the smells developers marked, caught by the rules", RULE_TEXT, SIZE_STAT)  # fmt: skip
-    _stat(slide, left, Inches(4.3), width, f"{min(f['model_mcc']):.2f}–{max(f['model_mcc']):.2f}",
-          "MCC of the best model, per smell", ACCENT, SIZE_STAT)  # fmt: skip
+    left, width = _side(slide)
+    found = [f["best"][s]["recall"] for s in f["smells"]]
+    _put(_frame(slide, left, Inches(3.2), width, Inches(0.3)), "Out of 100 real smells", SIZE_CAPTION,
+         INK, strong=True)  # fmt: skip
+    _stat(slide, left, Inches(3.55), width,
+          f"{min(f['recall']) * 100:.0f}–{max(f['recall']) * 100:.0f}", "found by the rules",
+          RULE_TEXT, SIZE_STAT, height=Inches(1.1))  # fmt: skip
+    _stat(slide, left, Inches(4.7), width, f"{min(found) * 100:.0f}–{max(found) * 100:.0f}",
+          "found by the models", ACCENT, SIZE_STAT, height=Inches(1.1))  # fmt: skip
+    _put(_frame(slide, left, Inches(5.85), width, Inches(0.6)),
+         "The price: usually more false alarms.", SIZE_CAPTION, SOFT)  # fmt: skip
 
 
 def _slide_agreement(slide, f, heading) -> None:
-    _heading(slide, heading, "Agreement between two human reviewers of the same code, as MCC · "
-                             "0 = chance")  # fmt: skip
-    _map(slide, {2})
+    _heading(slide, heading, "Two reviewers judged the same code: how often did they agree?")
+    _map(slide, {2}, "explains")
     smells, chance = f["smells"], f["chance"]
     chart = _bar_chart(slide, f["names"], [("Two reviewers", [f["reviewers"][s] for s in smells],
                                             ACCENT)],
@@ -1156,12 +1317,11 @@ def _slide_agreement(slide, f, heading) -> None:
             dpt = point.format._element
             flag = dpt.makeelement(qn("c:invertIfNegative"), {"val": "0"})
             dpt.find(qn("c:idx")).addnext(flag)
-    left = Emu(int(MARGIN + Inches(8.6)))
-    width = Emu(int(WIDTH - MARGIN - left))
+    left, width = _side(slide)
     for s in chance[:1]:
-        _stat(slide, left, Inches(2.3), width, f"{f['reviewers'][s]:.2f}".replace("-", "−"),
-              f"{SMELL_SQ[s]}: two reviewers agree at chance level", CRITICAL)  # fmt: skip
-    _put(_frame(slide, left, Inches(4.5), width, Inches(1.6)),
+        _stat(slide, left, Inches(3.2), width, f"{f['reviewers'][s]:.2f}".replace("-", "−"),
+              f"{SMELL_SQ[s]}: agreement of a coin flip", CRITICAL)  # fmt: skip
+    _put(_frame(slide, left, Inches(4.95), width, Inches(1.7)),
          "If experts do not agree on what a smell is, no detector can learn it well.",
          SIZE_LEAD, INK, strong=True)  # fmt: skip
 
@@ -1169,47 +1329,47 @@ def _slide_agreement(slide, f, heading) -> None:
 def _slide_engine(slide, f, heading) -> None:
     _heading(slide, heading, "Three transformations: Extract Method · Guard Clauses · Introduce "
                              "Parameter Object")  # fmt: skip
-    _map(slide, {3})
+    _map(slide, {3}, "answers")
     applied, detected, quality = f["applied"], f["detected"], f["quality"]
     refused = sum(f["refactoring"]["refused_by_reason"].values())
     frame = _frame(slide, MARGIN, TOP, CONTENT, Inches(0.7), MSO_ANCHOR.BOTTOM)
     paragraph = frame.paragraphs[0]
     _run(paragraph, f"{detected:,}", SIZE_STAT, INK, strong=True)
-    _run(paragraph, "   sites where a transformation could apply", SIZE_CAPTION, SOFT)
-    top, height = Inches(2.85), Inches(0.75)
+    _run(paragraph, "   places in the code where a fix could apply", SIZE_CAPTION, SOFT)
+    top, height = Inches(2.85), Inches(0.8)
     rewritten_w = Emu(int(CONTENT * applied / detected))
     refused_w = Emu(int(CONTENT * refused / detected) - Inches(0.05))
     # Gjerësia e çdo pjese është pjesa e vendeve: shiriti e tregon raportin pa e lexuar.
     for segment_left, segment_w, fill, colour, label, share in (
         (MARGIN, rewritten_w, ACCENT, WHITE, f"{applied:,} rewritten", applied / detected),
         (Emu(int(MARGIN + rewritten_w + Inches(0.05))), refused_w, REFUSED, INK,
-         f"{refused:,} refused, each with a reason", refused / detected),
+         f"{refused:,} refused: not provably safe, each with a reason", refused / detected),
     ):  # fmt: skip
         frame = _shape(slide, segment_left, top, segment_w, height, fill).text_frame
         frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         frame.margin_top = frame.margin_bottom = Inches(0.04)
         _put(frame, label, SIZE_CAPTION, colour, strong=True)
-        _put(frame, _pct(share), SIZE_SMALL, colour, new=True)
-    _put(_frame(slide, MARGIN, Inches(3.95), CONTENT, Inches(0.3)), f"Of the {applied:,} rewrites",
-         SIZE_SMALL, SOFT, strong=True)  # fmt: skip
+        _put(frame, _pct(share), SIZE_CAPTION, colour, new=True)
+    _put(_frame(slide, MARGIN, Inches(3.95), CONTENT, Inches(0.3)),
+         f"What happened to the {applied:,} rewrites", SIZE_CAPTION, SOFT, strong=True)  # fmt: skip
     width = Emu(int((CONTENT - 2 * GAP) / 3))
     tiles = [
         (_pct(f["resolved"]), "removed the smell they were made for"),
-        (_pct(f["broken"]), "added a new kind of compile error, and are never written"),
+        (_pct(f["broken"]), "added a new kind of compile error, so they are never written"),
         (_pct(quality["acceptable_reweighted"]),
-         f"acceptable to a developer in a manual review of {quality['reviewed']} (reweighted)"),
+         f"acceptable to a developer, in a manual review of {quality['reviewed']}"),
     ]  # fmt: skip
     for index, (number, caption) in enumerate(tiles):
         left = Emu(int(MARGIN + index * (width + GAP)))
-        _shape(slide, left, Inches(4.35), width, Inches(1.8), PANEL)
-        _stat(slide, Emu(int(left + Inches(0.25))), Inches(4.55), Emu(int(width - Inches(0.5))),
+        _shape(slide, left, Inches(4.4), width, Inches(1.8), PANEL)
+        _stat(slide, Emu(int(left + Inches(0.25))), Inches(4.6), Emu(int(width - Inches(0.5))),
               number, caption, ACCENT, SIZE_STAT, INK)  # fmt: skip
 
 
 def _slide_example(slide, f, heading) -> None:
     _heading(slide, heading, "Apache Geode · DistributedRegion.checkForLimitedOrNoAccess · Guard "
                              "Clauses")  # fmt: skip
-    _map(slide, {3})
+    _map(slide, {3}, "example for")
     code = _example()
     if code is None:
         _put(_frame(slide, MARGIN, TOP, CONTENT, Inches(0.6)),
@@ -1218,52 +1378,71 @@ def _slide_example(slide, f, heading) -> None:
     before, removed, after, added = code
     width = Inches(8.3)
     bottom = _diff(slide, "Before", before, removed, REMOVED_TINT, CRITICAL, MARGIN,
-                   Inches(1.65), width)  # fmt: skip
-    _diff(slide, "After", after, added, ADDED_TINT, ADDED, MARGIN, Emu(int(bottom + Inches(0.12))),
+                   Inches(1.6), width)  # fmt: skip
+    _diff(slide, "After", after, added, ADDED_TINT, ADDED, MARGIN, Emu(int(bottom + Inches(0.1))),
           width)  # fmt: skip
     left = Emu(int(MARGIN + width + Inches(0.4)))
     column = Emu(int(WIDTH - MARGIN - left))
+    _stat(slide, left, Inches(1.75), column, "−1 level",
+          "of nesting: everything after the guard moves up", ADDED, SIZE_STAT, INK)  # fmt: skip
     steps = [
-        "The outer condition becomes a guard clause with an early return.",
-        "The rest of the method moves one level up.",
-        "Passed the javac check; judged acceptable as-is in the review.",
+        "The outer condition becomes an early return.",
+        "Passed the javac check.",
+        "Judged acceptable as-is in the manual review.",
     ]
-    top = Inches(2.05)
+    top = Inches(3.55)
     for index, text in enumerate(steps, 1):
-        _badge(slide, left, top, str(index), ADDED if index < 3 else ACCENT)
+        _badge(slide, left, top, str(index), ADDED if index == 1 else ACCENT)
         _put(_frame(slide, Emu(int(left + Inches(0.5))), top, Emu(int(column - Inches(0.5))),
-                    Inches(1.2)), text, SIZE_CAPTION, INK)  # fmt: skip
-        top = Emu(int(top + Inches(1.35)))
+                    Inches(1.0)), text, SIZE_CAPTION, INK)  # fmt: skip
+        top = Emu(int(top + Inches(1.0)))
 
 
 def _slide_closing(slide, f, heading) -> None:
     _background(slide, NAVY)
     _heading(slide, heading, dark=True)
-    width = Emu(int((CONTENT - Inches(0.6)) / 2))
-    for index, (title, lines, colour) in enumerate([
-        ("Limitations", [
-            "Compiles ≠ behaves the same: project tests were not run.",
-            "One dataset, four smells, Java only.",
-            "Best model chosen on the same predictions: slightly optimistic.",
-        ], DANGER_ON_DARK),
-        ("Takeaways", [
-            "Learned boundaries beat fixed thresholds.",
-            "Safe automation is narrow, but measurable.",
-            "Open source and reproducible: every number comes from a script.",
-        ], ACCENT_ON_DARK),
-    ]):  # fmt: skip
-        left = Emu(int(MARGIN + index * (width + Inches(0.6))))
-        _put(_frame(slide, left, Inches(1.6), width, Inches(0.45)), title, SIZE_LEAD, colour,
-             strong=True)  # fmt: skip
-        _bullet_list(slide, left, Inches(2.2), width, Inches(2.8), lines, SIZE_LEAD, ON_DARK,
-                     colour)  # fmt: skip
-    frame = _frame(slide, MARGIN, Inches(5.35), CONTENT, Inches(1.2))
+    applied, detected = f["applied"], f["detected"]
+    lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
+    better = sum(f["best"][s]["mcc"] > f["strategy"][s]["mcc"] for s in f["smells"])
+    limits_w = Inches(4.6)
+    _put(_frame(slide, MARGIN, Inches(1.55), limits_w, Inches(0.45)), "Limitations", SIZE_LEAD,
+         DANGER_ON_DARK, strong=True)  # fmt: skip
+    _bullet_list(slide, MARGIN, Inches(2.15), limits_w, Inches(3.0), [
+        "Compiles ≠ behaves the same: project tests were not run.",
+        "One dataset, four smells, Java only.",
+        "Best model chosen on the same predictions: slightly optimistic.",
+    ], SIZE_CAPTION, ON_DARK, DANGER_ON_DARK)  # fmt: skip
+    left = Emu(int(MARGIN + limits_w + Inches(0.6)))
+    width = Emu(int(WIDTH - MARGIN - left))
+    _put(_frame(slide, left, Inches(1.55), width, Inches(0.45)), "Answers", SIZE_LEAD,
+         ACCENT_ON_DARK, strong=True)  # fmt: skip
+    answers = [
+        f"Rules are precise, but find only {lowest:.0f}–{highest:.0f} of every 100 smells.",
+        f"Learned models do better on {_count_word(better, len(f['smells']))}, "
+        f"clearly on {_count_word(len(f['sure']), len(f['smells']))}.",
+        f"Yes, for {applied / detected:.0%} of places, and nothing that breaks compiling is "
+        "written.",
+    ]
+    top = Inches(2.15)
+    pill_w, pill_h = Inches(0.62), Inches(0.36)
+    for index, text in enumerate(answers, 1):
+        pill = _shape(slide, left, top, pill_w, pill_h, ACCENT_ON_DARK)
+        pill.adjustments[0] = 0.5
+        frame = pill.text_frame
+        frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
+        frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        _put(frame, f"Q{index}", SIZE_SMALL, NAVY, strong=True, align=PP_ALIGN.CENTER)
+        _put(_frame(slide, Emu(int(left + pill_w + Inches(0.2))), Emu(int(top - Inches(0.02))),
+                    Emu(int(width - pill_w - Inches(0.2))), Inches(0.9)), text, SIZE_LEAD,
+             ON_DARK)  # fmt: skip
+        top = Emu(int(top + Inches(0.95)))
+    frame = _frame(slide, MARGIN, Inches(5.45), CONTENT, Inches(1.2))
     _put(frame, "Thank you  ·  Questions?", Pt(40), ON_DARK, strong=True)
     _put(frame, REPOSITORY.replace("https://", ""), SIZE_CAPTION, ON_DARK_SOFT, new=True, before=4)
 
 
-LAYOUTS = [_slide_title, _slide_problem, _slide_system, _slide_data, _slide_results,
-           _slide_agreement, _slide_engine, _slide_example, _slide_closing]  # fmt: skip
+LAYOUTS = [_slide_title, _slide_problem, _slide_smells, _slide_system, _slide_data,
+           _slide_results, _slide_agreement, _slide_engine, _slide_example, _slide_closing]  # fmt: skip
 DARK = {0, len(LAYOUTS) - 1}
 
 
@@ -1550,7 +1729,7 @@ CONFIDENCE = [
     "way» është plotësisht normale në një konferencë ndërkombëtare.",
     "Te pyetjet: dëgjoje deri në fund, ndalu dy sekonda, përgjigju me dy-tri fjali dhe "
     "ndalu. Përgjigja e shkurtër dhe e saktë duket më e sigurt se ajo e gjata.",
-    "Kufizimet i ke vetë te sllajdi 9. Kur dikush të pyet për to, nuk të ka kapur: ti i "
+    "Kufizimet i ke vetë te sllajdi 10. Kur dikush të pyet për to, nuk të ka kapur: ti i "
     "ke thënë i pari. Pranoje, thuaj pse, dhe çka do të bëje më pas.",
     "Kujto: e ndërtove vetë, dhe askush në sallë nuk e njeh këtë sistem më mirë se ti. "
     "Shumica e prezantuesve janë studentë, dhe salla dëshiron që të dalësh mirë.",
@@ -1561,15 +1740,15 @@ CHECKLIST = [
     "sallën.",
     "Merr të dy versionet në USB, si .pptx dhe si PDF, dhe dërgoji edhe me email vetes.",
     "Arrij te salla I-302 rreth 08:30, para se të fillojë seanca. Hape prezantimin në "
-    "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 8 duket njësoj (shkronja "
+    "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 9 duket njësoj (shkronja "
     "Consolas).",
     "Prezantohu te kryesuesi i seancës (Blerim Zylifu). Pyete sa minuta ka çdo prezantim "
     "dhe si ta sinjalizon kohën. Me 9 minuta ose më shumë merr versionin e gjatë; me më "
     "pak, të shkurtrin.",
     "Ujë pranë, telefoni pa zë, fleta e pyetjeve në xhep.",
     "Me versionin e shkurtër, kur vendi është 7 minuta: nëse në minutën e pestë je ende te "
-    "sllajdi 6, kalo sllajdin 8 me një fjali dhe mbyll me sllajdin 9.",
-    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 6, lëri të gjitha "
+    "sllajdi 6, kalo sllajdin 9 (shembullin) me një fjali dhe mbyll me sllajdin 10.",
+    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 7, lëri të gjitha "
     "fjalitë e gjelbra që mbeten dhe vazhdo me tekstin e shkurtër.",
 ]
 
@@ -1812,6 +1991,8 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
     chance = _dhe([SMELL_SQ[s] for s in f["chance"]])
     moderate = _dhe([SMELL_SQ[s] for s in f["moderate"]])
     quality = f["quality"]
+    found_low, found_high = (bound(f["best"][s]["recall"] for s in smells) * 100
+                             for bound in (min, max))  # fmt: skip
     return [
         SlideGuide(
             heading=titles[0],
@@ -1841,13 +2022,14 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "Tri pika: programi punon, por çdo ndryshim kushton më shumë se ç'duhet; mjetet "
                 "përdorin pragje fikse, të përcaktuara mbi kod tjetër; e tregojnë problemin, "
                 "por rrallë e ndreqin.",
-                "Poshtë, tri karta: tri pyetjet e kërkimit (RQ = research question). RQ1: sa të "
-                "sakta janë rregullat e botuara? RQ2: a bën më mirë mësimi makinerik me të "
-                "njëjtat metrika? RQ3: a mund të ndreqen automatikisht pa e prishur kompilimin?",
+                "Poshtë, tri karta: tri pyetjet e kërkimit, Q1, Q2 dhe Q3. Q1: sa të sakta janë "
+                "rregullat e botuara? Q2: a bën më mirë mësimi makinerik me të njëjtat metrika? "
+                "Q3: a mund të ndreqen automatikisht pa e prishur kompilimin?",
                 "Në fund të çdo karte, një rreth me shkronjë: A (gri) rregullat, B (blu) mësimi "
-                "makinerik, C (blu) motori. Janë të njëjtat shkronja që shfaqen te sllajdi 3.",
-                "Nga sllajdi 4 deri te 8, lart djathtas ka tri etiketa RQ1 · RQ2 · RQ3. Ajo me "
-                "blu është pyetja për të cilën flet sllajdi: kjo është harta e prezantimit.",
+                "makinerik, C (blu) motori. Janë të njëjtat shkronja që shfaqen te sllajdi 4.",
+                "Nga sllajdi 5 deri te 9, lart djathtas ka tri etiketa Q1 · Q2 · Q3. Ajo me blu "
+                "është pyetja për të cilën flet sllajdi, dhe poshtë tyre shkruan çka bën sllajdi "
+                "me të, p.sh. «answers Q1 · Q2»: kjo është harta e prezantimit.",
             ],
             point=[
                 "Kur thua fjalitë e para, trego tri pikat me radhë.",
@@ -1864,6 +2046,33 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
         ),
         SlideGuide(
             heading=titles[2],
+            message="Katër erërat që mat studimi, të vizatuara: salla e sheh çka është secila "
+            "para se të dëgjojë një numër.",
+            shows=[
+                "Katër karta, një për çdo erë. Në secilën: një vizatim, emri dhe një fjali që e "
+                "përkufizon.",
+                "Si lexohen vizatimet: kutia është një klasë, vija blu një metodë, pika gri një "
+                "fushë (një e dhënë). Kjo shkruhet edhe poshtë kartave.",
+                "Blob: një kuti e madhe plot metoda, që merr të dhëna edhe nga dy klasa të vogla. "
+                "Data Class: një kuti vetëm me fusha, dhe një klasë tjetër me metodën që punon me "
+                "to. Long Method: një kolonë e gjatë rreshtash kodi. Feature Envy: një metodë në "
+                "klasën e vet («own class») që zgjatet me tri vija te fushat e një klase tjetër.",
+                "Nëntitulli: të katërat janë të etiketuara nga programues profesionistë në MLCQ.",
+            ],
+            point=[
+                "Trego kartat me radhë, nga e majta në të djathtë, kur thua emrin e secilës.",
+                "Te Feature Envy, ndiq me gisht vijat blu nga «own class» te «other class».",
+            ],
+            keywords="Blob bën shumë · Data Class vetëm të dhëna · Long Method e gjatë · "
+            "Feature Envy te klasa tjetër",
+            asked=[
+                ("Pse vetëm këto katër?",
+                 "Sepse vetëm për to ka etiketa nga programues profesionistë në MLCQ. Mjeti gjen "
+                 "tetë erëra, por të tjerat nuk mund të krahasohen me njerëzit."),
+            ],
+        ),
+        SlideGuide(
+            heading=titles[3],
             message=f"Një mjet, {f['metrics']} metrika, tri qasje: A rregulla, B modele, C një "
             "motor që ndreq dhe çdo ndreqje e kontrollon me javac.",
             shows=[
@@ -1898,21 +2107,20 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[3],
+            heading=titles[4],
             message="Etiketat vijnë nga programues profesionistë (MLCQ), dhe prova bëhet e "
             "drejtë duke i ndarë të dhënat sipas projektit dhe duke përdorur MCC.",
             shows=[
-                "Lart djathtas ndizen RQ1 dhe RQ2: ky sllajd tregon si u provuan rregullat dhe "
-                "modelet.",
-                f"Tre numra të mëdhenj: {f['samples']:,} mostra me etiketë (një mostër është "
-                f"një klasë ose një metodë që e ka vlerësuar një njeri), {f['repositories']} "
-                "projekte (repository) dhe 4 erëra.",
+                "Lart djathtas ndizen Q1 dhe Q2, me «testing» poshtë tyre: ky sllajd tregon si u "
+                "provuan rregullat dhe modelet.",
+                f"Dy numra: {f['samples']:,} copa kodi (klasa ose metoda) të gjykuara nga "
+                f"programues profesionistë, dhe {f['repositories']} projektet nga vijnë.",
                 f"Poshtë majtas, {ml['folds']} kuti me katrorë: çdo kuti është një grup "
-                "projektesh. Katër gri janë «train», ku modeli mëson; e pesta, blu, është "
-                "«test», ku provohet. Një projekt ndodhet vetëm në një kuti.",
-                f"Poshtë djathtas, kutia «Why MCC, not accuracy»: {majority:.1%} me të kuqe "
-                "është saktësia e një detektori që thotë gjithmonë «i pastër» te Feature Envy. "
-                "MCC-ja e tij është 0.",
+                "projektesh. Katër gri janë «learn», ku modeli mëson; e pesta, blu, është «test», "
+                "ku provohet mbi projekte që nuk i ka parë. Një projekt ndodhet vetëm në një kuti.",
+                f"Poshtë djathtas, kutia «Why the score is MCC, not accuracy»: {majority:.1%} me "
+                "të kuqe është saktësia e një detektori që thotë gjithmonë «i pastër» te Feature "
+                "Envy. MCC-ja e tij është 0, sa hamendja.",
             ],
             point=[
                 "Kur thua numrat, trego numrat e mëdhenj, njërin pas tjetrit.",
@@ -1932,7 +2140,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[4],
+            heading=titles[5],
             message="Rregullat kanë të drejtë kur alarmojnë, por humbasin shumicën e rasteve; "
             f"modelet janë më të mira te të katër erërat, dhe qartë te {_dhe(f['sure'])}.",
             shows=[
@@ -1943,15 +2151,17 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 f"Numrat, rregullat → modeli: {pairs}.",
                 "Nën emrin e çdo ere: «(significant)» do të thotë që fitorja e modelit është e "
                 "sigurt statistikisht; «(could be chance)» do të thotë që mund të jetë rastësi.",
-                f"Djathtas, dy numra: {lowest:.0f}–{highest:.0f}% me gri, sa nga erërat e "
-                f"vërteta kapin rregullat; {min(f['model_mcc']):.2f}–"
-                f"{max(f['model_mcc']):.2f} me blu, MCC-ja e modelit më të mirë.",
+                "Djathtas lart, «How to read MCC»: një vijë nga «0 = guessing» te «1 = perfect». "
+                "E njëjta shkallë del edhe te sllajdi tjetër.",
+                f"Poshtë saj, «Out of 100 real smells»: rregullat gjejnë {lowest:.0f}–"
+                f"{highest:.0f} (gri), modelet {found_low:.0f}–{found_high:.0f} (blu), dhe "
+                "çmimi: zakonisht më shumë alarme të rreme.",
             ],
             point=[
                 "Te «The gray bars… and the blue bars…», trego një shtyllë gri dhe një blu, që "
                 "salla ta lidhë ngjyrën me kuptimin.",
                 f"Te «they catch only {lowest:.0f} to {highest:.0f} percent», trego numrin gri "
-                "djathtas.",
+                "djathtas; te «Out of every 100 smells», numrin blu poshtë tij.",
                 f"Te «For {_and(f['unsure'])}, the difference could be chance», trego dy "
                 "shtyllat e saj: janë më të ulëtat dhe më afër njëra-tjetrës.",
             ],
@@ -1968,7 +2178,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[5],
+            heading=titles[6],
             message=f"Për {chance} edhe ekspertët nuk pajtohen me njëri-tjetrin; kufiri nuk është "
             "vetëm algoritmi, por vetë përkufizimi i erës.",
             shows=[
@@ -1978,8 +2188,8 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 f"Numrat: {agree}.",
                 f"Shtylla e {chance} është e kuqe dhe nën zero: pajtimi është sa me hamendje. "
                 f"Për {moderate} pajtimi është mesatar.",
-                "Djathtas: i njëjti numër i madh me të kuqe, dhe fjalia kryesore e sllajdit me "
-                "shkronja të trasha.",
+                "Djathtas: e njëjta shkallë e MCC-së si te sllajdi para tij, numri i madh me të "
+                "kuqe («sa një monedhë e hedhur»), dhe fjalia kryesore me shkronja të trasha.",
             ],
             point=[
                 f"Te «For {_and([SMELL_SQ[s] for s in f['chance']])}, they agree no better than "
@@ -1997,17 +2207,19 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[6],
+            heading=titles[7],
             message=f"Motori ndreq vetëm kur është i sigurt: rishkruan {applied / detected:.0%} të "
             f"vendeve, refuzon të tjerat me arsye, era zhduket në {f['resolved']:.0%}, dhe asnjë "
             "rishkrim me gabim nuk shkruhet.",
             shows=[
-                f"Lart: {detected:,} vende ku mund të zbatohej një ndreqje (një «site» është një "
-                "vend konkret në kod).",
+                f"Lart: {detected:,} vende në kod ku mund të zbatohej një ndreqje («places in the "
+                "code»).",
                 f"Shiriti poshtë tij: pjesa blu janë {applied:,} të rishkruarat "
                 f"({_pct(applied / detected)}), pjesa gri janë {refused:,} të refuzuarat "
-                f"({_pct(refused / detected)}). Gjatësia e secilës pjese është sa pjesa e saj.",
-                f"Tri kartat «Of the {applied:,} rewrites»: {_pct(f['resolved'])} e hoqën erën; "
+                f"({_pct(refused / detected)}), sepse nuk u vërtetuan të sigurta. Gjatësia e "
+                "secilës pjese është sa pjesa e saj.",
+                f"Tri kartat «What happened to the {applied:,} rewrites»: {_pct(f['resolved'])} e "
+                "hoqën erën; "
                 f"{_pct(f['broken'])} shtuan një lloj të ri gabimi kompilimi dhe nuk shkruhen "
                 f"kurrë; {_pct(quality['acceptable_reweighted'])} ishin të pranueshme në "
                 f"rishikimin me dorë të {quality['reviewed']} rishkrimeve.",
@@ -2041,7 +2253,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[7],
+            heading=titles[8],
             message="Një shembull i vërtetë: if-i i madh bëhet dalje e hershme, kodi ngjitet një "
             "nivel lart, kompilohet dhe është i pranueshëm.",
             shows=[
@@ -2052,12 +2264,15 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "kushti me «!( … )» dhe «return;».",
                 "Komenti «/* … unchanged lines */» do të thotë që një pjesë e gjatë që nuk "
                 "ndryshon është mbledhur në një rresht, që kodi të lexohet nga salla.",
-                "Djathtas, tri hapa me numër: kushti bëhet dalje e hershme; pjesa tjetër ngjitet "
-                "një nivel; e kaloi javac dhe u gjykua e pranueshme.",
+                "Djathtas lart, «−1 level» me të gjelbër: thellësia e blloqeve bie me një nivel, "
+                "sepse gjithçka pas «rojës» ngjitet lart.",
+                "Poshtë saj, tri hapa me numër: kushti bëhet dalje e hershme; e kaloi javac; u "
+                "gjykua i pranueshëm ashtu siç është.",
             ],
             point=[
                 "Te «Before…», trego brezin e kuq lart.",
-                "Te «After…», trego brezin e gjelbër poshtë, pastaj hapat djathtas.",
+                "Te «After…», trego brezin e gjelbër poshtë. Te «moves one level up», trego "
+                "«−1 level» djathtas.",
             ],
             keywords="Apache Geode · if i madh → dalje e hershme · një nivel lart · kompilohet",
             asked=[
@@ -2068,7 +2283,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
         ),
         SlideGuide(
-            heading=titles[8],
+            heading=titles[9],
             message="Kufizimet i thua vetë, para se të pyesin. Pastaj mbyll me dy mesazhe: "
             "kufijtë e mësuar i mundin pragjet fikse, dhe ndreqja e sigurt është e mundshme, por "
             "e ngushtë.",
@@ -2077,14 +2292,14 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "Majtas, me të kuqe, «Limitations»: kompilohet ≠ sillet njësoj (testet e "
                 "projekteve nuk u ekzekutuan); një bazë të dhënash, katër erëra, vetëm Java; "
                 "modeli më i mirë u zgjodh mbi të njëjtat parashikime, ndaj është pak optimist.",
-                "Djathtas, me blu të çelët, «Takeaways», mesazhet që merr salla me vete: kufijtë "
-                "e mësuar i mundin pragjet fikse; automatizimi i sigurt është i ngushtë, por i "
-                "matshëm; burim i hapur dhe i riprodhueshëm.",
+                "Djathtas, me blu të çelët, «Answers»: përgjigjja e secilës pyetje në një fjali, "
+                "me etiketën Q1, Q2, Q3. Kështu salla largohet me tri përgjigje, jo me tri "
+                "pyetje.",
                 "Poshtë: «Thank you · Questions?» dhe adresa e projektit në GitHub.",
             ],
             point=[
-                "Trego kolonën e kuqe kur flet për kufizimet, pastaj kolonën blu te «To "
-                "summarize».",
+                "Trego kolonën e kuqe kur flet për kufizimet, pastaj te «To summarize» trego "
+                "përgjigjet Q1, Q2 dhe Q3 me radhë.",
                 "Pas «I am happy to take your questions», ndalu, buzëqesh dhe prit. Mos e mbyll "
                 "sllajdin: adresa e GitHub-it duhet të mbetet në ekran.",
             ],
@@ -2192,16 +2407,16 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         "vetëm hyrjen e mbylljen fjalë për fjalë (në fund të dokumentit).",
         "Lexoje një herë të gjithin me zë, me sllajdet hapur pranë, dhe trego me gisht atë që "
         "thotë «Ku të tregosh».",
-        "Lart djathtas, nga sllajdi 4 te 8, etiketat RQ1 · RQ2 · RQ3 tregojnë për cilën pyetje "
+        "Lart djathtas, nga sllajdi 5 te 9, etiketat Q1 · Q2 · Q3 tregojnë për cilën pyetje "
         "flet sllajdi; ajo me blu është pyetja e tanishme. Nuk ke nevojë ta thuash: salla e "
         "sheh vetë.",
     ])  # fmt: skip
 
     doc.add_heading("Historia e prezantimit në një faqe", level=1)
     doc.add_paragraph(
-        "Prezantimi është një histori me tri pjesë: problemi (1–2), çka ndërtove dhe si e "
-        "provove (3–4), çka gjete (5–8), dhe kufijtë (9). Nëse e kupton këtë tabelë, e di "
-        "prezantimin."
+        "Prezantimi është një histori me katër pjesë: problemi dhe erërat (1–3), çka ndërtove "
+        "dhe si e provove (4–5), çka gjete (6–9), dhe përgjigjet me kufijtë (10). Nëse e kupton "
+        "këtë tabelë, e di prezantimin."
     )
     rows, totals = [], {False: 0, True: 0}
     for index, ((_, parts), guide) in enumerate(zip(script, guides, strict=True), 1):
