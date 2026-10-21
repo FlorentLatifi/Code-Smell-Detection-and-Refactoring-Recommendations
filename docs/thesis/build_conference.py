@@ -11,8 +11,9 @@ Shkruan te `docs/konferenca/`:
   përgjigje, shqiptimi i termave dhe lista për ditën e konferencës;
 - `UBT2026_cka_te_flas.docx`: udhëzuesi i fjalimit, sllajd për sllajd: çka shihet në
   sllajd, ku të tregohet, dhe çdo fjali angleze me kuptimin e saj shqip;
-- `UBT2026_njohurite.docx`: punimi i shpjeguar nga e para, për një lexues që nuk e njeh
-  temën, me të njëjtat shifra si sllajdet.
+- `Punimi_nga_e_para.docx`: gjithë punimi i shpjeguar si një libër, për një lexues që nuk
+  di asgjë për programimin, me shembuj të matur nga vetë mjeti dhe me të njëjtat shifra si
+  sllajdet.
 
 Dy versionet ndërtohen nga i njëjti tekst: i gjati është i shkurtri plus disa fjali
 shtesë, që pjesa e provuar të mbetet e njëjtë dhe shtesat të mund të lihen jashtë në
@@ -32,7 +33,7 @@ from __future__ import annotations
 import os
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from build_slides import (
     ACCENT,
@@ -60,6 +61,8 @@ from docx.shared import Cm as DocCm
 from docx.shared import Pt as DocPt
 from docx.shared import RGBColor as DocRGB
 from javasmell import glossary
+from javasmell.analysis import analyze_source
+from javasmell.detectors.rules import detect_all
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
@@ -75,7 +78,7 @@ DECK = os.path.join(OUT_DIR, "UBT2026_Florent_Latifi.pptx")
 DECK_LONG = os.path.join(OUT_DIR, "UBT2026_Florent_Latifi_9min.pptx")
 SHEET = os.path.join(OUT_DIR, "UBT2026_pergatitja.docx")
 SPEECH = os.path.join(OUT_DIR, "UBT2026_cka_te_flas.docx")
-KNOWLEDGE = os.path.join(OUT_DIR, "UBT2026_njohurite.docx")
+BOOK = os.path.join(OUT_DIR, "Punimi_nga_e_para.docx")
 
 TITLE = (
     "Automated Code Smell Detection and Refactoring Recommendations "
@@ -224,6 +227,10 @@ def _facts() -> dict:
         "pmd_behind": [SMELL_SQ[key.split("/")[0]] for key, d in differences.items()
                        if key.endswith("/strategy") and d["excludes_zero"] and d["median"] > 0],
         "introduced": refactoring["introduced_smells"],
+        # Sa herë u rillogarit ndryshimi model − rregulla; e njëjtë për çdo erë.
+        "resamples": _load("bootstrap_intervals.json")["per_smell"][smells[0]]["intervals"][
+            "difference_model_minus_rules"
+        ]["resamples_used"],
         # Sa erëra fiton edhe algoritmi më i dobët kundër rregullave: përgjigjja kur dikush
         # pyet nëse zgjedhja e më të mirit e fryn rezultatin.
         "weakest": sum(
@@ -348,361 +355,291 @@ def _example() -> tuple[list[str], set[int], list[str], set[int]] | None:
 
 
 def _script(f: dict) -> list[tuple]:
-    """Teksti folës i nëntë sllajdeve kryesore, me radhë: emri i brendshëm dhe fjalitë.
+    """Teksti folës i dhjetë sllajdeve kryesore, me radhë: emri i brendshëm dhe fjalitë.
 
     I ndarë nga paraqitja e sllajdeve, që një sllajd të rindërtohet pa e prekur tekstin
-    që folësi e ka provuar.
+    që folësi e ka provuar. Fjalitë janë të shkurtra dhe me fjalë të përditshme: salla ka
+    studentë e pedagogë nga fusha të tjera, dhe folësi nuk është anglishtfolës amtar.
     """
     refactoring, quality = f["refactoring"], f["quality"]
-    recall, model_mcc = f["recall"], f["model_mcc"]
     applied, detected = f["applied"], f["detected"]
-    resolved, broken = f["resolved"], f["broken"]
     moderate, chance = f["moderate"], f["chance"]
-    pmd_ahead, pmd_behind = f["pmd_ahead"], f["pmd_behind"]
+    pmd_ahead = f["pmd_ahead"]
     introduced, always, never = f["introduced"], f["always"], f["never"]
-    lowest, highest = min(recall) * 100, max(recall) * 100
+    lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
     found_low, found_high = (bound(f["best"][s]["recall"] for s in f["smells"]) * 100
                              for bound in (min, max))  # fmt: skip
     shape = refactoring["refused_by_reason"]["shape_not_matched"] / detected * 100
     newest = _words(max(introduced, key=introduced.get))
+    majority = f["ml"]["per_smell"]["feature envy"]["models"]["majority"]["accuracy"] * 100
+    limit = f["reference"]["thresholds"]["long_method_loc"]
+    resolved, broken = f["resolved"] * 100, f["broken"] * 100
+    acceptable = quality["acceptable_reweighted"] * 100
+    pmd_sentence = (
+        "It was never better than my rules" if not pmd_ahead
+        else f"It was better for {_and(pmd_ahead)}"
+    )  # fmt: skip
+    pmd_sq = "Nuk doli kurrë më i mirë se rregullat e mia" if not pmd_ahead else (
+        f"Doli më i mirë për {_dhe(pmd_ahead)}")  # fmt: skip
     return [
         (
             "Title",
             Line("Good morning, everyone.", "Mirëmëngjes të gjithëve."),
-            Line(
-                "My name is Florent Latifi, and this work comes from my bachelor thesis at UBT, "
-                "supervised by Altina Salihu.",
-                "Unë quhem Florent Latifi, dhe kjo punë vjen nga teza ime e bachelorit në UBT, me "
-                "mentore Altina Salihu.",
-            ),
-            Line(
-                "In the next ten minutes I will show how we can detect code smells in Java "
-                "automatically, how accurate that detection really is, and how far we can go in "
-                "fixing them.",
-                "Në dhjetë minutat në vijim do të tregoj si mund t'i gjejmë automatikisht erërat e "
-                "kodit në Java, sa e saktë është vërtet kjo gjetje, dhe deri ku mund të shkojmë me "
-                "ndreqjen e tyre.",
-            ),
+            Line("My name is Florent Latifi. This is my bachelor thesis at UBT, with my supervisor "
+                 "Altina Salihu.",
+                 "Unë quhem Florent Latifi. Kjo është teza ime e bachelorit në UBT, me mentoren "
+                 "time Altina Salihu."),
+            Line("In the next minutes I will show three things: how a tool can find design "
+                 "problems in Java code, how accurate it is, and whether it can also fix them.",
+                 "Në minutat në vijim do të tregoj tri gjëra: si mund t'i gjejë një mjet problemet "
+                 "e ndërtimit në kodin Java, sa i saktë është, dhe a mund t'i ndreqë edhe vetë."),
         ),
         (
             "The problem",
-            Line(
-                "Every developer knows the class that nobody wants to touch.",
-                "Çdo programues e njeh klasën që askush nuk do ta prekë.",
-            ),
-            Line(
-                "The program works, but every change takes longer than it should.",
-                "Programi punon, por çdo ndryshim zgjat më shumë se ç'duhet.",
-            ),
-            Line("These design problems are called code smells.",
-                 "Këto probleme të ndërtimit të kodit quhen erëra të kodit."),
-            Line("They are not bugs, but they make maintenance expensive.",
-                 "Nuk janë gabime, por e bëjnë mirëmbajtjen të shtrenjtë."),
-            Line("Most tools find them with fixed thresholds.",
-                 "Shumica e mjeteve i gjejnë me pragje fikse, pra me numra të caktuar njëherë e "
-                 "përgjithmonë."),
-            Line(
-                "For example, if a method is longer than a certain number of lines, it is a Long "
-                "Method.",
-                "Për shembull, nëse një metodë është më e gjatë se një numër i caktuar rreshtash, "
-                "ajo quhet Long Method.",
-            ),
-            Line(
-                "But these numbers were calibrated on other code, and most tools only point at the "
-                "problem.",
-                "Por këta numra janë përcaktuar duke parë kod tjetër, dhe shumica e mjeteve vetëm e "
-                "tregojnë problemin.",
-            ),
-            Line("They do not fix it.", "Nuk e ndreqin."),
-            Line("So we asked three questions.", "Prandaj bëmë tri pyetje."),
-            Line("First, how accurate are the published detection rules?",
-                 "E para: sa të sakta janë rregullat e botuara për gjetjen e erërave?"),
-            Line("Second, can machine learning do better with the same metrics?",
-                 "E dyta: a mund të bëjë më mirë mësimi makinerik, me të njëjtat metrika?"),
-            Line("And third, can we fix smells automatically without breaking the code?",
-                 "Dhe e treta: a mund t'i ndreqim erërat automatikisht, pa e prishur kodin?"),
+            Line("Every developer knows the class that nobody wants to touch.",
+                 "Çdo programues e njeh klasën që askush nuk do ta prekë."),
+            Line("The program works, but every small change takes too long.",
+                 "Programi punon, por çdo ndryshim i vogël zgjat shumë."),
+            Line("We call these design problems code smells.",
+                 "Këto probleme të ndërtimit i quajmë erëra të kodit."),
+            Line("They are not bugs. They make the code expensive to change.",
+                 "Nuk janë gabime. E bëjnë kodin të shtrenjtë për t'u ndryshuar."),
+            Line(f"Most tools use fixed numbers: if a method has more than {limit:g} lines, it is "
+                 "a Long Method.",
+                 f"Shumica e mjeteve përdorin numra fiksë: nëse një metodë ka më shumë se "
+                 f"{limit:g} rreshta, ajo është Long Method."),
+            Line("But these numbers come from other projects, and the tools do not fix anything.",
+                 "Por këta numra vijnë nga projekte të tjera, dhe mjetet nuk ndreqin asgjë."),
+            Line("So I asked three questions.", "Prandaj bëra tri pyetje."),
+            Line("One: how accurate are the published rules?",
+                 "Një: sa të sakta janë rregullat e botuara?"),
+            Line("Two: can machine learning do better?",
+                 "Dy: a mund të bëjë më mirë mësimi makinerik?"),
+            Line("Three: can a tool fix these smells automatically, without breaking the code?",
+                 "Tre: a mund t'i ndreqë një mjet këto erëra automatikisht, pa e prishur kodin?"),
         ),
         (
             "Four smells",
-            Line("This study looks at four of them.", "Ky studim shqyrton katër prej tyre."),
-            Line("Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
-            Line("Data Class only holds data and has almost no behavior.",
+            Line("In this study I look at four smells.", "Në këtë studim shqyrtoj katër erëra."),
+            Line("A Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
+            Line("A Data Class only holds data and does almost nothing with it.",
                  "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
-            Line(
-                "Long Method is a method that has grown too long, and Feature Envy is a method that "
-                "uses another class more than its own.",
-                "Long Method është një metodë që është zgjatur shumë, dhe Feature Envy është një "
-                "metodë që përdor një klasë tjetër më shumë se klasën e vet.",
-            ),
+            Line("A Long Method is a method that has grown too long.",
+                 "Long Method është një metodë që është zgjatur shumë."),
+            Line("And Feature Envy is a method that works more with another class than with its "
+                 "own.",
+                 "Dhe Feature Envy është një metodë që punon më shumë me një klasë tjetër se me "
+                 "klasën e vet."),
+            Extra("In the drawings, a box is a class, a blue line is a method, and a gray dot is a "
+                  "piece of data.",
+                  "Në vizatime, kutia është një klasë, vija blu një metodë, dhe pika gri një e "
+                  "dhënë."),
         ),
         (
             "What we built",
-            Line("To answer these questions, I built a tool called JavaSmell.",
-                 "Për t'iu përgjigjur këtyre pyetjeve, ndërtova një mjet që quhet JavaSmell."),
-            Line(f"It reads Java code and measures {f['metrics']} metrics for every class and method.",
-                 f"E lexon kodin Java dhe mat {f['metrics']} metrika, pra numra, për çdo klasë dhe "
-                 "metodë."),
-            Line("On top of these metrics there are three approaches.",
-                 "Mbi këto metrika ndërtohen tri qasje."),
-            Line(
-                f"A uses {f['strategies']} detection strategies from the literature, such as "
-                "Lanza and Marinescu and Fowler.",
-                f"A përdor {f['strategies']} rregulla gjetjeje nga literatura, si ato të Lanza-s e "
-                "Marinescu-t dhe të Fowler-it.",
-            ),
-            Line("B trains machine learning classifiers on the same metrics.",
-                 "B trajnon modele të mësimit makinerik mbi të njëjtat metrika."),
-            Line("And C is a refactoring engine.", "Dhe C është një motor që e ndreq kodin."),
-            Line(
-                "It rewrites code only when it can prove its preconditions from the syntax tree, "
-                "and then it checks the result with the Java compiler.",
-                "E rishkruan kodin vetëm kur mund ta vërtetojë nga pema e sintaksës që ndryshimi "
-                "është i sigurt, dhe pastaj e kontrollon rezultatin me kompajlerin e Java-s.",
-            ),
-            Extra(
-                "Every detection also shows the conditions it checked, so a developer can see why a "
-                "class was flagged, not only that it was.",
-                "Çdo gjetje tregon edhe kushtet që kontrolloi, që programuesi të shohë pse u shënua "
-                "një klasë, jo vetëm që u shënua.",
-            ),
-            Line("On the right you can see the web interface.", "Djathtas shihni ndërfaqen web."),
-            Line("It also has a plain-language mode for people without a technical background.",
-                 "Ka edhe një mënyrë me gjuhë të thjeshtë, për njerëzit pa përgatitje teknike."),
+            Line("To answer the three questions, I built a tool called JavaSmell.",
+                 "Për t'iu përgjigjur tri pyetjeve, ndërtova një mjet që quhet JavaSmell."),
+            Line(f"It reads Java code and measures {f['metrics']} numbers for every class and "
+                 "method, like the number of lines or how complex the code is.",
+                 f"E lexon kodin Java dhe mat {f['metrics']} numra për çdo klasë dhe metodë, si "
+                 "numri i rreshtave ose sa i ndërlikuar është kodi."),
+            Line(f"Part A uses {f['strategies']} rules from well-known books and papers.",
+                 f"Pjesa A përdor {f['strategies']} rregulla nga libra dhe artikuj të njohur."),
+            Line("Part B uses machine learning on the same numbers.",
+                 "Pjesa B përdor mësimin makinerik mbi të njëjtët numra."),
+            Line("Part C fixes the code, but only when it can prove that the change is safe.",
+                 "Pjesa C e ndreq kodin, por vetëm kur mund ta vërtetojë që ndryshimi është i "
+                 "sigurt."),
+            Line("Then the Java compiler checks the result.",
+                 "Pastaj kompajleri i Java-s e kontrollon rezultatin."),
+            Extra(f"Every finding also says why, for example: this method has 53 lines, and the "
+                  f"limit is {limit:g}.",
+                  f"Çdo gjetje thotë edhe pse, për shembull: kjo metodë ka 53 rreshta, dhe kufiri "
+                  f"është {limit:g}."),
+            Line("On the right you see the web interface, in plain Albanian, for people who are "
+                 "not experts.",
+                 "Djathtas shihni ndërfaqen web, në shqip të thjeshtë, për njerëzit që nuk janë "
+                 "ekspertë."),
         ),
         (
             "Data and evaluation",
-            Line("For a fair test, we need labels from people.",
-                 "Për një provë të drejtë, na duhen etiketa nga njerëzit, pra dikush që thotë "
-                 "«ky kod ka erë» ose «nuk ka»."),
-            Line(
-                "We used MLCQ, a public dataset where professional developers reviewed real "
-                "open-source Java code.",
-                "Përdorëm MLCQ, një bazë publike të dhënash ku programues profesionistë shqyrtuan "
-                "kod të vërtetë Java me burim të hapur.",
-            ),
-            Line(
-                f"After matching the samples to our tool, we have {f['samples']:,} labeled samples "
-                f"from {f['repositories']} repositories, for four smells.",
-                f"Pasi i gjetëm mostrat në kod me mjetin tonë, kemi {f['samples']:,} mostra me "
-                f"etiketë nga {f['repositories']} projekte, për katër erëra.",
-            ),
-            Line("One important detail is how we split the data.",
-                 "Një detaj i rëndësishëm është si i ndamë të dhënat për mësim dhe për provë."),
-            Line(
-                "Code from the same project looks very similar, so we grouped the data by "
-                "repository: a model is never tested on a project it learned from.",
-                "Kodi i të njëjtit projekt ngjan shumë, ndaj i grupuam të dhënat sipas projektit: "
-                "një model nuk provohet kurrë mbi një projekt nga i cili ka mësuar.",
-            ),
-            Line("And we report the Matthews correlation coefficient, MCC.",
-                 "Dhe si notë kryesore raportojmë koeficientin e korrelacionit Matthews, MCC."),
-            Line(
-                "Most samples are clean, so simple accuracy would look very good even for a "
-                "detector that never fires.",
-                "Shumica e mostrave janë të pastra, ndaj saktësia e thjeshtë do të dukej shumë e "
-                "mirë edhe për një detektor që nuk alarmon kurrë.",
-            ),
+            Line("To test the tool fairly, I need answers from real people.",
+                 "Për ta provuar mjetin në mënyrë të drejtë, më duhen përgjigje nga njerëz të "
+                 "vërtetë."),
+            Line("I used MLCQ, a public dataset where professional developers judged real Java "
+                 "code.",
+                 "Përdora MLCQ, një bazë publike të dhënash ku programues profesionistë gjykuan "
+                 "kod të vërtetë Java."),
+            Line(f"In total I have {f['samples']:,} pieces of code from {f['repositories']} "
+                 "open-source projects.",
+                 f"Gjithsej kam {f['samples']:,} copa kodi nga {f['repositories']} projekte me "
+                 "burim të hapur."),
+            Line("A model is never tested on a project it has already seen: it learns from four "
+                 "groups of projects and is tested on the fifth.",
+                 "Një model nuk provohet kurrë mbi një projekt që e ka parë: mëson nga katër grupe "
+                 "projektesh dhe provohet te i pesti."),
+            Extra("Code from the same project looks very similar, so testing on a project it has "
+                  "seen would be like an exam where you already know the answers.",
+                  "Kodi i të njëjtit projekt ngjan shumë, ndaj provimi mbi një projekt të parë do "
+                  "të ishte si një provim ku i di përgjigjet që më parë."),
+            Line("To score the results I use MCC, not simple accuracy.",
+                 "Për t'i vlerësuar rezultatet përdor MCC-në, jo saktësinë e thjeshtë."),
+            Line(f"On Feature Envy, a detector that always says “clean” is {majority:.0f} percent "
+                 "accurate, but it is useless. Its MCC is zero.",
+                 f"Te Feature Envy, një detektor që thotë gjithmonë «i pastër» është {majority:.0f} "
+                 "për qind i saktë, por është i padobishëm. MCC-ja e tij është zero."),
         ),
         (
             "Rules vs. machine learning",
             Line("Here are the main results.", "Ja rezultatet kryesore."),
-            Line(
-                "The gray bars are the published rules, and the blue bars are the best machine "
-                "learning model for each smell.",
-                "Shtyllat gri janë rregullat e botuara, dhe shtyllat blu janë modeli më i mirë i "
-                "mësimit makinerik për secilën erë.",
-            ),
-            Line(
-                f"The rules are often correct when they fire, but they catch only {lowest:.0f} to "
-                f"{highest:.0f} percent of the smells that developers marked.",
-                f"Rregullat zakonisht kanë të drejtë kur alarmojnë, por kapin vetëm {lowest:.0f} deri "
-                f"{highest:.0f} për qind të erërave që shënuan programuesit.",
-            ),
-            Line(
-                f"The models are better on all four smells, with MCC from {min(model_mcc):.2f} to "
-                f"{max(model_mcc):.2f}.",
-                f"Modelet janë më të mira te të katër erërat, me MCC nga {min(model_mcc):.2f} deri "
-                f"{max(model_mcc):.2f}.",
-            ),
-            Line(
-                f"Out of every 100 smells, they find {found_low:.0f} to {found_high:.0f}; the price "
-                "is usually more false alarms.",
-                f"Nga çdo 100 erëra, ato gjejnë {found_low:.0f} deri {found_high:.0f}; çmimi "
-                "zakonisht është më shumë alarme të rreme.",
-            ),
-            Line("We also computed 95 percent confidence intervals by resampling repositories.",
-                 "Llogaritëm edhe intervale besimi 95 për qind, duke i rizgjedhur projektet rastësisht "
-                 "shumë herë."),
-            Line(f"The improvement is clearly above zero for {_and(f['sure'])}.",
-                 f"Përmirësimi është qartë mbi zero për {_dhe(f['sure'])}: nuk është fat."),
-            Line(f"For {_and(f['unsure'])}, the difference could be chance.",
-                 f"Për {_dhe(f['unsure'])}, ndryshimi mund të jetë edhe rastësi."),
-            Extra("We also compared with PMD, a popular open-source analyzer, on the same samples.",
-                  "E krahasuam edhe me PMD-në, një mjet i njohur falas për analizën e kodit, mbi të "
-                  "njëjtat mostra."),
-            Extra(
-                "Once the confidence interval is considered, "
-                + ("PMD is never ahead" if not pmd_ahead else f"PMD is ahead for {_and(pmd_ahead)}")
-                + f", and for {_and(pmd_behind)} our rules are clearly better.",
-                "Kur merret parasysh intervali i besimit, "
-                + ("PMD nuk del kurrë përpara" if not pmd_ahead
-                   else f"PMD del përpara për {_dhe(pmd_ahead)}")
-                + f", dhe për {_dhe(pmd_behind)} rregullat tona janë qartë më të mira.",
-            ),
+            Line("Gray is the published rules, blue is machine learning.",
+                 "Gria janë rregullat e botuara, bluja është mësimi makinerik."),
+            Line("Higher is better: zero means guessing, one means perfect.",
+                 "Sa më lart, aq më mirë: zero do të thotë hamendje, një do të thotë përsosmëri."),
+            Line(f"The rules are usually right when they raise an alarm, but out of every 100 real "
+                 f"smells, they find only {lowest:.0f} to {highest:.0f}.",
+                 f"Rregullat zakonisht kanë të drejtë kur alarmojnë, por nga çdo 100 erëra të "
+                 f"vërteta gjejnë vetëm {lowest:.0f} deri {highest:.0f}."),
+            Line(f"Machine learning is better on all four smells. It finds {found_low:.0f} to "
+                 f"{found_high:.0f} out of 100, but usually with more false alarms.",
+                 f"Mësimi makinerik është më i mirë te të katër erërat. Gjen {found_low:.0f} deri "
+                 f"{found_high:.0f} nga 100, por zakonisht me më shumë alarme të rreme."),
+            Line(f"For {_and(f['sure'])}, the improvement is real, not luck.",
+                 f"Për {_dhe(f['sure'])}, përmirësimi është i vërtetë, jo fat."),
+            Line(f"For {_and(f['unsure'])}, it could be luck.",
+                 f"Për {_dhe(f['unsure'])}, mund të jetë fat."),
+            Extra(f"I checked this by repeating the calculation {f['resamples']:,} times on random "
+                  "samples of the projects.",
+                  f"Këtë e kontrollova duke e përsëritur llogaritjen {f['resamples']:,} herë mbi "
+                  "mostra të rastësishme të projekteve."),
+            Extra(f"I also compared with PMD, a popular free tool: {pmd_sentence[0].lower()}"
+                  f"{pmd_sentence[1:]}.",
+                  f"E krahasova edhe me PMD-në, një mjet i njohur falas: {pmd_sq[0].lower()}"
+                  f"{pmd_sq[1:]}."),
         ),
         (
             "Human agreement",
             Line("Why is Feature Envy so hard?", "Pse është Feature Envy kaq e vështirë?"),
-            Line("We measured how much the human reviewers agree with each other.",
-                 "Matëm sa pajtohen rishikuesit njerëzorë me njëri-tjetrin."),
-            Line(f"For {_and([SMELL_SQ[s] for s in moderate])}, two reviewers agree only moderately.",
-                 f"Për {_dhe([SMELL_SQ[s] for s in moderate])}, dy rishikues pajtohen vetëm "
-                 "mesatarisht."),
-            Line(f"For {_and([SMELL_SQ[s] for s in chance])}, they agree no better than chance.",
-                 f"Për {_dhe([SMELL_SQ[s] for s in chance])}, pajtohen jo më shumë se sa po të "
-                 "hamendësonin."),
+            Line("I looked at code that two developers judged, and checked how often they agree.",
+                 "Shikova kodin që e gjykuan dy programues, dhe kontrollova sa shpesh pajtohen."),
+            Line(f"For {_and([SMELL_SQ[s] for s in moderate])}, they agree only partly.",
+                 f"Për {_dhe([SMELL_SQ[s] for s in moderate])}, pajtohen vetëm pjesërisht."),
+            Line(f"For {_and([SMELL_SQ[s] for s in chance])}, they agree no more than a coin flip.",
+                 f"Për {_dhe([SMELL_SQ[s] for s in chance])}, pajtohen jo më shumë se një monedhë "
+                 "e hedhur."),
             *[
-                Extra(f"For {SMELL_SQ[s]}, their MCC is {f['reviewers'][s]:.2f}, practically zero.",
-                      f"Për {SMELL_SQ[s]}, MCC-ja e tyre është {f['reviewers'][s]:.2f}, praktikisht "
-                      "zero.")
+                Extra(f"Their score is {f['reviewers'][s]:.2f}, practically zero.",
+                      f"Nota e tyre është {f['reviewers'][s]:.2f}, praktikisht zero.")
                 for s in chance
             ],
-            Extra(
-                f"This matches the previous slide: {_and(f['unsure'])} is where the model could not "
-                "clearly beat the rules.",
-                f"Kjo përputhet me sllajdin e mëparshëm: te {_dhe(f['unsure'])} modeli nuk arriti "
-                "t'i mundë qartë rregullat.",
-            ),
-            Line("So the problem is not only the algorithm.", "Pra problemi nuk është vetëm algoritmi."),
-            Line("It is the definition of the smell itself.", "Është vetë përkufizimi i erës."),
-            Line("If experts do not agree on what a smell is, no detector can learn it well.",
-                 "Nëse ekspertët nuk pajtohen se çka është një erë, asnjë detektor nuk mund ta mësojë "
+            Line("So the problem is not only the algorithm.",
+                 "Pra problemi nuk është vetëm algoritmi."),
+            Line("If experts do not agree on what a smell is, no tool can learn it well.",
+                 "Nëse ekspertët nuk pajtohen se çka është një erë, asnjë mjet nuk mund ta mësojë "
                  "mirë."),
-            Line("For me, this is the main lesson of the detection part.",
-                 "Për mua, ky është mësimi kryesor i pjesës së gjetjes së erërave."),
+            Line("For me, this is the most important lesson of the first part.",
+                 "Për mua, ky është mësimi më i rëndësishëm i pjesës së parë."),
         ),
         (
             "Automatic refactoring",
-            Line("Now the refactoring engine.", "Tani motori që e ndreq kodin."),
-            Line(
-                "It supports three transformations: Extract Method, Replace Nested Conditional with "
-                "Guard Clauses, and Introduce Parameter Object.",
-                "Ai di tri ndreqje: nxjerrjen e një metode, zëvendësimin e if-ave të futur thellë me "
-                "dalje të hershme, dhe mbledhjen e shumë parametrave në një objekt.",
-            ),
-            Line(
-                f"On the whole corpus it found {detected:,} sites and rewrote {applied:,} of them, "
-                f"which is {applied / detected * 100:.0f} percent.",
-                f"Në gjithë korpusin gjeti {detected:,} vende ku mund të ndreqte dhe rishkroi "
-                f"{applied:,} prej tyre, pra {applied / detected * 100:.0f} për qind.",
-            ),
-            Line("The rest were refused, each with a reason.",
-                 "Të tjerat i refuzoi, secilën me një arsye."),
-            Extra(
-                f"In {shape:.0f} percent of the sites, the reason is simply that the code does not "
-                "have the shape the transformation needs.",
-                f"Në {shape:.0f} për qind të vendeve, arsyeja është thjesht se kodi nuk ka formën që "
-                "i duhet ndreqjes.",
-            ),
-            Line("For us, refusing is a correct result, not a failure.",
-                 "Për ne, refuzimi është rezultat i saktë, jo dështim."),
-            Line(f"After rewriting, the smell disappeared in {resolved * 100:.0f} percent of the cases.",
-                 f"Pas rishkrimit, era u zhduk në {resolved * 100:.0f} për qind të rasteve."),
-            Line(
-                f"Only {broken * 100:.1f} percent of the rewrites introduced a new type of "
-                "compilation error, and those never reach the code, because the tool only writes "
-                "verified rewrites.",
-                f"Vetëm {broken * 100:.1f} për qind e rishkrimeve shtuan një lloj të ri gabimi "
-                "kompilimi, dhe ato nuk arrijnë kurrë te kodi, sepse mjeti shkruan vetëm rishkrime "
-                "të kontrolluara.",
-            ),
-            Line(
-                f"I also read {quality['reviewed']} rewrites by hand: after reweighting, about "
-                f"{quality['acceptable_reweighted'] * 100:.0f} percent would be acceptable to a "
-                "developer.",
-                f"Lexova edhe {quality['reviewed']} rishkrime me dorë: pasi i peshova sipas sa të "
-                f"shpeshtë janë, rreth {quality['acceptable_reweighted'] * 100:.0f} për qind do të "
-                "ishin të pranueshme për një programues.",
-            ),
-            Extra(
-                f"Refactoring can also create new smells: {sum(introduced.values()):,} appeared "
-                f"after rewriting, most often {newest}, because Extract Method passes every input "
-                "as a parameter.",
-                f"Ndreqja mund të krijojë edhe erëra të reja: {sum(introduced.values()):,} u shfaqën "
-                f"pas rishkrimit, më shpesh {newest}, sepse metoda e nxjerrë i merr të gjitha "
-                "hyrjet si parametra.",
-            ),
-            Extra(
-                f"In that review, {_and(always)} were always acceptable, and {_and(never)} never, "
-                "because it only moves the long list into a new class.",
-                f"Në atë rishikim, {_dhe(always)} ishin gjithmonë të pranueshme, dhe {_dhe(never)} "
-                "kurrë, sepse vetëm e zhvendos listën e gjatë në një klasë të re.",
-            ),
+            Line("Now the third question: can we fix smells automatically?",
+                 "Tani pyetja e tretë: a mund t'i ndreqim erërat automatikisht?"),
+            Line("The tool knows three fixes: split a long method, turn a big if into an early "
+                 "exit, and group many parameters into one object.",
+                 "Mjeti di tri ndreqje: ndan një metodë të gjatë, kthen një if të madh në një "
+                 "dalje të hershme, dhe mbledh shumë parametra në një objekt."),
+            Line(f"In all the projects, it found {detected:,} places where a fix could apply.",
+                 f"Në të gjitha projektet, gjeti {detected:,} vende ku mund të zbatohej një "
+                 "ndreqje."),
+            Line(f"It changed {applied:,} of them, about {applied / detected * 100:.0f} percent.",
+                 f"Ndryshoi {applied:,} prej tyre, rreth {applied / detected * 100:.0f} për qind."),
+            Line("It refused the rest, because it could not prove the change was safe, and it "
+                 "always says why.",
+                 "Të tjerat i refuzoi, sepse nuk mundi ta vërtetojë që ndryshimi ishte i sigurt, "
+                 "dhe gjithmonë thotë pse."),
+            Line("For me, a refusal is a good result, not a failure.",
+                 "Për mua, refuzimi është rezultat i mirë, jo dështim."),
+            Extra(f"In {shape:.0f} percent of the places, the code simply does not have the right "
+                  "shape for the fix.",
+                  f"Në {shape:.0f} për qind të vendeve, kodi thjesht nuk ka formën e duhur për "
+                  "ndreqjen."),
+            Line(f"After a change, the smell disappeared in {resolved:.0f} percent of the cases.",
+                 f"Pas një ndryshimi, era u zhduk në {resolved:.0f} për qind të rasteve."),
+            Line(f"Only {broken:.1f} percent of the changes added a new compile error, and those "
+                 "are never written to the code.",
+                 f"Vetëm {broken:.1f} për qind e ndryshimeve shtuan një gabim të ri kompilimi, dhe "
+                 "ato nuk shkruhen kurrë në kod."),
+            Line(f"By checking {quality['reviewed']} changes by hand, I estimate that about "
+                 f"{acceptable:.0f} percent would be acceptable to a developer.",
+                 f"Duke kontrolluar {quality['reviewed']} ndryshime me dorë, vlerësoj që rreth "
+                 f"{acceptable:.0f} për qind do të ishin të pranueshme për një programues."),
+            Extra(f"Fixes can also create new smells: {sum(introduced.values()):,} appeared, most "
+                  f"often {newest}.",
+                  f"Ndreqjet mund të krijojnë edhe erëra të reja: u shfaqën "
+                  f"{sum(introduced.values()):,}, më shpesh {newest}."),
+            Extra(f"{_and(always)} were always acceptable; {_and(never)} never, because it only "
+                  "moves the long list.",
+                  f"{_dhe(always)} ishin gjithmonë të pranueshme; {_dhe(never)} kurrë, sepse vetëm "
+                  "e zhvendos listën e gjatë."),
         ),
         (
             "Example",
-            Line("Here is one real example from Apache Geode.",
-                 "Ja një shembull i vërtetë nga Apache Geode, një projekt i madh me burim të hapur."),
-            Line("Before, the whole method is wrapped in one if statement, so everything is nested "
-                 "deeply.",
-                 "Më parë, e gjithë metoda është brenda një if-i, ndaj gjithçka është e futur thellë."),
-            Line(
-                "After the rewrite, the condition becomes a guard clause with an early return, and "
-                "the rest of the method moves one level up.",
-                "Pas rishkrimit, kushti bëhet një «roje» që del herët nga metoda me return, dhe pjesa "
-                "tjetër e metodës ngjitet një nivel lart.",
-            ),
-            Extra(
-                "The engine accepts only exactly this shape: a void method whose whole body is one "
-                "if statement, without else.",
-                "Motori pranon vetëm saktësisht këtë formë: një metodë void, e cila nuk kthen vlerë, "
-                "dhe trupi i saj është i gjithi një if, pa else.",
-            ),
-            Extra(
-                "It also wraps the condition in a not, instead of inverting it by hand, so it stays "
-                "correct for every condition.",
-                "Gjithashtu e mbështjell kushtin me një «jo» (!), në vend që ta kthejë së prapthi me "
-                "dorë, ndaj mbetet i saktë për çdo kusht.",
-            ),
-            Line("The rewrite passed the compiler check, and in my review it was acceptable as it is.",
-                 "Rishkrimi e kaloi kontrollin e kompajlerit, dhe në rishikimin tim ishte i "
-                 "pranueshëm ashtu siç është."),
+            Line("Here is one real example, from the Apache Geode project.",
+                 "Ja një shembull i vërtetë, nga projekti Apache Geode."),
+            Line("Before: the whole method is inside one big if, so all the code is pushed to the "
+                 "right.",
+                 "Më parë: e gjithë metoda është brenda një if-i të madh, ndaj i gjithë kodi "
+                 "shtyhet djathtas."),
+            Line("After: the condition becomes an early return, and the rest of the code moves one "
+                 "level up.",
+                 "Më pas: kushti bëhet një dalje e hershme, dhe pjesa tjetër e kodit ngjitet një "
+                 "nivel lart."),
+            Extra("The tool only does this when the method returns nothing and its whole body is "
+                  "one if, without else.",
+                  "Mjeti e bën këtë vetëm kur metoda nuk kthen asgjë dhe i gjithë trupi i saj është "
+                  "një if, pa else."),
+            Extra("It writes the condition as “not” the original, so the meaning stays exactly "
+                  "the same.",
+                  "E shkruan kushtin si «jo» i origjinalit, ndaj kuptimi mbetet saktësisht i "
+                  "njëjtë."),
+            Line("The result compiles, and in my review it was acceptable without any change.",
+                 "Rezultati kompilohet, dhe në rishikimin tim ishte i pranueshëm pa asnjë "
+                 "ndryshim."),
         ),
         (
             "Limitations and takeaways",
-            Line("To be honest about the limits: compiling is not the same as behaving the same.",
-                 "Për të qenë i sinqertë për kufijtë: që kodi kompilohet nuk do të thotë që sillet "
-                 "njësoj si më parë."),
-            Line("We did not run the projects' test suites, so behavior preservation is future work.",
-                 "Nuk i ekzekutuam testet e projekteve, ndaj vërtetimi që sjellja mbetet e njëjtë "
-                 "është punë për më vonë."),
-            Line("We also used one dataset, four smells, and only Java.",
-                 "Përdorëm gjithashtu vetëm një bazë të dhënash, katër erëra dhe vetëm Java."),
-            Extra(
-                "And the best model was chosen on the same predictions it is scored on, so its "
-                "numbers are slightly optimistic.",
-                "Dhe modeli më i mirë u zgjodh mbi të njëjtat parashikime me të cilat vlerësohet, "
-                "ndaj numrat e tij janë pak më të mirë se në realitet.",
-            ),
-            Extra(
-                "As next steps, I would add a small symbol resolver to support more refactorings, "
-                "and ask independent reviewers to judge the rewrites.",
-                "Si hapa të ardhshëm, do të shtoja një pjesë të vogël që i kupton emrat në kod, për "
-                "të mbështetur më shumë ndreqje, dhe do t'u kërkoja rishikuesve të pavarur t'i "
-                "gjykojnë rishkrimet.",
-            ),
-            Line("To summarize: learned boundaries beat fixed thresholds.",
-                 "Për ta përmbledhur: kufijtë që i mëson modeli i mundin pragjet fikse."),
-            Line("Safe automatic refactoring is possible, but narrow, and it should be reviewed by a "
-                 "developer.",
-                 "Ndreqja automatike e sigurt është e mundshme, por vetëm për pak raste, dhe duhet ta "
-                 "shohë një programues."),
-            Line("The tool is open source, and every number in this talk can be regenerated with a "
+            Line("To be honest about the limits: code that compiles does not always behave the "
+                 "same.",
+                 "Për të qenë i sinqertë për kufijtë: kodi që kompilohet nuk sillet gjithmonë "
+                 "njësoj."),
+            Line("I could not run the projects' own tests, so checking the behavior is future work.",
+                 "Nuk munda t'i ekzekutoj testet e vetë projekteve, ndaj kontrolli i sjelljes "
+                 "mbetet për më vonë."),
+            Line("Also: one dataset, four smells, and only Java.",
+                 "Gjithashtu: një bazë të dhënash, katër erëra, dhe vetëm Java."),
+            Extra("And I picked the best model using the same results I report, so its numbers "
+                  "are a little optimistic.",
+                  "Dhe modelin më të mirë e zgjodha me të njëjtat rezultate që raportoj, ndaj "
+                  "numrat e tij janë pak optimistë."),
+            Extra("Next, I want to run the projects' tests after each change, and ask other "
+                  "developers to judge the changes.",
+                  "Më pas dua t'i ekzekutoj testet e projekteve pas çdo ndryshimi, dhe t'u kërkoj "
+                  "programuesve të tjerë t'i gjykojnë ndryshimet."),
+            Line("So, the three answers.", "Pra, tri përgjigjet."),
+            Line("One: the published rules are precise, but they miss most smells.",
+                 "Një: rregullat e botuara janë të sakta, por i humbasin shumicën e erërave."),
+            Line("Two: machine learning on the same numbers does better.",
+                 "Dy: mësimi makinerik mbi të njëjtët numra bën më mirë."),
+            Line("Three: automatic fixing is possible and safe, but only for a small part of the "
+                 "code.",
+                 "Tre: ndreqja automatike është e mundshme dhe e sigurt, por vetëm për një pjesë "
+                 "të vogël të kodit."),
+            Line("Everything is open source, and every number here can be recreated with a "
                  "script.",
-                 "Mjeti është me burim të hapur, dhe çdo numër në këtë prezantim mund të rimerret me "
-                 "një skript."),
-            Line("Thank you.", "Faleminderit."),
-            Line("I am happy to take your questions.", "Me kënaqësi i pres pyetjet tuaja."),
+                 "Gjithçka është me burim të hapur, dhe çdo numër këtu mund të rikrijohet me një "
+                 "skript."),
+            Line("Thank you. I am happy to answer your questions.",
+                 "Faleminderit. Me kënaqësi u përgjigjem pyetjeve tuaja."),
         ),
     ]  # fmt: skip
 
@@ -1608,77 +1545,6 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
 # ----------------------------------------------------------------------
 # Fleta e përgatitjes
 # ----------------------------------------------------------------------
-def _questions(f: dict) -> list[tuple[str, str]]:
-    refactoring, quality = f["refactoring"], f["quality"]
-    applied, detected = refactoring["applied"], refactoring["detected"]
-    reasons = refactoring["refused_by_reason"]
-    weakest = f["weakest"]
-    envy = f["reviewers"].get("feature envy")
-    return [
-        ("Why MCC and not accuracy or F1?",
-         "Most samples are clean, so a detector that never fires already has high accuracy. "
-         "MCC uses all four cells of the confusion matrix and is zero for a detector that "
-         "learns nothing. We also report precision, recall and F1 for completeness."),
-        ("How did you avoid data leakage?",
-         "We split by repository with grouped cross-validation, five folds. Code from one "
-         "project never appears in both training and testing, because similar code from the "
-         "same project would inflate the results."),
-        ("Why is Feature Envy so poor?",
-         f"Even two human reviewers do not agree on it: their MCC is {envy:.2f}, which is "
-         "chance level. A label that humans do not agree on cannot be learned well."),
-        ("Which model was best, and why not deep learning?",
-         "Logistic regression for Blob, gradient boosting for Data Class and Feature Envy, "
-         "random forest for Long Method. The data is tabular and small, the models must be "
-         "explainable, and everything had to run on a laptop at zero cost."),
-        ("Isn't choosing the best model optimistic?",
-         "Yes, slightly, because the choice is made on the same predictions. That is why we "
-         f"report every algorithm: even the weakest one beats the rules on {weakest} of "
-         f"{len(f['smells'])} smells, so the conclusion does not depend on the choice."),
-        ("How do you know the refactoring does not change behavior?",
-         "We do not claim that. We prove preconditions on the syntax tree and check with the "
-         "compiler. Running the projects' tests was not possible, because the corpus has no "
-         "build files. It is the main future work."),
-        (f"Why only {applied / detected:.0%} of the sites?",
-         "The engine refuses when it cannot prove a precondition. The main reasons are that "
-         f"the code shape does not match ({reasons['shape_not_matched'] / detected:.0%}) or "
-         f"that a return or break leaves the block ({reasons['control_flow_escapes'] / detected:.0%}). "
-         "A refusal is a correct result, not a failure."),
-        ("What happens to the rewrites with new errors?",
-         "They are counted in the evaluation, but the tool never writes them: only rewrites "
-         "that pass verification go into the patch."),
-        ("Why not use a large language model to refactor?",
-         "We wanted deterministic, verifiable and free rewrites. A language model can produce "
-         "plausible code, but it cannot prove the preconditions, and the results would not be "
-         "reproducible."),
-        ("How does it compare to existing tools?",
-         "We compared with PMD on the same samples. PMD was never ahead once the confidence "
-         "interval is considered, and ours was clearly better for Long Method. We did not "
-         "compare with commercial tools such as SonarQube."),
-        ("Where do the thresholds come from?",
-         "Mostly from Lanza and Marinescu. Four values have no published source, for example "
-         "30 lines for Long Method, and we measured how sensitive the results are to them."),
-        ("Does it work for other languages?",
-         "Not yet. The parser, tree-sitter, supports many languages, but the metrics and the "
-         "refactoring engine are written for Java."),
-        ("Is the tool available?",
-         "Yes, it is open source on GitHub under the MIT license, with a Docker image."),
-        ("What is MLCQ?",
-         "A public dataset by Madeyski and Lewowski, 2020: about fifteen thousand reviews of "
-         "Java code by twenty-six professional developers, for four smells."),
-        ("Did refactoring create new smells?",
-         f"Yes: {sum(refactoring['introduced_smells'].values()):,} new smells appeared, mostly "
-         "Long Parameter List, because Extract Method passes every input as a parameter. We "
-         "report them together with the removed smells."),
-        ("How good are the rewrites for a developer?",
-         f"I reviewed {quality['reviewed']} by hand. After reweighting, "
-         f"{quality['acceptable_reweighted']:.0%} are acceptable. Guard Clauses were always "
-         "acceptable; Introduce Parameter Object never, because it only moves the long list."),
-        ("What would you do next?",
-         "Run the projects' own tests after each rewrite, add a small symbol resolver to "
-         "support more refactorings, and let independent reviewers judge the rewrites."),
-    ]
-
-
 PHRASES = [
     ("Thank you, that is a good question.", "Fillim i sigurt për çdo pyetje; të jep dy sekonda kohë."),
     ("If I understand correctly, you are asking about …", "Kur pyetja është e gjatë ose e paqartë."),
@@ -1840,10 +1706,13 @@ def build_sheet(f: dict, script: list[tuple[str, list[str]]]) -> str:
         doc.add_paragraph(line, style="List Bullet")
 
     doc.add_heading("Pyetjet e mundshme (përgjigju në anglisht, shkurt)", level=1)
-    for question, answer in _questions(f):
-        paragraph = doc.add_paragraph()
-        paragraph.add_run(question).bold = True
-        doc.add_paragraph(answer)
+    doc.add_paragraph(
+        "Lista e plotë, me përgjigjen shqip dhe sllajdin rezervë për secilën, është te "
+        f"{os.path.basename(SPEECH)}."
+    )
+    for level, (name, _) in LEVELS.items():
+        doc.add_heading(f"Niveli {level}: {name}", level=2)
+        _qa(doc, [(q.question, q.answer) for q in _question_bank(f) if q.level == level])
 
     doc.add_heading("Fraza të gatshme për pyetjet", level=1)
     for phrase, when in PHRASES:
@@ -1954,6 +1823,388 @@ def _qa(doc, pairs: list[tuple[str, str]]) -> None:
 
 
 # ----------------------------------------------------------------------
+# Pyetjet e mundshme nga salla
+# ----------------------------------------------------------------------
+@dataclass
+class Question:
+    """Një pyetje e mundshme, me përgjigjen angleze që thuhet dhe atë shqipe.
+
+    Salla e konferencës është kryesisht shqipfolëse, ndaj pyetja mund të vijë në cilëndo
+    gjuhë: përgjigjja shqipe nuk është përkthim fjalë për fjalë, por ajo që thuhet po të
+    vijë pyetja shqip.
+    """
+
+    level: int
+    question: str
+    pyetja: str
+    answer: str
+    pergjigjja: str
+    slide: str = ""
+    backup: str = ""
+
+
+LEVELS = {
+    1: ("Dikush që e dëgjon temën për herë të parë",
+        "Nuk e di çka është një erë kodi, as mësimi makinerik. Pyet për kuptimin dhe dobinë."),
+    2: ("Student i informatikës",
+        "E di çka është një klasë dhe një model, por jo detajet. Pyet si funksionon."),
+    3: ("Pedagog",
+        "Pyet për metodën: si e provove, pse kështu dhe jo ndryshe, me çka krahasohet."),
+    4: ("Recensent i rreptë",
+        "Kërkon dobësitë: çka mund të jetë e gabuar, e fryrë ose e pavërtetuar."),
+}  # fmt: skip
+
+
+def _question_bank(f: dict) -> list[Question]:
+    """Rreth dyzet pyetje, nga më e thjeshta te më e vështira, me shifrat e punimit."""
+    smells, ml = f["smells"], f["ml"]
+    refactoring, quality = f["refactoring"], f["quality"]
+    applied, detected = f["applied"], f["detected"]
+    reasons = refactoring["refused_by_reason"]
+    majority = ml["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
+    limit = f["reference"]["thresholds"]["long_method_loc"]
+    winners = {s: MODEL_EN[ml["per_smell"][s]["best_model"]].lower() for s in smells}
+    by_model: dict[str, list[str]] = {}
+    for s in smells:
+        by_model.setdefault(winners[s], []).append(SMELL_SQ[s])
+    winners_en = "; ".join(f"{name} for {_and(names)}" for name, names in by_model.items())
+    winners_sq = "; ".join(f"{name} për {_dhe(names)}" for name, names in by_model.items())
+    pricier = sum(f["best"][s]["precision"] < f["strategy"][s]["precision"] for s in smells)
+    introduced = f["introduced"]
+    newest = _words(max(introduced, key=introduced.get))
+    envy = f["reviewers"]["feature envy"]
+    agree = [f["reviewers"][s] for s in f["moderate"]]
+    changed = sum(e["behaviour"]["changed"] for e in quality["by_refactoring"].values())
+    top = [_metric_name(x).split(" (")[0] for x in ml["per_smell"]["blob"]["top_features"][:2]]
+    n = len(smells)
+    shape, escape = reasons["shape_not_matched"] / detected, reasons["control_flow_escapes"] / detected
+    return [
+        # --- 1: dikush që e dëgjon për herë të parë ---
+        Question(1, "What is a code smell?", "Çka është një erë e kodit?",
+                 "A sign that code is badly organized: it works, but it is hard to change. Like a "
+                 "smell in the fridge, it does not prove something is rotten, but it tells you to "
+                 "look.",
+                 "Shenjë që kodi është i organizuar keq: punon, por ndryshohet me vështirësi. Si "
+                 "era në frigorifer: nuk vërteton që diçka është prishur, por të thotë të shikosh.",
+                 "The problem"),
+        Question(1, "If the program works, why does it matter?",
+                 "Nëse programi punon, pse ka rëndësi?",
+                 "Because most of the cost of software comes after it is written: fixing it, "
+                 "changing it, adding features. Smelly code makes every change slower and riskier.",
+                 "Sepse shumica e kostos së një programi vjen pasi shkruhet: ndreqjet, ndryshimet, "
+                 "veçoritë e reja. Kodi me erë e bën çdo ndryshim më të ngadaltë dhe më të "
+                 "rrezikshëm.", "The problem"),
+        Question(1, "So is it like a spell checker for code?",
+                 "Pra është si një kontrollues drejtshkrimi për kodin?",
+                 "A little, yes. It points at the places that are hard to maintain, explains why, "
+                 "and for some of them it prepares a fix.",
+                 "Pak a shumë, po. Tregon vendet që mirëmbahen me vështirësi, shpjegon pse, dhe për "
+                 "disa prej tyre përgatit një ndreqje.", "What we built"),
+        Question(1, "Did you use ChatGPT or another AI to fix the code?",
+                 "A përdore ChatGPT ose ndonjë AI tjetër për ta ndrequr kodin?",
+                 "No. The fixes are fixed program transformations, not generated text. An AI model "
+                 "can write code that looks right, but it cannot prove that the change is safe, "
+                 "and it can give a different answer each time.",
+                 "Jo. Ndreqjet janë transformime të caktuara të programit, jo tekst i gjeneruar. "
+                 "Një model AI mund të shkruajë kod që duket i saktë, por nuk e vërteton dot që "
+                 "ndryshimi është i sigurt, dhe mund të japë përgjigje tjetër çdo herë.",
+                 "What we built"),
+        Question(1, "Who decided which code is smelly?",
+                 "Kush vendosi cili kod ka erë?",
+                 "Twenty-six professional developers, in a public dataset called MLCQ. I did not "
+                 "label the data myself, so my own opinion does not shape the results.",
+                 "Njëzet e gjashtë programues profesionistë, në një bazë publike të dhënash që "
+                 "quhet MLCQ. Të dhënat nuk i etiketova vetë, ndaj mendimi im nuk i ndikon "
+                 "rezultatet.", "Data and evaluation"),
+        Question(1, "What does machine learning mean here, in simple words?",
+                 "Çka do të thotë mësimi makinerik këtu, me fjalë të thjeshta?",
+                 "Instead of fixed rules, the computer learns from thousands of examples that "
+                 "developers judged, and finds by itself the line between smelly and clean code.",
+                 "Në vend të rregullave fikse, kompjuteri mëson nga mijëra shembuj që i gjykuan "
+                 "programuesit, dhe e gjen vetë kufirin mes kodit me erë dhe kodit të pastër.",
+                 "Rules vs. machine learning"),
+        Question(1, "Does it change my code without asking me?",
+                 "A ma ndryshon kodin pa më pyetur?",
+                 "No. It first shows the change, and it writes it as a separate patch file. "
+                 "Changing the files directly needs an explicit option.",
+                 "Jo. Fillimisht e tregon ndryshimin, dhe e shkruan si një skedar më vete "
+                 "ndryshimesh. Për t'i ndryshuar skedarët drejtpërdrejt duhet një zgjedhje e "
+                 "qartë.", "What we built", "Extract Method in the interface"),
+        Question(1, "Does it work for Python or other languages?",
+                 "A punon për Python ose gjuhë të tjera?",
+                 "Not yet. The parser I use supports many languages, but the measurements and the "
+                 "fixes are written for Java.",
+                 "Ende jo. Parseri që përdor i mbështet shumë gjuhë, por matjet dhe ndreqjet janë "
+                 "shkruar për Java."),
+        Question(1, "Can I use it? Does it cost anything?",
+                 "A mund ta përdor? A kushton diçka?",
+                 "Yes, and it is free. It is open source on GitHub under the MIT license, and it "
+                 "runs on a normal laptop.",
+                 "Po, dhe është falas. Është me burim të hapur në GitHub, me licencën MIT, dhe "
+                 "punon në një laptop të zakonshëm.", "Limitations and takeaways"),
+        Question(1, "What surprised you the most?",
+                 "Çka të befasoi më shumë?",
+                 "That for Feature Envy even two experts agree no better than chance. So part of "
+                 "the difficulty is in the definition of the smell, not only in the tools.",
+                 "Që për Feature Envy edhe dy ekspertë pajtohen jo më shumë se me hamendje. Pra një "
+                 "pjesë e vështirësisë është te përkufizimi i erës, jo vetëm te mjetet.",
+                 "Human agreement"),
+        # --- 2: student i informatikës ---
+        Question(2, "What is MCC, and why not accuracy?",
+                 "Çka është MCC-ja, dhe pse jo saktësia?",
+                 f"MCC is a score from minus one to one: zero means guessing, one means perfect. "
+                 f"Most code is clean, so on Feature Envy a detector that always says “clean” is "
+                 f"{majority:.0%} accurate, but its MCC is zero.",
+                 f"MCC-ja është një notë nga minus një deri në një: zero do të thotë hamendje, një "
+                 f"përsosmëri. Shumica e kodit është i pastër, ndaj te Feature Envy një detektor që "
+                 f"thotë gjithmonë «i pastër» është {majority:.0%} i saktë, por MCC-ja e tij është "
+                 "zero.", "Data and evaluation"),
+        Question(2, "What are the 26 metrics?", "Cilat janë 26 metrikat?",
+                 f"Simple numbers about the code: {len(f['reference']['metrics']['class'])} for "
+                 f"classes and {len(f['reference']['metrics']['method'])} for methods. For example "
+                 "lines of code, number of methods, how many paths the code has, how deep the "
+                 "blocks are nested, and how much a method uses data from other classes.",
+                 f"Numra të thjeshtë për kodin: {len(f['reference']['metrics']['class'])} për "
+                 f"klasat dhe {len(f['reference']['metrics']['method'])} për metodat. Për shembull "
+                 "rreshtat e kodit, numri i metodave, sa rrugë ka kodi, sa thellë futen blloqet, "
+                 "dhe sa përdor një metodë të dhëna nga klasa të tjera.", "What we built"),
+        Question(2, "Which rules did you use?", "Cilat rregulla përdore?",
+                 f"{f['strategies']} detection strategies, mostly from Lanza and Marinescu's book "
+                 "Object-Oriented Metrics in Practice, and from Fowler for Long Method and Long "
+                 "Parameter List.",
+                 f"{f['strategies']} strategji gjetjeje, kryesisht nga libri i Lanza-s dhe "
+                 "Marinescu-t, «Object-Oriented Metrics in Practice», dhe nga Fowler-i për Long "
+                 "Method dhe Long Parameter List.", "What we built"),
+        Question(2, "Which machine learning model was the best?",
+                 "Cili model i mësimit makinerik doli më i miri?",
+                 f"It depends on the smell: {winners_en}. The backup slide shows all of them.",
+                 f"Varet nga era: {winners_sq}. Sllajdi rezervë i tregon të gjithë.",
+                 "Rules vs. machine learning", "Every algorithm"),
+        Question(2, "What are precision and recall?", "Çka janë precision dhe recall?",
+                 "Precision: when the tool says “smell”, how often it is right. Recall: of all the "
+                 "real smells, how many it finds. The rules have high precision but low recall.",
+                 "Precision: kur mjeti thotë «erë», sa shpesh ka të drejtë. Recall: nga të gjitha "
+                 "erërat e vërteta, sa i gjen. Rregullat kanë precision të lartë, por recall të "
+                 "ulët.", "Rules vs. machine learning", "Full detection results"),
+        Question(2, "Why do the models give more false alarms?",
+                 "Pse modelet japin më shumë alarme të rreme?",
+                 f"Because they find many more real smells, and the price is more alarms that "
+                 f"turn out wrong. On {pricier} of the {n} smells their precision is lower than "
+                 "the rules'.",
+                 f"Sepse gjejnë shumë më tepër erëra të vërteta, dhe çmimi është më shumë alarme "
+                 f"që dalin të gabuara. Te {pricier} nga {n} erërat precision-i i tyre është më i "
+                 "ulët se i rregullave.", "Rules vs. machine learning", "Full detection results"),
+        Question(2, f"Why were only {applied / detected:.0%} of the places changed?",
+                 f"Pse u ndryshuan vetëm {applied / detected:.0%} e vendeve?",
+                 f"Because the engine refuses whenever it cannot prove the change is safe. The "
+                 f"main reasons: the code does not have the right shape ({shape:.0%}), or a "
+                 f"return or break would leave the moved block ({escape:.0%}).",
+                 f"Sepse motori refuzon sa herë nuk e vërteton dot që ndryshimi është i sigurt. "
+                 f"Arsyet kryesore: kodi nuk ka formën e duhur ({shape:.0%}), ose një return a "
+                 f"break do të dilte nga blloku i zhvendosur ({escape:.0%}).",
+                 "Automatic refactoring", "Verification in detail"),
+        Question(2, "What does “compiles” mean, if the projects cannot be built?",
+                 "Çka do të thotë «kompilohet», nëse projektet nuk ndërtohen dot?",
+                 "The projects come without their build files, so many files do not compile alone "
+                 "even before the change. So I compile before and after, and a change counts only "
+                 "if it adds no new kind of error.",
+                 "Projektet vijnë pa skedarët e ndërtimit, ndaj shumë skedarë nuk kompilohen të "
+                 "vetëm as para ndryshimit. Prandaj kompiloj para dhe pas, dhe një ndryshim pranohet "
+                 "vetëm nëse nuk shton asnjë lloj të ri gabimi.", "Automatic refactoring",
+                 "Verification in detail"),
+        Question(2, "Which three fixes, exactly?", "Cilat janë saktësisht tri ndreqjet?",
+                 "Extract Method moves part of a long method into a new method. Guard Clauses "
+                 "turns a big if around the whole method into an early return. Introduce "
+                 "Parameter Object groups many parameters into one object.",
+                 "Extract Method e zhvendos një pjesë të një metode të gjatë në një metodë të re. "
+                 "Guard Clauses e kthen një if të madh rreth gjithë metodës në një dalje të "
+                 "hershme. Introduce Parameter Object i mbledh shumë parametra në një objekt.",
+                 "Automatic refactoring"),
+        Question(2, "What is MLCQ?", "Çka është MLCQ?",
+                 "A public dataset by Madeyski and Lewowski, 2020: about fifteen thousand reviews "
+                 "of real open-source Java code by twenty-six professional developers, for four "
+                 "smells.",
+                 "Një bazë publike të dhënash nga Madeyski dhe Lewowski, 2020: rreth pesëmbëdhjetë "
+                 "mijë vlerësime të kodit të vërtetë Java me burim të hapur, nga njëzet e gjashtë "
+                 "programues profesionistë, për katër erëra.", "Data and evaluation"),
+        # --- 3: pedagog ---
+        Question(3, "How did you avoid data leakage?", "Si e shmange rrjedhjen e të dhënave?",
+                 f"I grouped the data by project, with {ml['folds']}-fold grouped cross-validation. "
+                 "A project is never in training and testing at the same time, because code from "
+                 "one project is very similar.",
+                 f"I grupova të dhënat sipas projektit, me provë të kryqëzuar në {ml['folds']} "
+                 "grupe. Një projekt nuk është kurrë njëkohësisht në mësim dhe në provë, sepse "
+                 "kodi i një projekti ngjan shumë.", "Data and evaluation"),
+        Question(3, "How do you know the improvement is not luck?",
+                 "Si e di që përmirësimi nuk është fat?",
+                 f"I resampled whole projects {f['resamples']:,} times and recomputed the "
+                 f"difference each time. For {_and(f['sure'])} the 95 percent interval stays above "
+                 f"zero; for {_and(f['unsure'])} it includes zero, so I do not claim it.",
+                 f"I rizgjodha projektet e plota {f['resamples']:,} herë dhe e rillogarita "
+                 f"ndryshimin çdo herë. Për {_dhe(f['sure'])} intervali 95 për qind mbetet mbi "
+                 f"zero; për {_dhe(f['unsure'])} e përfshin zeron, ndaj nuk e pretendoj.",
+                 "Rules vs. machine learning", "Confidence intervals"),
+        Question(3, "Why not deep learning?", "Pse jo deep learning?",
+                 "The data is small and it is a table of numbers, the models must be explainable, "
+                 "and everything had to run on a laptop at zero cost. Simple models were already "
+                 "enough to beat the rules.",
+                 "Të dhënat janë të pakta dhe janë një tabelë numrash, modelet duhet të "
+                 "shpjegohen, dhe gjithçka duhej të punonte në një laptop pa kosto. Modelet e "
+                 "thjeshta mjaftuan për t'i mundur rregullat.", "Rules vs. machine learning"),
+        Question(3, "How does it compare with tools like PMD or SonarQube?",
+                 "Si krahasohet me mjete si PMD ose SonarQube?",
+                 "I compared with PMD on the same samples: once the confidence interval is "
+                 "considered it is never ahead, and for Long Method my rules are clearly better. "
+                 "I did not compare with SonarQube; that is a good next step.",
+                 "E krahasova me PMD-në mbi të njëjtat mostra: kur merret parasysh intervali i "
+                 "besimit nuk del kurrë përpara, dhe për Long Method rregullat e mia janë qartë më "
+                 "të mira. Me SonarQube nuk e krahasova; ai është një hap i mirë për më pas.",
+                 "Rules vs. machine learning", "Comparison with PMD"),
+        Question(3, "Where do the thresholds come from?", "Nga vijnë pragjet?",
+                 f"Mostly from Lanza and Marinescu. Four values have no published source, for "
+                 f"example {limit:g} lines for Long Method. I say so in the thesis, and I tested "
+                 "how sensitive the results are to that one.",
+                 f"Kryesisht nga Lanza dhe Marinescu. Katër vlera nuk kanë burim të botuar, për "
+                 f"shembull {limit:g} rreshta për Long Method. Këtë e them hapur në punim, dhe "
+                 "provova sa ndikon ajo vlerë te rezultatet.", "The problem"),
+        Question(3, "How does the tool decide how serious a smell is?",
+                 "Si vendos mjeti sa e rëndë është një erë?",
+                 "It measures how far each value is past its limit, as a ratio, and takes the "
+                 "average. Below 1.5 it is minor, below 2.5 major, above that critical: the same "
+                 "scale as MLCQ.",
+                 "Mat sa larg kufirit është secila vlerë, si raport, dhe merr mesataren. Nën 1.5 "
+                 "është e lehtë, nën 2.5 e mesme, mbi të e rëndë: e njëjta shkallë si në MLCQ."),
+        Question(3, "Do the new smells after a fix cancel the benefit?",
+                 "A e anulojnë dobinë erërat e reja pas ndreqjes?",
+                 f"They are a real cost, and I report them: {sum(introduced.values()):,} new smells "
+                 f"appeared, most often {newest}, mostly from Extract Method. But the targeted "
+                 f"smell disappeared in {f['resolved']:.0%} of the cases.",
+                 f"Janë një kosto e vërtetë, dhe i raportoj: u shfaqën {sum(introduced.values()):,} "
+                 f"erëra të reja, më shpesh {newest}, kryesisht nga Extract Method. Por era që "
+                 f"synohej u zhduk në {f['resolved']:.0%} të rasteve.", "Automatic refactoring"),
+        Question(3, "How did you review the changes by hand?",
+                 "Si i rishikove ndryshimet me dorë?",
+                 f"I sampled {quality['per_refactoring']} changes for each of the three fixes, "
+                 f"{quality['reviewed']} in total, and judged each as acceptable, acceptable after a "
+                 "small edit, or rejected. Extract Method is most of the changes, so the total is "
+                 "weighted by how common each fix is.",
+                 f"Zgjodha {quality['per_refactoring']} ndryshime për secilën nga tri ndreqjet, "
+                 f"{quality['reviewed']} gjithsej, dhe secilin e gjykova si të pranueshëm, të "
+                 "pranueshëm pas një ndreqjeje të vogël, ose të refuzuar. Extract Method përbën "
+                 "shumicën e ndryshimeve, ndaj totali peshohet sipas sa i shpeshtë është secili.",
+                 "Automatic refactoring"),
+        Question(3, "How fast is it? Can it handle a real project?",
+                 "Sa i shpejtë është? A e përballon një projekt të vërtetë?",
+                 "On jsoup, about 35 thousand lines in 199 files, the rules run in about two "
+                 "seconds on a laptop. The whole corpus of hundreds of projects was analyzed the "
+                 "same way.",
+                 "Te jsoup-i, rreth 35 mijë rreshta në 199 skedarë, rregullat punojnë rreth dy "
+                 "sekonda në një laptop. I gjithë korpusi me qindra projekte u analizua njësoj.",
+                 "What we built"),
+        Question(3, "What does a developer actually see in the tool?",
+                 "Çka sheh në të vërtetë një programues te mjeti?",
+                 "For each finding: the smell, how serious it is, the conditions that fired with "
+                 "the measured values, and where possible a preview of the fix before any file "
+                 "changes. There is also a plain-language mode in Albanian.",
+                 "Për çdo gjetje: erën, sa e rëndë është, kushtet që e shkaktuan me vlerat e "
+                 "matura, dhe kur mundet një pamje paraprake të ndreqjes para se të preket ndonjë "
+                 "skedar. Ka edhe një mënyrë me gjuhë të thjeshtë, shqip.", "What we built",
+                 "Extract Method in the interface"),
+        # --- 4: recensent i rreptë ---
+        Question(4, "Isn't choosing the best model on the same predictions optimistic?",
+                 "A nuk është optimiste të zgjedhësh modelin më të mirë mbi të njëjtat parashikime?",
+                 f"Yes, slightly, and I say so. That is why I report every algorithm: even the "
+                 f"weakest one beats the rules on {f['weakest']} of {n} smells, so the conclusion "
+                 "does not depend on the choice.",
+                 f"Po, pak, dhe e them hapur. Prandaj i raportoj të gjithë algoritmet: edhe më i "
+                 f"dobëti i mund rregullat te {f['weakest']} nga {n} erërat, ndaj përfundimi nuk "
+                 "varet nga zgjedhja.", "Limitations and takeaways", "Every algorithm"),
+        Question(4, "If reviewers disagree, are your labels reliable at all?",
+                 "Nëse rishikuesit nuk pajtohen, a janë fare të besueshme etiketat?",
+                 f"For Feature Envy, not really: the reviewers' MCC is {envy:.2f}, and I report that "
+                 f"as a limit. For the other three it is {min(agree):.2f} to {max(agree):.2f}, so the "
+                 "labels carry real signal, and each label is the average of its reviewers.",
+                 f"Për Feature Envy, jo vërtet: MCC-ja mes rishikuesve është {envy:.2f}, dhe këtë e "
+                 f"raportoj si kufizim. Për tri të tjerat është {min(agree):.2f} deri "
+                 f"{max(agree):.2f}, ndaj etiketat kanë sinjal të vërtetë, dhe çdo etiketë është "
+                 "mesatarja e rishikuesve të saj.", "Human agreement"),
+        Question(4, "How can you call a change safe without running tests?",
+                 "Si mund ta quash një ndryshim të sigurt pa ekzekutuar teste?",
+                 f"I do not claim that behavior is preserved. I claim two things: the "
+                 f"preconditions are proven on the syntax tree, and the result adds no new compile "
+                 f"error. In my manual review {changed} Extract Method change still seemed to "
+                 "change behavior, which is exactly why I do not claim more.",
+                 f"Nuk pretendoj që sjellja ruhet. Pretendoj dy gjëra: kushtet paraprake "
+                 f"vërtetohen në pemën e sintaksës, dhe rezultati nuk shton gabim të ri kompilimi. "
+                 f"Në rishikimin tim {changed} ndryshim Extract Method dukej se e ndryshonte "
+                 "sjelljen, dhe pikërisht prandaj nuk pretendoj më shumë.",
+                 "Limitations and takeaways"),
+        Question(4, "Why tree-sitter, and not a compiler front end that resolves names?",
+                 "Pse tree-sitter, dhe jo një pjesë kompajleri që i zgjidh emrat?",
+                 "Tree-sitter is fast, it works on code that does not compile, and it needs no "
+                 "build setup. The price is that names are not resolved, so the engine refuses "
+                 "when a name is ambiguous instead of guessing.",
+                 "Tree-sitter është i shpejtë, punon edhe me kod që nuk kompilohet, dhe nuk kërkon "
+                 "konfigurim ndërtimi. Çmimi është që emrat nuk zgjidhen, ndaj motori refuzon kur "
+                 "një emër është i paqartë, në vend që të hamendësojë.", "What we built"),
+        Question(4, "Could the model just learn size or project style instead of smells?",
+                 "A mund të mësojë modeli thjesht madhësinë ose stilin e projektit, jo erërat?",
+                 f"Grouping by project stops it from memorizing projects. Size does matter for some "
+                 f"smells: for Blob the strongest features are {top[0]} and {top[1]}, which fits "
+                 "the definition of a class that does too much.",
+                 f"Grupimi sipas projektit e pengon të mësojë përmendësh projektet. Madhësia ka "
+                 f"rëndësi për disa erëra: për Blob tiparet më të forta janë {top[0]} dhe "
+                 f"{top[1]}, që përputhet me përkufizimin e një klase që bën shumë.",
+                 "Rules vs. machine learning"),
+        Question(4, "How did you handle the imbalance, with so few smelly samples?",
+                 "Si e trajtove pabarazinë, me kaq pak mostra me erë?",
+                 "Every model that supports it uses balanced class weights. I did not oversample, "
+                 "because copying rows could cross the project groups and undo the grouping. And "
+                 "the score is MCC, which is not fooled by imbalance.",
+                 "Çdo model që e lejon përdor pesha të balancuara për klasat. Nuk shumëfishova "
+                 "mostra, sepse kopjimi i rreshtave mund t'i kalonte grupet e projekteve dhe ta "
+                 "prishte ndarjen. Dhe nota është MCC, që nuk mashtrohet nga pabarazia.",
+                 "Data and evaluation"),
+        Question(4, "How do your numbers compare with the literature?",
+                 "Si krahasohen numrat e tu me literaturën?",
+                 f"They are in the same range as Madeyski and Lewowski 2023 on the same dataset: "
+                 f"for Feature Envy they report {MADEYSKI_2023_DS1['feature envy']} and I get "
+                 f"{f['best']['feature envy']['mcc']:.2f}. They used a random split and tuned "
+                 "models, which usually gives higher numbers, and I grouped by project.",
+                 f"Janë në të njëjtin rang me Madeyski dhe Lewowski 2023, mbi të njëjtën bazë: për "
+                 f"Feature Envy ata raportojnë {MADEYSKI_2023_DS1['feature envy']} dhe unë marr "
+                 f"{f['best']['feature envy']['mcc']:.2f}. Ata përdorën ndarje rastësore dhe "
+                 "modele të akorduara, që zakonisht japin numra më të lartë, ndërsa unë ndava "
+                 "sipas projektit.", "Rules vs. machine learning", "Comparison with the literature"),
+        Question(4, "Why keep Introduce Parameter Object if none of its changes were acceptable?",
+                 "Pse e mban Introduce Parameter Object, nëse asnjë ndryshim i tij nuk ishte i "
+                 "pranueshëm?",
+                 "To report a negative result honestly. It does remove the Long Parameter List "
+                 "smell, but a developer gains nothing, because the long list only moves into a "
+                 "new class.",
+                 "Për ta raportuar me ndershmëri një rezultat negativ. E heq erën Long Parameter "
+                 "List, por programuesi nuk fiton asgjë, sepse lista e gjatë thjesht kalon në një "
+                 "klasë të re.", "Automatic refactoring"),
+        Question(4, "Can someone else reproduce your numbers?",
+                 "A mund t'i riprodhojë dikush tjetër numrat e tu?",
+                 "Yes. Every number comes from a script and is stored with fixed random seeds and "
+                 "pinned versions, so a clean copy of the project can regenerate every table.",
+                 "Po. Çdo numër vjen nga një skript dhe ruhet me fara të fiksuara të rastit dhe me "
+                 "versione të fiksuara, ndaj një kopje e pastër e projektit mund ta rikrijojë çdo "
+                 "tabelë.", "Limitations and takeaways"),
+        Question(4, "Would this work on industrial code, not open source?",
+                 "A do të punonte kjo për kod industrial, jo me burim të hapur?",
+                 "Probably with recalibration: MLCQ is open-source code, so the thresholds and the "
+                 "models may need new data. That is a limit I state, and the pipeline is scripted "
+                 "so it can be rerun on another dataset.",
+                 "Ndoshta, por me rikalibrim: MLCQ është kod me burim të hapur, ndaj pragjet dhe "
+                 "modelet mund të kenë nevojë për të dhëna të reja. Këtë e them si kufizim, dhe "
+                 "rrjedha është me skripte, ndaj mund të riekzekutohet mbi një bazë tjetër.",
+                 "Limitations and takeaways"),
+    ]  # fmt: skip
+
+
+# ----------------------------------------------------------------------
 # Udhëzuesi i fjalimit
 # ----------------------------------------------------------------------
 @dataclass
@@ -1965,7 +2216,6 @@ class SlideGuide:
     shows: list[str]
     point: list[str]
     keywords: str
-    asked: list[tuple[str, str]] = field(default_factory=list)
 
 
 def _slide_guides(f: dict) -> list[SlideGuide]:
@@ -1981,13 +2231,9 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
         f"{SMELL_SQ[s]} {f['strategy'][s]['mcc']:.2f} → {f['best'][s]['mcc']:.2f}" for s in smells
     )
     agree = "; ".join(f"{SMELL_SQ[s]} {f['reviewers'][s]:.2f}" for s in smells)
-    winners = "; ".join(
-        f"{SMELL_SQ[s]}: {MODEL_EN[ml['per_smell'][s]['best_model']]}" for s in smells
-    )
     majority = ml["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
     applied, detected = f["applied"], f["detected"]
     refused = sum(f["refactoring"]["refused_by_reason"].values())
-    extract = f["refactoring"]["applied_by_refactoring"]["ExtractMethod"] / applied
     chance = _dhe([SMELL_SQ[s] for s in f["chance"]])
     moderate = _dhe([SMELL_SQ[s] for s in f["moderate"]])
     quality = f["quality"]
@@ -2007,7 +2253,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             point=[
                 "Mos e lexo titullin: salla e lexon vetë. Shiko sallën dhe thuaj hyrjen "
                 "përmendësh.",
-                "Kalo te sllajdi 2 pas fjalisë «…how far we can go in fixing them».",
+                "Kalo te sllajdi 2 pas fjalisë «…and whether it can also fix them».",
             ],
             keywords="emri · teza në UBT · gjej / sa saktë / ndreq",
         ),
@@ -2033,16 +2279,10 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
             point=[
                 "Kur thua fjalitë e para, trego tri pikat me radhë.",
-                "Te «So we asked three questions», trego tri kartat nga e majta në të djathtë "
+                "Te «So I asked three questions», trego tri kartat nga e majta në të djathtë "
                 "dhe ndalu një sekondë te secila.",
             ],
             keywords="punon, por kushton · pragje fikse · nuk ndreqin · tri pyetje",
-            asked=[
-                ("Çka është saktësisht një erë e kodit?",
-                 "Shenjë e një problemi në ndërtimin e kodit që e bën ndryshimin më të shtrenjtë. "
-                 "Nuk është gabim. Termin e bënë të njohur Fowler dhe Beck te libri "
-                 "«Refactoring» (1999)."),
-            ],
         ),
         SlideGuide(
             heading=titles[2],
@@ -2065,11 +2305,6 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
             keywords="Blob bën shumë · Data Class vetëm të dhëna · Long Method e gjatë · "
             "Feature Envy te klasa tjetër",
-            asked=[
-                ("Pse vetëm këto katër?",
-                 "Sepse vetëm për to ka etiketa nga programues profesionistë në MLCQ. Mjeti gjen "
-                 "tetë erëra, por të tjerat nuk mund të krahasohen me njerëzit."),
-            ],
         ),
         SlideGuide(
             heading=titles[3],
@@ -2089,22 +2324,12 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "veta, p.sh. «Rreshtat e kodit të metodës: 53 (problem kur është mbi 30)».",
             ],
             point=[
-                "Ndiqe rrjedhën me dorë nga lart poshtë: te «A uses…» kutia A, te «B trains…» "
-                "kutia B, te «And C is a refactoring engine» kutia C.",
-                "Te «On the right you can see the web interface», trego foton djathtas.",
+                "Ndiqe rrjedhën me dorë nga lart poshtë: te «Part A…» kutia A, te «Part B…» "
+                "kutia B, te «Part C…» kutia C.",
+                "Te «On the right you see the web interface», trego foton djathtas.",
             ],
             keywords=f"{f['metrics']} metrika · A rregulla · B modele · C ndreqje + javac · "
             "ndërfaqja",
-            asked=[
-                ("Me çka është ndërtuar?",
-                 "Pjesa që analizon është në Python, kodin e lexon parseri tree-sitter, ndërfaqja "
-                 "është në React. Punon në kompjuterin tënd, falas, me burim të hapur (licenca "
-                 "MIT) dhe me një imazh Docker."),
-                ("Pse jo një LLM për ndreqjen?",
-                 "Doja rishkrime deterministe, të vërtetueshme dhe falas. Një LLM shkruan kod që "
-                 "duket i besueshëm, por nuk i vërteton dot kushtet, dhe rezultati ndryshon nga "
-                 "njëri ekzekutim te tjetri."),
-            ],
         ),
         SlideGuide(
             heading=titles[4],
@@ -2124,20 +2349,12 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             ],
             point=[
                 "Kur thua numrat, trego numrat e mëdhenj, njërin pas tjetrit.",
-                "Te «we grouped the data by repository», trego kutitë: «mëson nga këto katër, "
+                "Te «it learns from four groups», trego kutitë: «mëson nga këto katër, "
                 "provohet te kjo».",
-                "Te «simple accuracy would look very good», trego numrin e kuq.",
+                "Te «a detector that always says “clean”», trego numrin e kuq.",
             ],
             keywords=f"MLCQ · 26 programues · {f['samples']:,} mostra · ndarje sipas projektit "
             "· MCC",
-            asked=[
-                ("Pse MCC dhe jo saktësia?",
-                 f"Te Feature Envy, një detektor që thotë gjithmonë «i pastër» del {majority:.1%} "
-                 "i saktë, edhe pse nuk ka mësuar asgjë. MCC i jep 0."),
-                ("Si e shmangët rrjedhjen e të dhënave?",
-                 f"Me ndarje në {ml['folds']} grupe sipas projektit: asnjë projekt nuk është "
-                 "njëkohësisht në mësim dhe në provë."),
-            ],
         ),
         SlideGuide(
             heading=titles[5],
@@ -2158,24 +2375,15 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "çmimi: zakonisht më shumë alarme të rreme.",
             ],
             point=[
-                "Te «The gray bars… and the blue bars…», trego një shtyllë gri dhe një blu, që "
+                "Te «Gray is the published rules, blue is machine learning», trego një shtyllë gri dhe një blu, që "
                 "salla ta lidhë ngjyrën me kuptimin.",
-                f"Te «they catch only {lowest:.0f} to {highest:.0f} percent», trego numrin gri "
-                "djathtas; te «Out of every 100 smells», numrin blu poshtë tij.",
-                f"Te «For {_and(f['unsure'])}, the difference could be chance», trego dy "
+                f"Te «they find only {lowest:.0f} to {highest:.0f}», trego numrin gri djathtas; te "
+                f"«It finds {found_low:.0f} to {found_high:.0f} out of 100», numrin blu poshtë tij.",
+                f"Te «For {_and(f['unsure'])}, it could be luck», trego dy "
                 "shtyllat e saj: janë më të ulëtat dhe më afër njëra-tjetrës.",
             ],
             keywords=f"gri = rregullat · blu = modeli · kapin {lowest:.0f}–{highest:.0f}% · "
             f"më mirë te të katërta · {_dhe(f['unsure'])} ndoshta rastësi",
-            asked=[
-                ("Cili model fitoi për secilën erë?",
-                 f"{winners}. Sllajdi rezervë «Every algorithm» i tregon të gjithë."),
-                ("Si dihet që nuk është fat?",
-                 "I rizgjodhëm projektet rastësisht 2,000 herë dhe e llogaritëm ndryshimin çdo "
-                 "herë. Sllajdi rezervë «Confidence intervals»."),
-                ("Precision dhe recall për secilën erë?",
-                 "Sllajdi rezervë «Full detection results»."),
-            ],
         ),
         SlideGuide(
             heading=titles[6],
@@ -2192,19 +2400,13 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "kuqe («sa një monedhë e hedhur»), dhe fjalia kryesore me shkronja të trasha.",
             ],
             point=[
-                f"Te «For {_and([SMELL_SQ[s] for s in f['chance']])}, they agree no better than "
-                "chance», trego shtyllën e kuqe.",
+                f"Te «For {_and([SMELL_SQ[s] for s in f['chance']])}, they agree no more than a "
+                "coin flip», trego shtyllën e kuqe.",
                 "Fjalinë «If experts do not agree…» thuaje ngadalë, duke parë sallën: është "
                 "mesazhi kryesor i pjesës së parë, dhe e ke të shkruar djathtas.",
             ],
             keywords="sa pajtohen njerëzit · Feature Envy sa hamendja · problemi është "
             "përkufizimi",
-            asked=[
-                ("Si e matët pajtimin?",
-                 "Te mostrat që kanë më shumë se një rishikim, krahasuam çdo çift rishikimesh të "
-                 "së njëjtës mostër: a thonë të dy «ka erë» apo jo. MCC u llogarit mbi këto "
-                 "çifte."),
-            ],
         ),
         SlideGuide(
             heading=titles[7],
@@ -2229,28 +2431,15 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "një objekt.",
             ],
             point=[
-                "Te «it found … sites and rewrote …», trego numrin e madh, pastaj pjesën blu të "
+                "Te «it found … places», trego numrin e madh, pastaj pjesën blu të "
                 "shiritit.",
-                "Te «The rest were refused», trego pjesën gri. Te «For us, refusing is a correct "
+                "Te «It refused the rest», trego pjesën gri. Te «For me, a refusal is a good "
                 "result», mos lëviz: thuaje duke parë sallën.",
                 "Te tri numrat e fundit, trego tri kartat me radhë.",
             ],
             keywords=f"tri ndreqje · {detected:,} → {applied:,} · refuzimi është i saktë · "
             f"era zhduket {f['resolved']:.0%} · gabimet nuk shkruhen · "
             f"{quality['acceptable_reweighted']:.0%} të pranueshme",
-            asked=[
-                ("Si e dini që sjellja nuk ndryshon?",
-                 "Nuk e pretendojmë. Vërtetojmë kushtet në pemën e sintaksës dhe kontrollojmë me "
-                 "kompajlerin. Testet e projekteve nuk u ekzekutuan, sepse korpusi nuk ka "
-                 "skedarë ndërtimi."),
-                (f"Pse vetëm {applied / detected:.0%}?",
-                 "Motori refuzon kur nuk vërteton dot një kusht. Sllajdi rezervë «Verification "
-                 "in detail» i tregon arsyet."),
-                ("Çka do të thotë «të peshuara»?",
-                 f"Extract Method përbën {extract:.0%} të rishkrimeve, ndaj përqindja e "
-                 "përgjithshme peshohet sipas sa i shpeshtë është secili lloj."),
-                ("Si duket kjo në ndërfaqe?", "Sllajdi rezervë «Extract Method in the interface»."),
-            ],
         ),
         SlideGuide(
             heading=titles[8],
@@ -2275,12 +2464,6 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "«−1 level» djathtas.",
             ],
             keywords="Apache Geode · if i madh → dalje e hershme · një nivel lart · kompilohet",
-            asked=[
-                ("Pse !( … ) dhe jo kushti i kthyer së prapthi?",
-                 "Mbështjellja është mekanike dhe e saktë për çdo kusht, edhe për numrat me presje "
-                 "(NaN), ku a > b dhe a <= b mund të jenë të dy të rremë. Kthimi me dorë i një "
-                 "kushti të përbërë sjell lehtë gabime."),
-            ],
         ),
         SlideGuide(
             heading=titles[9],
@@ -2298,19 +2481,13 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "Poshtë: «Thank you · Questions?» dhe adresa e projektit në GitHub.",
             ],
             point=[
-                "Trego kolonën e kuqe kur flet për kufizimet, pastaj te «To summarize» trego "
+                "Trego kolonën e kuqe kur flet për kufizimet, pastaj te «So, the three answers» trego "
                 "përgjigjet Q1, Q2 dhe Q3 me radhë.",
-                "Pas «I am happy to take your questions», ndalu, buzëqesh dhe prit. Mos e mbyll "
+                "Pas «I am happy to answer your questions», ndalu, buzëqesh dhe prit. Mos e mbyll "
                 "sllajdin: adresa e GitHub-it duhet të mbetet në ekran.",
             ],
             keywords="kompilohet ≠ sillet njësoj · një bazë, katër erëra, Java · kufijtë e "
             "mësuar · e sigurt, por e ngushtë · faleminderit",
-            asked=[
-                ("Çka do të bëje më pas?",
-                 "Do t'i ekzekutoja testet e projekteve pas çdo rishkrimi, do të shtoja një "
-                 "zgjidhës të vogël emrash për më shumë ndreqje, dhe do t'u kërkoja rishikuesve "
-                 "të pavarur t'i gjykojnë rishkrimet."),
-            ],
         ),
     ]  # fmt: skip
 
@@ -2379,6 +2556,58 @@ def _say(doc, line: Line) -> None:
     run.font.color.rgb = DocRGB(*SOFT)
 
 
+def _answer(doc, question: Question, backups: list[str], main: int) -> None:
+    """Pyetja dhe përgjigjja në të dy gjuhët, me numrin e sllajdit rezervë kur ka."""
+    paragraph = doc.add_paragraph()
+    paragraph.paragraph_format.space_after = DocPt(0)
+    paragraph.add_run(question.question).bold = True
+    run = paragraph.add_run(f"   ({question.pyetja})")
+    run.italic = True
+    run.font.color.rgb = DocRGB(*SOFT)
+    say = doc.add_paragraph()
+    say.paragraph_format.space_after = DocPt(0)
+    say.add_run(question.answer).font.size = DocPt(12)
+    meaning = doc.add_paragraph()
+    meaning.paragraph_format.left_indent = DocPt(18)
+    meaning.paragraph_format.space_after = DocPt(4 if question.backup else 10)
+    run = meaning.add_run(question.pergjigjja)
+    run.italic = True
+    run.font.size = DocPt(10)
+    run.font.color.rgb = DocRGB(*SOFT)
+    if question.backup:
+        number = main + 1 + backups.index(question.backup)
+        hint = doc.add_paragraph()
+        hint.paragraph_format.left_indent = DocPt(18)
+        hint.paragraph_format.space_after = DocPt(10)
+        run = hint.add_run(f"Sllajdi rezervë {number} · {question.backup}: "
+                           f"{', '.join(str(number))}, Enter.")  # fmt: skip
+        run.font.size = DocPt(10)
+        run.font.color.rgb = DocRGB(*ADDED)
+
+
+def _bank_section(doc, bank: list[Question], backups: list[str], main: int) -> None:
+    """Të gjitha pyetjet, nga më e thjeshta te më e vështira, me si t'u përgjigjesh."""
+    doc.add_page_break()
+    doc.add_heading("Pyetjet e mundshme: nga më e thjeshta te më e vështira", level=1)
+    _list(doc, [
+        "Pyetja mund të vijë anglisht ose shqip. Përgjigju në gjuhën e pyetjes: me të zeza "
+        "është përgjigjja angleze, me gri ajo shqipe.",
+        "Dëgjoje pyetjen deri në fund, ndalu dy sekonda, dhe përgjigju me një-dy fjali. Një "
+        "përgjigje e shkurtër dhe e saktë duket më e sigurt se një e gjatë.",
+        "Nëse pyetja ka një sllajd rezervë, e ke numrin poshtë përgjigjes: shtyp numrin dhe "
+        "Enter, pastaj kthehu te sllajdi i fundit.",
+        "Nëse nuk e di përgjigjen, thuaje: «I did not measure that, but…» dhe thuaj çka di. "
+        "Askush nuk pret që të dish gjithçka.",
+    ])  # fmt: skip
+    for level, (name, who) in LEVELS.items():
+        doc.add_heading(f"Niveli {level}: {name}", level=2)
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(who).italic = True
+        for question in bank:
+            if question.level == level:
+                _answer(doc, question, backups, main)
+
+
 def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: list[str]) -> str:
     """Çka të thuhet dhe ku të tregohet, sllajd për sllajd.
 
@@ -2442,7 +2671,8 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         "Shënimet në PowerPoint janë rrjetë sigurie: shiko fjalët kyçe, jo gjithë tekstin.",
     ])  # fmt: skip
 
-    for index, ((_, parts), guide) in enumerate(zip(script, guides, strict=True), 1):
+    bank = _question_bank(f)
+    for index, ((key, parts), guide) in enumerate(zip(script, guides, strict=True), 1):
         doc.add_page_break()
         doc.add_heading(f"Sllajdi {index} · {guide.heading}", level=1)
         paragraph = doc.add_paragraph()
@@ -2461,9 +2691,11 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
             _say(doc, line)
         doc.add_heading("Nëse të ngec mendja", level=2)
         doc.add_paragraph(guide.keywords)
-        if guide.asked:
+        related = [question for question in bank if question.slide == key]
+        if related:
             doc.add_heading("Nëse të pyesin për këtë sllajd", level=2)
-            _qa(doc, guide.asked)
+            for question in related:
+                _answer(doc, question, backups, len(script))
 
     doc.add_page_break()
     doc.add_heading("Sllajdet rezervë: vetëm për pyetjet", level=1)
@@ -2482,12 +2714,14 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         paragraph.add_run("Kur e hap: ").italic = True
         paragraph.add_run(when)
 
+    _bank_section(doc, bank, backups, len(script))
+
     doc.add_heading("Hyrja dhe mbyllja, përmendësh", level=1)
     doc.add_paragraph(
         "Këto janë fjalitë e vetme që ia vlen t'i mësosh fjalë për fjalë: fillimi i sigurt e "
         "qetëson zërin, dhe mbyllja e sigurt lë përshtypjen e fundit."
     )
-    for line in script[0][1][:2] + script[-1][1][-3:]:
+    for line in script[0][1][:2] + script[-1][1][-2:]:
         _say(doc, line)
 
     doc.save(SPEECH)
@@ -2495,7 +2729,7 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
 
 
 # ----------------------------------------------------------------------
-# Dokumenti i njohurive
+# Libri: punimi nga e para
 # ----------------------------------------------------------------------
 REASON_SQ = {
     "shape_not_matched": "Kodi nuk ka formën që i duhet ndreqjes, p.sh. metoda nuk është e "
@@ -2592,12 +2826,128 @@ def _metric_name(feature: str) -> str:
     return f"{name} ({entry['name'].lower()})" if entry else name
 
 
-def build_knowledge(f: dict) -> str:
-    """Punimi i shpjeguar nga e para, për dikë që nuk e njeh temën.
+# Shembujt e vegjël të librit. Nuk janë kod i korpusit: janë shkruar që të llogariten me
+# dorë, dhe ndërtuesi i mat me vetë mjetin, që numrat në tekst të jenë ata që jep mjeti.
+EXAMPLE_SHOP = """class Shop {
+    private int discount;
 
-    Çdo shifër lexohet nga `data/results/` si te sllajdet, dhe çdo term i mjetit merr
-    emrin dhe shpjegimin nga fjalori i thjeshtë i sistemit, që dokumenti, ndërfaqja dhe
-    CLI-ja të mos e shpjegojnë të njëjtën gjë në tri mënyra.
+    int total(int[] prices, boolean member) {
+        int sum = 0;
+        for (int p : prices) {
+            if (p > 0) {
+                sum += p;
+            }
+        }
+        if (member && sum > 100) {
+            sum = sum - discount;
+        }
+        return sum;
+    }
+}"""
+
+EXAMPLE_ACCOUNT = """public class Account {
+    private int balance;
+    private String owner;
+    private String email;
+
+    public void deposit(int amount) {
+        balance = balance + amount;
+    }
+
+    public int report() {
+        return balance * 2;
+    }
+
+    public void notify(String text) {
+        System.out.println(email + text);
+    }
+}"""
+
+EXAMPLE_INVOICE = """public class Customer {
+    private String name;
+    private String street;
+    private String city;
+    private String zip;
+    private String country;
+    private String phone;
+
+    public String getName() { return name; }
+    public String getStreet() { return street; }
+    public String getCity() { return city; }
+    public String getZip() { return zip; }
+    public String getCountry() { return country; }
+    public String getPhone() { return phone; }
+}
+
+class Invoice {
+    private Customer customer;
+    private int amount;
+
+    String label() {
+        return customer.getName() + " " + customer.getStreet() + " " + customer.getCity()
+            + " " + customer.getZip() + " " + customer.getCountry() + " "
+            + customer.getPhone() + " " + amount;
+    }
+}"""
+
+
+def _measured(source: str) -> tuple[dict[str, dict], dict[str, dict], list]:
+    """Metrikat dhe erërat që jep vetë mjeti për një shembull të vogël."""
+    project = analyze_source(source)
+    classes: dict[str, dict] = {}
+    methods: dict[str, dict] = {}
+    for unit in project.units:
+        for cls in unit.classes:
+            classes[cls.name] = cls.metrics
+            for method in cls.methods:
+                methods[f"{cls.name}.{method.name}"] = method.metrics
+    return classes, methods, detect_all(project)
+
+
+def _chapter(doc, number: int, title: str, intro: str) -> None:
+    doc.add_page_break()
+    doc.add_heading(f"{number}. {title}", level=1)
+    paragraph = doc.add_paragraph()
+    paragraph.add_run(intro).italic = True
+
+
+def _idea(doc, text: str) -> None:
+    """Ideja kryesore e një pjese, që lexuesi ta gjejë kur e rilexon."""
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run("Ideja kryesore: ")
+    run.bold = True
+    run.font.color.rgb = DocRGB(*ACCENT)
+    paragraph.add_run(text)
+
+
+def _analogy(doc, text: str) -> None:
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run("Si në jetën e përditshme: ")
+    run.bold = True
+    run.font.color.rgb = DocRGB(*ADDED)
+    paragraph.add_run(text).italic = True
+
+
+def _check(doc, pairs: list[tuple[str, str]]) -> None:
+    """Pyetjet e vetëkontrollit në fund të kapitullit, me përgjigjen poshtë secilës."""
+    doc.add_heading("Provo veten", level=2)
+    for question, answer in pairs:
+        paragraph = doc.add_paragraph()
+        paragraph.paragraph_format.space_after = DocPt(0)
+        paragraph.add_run(question).bold = True
+        reply = doc.add_paragraph()
+        reply.paragraph_format.left_indent = DocPt(18)
+        run = reply.add_run(answer)
+        run.italic = True
+        run.font.color.rgb = DocRGB(*SOFT)
+
+
+def build_book(f: dict) -> str:
+    """Gjithë punimi i shpjeguar nga e para, si një libër, për dikë që nuk di asgjë.
+
+    Çdo shifër lexohet nga `data/results/` si te sllajdet; shembujt e vegjël maten me vetë
+    mjetin gjatë ndërtimit; dhe çdo term merr emrin nga fjalori i thjeshtë i sistemit, që
+    libri, ndërfaqja dhe CLI-ja të mos e shpjegojnë të njëjtën gjë në tri mënyra.
     """
     smells, ml = f["smells"], f["ml"]
     reference, dataset, pmd = f["reference"], f["dataset"], f["pmd"]
@@ -2609,135 +2959,280 @@ def build_knowledge(f: dict) -> str:
     blob, envy = f["strategy"]["blob"], f["strategy"]["feature envy"]
     envy_total = envy["tp"] + envy["fp"] + envy["tn"] + envy["fn"]
     majority = ml["per_smell"]["feature envy"]["models"]["majority"]["accuracy"]
-    precision = [f["strategy"][s]["precision"] for s in smells]
     lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
-    resamples = intervals[smells[0]]["intervals"]["difference_model_minus_rules"]["resamples_used"]
-    q = reference["quantifiers"]
+    found = [f["best"][s]["recall"] * 100 for s in smells]
+    precision = [f["strategy"][s]["precision"] for s in smells]
+    q, t = reference["quantifiers"], reference["thresholds"]
     by_type = refactoring["applied_by_refactoring"]
     refused = sum(refactoring["refused_by_reason"].values())
+    winners = {s: ml["per_smell"][s]["best_model"] for s in smells}
+    shop_classes, shop_methods, _ = _measured(EXAMPLE_SHOP)
+    account_classes, _, _ = _measured(EXAMPLE_ACCOUNT)
+    invoice_classes, invoice_methods, invoice_smells = _measured(EXAMPLE_INVOICE)
+    total, label = shop_methods["Shop.total"], invoice_methods["Invoice.label"]
 
     doc = _document()
-    doc.add_heading("Gjithçka për punimin: udhëzues nga e para", level=0)
+    doc.add_heading("Punimi nga e para", level=0)
     doc.add_paragraph(f"{TITLE}\n{AUTHORS}")
     doc.add_paragraph(
-        "Ky dokument e shpjegon punimin për dikë që nuk e njeh temën. Lexoje me radhë: çdo "
-        "pjesë mbështetet te ajo para saj. Çdo shifër vjen nga `data/results/`, njësoj si te "
-        "sllajdet, ndaj nuk ka mospërputhje mes tyre."
+        "Ky dokument e shpjegon gjithë punimin për dikë që nuk di asgjë për programimin, as "
+        "për mësimin makinerik. Nis nga «çka është një program» dhe arrin deri te çdo numër i "
+        "prezantimit. Lexoje me radhë: çdo kapitull mbështetet te ai para tij."
     )
-
-    # --- 1 ---
-    doc.add_heading("1. Punimi në një paragraf", level=1)
-    doc.add_paragraph(
-        f"Punimi ndërton JavaSmell, një mjet që lexon kod Java, mat {f['metrics']} metrika për "
-        "çdo klasë dhe metodë, dhe i gjen erërat e kodit në tri mënyra. A: "
-        f"{f['strategies']} rregulla të botuara, kryesisht nga Lanza & Marinescu. B: modele të "
-        "mësimit makinerik, të trajnuara mbi të njëjtat metrika. C: një motor që disa erëra i "
-        "ndreq vetë duke e rishkruar kodin, por vetëm kur mund ta vërtetojë që rishkrimi është "
-        "i sigurt, dhe çdo rishkrim e kontrollon me kompajlerin e Java-s. A dhe B krahasohen me "
-        f"vlerësimet e programuesve profesionistë nga baza MLCQ, mbi {f['samples']:,} mostra."
-    )
-    doc.add_heading("Nëse të pyesin në korridor (në anglisht)", level=2)
-    doc.add_paragraph(
-        "I built a tool that finds design problems, called code smells, in Java code. I "
-        "compared published rules with machine learning, using labels from professional "
-        "developers: the models are better, but some smells are hard even for humans to agree "
-        "on. The tool also fixes some smells automatically, but only when it can prove the "
-        "change is safe, and it checks every change with the Java compiler."
-    )
-
-    # --- 2 ---
-    doc.add_heading("2. Tri pyetjet e kërkimit dhe përgjigjet", level=1)
-    _grid(doc, ["Pyetja", "Përgjigjja e shkurtër"], [
-        ["RQ1. Sa të sakta janë rregullat e botuara?",
-         f"Kanë të drejtë kur alarmojnë (precision {min(precision):.0%}–{max(precision):.0%}), "
-         f"por kapin vetëm {lowest:.0f}–{highest:.0f}% të erërave. MCC "
-         f"{min(f['rule_mcc']):.2f}–{max(f['rule_mcc']):.2f}."],
-        ["RQ2. A bën më mirë mësimi makinerik me të njëjtat metrika?",
-         f"Po, te të katër erërat (MCC {min(f['model_mcc']):.2f}–{max(f['model_mcc']):.2f}). "
-         f"Dallimi është i sigurt te {_dhe(f['sure'])}; te {_dhe(f['unsure'])} mund të jetë "
-         "rastësi."],
-        ["RQ3. A mund të ndreqen erërat automatikisht pa e prishur kompilimin?",
-         f"Po, por për pak raste: {applied:,} nga {detected:,} vende ({_pct(applied / detected)}). "
-         f"Era zhduket në {_pct(f['resolved'])}; {_pct(f['broken'])} shtojnë një gabim të ri "
-         "kompilimi dhe nuk shkruhen; "
-         f"{_pct(quality['acceptable_reweighted'])} janë të pranueshme në rishikimin me dorë."],
+    doc.add_heading("Si ta lexosh", level=2)
+    _list(doc, [
+        "Çdo kapitull nis me një fjali që thotë çka do të mësosh, dhe mbaron me «Provo veten»: "
+        "pyetje me përgjigjen poshtë. Mbuloje përgjigjen dhe provo ta thuash vetë.",
+        "«Ideja kryesore» është fjalia që duhet ta mbash mend nga ajo pjesë. «Si në jetën e "
+        "përditshme» është një krahasim që e bën idenë më të lehtë.",
+        "Çdo numër në këtë dokument vjen nga skedarët e rezultateve të punimit, si te sllajdet. "
+        "Shembujt e vegjël me kod janë matur me vetë mjetin gjatë ndërtimit të dokumentit.",
+        "Fjalët teknike shpjegohen kur dalin për herë të parë, dhe i gjen të gjitha te fjalori "
+        "në fund.",
+    ])  # fmt: skip
+    doc.add_heading("Harta e dokumentit", level=2)
+    _grid(doc, ["Pjesa", "Kapitujt", "Çka mëson"], [
+        ["Bazat", "1–4", "Çka është kodi, çka është një erë, çka është refaktorimi, si e lexon "
+                          "mjeti kodin"],
+        ["Gjetja e erërave", "5–11", "Metrikat, rregullat, mësimi makinerik, të dhënat, si matet "
+                                     "saktësia, rezultatet, pajtimi i njerëzve"],
+        ["Ndreqja e erërave", "12–13", "Si punon motori i refaktorimit dhe çka arriti"],
+        ["Mjeti dhe shkenca", "14–17", "Si është ndërtuar sistemi, pse rezultatet janë të "
+                                       "besueshme, si u bë punimi hap pas hapi, kufizimet"],
+        ["Për konferencën", "18–21", "Lidhja me sllajdet, pyetjet e mundshme, fjalori, burimet"],
     ])  # fmt: skip
 
-    # --- 3 ---
-    doc.add_heading("3. Bazat: pesë fjalë Java", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 1, "Çka është një program, dhe pse kodi duhet të jetë i rregullt",
+             "Në këtë kapitull mëson fjalët bazë: kod, Java, klasë, metodë, fushë, projekt.")
+    doc.add_paragraph(
+        "Një program është një varg udhëzimesh për kompjuterin. Njeriu i shkruan këto udhëzime "
+        "në një gjuhë programimi, si tekst. Ky tekst quhet kod burimor (source code). Java është "
+        "një nga gjuhët më të përdorura në botë: me të shkruhen sisteme bankash, servera, "
+        "aplikacione Android dhe shumë mjete për kompani."
+    )
+    doc.add_heading("Pesë fjalë Java", level=2)
+    doc.add_paragraph("Ky është një program i vogël Java, me shpjegimin në çdo rresht:")
     _code(doc, [
         "class BankAccount {                   // KLASË: një «dosje» me të dhëna dhe veprime",
         "    private double balance;           // FUSHË: një e dhënë brenda klasës",
         "",
         "    void deposit(double amount) {     // METODË: një veprim; amount është PARAMETËR",
-        "        balance += amount;",
+        "        balance += amount;            // veprimi: bilanci rritet me shumën",
+        "    }",
+        "",
+        "    double getBalance() {             // një metodë që KTHEN një vlerë",
+        "        return balance;",
         "    }",
         "}",
     ])  # fmt: skip
     _list(doc, [
-        "Klasa është si një formular me rubrikat e veta (fushat) dhe butonat e vet (metodat).",
-        "Metoda merr hyrje (parametrat), bën diçka dhe ndonjëherë kthen një vlerë (return). "
-        "Një metodë «void» nuk kthen vlerë.",
-        "Një projekt (repository) është një dosje me qindra klasa, zakonisht në GitHub.",
+        "Klasa është si një formular: ka rubrikat e veta (fushat) dhe butonat e vet (metodat). "
+        "Nga një klasë mund të krijohen shumë objekte, si shumë llogari bankare nga i njëjti "
+        "formular.",
+        "Fusha është një e dhënë që klasa e mban, p.sh. bilanci.",
+        "Metoda është një veprim. Merr hyrje (parametrat), bën diçka, dhe ndonjëherë kthen një "
+        "vlerë me return. Një metodë «void» nuk kthen asgjë.",
+        "Një projekt (repository) është një dosje me qindra ose mijëra klasa, zakonisht në "
+        "GitHub. «Burim i hapur» (open source) do të thotë që kodi është publik.",
+    ])  # fmt: skip
+    doc.add_heading("Pse ka rëndësi që kodi të jetë i rregullt", level=2)
+    doc.add_paragraph(
+        "Një program nuk shkruhet një herë dhe pastaj harrohet. Gjatë viteve ai ndryshohet "
+        "vazhdimisht: ndreqen gabime, shtohen veçori, ndryshojnë kërkesat. Kodi lexohet shumë "
+        "më shpesh se sa shkruhet, zakonisht nga njerëz që nuk e shkruan vetë. Nëse kodi është "
+        "i rregullt, ndryshimi është i shpejtë dhe i sigurt. Nëse është i ngatërruar, çdo "
+        "ndryshim zgjat dhe rrezikon të prishë diçka tjetër. Kjo punë e vazhdueshme quhet "
+        "mirëmbajtje (maintenance)."
+    )
+    _analogy(doc, "Një kuzhinë e rregullt dhe një kuzhinë kaotike mund të gatuajnë të njëjtën "
+                  "gjellë. Por në atë kaotike, çdo herë që do të gatuash diçka të re, humbet "
+                  "kohë duke kërkuar.")  # fmt: skip
+    _idea(doc, "Programi që punon nuk është domosdoshmërisht program i mirë: rëndësi ka edhe sa "
+               "lehtë ndryshohet.")  # fmt: skip
+    _check(doc, [
+        ("Çka është kodi burimor?", "Teksti që shkruan njeriu në një gjuhë programimi, si Java."),
+        ("Çka është dallimi mes një fushe dhe një metode?",
+         "Fusha është një e dhënë që mban klasa; metoda është një veprim që bën klasa."),
+        ("Pse kodi duhet të jetë i rregullt, nëse programi punon?",
+         "Sepse kodi ndryshohet vazhdimisht, dhe kodi i ngatërruar e bën çdo ndryshim të "
+         "ngadaltë dhe të rrezikshëm."),
     ])  # fmt: skip
 
-    # --- 4 ---
-    doc.add_heading("4. Erërat e kodit", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 2, "Erërat e kodit",
+             "Në këtë kapitull mëson çka është një «code smell», pse nuk është gabim, dhe katër "
+             "erërat që mat punimi.")
     doc.add_paragraph(
-        "Mendo për një frigorifer që mban erë: era nuk vërteton që diçka është prishur, por të "
-        "thotë «shiko këtu». Njësoj, një erë e kodit nuk është gabim, sepse programi punon. "
-        "Është shenjë që kodi është ndërtuar në një mënyrë që e bën çdo ndryshim të ardhshëm më "
-        "të shtrenjtë. Termin e bënë të njohur Kent Beck dhe Martin Fowler te «Refactoring» "
-        "(1999)."
+        "Kur hap frigoriferin dhe ndien erë, nuk e di ende çka është prishur, por e di që duhet "
+        "të shikosh. Në programim, «erë e kodit» (code smell) është po kjo: një shenjë që diçka "
+        "në ndërtimin e kodit nuk shkon. Programi punon, por kodi është i ndërtuar në një mënyrë "
+        "që e bën çdo ndryshim të ardhshëm më të vështirë. Termin e bënë të njohur Kent Beck dhe "
+        "Martin Fowler te libri «Refactoring» (1999)."
     )
+    _grid(doc, ["", "Gabim (bug)", "Erë e kodit (code smell)"], [
+        ["Programi punon?", "Jo: jep rezultat të gabuar", "Po"],
+        ["Ku dëmton?", "Te përdoruesi, sot", "Te programuesi, sa herë ndryshon kodin"],
+        ["Si gjendet?", "Me teste", "Duke e lexuar kodin, ose me mjete si ky punim"],
+        ["Shembull", "Shuma del gabim", "Një metodë 300 rreshta që askush nuk e kupton"],
+    ])  # fmt: skip
+    doc.add_heading("Tetë erërat që gjen mjeti", level=2)
     mlcq = {"GodClass", "DataClass", "FeatureEnvy", "LongMethod"}
     _grid(doc, ["Era", "Emri i thjeshtë", "Çka është", "Pse ka rëndësi", "Në MLCQ?"], [
         [_words(name), entry["name"], entry["what"], entry["why"], "po" if name in mlcq else "jo"]
         for name, entry in vocab["smells"].items()
     ])  # fmt: skip
     doc.add_paragraph(
-        f"Mjeti gjen {f['strategies']} erëra. Me njerëz mund të vlerësohen vetëm katër, sepse "
-        "vetëm ato kanë etiketa në MLCQ. «Blob» në MLCQ është e njëjta erë që Lanza & "
-        "Marinescu e quajnë «God Class»."
+        "Mjeti gjen tetë erëra, por vetëm katër prej tyre kanë etiketa nga njerëz në bazën MLCQ "
+        "(kapitulli 8). Prandaj vetëm këto katër mund të krahasohen me mendimin e "
+        "programuesve. «Blob» në MLCQ është e njëjta erë që libri i Lanza-s dhe Marinescu-t e "
+        "quan «God Class»."
+    )
+    doc.add_heading("Katër erërat e punimit, me shembuj", level=2)
+    _list(doc, [
+        "Blob: një klasë që bën gjithçka. Si një punonjës që bën punën e gjithë zyrës: kur "
+        "mungon ai, asgjë nuk funksionon, dhe askush nuk di çka bën saktësisht.",
+        "Data Class: një klasë që vetëm mban të dhëna dhe nuk bën asgjë me to. Si një formular "
+        "i plotësuar, me të cilin punojnë vetëm të tjerët.",
+        f"Long Method: një metodë shumë e gjatë. Mjeti e quan të gjatë mbi {t['long_method_loc']:g} "
+        "rreshta kodi. Si një recetë tri faqe pa asnjë nëntitull.",
+        "Feature Envy («zili për veçoritë e tjetrit»): një metodë që punon më shumë me të dhënat "
+        "e një klase tjetër se me të vetat. Si një kuzhinier që gatuan gjithmonë në kuzhinën e "
+        "fqinjit: ndoshta i takon atje.",
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Ja një shembull i vogël, i shkruar për këtë dokument, që i ka dy nga këto erëra "
+        "njëkohësisht:"
+    )
+    _code(doc, EXAMPLE_INVOICE.splitlines())
+    doc.add_paragraph(
+        "Klasa Customer vetëm mban gjashtë të dhëna dhe i jep me metoda «get». Metoda label() "
+        "e klasës Invoice merr gjashtë të dhëna nga Customer dhe vetëm dy nga klasa e vet "
+        "(customer dhe amount). "
+        "Kur mjeti e mat këtë kod, gjen:"
     )
     _list(doc, [
-        "Blob: një punonjës që bën punën e gjithë zyrës.",
-        "Data Class: një formular i plotësuar, me të cilin punojnë vetëm të tjerët.",
-        "Long Method: një recetë tri faqe pa asnjë nëntitull.",
-        "Feature Envy: një kuzhinier që gatuan gjithmonë në kuzhinën e fqinjit; ndoshta i "
-        "takon atje.",
+        f"{_words(smell.smell_type)}"
+        + (f" te {smell.method}" if smell.method else f" te klasa {smell.class_name}")
+        + ": " + ", ".join(c.describe() for c in smell.conditions)
+        for smell in invoice_smells
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Kuptimin e çdo shkurtese (WOC, ATFD, LAA…) e mëson te kapitulli 5. Për momentin mjafton "
+        "kjo: mjeti nuk thotë vetëm «ka erë», por edhe pse, me numra."
+    )
+    _idea(doc, "Një erë nuk është gabim: është shenjë që kodi do të jetë i vështirë për "
+               "t'u ndryshuar.")  # fmt: skip
+    _check(doc, [
+        ("A punon programi kur ka një erë kodi?", "Po. Era nuk e prish programin; e bën kodin të "
+                                                  "vështirë për t'u ndryshuar."),
+        ("Cilat janë katër erërat që mat punimi?", "Blob, Data Class, Long Method dhe Feature Envy."),
+        ("Pse vetëm këto katër?", "Sepse vetëm për to ka etiketa nga programues profesionistë në "
+                                  "bazën MLCQ."),
+        ("Çka do të thotë Feature Envy?", "Një metodë që punon më shumë me të dhënat e një klase "
+                                          "tjetër se me të vetat."),
     ])  # fmt: skip
 
-    # --- 5 ---
-    doc.add_heading("5. Refaktorimi", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 3, "Refaktorimi: ndreqja pa e ndryshuar sjelljen",
+             "Në këtë kapitull mëson çka do të thotë të refaktorosh, dhe cilat ndreqje i bën mjeti "
+             "vetë.")
     doc.add_paragraph(
-        "Refaktorimi e ndryshon strukturën e kodit pa ia ndryshuar sjelljen, si kur rregullon "
-        "dollapin: rrobat janë po ato, vetëm i gjen më shpejt. Rregulli i artë: për çdo hyrje, "
-        "programi duhet të japë saktësisht të njëjtin rezultat si më parë."
+        "Refaktorimi (refactoring) është ndryshimi i ndërtimit të kodit pa ndryshuar atë që bën "
+        "programi. Pas refaktorimit, për çdo hyrje programi duhet të japë saktësisht të njëjtin "
+        "rezultat si më parë. Ndryshon vetëm sa lehtë lexohet dhe ndryshohet."
     )
-    automated = [s for s in reference["strategies"] if s["automated"]]
-    advisory = [s for s in reference["strategies"] if not s["automated"]]
+    _analogy(doc, "Rregullon dollapin: rrobat janë po ato, por tani i gjen më shpejt. Nëse gjatë "
+                  "rregullimit humbet një këmishë, nuk ishte rregullim: ishte dëm.")  # fmt: skip
+    doc.add_paragraph(
+        "Rreziku i refaktorimit është pikërisht ky: një ndryshim që duket i pafajshëm mund ta "
+        "ndryshojë sjelljen pa e kuptuar askush. Prandaj motori i këtij punimi është shumë i "
+        "kujdesshëm (kapitulli 12)."
+    )
+    doc.add_heading("Ndreqjet që propozon mjeti", level=2)
+    automated = {s["automated"] for s in reference["strategies"] if s["automated"]}
     _grid(doc, ["Ndreqja", "Emri i thjeshtë", "Çka bën", "E zbaton mjeti vetë?"], [
         [_words(name), entry["name"], entry["what"],
-         "po" if name in {s["automated"] for s in automated} else "vetëm e propozon"]
+         "po" if name in automated else "vetëm e propozon"]
         for name, entry in vocab["refactorings"].items()
     ])  # fmt: skip
+    advisory = [s for s in reference["strategies"] if not s["automated"]]
     doc.add_paragraph(
         "Pse disa ndreqje vetëm propozohen: për "
         + _dhe([_words(s["smell"]) for s in advisory])
         + ", ndreqja do të duhej të zhvendoste metoda ose të ndryshonte fusha, pra të gjente "
-        "çdo vend ku ato përdoren. Analiza jonë i njeh faktet e sintaksës, jo kuptimin e çdo "
-        "emri në gjithë projektin, ndaj nuk mund t'i gjejë me siguri të gjitha këto vende."
+        "çdo vend në gjithë projektin ku ato përdoren. Mjeti i njeh faktet e sintaksës, jo "
+        "kuptimin e çdo emri në gjithë projektin (kapitulli 4), ndaj nuk mund t'i gjejë me "
+        "siguri të gjitha këto vende. Më mirë të mos e bëjë, se sa ta bëjë gabim."
     )
+    _idea(doc, "Refaktorimi e ndryshon formën e kodit, kurrë sjelljen.")
+    _check(doc, [
+        ("Çka është rregulli i artë i refaktorimit?",
+         "Për çdo hyrje, programi duhet të japë saktësisht të njëjtin rezultat si më parë."),
+        ("Cilat tri ndreqje i bën mjeti vetë?",
+         "Extract Method, Guard Clauses dhe Introduce Parameter Object."),
+        ("Pse Move Method vetëm propozohet?",
+         "Sepse duhen gjetur të gjitha vendet ku thirret metoda, dhe mjeti nuk i zgjidh dot "
+         "emrat në gjithë projektin."),
+    ])  # fmt: skip
 
-    # --- 6 ---
-    doc.add_heading("6. Metrikat", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 4, "Si e lexon mjeti kodin",
+             "Në këtë kapitull mëson çka është një parser dhe një pemë sintakse, dhe pse mjeti "
+             "nuk punon me tekst të thjeshtë.")
     doc.add_paragraph(
-        "Një metrikë është një numër që përshkruan kodin, si presioni dhe pesha te mjeku: një "
-        "numër i vetëm nuk jep diagnozë, por disa bashkë po. Mjeti mat "
-        f"{len(reference['metrics']['class'])} metrika për klasat dhe "
-        f"{len(reference['metrics']['method'])} për metodat. Parseri e lexon çdo klasë një herë "
-        "dhe mbledh faktet; të gjitha metrikat llogariten nga këto fakte."
+        "Për njeriun, kodi është tekst. Për mjetin, kodi duhet të bëhet strukturë: duhet të dijë "
+        "ku nis një klasë, cilat janë metodat e saj, cili if është brenda cilit. Programi që e "
+        "kthen tekstin në strukturë quhet parser. Rezultati quhet pemë e sintaksës (AST, "
+        "Abstract Syntax Tree)."
+    )
+    doc.add_paragraph("Për shembull, rreshtat «if (p > 0) { sum += p; }» bëhen këtë pemë:")
+    _code(doc, [
+        "if_statement",
+        "├── condition:  p > 0",
+        "│   ├── p",
+        "│   ├── >",
+        "│   └── 0",
+        "└── block",
+        "    └── sum += p",
+    ])  # fmt: skip
+    _analogy(doc, "Analiza gramatikore në shkollë e ndan fjalinë «Ana lexon librin» në "
+                  "kryefjalë, kallëzues dhe kundrinë. Parseri bën të njëjtën gjë me kodin.")  # fmt: skip
+    doc.add_paragraph(
+        "Mjeti përdor parserin tree-sitter. Ai është i shpejtë, punon edhe kur kodi ka gabime "
+        "ose nuk kompilohet, dhe nuk kërkon që projekti të ndërtohet. Kjo ka rëndësi, sepse "
+        "projektet e studimit vijnë pa skedarët e ndërtimit (kapitulli 8)."
+    )
+    doc.add_paragraph(
+        "Çmimi është ky: tree-sitter sheh vetëm sintaksën. Ai e di që në kod shkruhet "
+        "«customer.getName()», por nuk e di me siguri se cila klasë është customer në gjithë "
+        "projektin. Mjeti mbledh vetëm këto fakte sintakse: emra të thjeshtë, «this.x» dhe "
+        "«marrësi.anëtari». Me qëllim nuk përpiqet të zgjidhë çdo emër, sepse një zgjidhje e "
+        "hamendësuar do të ishte më e rrezikshme se një refuzim."
+    )
+    doc.add_paragraph(
+        "Nga pema, mjeti ndërton një model të thjeshtë të projektit: klasat, fushat, metodat, "
+        "parametrat dhe çka përdor secila metodë. Çdo klasë lexohet vetëm një herë, dhe të "
+        "gjitha matjet llogariten nga ky model."
+    )
+    _idea(doc, "Mjeti e kthen kodin në një pemë dhe punon mbi pemën, jo mbi tekstin.")
+    _check(doc, [
+        ("Çka bën një parser?", "E kthen tekstin e kodit në strukturë, në një pemë sintakse."),
+        ("Pse tree-sitter?", "Sepse është i shpejtë, punon edhe me kod që nuk kompilohet, dhe "
+                             "nuk kërkon ndërtimin e projektit."),
+        ("Çka nuk di tree-sitter?", "Nuk i zgjidh emrat në gjithë projektin: nuk di me siguri "
+                                    "se cilës klasë i përket një emër."),
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 5, "Metrikat: kodi i kthyer në numra",
+             "Në këtë kapitull mëson çka është një metrikë, dhe llogarit me dorë disa prej tyre "
+             "mbi një shembull të vogël.")
+    doc.add_paragraph(
+        "Një metrikë është një numër që përshkruan kodin. Mjeku të mat presionin, temperaturën "
+        "dhe peshën: asnjë numër i vetëm nuk jep diagnozë, por bashkë po. Njësoj, mjeti mat "
+        f"{len(reference['metrics']['class'])} metrika për çdo klasë dhe "
+        f"{len(reference['metrics']['method'])} për çdo metodë, gjithsej {f['metrics']}."
     )
     for level, title in (("class", "Metrikat e klasës"), ("method", "Metrikat e metodës")):
         doc.add_heading(title, level=2)
@@ -2745,202 +3240,436 @@ def build_knowledge(f: dict) -> str:
             [name, vocab["metrics"][name]["name"], vocab["metrics"][name]["what"]]
             for name in reference["metrics"][level]
         ])  # fmt: skip
+    doc.add_heading("Shembull i llogaritur me dorë", level=2)
+    doc.add_paragraph("Merr këtë klasë të vogël:")
+    _code(doc, EXAMPLE_SHOP.splitlines())
+    doc.add_paragraph("Për metodën total(), llogaritja me dorë jep:")
+    _grid(doc, ["Metrika", "Si numërohet", "Vlera"], [
+        ["MLOC (rreshtat)", "Numërohen rreshtat që kanë kod, bashkë me rreshtin e emrit të "
+         "metodës. Rreshtat bosh, komentet dhe rreshtat që kanë vetëm «}» nuk numërohen.",
+         f"{total['MLOC']:g}"],
+        ["CC (rrugët)", "Nis nga 1 dhe shton 1 për çdo vendim: for (+1), if (p > 0) (+1), "
+         "if (member && …) (+1), dhe && (+1).", f"{total['CC']:g}"],
+        ["MAXNESTING (thellësia)", "for është niveli 1, if brenda tij niveli 2. If-i i dytë "
+         "është vetëm niveli 1.", f"{total['MAXNESTING']:g}"],
+        ["NP (parametrat)", "prices dhe member.", f"{total['NP']:g}"],
+    ])  # fmt: skip
     doc.add_paragraph(
-        "Burimet: Chidamber & Kemerer (1994) për WMC, CBO, DIT, NOC, RFC dhe LCOM; McCabe "
-        "(1976) për kompleksitetin ciklomatik; Bieman & Kang (1995) për TCC; Lanza & Marinescu "
-        "(2006) për metrikat e rregullave të tyre."
+        "Këto janë saktësisht vlerat që jep mjeti kur e mat këtë kod. WMC e klasës është shuma "
+        f"e CC-së së të gjitha metodave: këtu ka vetëm një metodë, ndaj WMC = "
+        f"{shop_classes['Shop']['WMC']:g}."
     )
-
-    # --- 7 ---
-    doc.add_heading("7. Qasja A: rregullat", level=1)
+    doc.add_heading("Kohezioni (TCC): a lidhen metodat mes tyre?", level=2)
+    _code(doc, EXAMPLE_ACCOUNT.splitlines())
     doc.add_paragraph(
-        "Një rregull gjetjeje është një kombinim kushtesh mbi metrika, me pragje. Shumica vijnë "
-        "nga Lanza & Marinescu (2006). Kur të gjitha kushtet plotësohen, kodi shënohet."
+        "TCC shikon çiftet e metodave publike dhe pyet: a përdorin të dyja të paktën një fushë "
+        "të përbashkët? Këtu ka tri metoda, pra tri çifte. deposit dhe report përdorin të dyja "
+        "balance: të lidhura. deposit dhe notify: jo. report dhe notify: jo. Pra 1 nga 3 çifte, "
+        f"TCC = {account_classes['Account']['TCC']:.2f}. Vlera e ulët do të thotë që klasa bën "
+        "gjëra që nuk lidhen me njëra-tjetrën."
+    )
+    doc.add_heading("Të dhënat e huaja (ATFD, LAA, FDP)", level=2)
+    doc.add_paragraph(
+        "Kthehu te metoda label() e kapitullit 2. Ajo lexon gjashtë të dhëna të Customer përmes "
+        "metodave get, dhe dy fusha të klasës së vet (customer dhe amount). Mjeti mat:"
+    )
+    _list(doc, [
+        f"ATFD = {label['ATFD']:g}: sa të dhëna të huaja lexon.",
+        f"LAA = {label['LAA']:.2f}: pjesa e të dhënave që janë të klasës së vet (2 nga 8).",
+        f"FDP = {label['FDP']:g}: nga sa klasa të huaja vijnë të dhënat (vetëm Customer).",
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Burimet e metrikave: Chidamber & Kemerer (1994) për WMC, CBO, DIT, NOC, RFC dhe LCOM; "
+        "McCabe (1976) për CC; Bieman & Kang (1995) për TCC; Lanza & Marinescu (2006) për ATFD, "
+        "LAA, FDP, WOC dhe metrikat e tjera të rregullave të tyre."
+    )
+    _idea(doc, "Metrikat janë numra të thjeshtë për kodin; bashkë tregojnë ku ka probleme.")
+    _check(doc, [
+        ("Sa është CC për një metodë pa asnjë if, for ose while?", "1."),
+        ("Pse numërohet && te CC?", "Sepse krijon një rrugë tjetër: kushti mund të ndalet pas "
+                                    "pjesës së parë."),
+        ("Çka do të thotë TCC = 0?", "Asnjë çift metodash nuk përdor fusha të përbashkëta: "
+                                     "klasa bën gjëra krejt të palidhura."),
+        ("Çka mat LAA?", "Sa nga të dhënat që përdor një metodë janë të klasës së vet."),
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 6, "Qasja A: rregullat e botuara",
+             "Në këtë kapitull mëson si i kthejnë rregullat metrikat në një vendim «ka erë / nuk "
+             "ka», dhe pse ky vendim humbet shumë raste.")
+    doc.add_paragraph(
+        "Një rregull gjetjeje (detection strategy) është një kombinim kushtesh mbi metrika. Kur "
+        "të gjitha kushtet plotësohen, kodi shënohet. Shumica e rregullave vijnë nga libri i "
+        "Lanza-s dhe Marinescu-t «Object-Oriented Metrics in Practice» (2006)."
     )
     _grid(doc, ["Era", "Rregulli", "Burimi"], [
         [_words(s["smell"]), s["formula"], s["title"]] for s in reference["strategies"]
     ])  # fmt: skip
     doc.add_paragraph(
         "Fjalët e mëdha në rregulla janë emra për vlerat më poshtë; te rregullat e klasës, HIGH "
-        "dhe VERY_HIGH janë HIGH_WMC dhe VERY_HIGH_WMC. Burimi i secilës vlerë është shënuar "
-        "pranë saj te backend/javasmell/detectors/thresholds.py."
+        "dhe VERY_HIGH janë HIGH_WMC dhe VERY_HIGH_WMC."
     )
     _grid(doc, ["Emri", "Vlera"], [
         [name, f"{value:.2f}" if isinstance(value, float) and value != int(value) else f"{value:g}"]
         for name, value in q.items()
     ])  # fmt: skip
     doc.add_paragraph(
-        f"Shembull me fjalë: God Class do të thotë WMC ≥ {q['VERY_HIGH_WMC']}, TCC < 1/3 dhe "
-        f"ATFD > {q['FEW']}. Pra klasa bën shumë punë, pjesët e saj nuk lidhen me njëra-tjetrën, "
-        "dhe merr shumë të dhëna nga klasat e tjera."
+        f"Lexoje me fjalë rregullin e God Class: WMC ≥ {q['VERY_HIGH_WMC']} DHE TCC < 1/3 DHE "
+        f"ATFD > {q['FEW']}. Pra: klasa bën shumë punë, pjesët e saj nuk lidhen me njëra-tjetrën, "
+        "dhe merr shumë të dhëna nga klasat e tjera. Të tria duhet të jenë të vërteta."
     )
     doc.add_heading("Mjeti thotë edhe pse", level=2)
     doc.add_paragraph(
-        "Një detektor nuk kthen vetëm «po» ose «jo», por kushtet që kontrolloi, p.sh. «WMC = 63 "
-        "(≥ 47)». Kështu ndërfaqja shpjegon pse, punimi tregon cili kusht e shkaktoi gjetjen, "
-        "dhe rëndësia matet nga sa larg pragut është vlera."
+        "Një rregull nuk kthen vetëm «po» ose «jo». Kthen kushtet që kontrolloi, me vlerën e "
+        "matur, si te shembulli i kapitullit 2: «ATFD = 6 (> 5)». Kështu ndërfaqja i shpjegon "
+        "programuesit pse, dhe punimi mund të tregojë cili kusht e shkaktoi gjetjen."
     )
-    t = reference["thresholds"]
-    doc.add_heading("Rëndësia: minor, major, critical", level=2)
+    doc.add_heading("Sa e rëndë është era", level=2)
     doc.add_paragraph(
-        "Për çdo kusht llogaritet sa herë e kalon vlera pragun, si raport. Merret mesatarja e "
-        f"këtyre raporteve (secili me tavan {t['excess_cap']:g}, që një vlerë e vetme ekstreme "
-        f"të mos e bëjë gjithçka critical). Nën {t['severity_major']:g} është minor, nën "
-        f"{t['severity_critical']:g} major, dhe ndryshe critical. Shembull: një metodë me 60 "
-        f"rreshta, me prag {t['long_method_loc']:g}, ka raport 2.0, pra major. Shkalla është e "
-        "njëjtë me atë të MLCQ-së, që rezultatet të krahasohen pa përkthim."
+        "Për çdo kusht, mjeti llogarit sa herë e kalon vlera kufirin, si raport. Merr mesataren "
+        f"e raporteve, secili me tavan {t['excess_cap']:g}, që një vlerë e vetme ekstreme të mos "
+        f"e bëjë gjithçka të rëndë. Nën {t['severity_major']:g} era është minor (e lehtë), nën "
+        f"{t['severity_critical']:g} major (e mesme), dhe ndryshe critical (e rëndë). Shembull: "
+        f"një metodë me 60 rreshta, me kufi {t['long_method_loc']:g}, ka raport 60 / "
+        f"{t['long_method_loc']:g} = {60 / t['long_method_loc']:.1f}, pra major. Kjo shkallë është "
+        "e njëjtë me atë të MLCQ-së, që rezultatet të krahasohen drejtpërdrejt."
     )
     doc.add_heading("Vlerat pa burim të botuar", level=2)
     doc.add_paragraph(
-        f"Katër pragje nuk kanë burim të botuar: {t['long_method_loc']:g} rreshta për Long "
-        f"Method, CC {t['brain_method_cc']:g} dhe thellësia {t['brain_method_nesting']:g} për "
-        f"Brain Method, dhe thellësia {t['deep_nesting']:g} për Deep Nesting. Edhe tri vlerat e "
-        "rëndësisë janë të tuat. Punimi e thotë hapur. Pragu i Long Method u provua me vlera të "
-        "ndryshme dhe u kalibrua kundrejt MLCQ-së; të tjerët nuk mund të provohen, sepse MLCQ "
+        f"Katër kufij nuk kanë burim të botuar: {t['long_method_loc']:g} rreshta për Long Method, "
+        f"CC {t['brain_method_cc']:g} dhe thellësia {t['brain_method_nesting']:g} për Brain "
+        f"Method, dhe thellësia {t['deep_nesting']:g} për Deep Nesting. Edhe tri vlerat e "
+        "rëndësisë janë të autorit. Punimi e thotë hapur. Kufiri i Long Method u provua me vlera "
+        "të ndryshme dhe u kalibrua kundrejt MLCQ-së; të tjerët nuk mund të provohen, sepse MLCQ "
         "nuk ka etiketa për Brain Method dhe Deep Nesting."
     )
+    doc.add_heading("Problemi i rregullave", level=2)
     doc.add_paragraph(
-        "Problemi i rregullave: numrat janë fiksë dhe të përcaktuar mbi kod tjetër. Rezultati: "
-        "kur alarmojnë zakonisht kanë të drejtë, por humbasin shumicën e rasteve."
+        "Numrat e rregullave janë fiksë dhe të caktuar duke parë kod tjetër. Rezultati, që do ta "
+        f"shohësh te kapitulli 10: kur alarmojnë zakonisht kanë të drejtë (precision "
+        f"{min(precision):.0%}–{max(precision):.0%}), por humbasin shumicën e rasteve: nga 100 "
+        f"erëra të vërteta gjejnë vetëm {lowest:.0f} deri {highest:.0f}."
     )
+    _analogy(doc, "Një roje që lë të hyjë vetëm kë ka mbi dy metra gjatësi do të ndalë vërtet "
+                  "disa njerëz të rrezikshëm, por do t'i lërë të hyjnë shumicën e tyre.")  # fmt: skip
+    _idea(doc, "Rregullat janë të sakta kur alarmojnë, por të rrepta: i humbasin shumicën e "
+               "erërave.")  # fmt: skip
+    _check(doc, [
+        ("Kur fiton God Class?", f"Kur WMC ≥ {q['VERY_HIGH_WMC']}, TCC < 1/3 dhe ATFD > {q['FEW']}, "
+                                 "të tria njëkohësisht."),
+        ("Pse rregulli kthen kushtet dhe jo vetëm po/jo?",
+         "Që programuesi të shohë pse, dhe punimi të tregojë cili kusht e shkaktoi gjetjen."),
+        ("Një metodë ka 90 rreshta. Sa e rëndë është, sipas Long Method?",
+         f"Raporti është 90 / {t['long_method_loc']:g} = {90 / t['long_method_loc']:.1f}, mbi "
+         f"{t['severity_critical']:g}, pra critical."),
+    ])  # fmt: skip
 
-    # --- 8 ---
-    doc.add_heading("8. Qasja B: mësimi makinerik", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 7, "Qasja B: mësimi makinerik nga e para",
+             "Në këtë kapitull mëson çka do të thotë që një kompjuter «mëson», dhe si punojnë "
+             "katër modelet e punimit.")
     doc.add_paragraph(
-        "Si e dallon një shalqi të pjekur? Rregulli thotë «nëse tingëllon bosh». Mësimi "
-        "makinerik thotë: «më trego një mijë shalqinj që dikush i provoi, dhe unë e gjej vetë "
-        f"kufirin». Modeli merr të njëjtat {f['metrics']} metrika si hyrje dhe etiketën e "
-        "njeriut si përgjigje, dhe e mëson vetë kufirin."
+        "Si e dallon një shalqi të pjekur? Mund të kesh një rregull: «nëse tingëllon bosh, është "
+        "i pjekur». Ose mund të provosh një mijë shalqinj, t'i shënosh cilët ishin të pjekur, dhe "
+        "të mësosh vetë kufirin nga përvoja. Kjo e dyta është ideja e mësimit makinerik "
+        "(machine learning)."
     )
-    winners = {s: ml["per_smell"][s]["best_model"] for s in smells}
+    _grid(doc, ["Fjala", "Në punim"], [
+        ["Shembull (sample)", "Një klasë ose metodë e gjykuar nga një njeri"],
+        ["Tipare (features)", f"{f['metrics']} metrikat e saj"],
+        ["Etiketë (label)", "Përgjigjja e njeriut: ka erë apo jo"],
+        ["Mësim (training)", "Modeli sheh shumë shembuj me etiketë dhe gjen kufirin"],
+        ["Provë (testing)", "Modeli gjykon shembuj që nuk i ka parë, dhe krahasohet me njerëzit"],
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Rreziku më i madh quhet mbipërshtatje (overfitting): modeli i mëson përmendësh shembujt "
+        "e mësimit në vend që të mësojë rregullin. Del i shkëlqyer mbi ata shembuj dhe i dobët "
+        "mbi të rinjtë. Prandaj modeli provohet gjithmonë mbi shembuj që nuk i ka parë "
+        "(kapitulli 9)."
+    )
+    _analogy(doc, "Një student që mëson përmendësh përgjigjet e provimit të vjetër merr notë të "
+                  "lartë vetëm nëse provimi përsëritet. Me pyetje të reja, ngec.")  # fmt: skip
+    doc.add_heading("Katër modelet", level=2)
     explain = {
-        "logistic": "I jep çdo metrike një peshë, i mbledh dhe e kthen shumën në probabilitet. "
-        "I thjeshtë dhe i shpjegueshëm.",
-        "random_forest": "Qindra pemë vendimi, si loja «20 pyetje», secila pak ndryshe; ato "
-        "votojnë.",
-        "gradient_boosting": "Pemë njëra pas tjetrës; secila ndreq gabimet e së mëparshmes.",
-        "majority": "Thotë gjithmonë përgjigjen më të shpeshtë («i pastër»). Pikë krahasimi që "
-        "çdo model duhet ta kalojë.",
+        "majority": "Thotë gjithmonë përgjigjen më të shpeshtë («i pastër»). Nuk mëson asgjë: "
+        "është pika e krahasimit që çdo model tjetër duhet ta kalojë.",
+        "logistic": "I jep çdo metrike një peshë, i mbledh, dhe e kthen shumën në një gjasë nga "
+        "0 deri në 1. Mbi gjysmën thotë «ka erë». I thjeshtë dhe i shpjegueshëm.",
+        "random_forest": "Shumë pemë vendimi, secila si loja «20 pyetje» («a ka MLOC mbi 30? "
+        "a ka CC mbi 4?…»), dhe secila e mëson pak ndryshe. Në fund votojnë. Punimi përdor 300 "
+        "pemë.",
+        "gradient_boosting": "Pemë njëra pas tjetrës: çdo pemë e re përpiqet të ndreqë gabimet "
+        "e të mëparshmeve.",
     }
     _grid(doc, ["Modeli", "Si punon", "Fitoi te"], [
         [MODEL_EN[m], text, _dhe([SMELL_SQ[s] for s in smells if winners[s] == m]) or "–"]
         for m, text in explain.items()
     ])  # fmt: skip
     doc.add_paragraph(
-        "Pse jo deep learning: të dhënat janë të vogla dhe në tabelë, modelet duhet të "
-        "shpjegohen, dhe gjithçka duhej të punonte në një laptop pa kosto."
+        "Erërat janë të rralla: shumica e kodit është i pastër. Nëse modeli nuk e di këtë, mëson "
+        "të thotë gjithmonë «i pastër». Prandaj çdo model që e lejon i jep më shumë peshë "
+        "shembujve të rrallë (class weight «balanced»). Punimi nuk i shumëfishoi shembujt e "
+        "rrallë, sepse kopjet mund të kalonin nga grupi i mësimit te grupi i provës dhe ta "
+        "prishnin ndarjen sipas projektit (kapitulli 9)."
+    )
+    doc.add_paragraph(
+        "Pse jo deep learning: të dhënat janë të pakta dhe janë një tabelë numrash, modelet duhet "
+        "të shpjegohen, dhe gjithçka duhej të punonte në një laptop pa kartë grafike dhe pa "
+        "kosto. Modelet e thjeshta mjaftuan për t'i mundur rregullat."
     )
     doc.add_paragraph("Metrikat që ndikojnë më shumë te secili model:")
     _list(doc, [
         f"{SMELL_SQ[s]}: " + ", ".join(_metric_name(x) for x in ml["per_smell"][s]["top_features"][:4])
         for s in smells
     ])  # fmt: skip
+    doc.add_paragraph(
+        f"Numrat e rastit që përdorin modelet nisin gjithmonë nga e njëjta farë ({ml['seed']}), "
+        "ndaj kushdo që i rindërton merr saktësisht të njëjtat rezultate."
+    )
+    _idea(doc, "Modeli mëson kufirin nga shembujt e gjykuar nga njerëzit, në vend që ta marrë "
+               "të gatshëm nga një libër.")  # fmt: skip
+    _check(doc, [
+        ("Çka është mbipërshtatja?", "Kur modeli i mëson përmendësh shembujt në vend të "
+                                     "rregullit, dhe dështon me shembuj të rinj."),
+        ("Pse ka një model «majority»?", "Si pikë krahasimi: një model i vërtetë duhet të bëjë më "
+                                         "mirë se ai që thotë gjithmonë «i pastër»."),
+        ("Si punon random forest?", "Shumë pemë vendimi mësojnë secila pak ndryshe dhe në fund "
+                                    "votojnë."),
+        ("Pse nuk u shumëfishuan shembujt e rrallë?", "Sepse kopjet mund ta kalonin ndarjen mes "
+                                                      "mësimit dhe provës."),
+    ])  # fmt: skip
 
-    # --- 9 ---
-    doc.add_heading("9. Të dhënat: MLCQ", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 8, "Të dhënat: MLCQ dhe korpusi",
+             "Në këtë kapitull mëson nga vijnë përgjigjet e njerëzve, dhe çka u desh për t'i "
+             "lidhur me kodin.")
+    doc.add_paragraph(
+        "Për ta provuar një detektor, të duhet një «çelës përgjigjesh»: kod për të cilin njerëz "
+        "me përvojë kanë thënë «ka erë» ose «nuk ka». Punimi përdor MLCQ (Madeyski & Lewowski, "
+        "2020), një bazë publike të dhënash."
+    )
     _list(doc, [
-        "MLCQ (Madeyski & Lewowski, 2020) është një bazë publike: 26 programues profesionistë "
-        "shqyrtuan kod të vërtetë Java me burim të hapur dhe dhanë rreth 15 mijë vlerësime, në "
-        "shkallën none, minor, major, critical.",
-        "Kur një mostër ka disa vlerësues, etiketa merret nga mesatarja e vlerësimeve të tyre.",
-        f"Nga {dataset['samples_considered']:,} mostra të shqyrtuara, {f['samples']:,} u gjetën "
-        "në kod. Të tjerat humbën sepse skedari mungonte, kishte gabime sintakse, ose rreshtat "
-        "nuk përputheshin.",
+        "26 programues profesionistë shqyrtuan kod të vërtetë Java me burim të hapur dhe dhanë "
+        "rreth 15 mijë vlerësime.",
+        "Çdo vlerësim është në shkallën none, minor, major, critical: pa erë, e lehtë, e mesme, "
+        "e rëndë.",
+        "Shpesh e njëjta copë kodi ka disa vlerësues. Etiketa e punimit merret nga mesatarja e "
+        "vlerësimeve të tyre.",
+        f"MLCQ tregon vetëm ku ndodhet kodi. Punimi shkarkoi projektet dhe e gjeti çdo mostër në "
+        f"kod: nga {dataset['samples_considered']:,} mostra u gjetën {f['samples']:,}. Të tjerat "
+        "humbën sepse skedari mungonte, kishte gabime sintakse, ose rreshtat nuk përputheshin.",
         f"MLCQ përmend {dataset['repositories']} projekte; disa nuk ishin më të arritshme, ndaj "
         f"mostrat vijnë nga {f['repositories']}.",
-        "Korpusi mban vetëm skedarët .java, pa skedarë ndërtimi dhe pa librari. Kjo ka rëndësi "
-        "te kontrolli me javac (pjesa 13).",
+        "Projektet e shkarkuara quhen korpus. Korpusi mban vetëm skedarët .java, pa skedarët e "
+        "ndërtimit dhe pa libraritë. Kjo ka rëndësi te kontrolli me javac (kapitulli 12).",
+    ])  # fmt: skip
+    _idea(doc, "Rezultatet krahasohen me gjykimin e programuesve profesionistë, jo me mendimin e "
+               "autorit.")  # fmt: skip
+    _check(doc, [
+        ("Kush i etiketoi të dhënat?", "26 programues profesionistë, në bazën publike MLCQ."),
+        ("Pse u humbën disa mostra?", "Sepse skedari mungonte, kishte gabime sintakse, ose "
+                                      "rreshtat nuk përputheshin me kodin."),
+        ("Si bëhet etiketa kur ka disa vlerësues?", "Merret mesatarja e vlerësimeve të tyre."),
     ])  # fmt: skip
 
-    # --- 10 ---
-    doc.add_heading("10. Si matet nëse një detektor është i mirë", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 9, "Si matet nëse një detektor është i mirë",
+             "Në këtë kapitull mëson matricën e konfuzionit, precision, recall dhe MCC, me "
+             "llogaritje të plota, dhe pse të dhënat ndahen sipas projektit.")
+    doc.add_heading("Matrica e konfuzionit", level=2)
+    blob_total = blob["tp"] + blob["fp"] + blob["tn"] + blob["fn"]
     doc.add_paragraph(
-        f"Matrica e konfuzionit, me rregullat për Blob mbi "
-        f"{blob['tp'] + blob['fp'] + blob['tn'] + blob['fn']:,} mostra:"
+        f"Merr rregullat për Blob mbi {blob_total:,} mostra. Çdo mostër bie në njërën nga katër "
+        "kutitë:"
     )
     _grid(doc, ["", "Njerëzit: erë", "Njerëzit: e pastër"], [
-        ["Mjeti: erë", f"{blob['tp']} (saktë)", f"{blob['fp']} (alarm i rremë)"],
-        ["Mjeti: e pastër", f"{blob['fn']} (e humbur)", f"{blob['tn']:,} (saktë)"],
+        ["Mjeti: erë", f"{blob['tp']} (TP, saktë)", f"{blob['fp']} (FP, alarm i rremë)"],
+        ["Mjeti: e pastër", f"{blob['fn']} (FN, e humbur)", f"{blob['tn']:,} (TN, saktë)"],
     ])  # fmt: skip
+    f1 = 2 * blob["precision"] * blob["recall"] / (blob["precision"] + blob["recall"])
+    accuracy = (blob["tp"] + blob["tn"]) / blob_total
     _list(doc, [
-        f"Precision = {blob['tp']} / ({blob['tp']} + {blob['fp']}) = {blob['precision']:.0%}: "
-        "kur thotë «erë», ka të drejtë kaq shpesh.",
-        f"Recall = {blob['tp']} / ({blob['tp']} + {blob['fn']}) = {blob['recall']:.0%}: nga "
-        "erërat e vërteta, kap vetëm kaq.",
-        f"Kurthi i saktësisë: te Feature Envy vetëm {envy['support_positive']} nga "
-        f"{envy_total:,} mostra kanë erë. Një «detektor» që thotë gjithmonë «i pastër» del "
-        f"{majority:.1%} i saktë, edhe pse nuk ka mësuar asgjë.",
-        "Prandaj MCC: nga −1 në +1, ku 0 do të thotë sa hamendja dhe +1 i përsosur. I përdor "
-        "të katër qelizat e matricës, ndaj detektori që thotë gjithmonë «i pastër» merr 0.",
-        f"Ndarja sipas projektit: të dhënat ndahen në {ml['folds']} grupe projektesh; modeli "
-        "mëson nga katër dhe provohet te i pesti, me radhë. Asnjë model nuk provohet mbi një "
-        "projekt nga i cili ka mësuar, sepse kodi i një projekti ka të njëjtin stil e të "
-        "njëjtët emra, dhe modeli do ta njihte projektin në vend të erës.",
-        f"Bootstrap: projektet rizgjidhen rastësisht me kthim {resamples:,} herë, dhe ndryshimi "
-        "model − rregulla llogaritet çdo herë. 95% e mesme e këtyre vlerave është intervali i "
-        "besimit. Nëse i gjithë intervali është mbi zero, modeli është vërtet më i mirë.",
-        f"Fara e fiksuar ({ml['seed']}): numrat e rastit janë të njëjtët në çdo ekzekutim, ndaj "
-        "kushdo i rimerr të njëjtat rezultate.",
+        f"Precision = TP / (TP + FP) = {blob['tp']} / ({blob['tp']} + {blob['fp']}) = "
+        f"{blob['precision']:.1%}. Kur thotë «erë», ka të drejtë kaq shpesh.",
+        f"Recall = TP / (TP + FN) = {blob['tp']} / ({blob['tp']} + {blob['fn']}) = "
+        f"{blob['recall']:.1%}. Nga erërat e vërteta, gjen kaq.",
+        f"F1 = 2 · P · R / (P + R) = {f1:.3f}. Një notë që i bashkon të dyja.",
+        f"Saktësia (accuracy) = (TP + TN) / gjithsej = {accuracy:.1%}. Duket e mirë, por mashtron.",
+    ])  # fmt: skip
+    doc.add_heading("Kurthi i saktësisë", level=2)
+    doc.add_paragraph(
+        f"Te Feature Envy vetëm {envy['support_positive']} nga {envy_total:,} mostra kanë erë. "
+        f"Një «detektor» që thotë gjithmonë «i pastër» del {majority:.1%} i saktë, edhe pse nuk "
+        "ka gjetur asnjë erë. Prandaj saktësia nuk mjafton kur erërat janë të rralla."
+    )
+    doc.add_heading("MCC: nota që nuk mashtrohet", level=2)
+    numerator = blob["tp"] * blob["tn"] - blob["fp"] * blob["fn"]
+    product = ((blob["tp"] + blob["fp"]) * (blob["tp"] + blob["fn"])
+               * (blob["tn"] + blob["fp"]) * (blob["tn"] + blob["fn"]))  # fmt: skip
+    mcc = numerator / product**0.5
+    doc.add_paragraph(
+        "MCC (koeficienti i korrelacionit Matthews) përdor të katër kutitë e matricës. Shkon nga "
+        "−1 në +1: +1 është e përsosur, 0 është sa hamendja, −1 është gjithmonë e kundërta."
+    )
+    _code(doc, [
+        "MCC = (TP·TN − FP·FN) / √((TP+FP)·(TP+FN)·(TN+FP)·(TN+FN))",
+        "",
+        f"    = ({blob['tp']}·{blob['tn']} − {blob['fp']}·{blob['fn']}) / "
+        f"√({blob['tp'] + blob['fp']}·{blob['tp'] + blob['fn']}·{blob['tn'] + blob['fp']}·"
+        f"{blob['tn'] + blob['fn']})",
+        f"    = {numerator:,} / {product**0.5:,.0f}",
+        f"    = {mcc:.3f}",
+    ])  # fmt: skip
+    doc.add_paragraph(
+        f"Pra rregullat për Blob kanë MCC {mcc:.2f}, edhe pse saktësia e tyre është "
+        f"{accuracy:.0%}. Detektori që thotë gjithmonë «i pastër» merr MCC 0."
+    )
+    doc.add_heading("Ndarja sipas projektit", level=2)
+    doc.add_paragraph(
+        "Kodi i një projekti ka të njëjtin stil, të njëjtat emra dhe shpesh të njëjtët autorë. "
+        "Nëse modeli mëson nga një pjesë e projektit dhe provohet te një pjesë tjetër e të "
+        "njëjtit projekt, ai mund ta njohë projektin, jo erën. Ky gabim quhet rrjedhje e të "
+        "dhënave (data leakage), dhe është gjëja e parë që kontrollon një recensent."
+    )
+    doc.add_paragraph(
+        f"Prandaj projektet ndahen në {ml['folds']} grupe. Modeli mëson nga katër grupe dhe "
+        "provohet te i pesti; pastaj rrotullohet, derisa çdo grup të jetë provuar një herë. Çdo "
+        "mostër parashikohet nga një model që nuk e ka parë kurrë projektin e saj."
+    )
+    _analogy(doc, "Nuk e provon studentin me pyetjet që i ke dhënë për ushtrim. Merr pyetje nga "
+                  "një libër që nuk e ka hapur.")  # fmt: skip
+    doc.add_heading("Bootstrap: a është ndryshimi i vërtetë apo fat?", level=2)
+    resamples = f["resamples"]
+    doc.add_paragraph(
+        f"Modeli del më i mirë se rregullat. Por a do të dilte i tillë edhe me projekte të "
+        f"tjera? Për ta parë, projektet hidhen në një thes dhe nxirren rastësisht, me kthim, "
+        f"aq sa janë, dhe ndryshimi model − rregulla rillogaritet. Kjo përsëritet {resamples:,} "
+        "herë. 95% e mesme e këtyre vlerave quhet interval besimi. Nëse i gjithë intervali është "
+        "mbi zero, përmirësimi nuk është fat."
+    )
+    _idea(doc, "MCC e mat saktë kur erërat janë të rralla; ndarja sipas projektit dhe bootstrap "
+               "e bëjnë provën të drejtë.")  # fmt: skip
+    _check(doc, [
+        ("Pse saktësia mashtron te Feature Envy?",
+         f"Sepse kodi është pothuajse gjithë i pastër: «gjithmonë i pastër» del {majority:.1%} i "
+         "saktë pa gjetur asgjë."),
+        ("Çka do të thotë MCC 0?", "Sa hamendja: detektori nuk ka mësuar asgjë."),
+        ("Çka është rrjedhja e të dhënave?", "Kur modeli provohet mbi diçka që e ka parë gjatë "
+                                             "mësimit, p.sh. mbi të njëjtin projekt."),
+        ("Kur themi që përmirësimi nuk është fat?", "Kur intervali 95% i ndryshimit është i "
+                                                    "gjithi mbi zero."),
     ])  # fmt: skip
 
-    # --- 11 ---
-    doc.add_heading("11. Rezultatet e gjetjes së erërave", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 10, "Rezultatet e gjetjes së erërave",
+             "Në këtë kapitull sheh çka gjetën rregullat dhe modelet, erë për erë, dhe si "
+             "krahasohen me mjete dhe punime të tjera.")
     rows = []
     for s in smells:
         rule, model = f["strategy"][s], f["best"][s]
         diff = intervals[s]["intervals"]["difference_model_minus_rules"]
-        rows.append([
-            SMELL_SQ[s],
-            f"{rule['precision']:.2f} / {rule['recall']:.2f} / {rule['mcc']:.2f}",
-            MODEL_EN[winners[s]],
-            f"{model['precision']:.2f} / {model['recall']:.2f} / {model['mcc']:.2f}",
-            f"{diff['low']:+.2f} … {diff['high']:+.2f}",
-            "po" if diff["low"] > 0 else "jo, përfshin zeron",
-        ])
-    _grid(doc, ["Era", "Rregullat P / R / MCC", "Modeli", "Modeli P / R / MCC",
-                "B − A, 95%", "I sigurt?"], rows)  # fmt: skip
-    b = f["best"]["blob"]
+        rows.append([SMELL_SQ[s], f"{rule['precision']:.2f} / {rule['recall']:.2f} / {rule['mcc']:.2f}",
+                     MODEL_EN[winners[s]],
+                     f"{model['precision']:.2f} / {model['recall']:.2f} / {model['mcc']:.2f}",
+                     f"{diff['low']:+.2f} … {diff['high']:+.2f}",
+                     "po" if diff["low"] > 0 else "jo, përfshin zeron"])  # fmt: skip
+    _grid(doc, ["Era", "Rregullat P / R / MCC", "Modeli", "Modeli P / R / MCC", "B − A, 95%",
+                "I sigurt?"], rows)  # fmt: skip
+    doc.add_heading("Si ta lexosh tabelën", level=2)
     _list(doc, [
-        "Rregullat kanë të drejtë kur alarmojnë, por kapin pak. Modelet kapin shumë më tepër, "
-        f"me më shumë alarme të rreme. Te Blob: rregullat P {blob['precision']:.0%} dhe R "
-        f"{blob['recall']:.0%}, modeli P {b['precision']:.0%} dhe R {b['recall']:.0%}.",
+        f"Nga çdo 100 erëra të vërteta, rregullat gjejnë {lowest:.0f} deri {highest:.0f}; "
+        f"modelet {min(found):.0f} deri {max(found):.0f}.",
+        "Modelet gjejnë shumë më tepër, por zakonisht me më shumë alarme të rreme: te Blob, "
+        f"rregullat kanë precision {blob['precision']:.0%}, modeli "
+        f"{f['best']['blob']['precision']:.0%}.",
+        f"Përmirësimi është i sigurt te {_dhe(f['sure'])}. Te {_dhe(f['unsure'])} intervali "
+        "përfshin zeron, ndaj mund të jetë fat.",
         f"Edhe algoritmi më i dobët i mund rregullat te {f['weakest']} nga {len(smells)} "
-        "erërat, ndaj përfundimi nuk varet nga zgjedhja e modelit më të mirë.",
+        "erërat: përfundimi nuk varet nga zgjedhja e modelit më të mirë.",
+    ])  # fmt: skip
+    doc.add_heading(f"Krahasimi me PMD {pmd['pmd_version']}", level=2)
+    doc.add_paragraph(
+        "PMD është një mjet falas dhe shumë i përdorur për analizën e kodit. U ekzekutua me "
+        "pragjet e veta mbi të njëjtat mostra. Ndryshimi është yni minus i PMD-së."
+    )
+    _grid(doc, ["Era", "PMD MCC", "MCC ynë", "Ndryshimi, 95%"], [
+        [PMD_NAMES.get(key, key), f"{e['pmd']['mcc']:.2f}",
+         "–" if e.get("ours") is None else f"{e['ours']['mcc']:.2f}",
+         "–" if e.get("difference") is None
+         else f"{e['difference']['low']:+.2f} … {e['difference']['high']:+.2f}"]
+        for key, e in pmd["by_smell"].items()
+    ])  # fmt: skip
+    closer = [PMD_NAMES.get(key, key) for key, e in pmd["by_smell"].items()
+              if e.get("ours") and e["pmd"]["mcc"] > e["ours"]["mcc"]]  # fmt: skip
+    doc.add_paragraph(
+        ("Me intervalin e besimit, PMD nuk del kurrë përpara. " if not f["pmd_ahead"] else "")
+        + (f"Te {_dhe(closer)} PMD ka numër pak më të lartë, por intervali i ndryshimit e "
+           "përfshin zeron, ndaj nuk mund të thuhet që është përpara. " if closer else "")
+        + f"Te {_dhe(f['pmd_behind'])} rregullat tona janë qartë më të mira. PMD nuk ka rregull "
+        "për Feature Envy; LawOfDemeter është më i afërti. Me SonarQube nuk u krahasua."
+    )  # fmt: skip
+    doc.add_heading("Krahasimi me literaturën", level=2)
+    _grid(doc, ["Era", "Rregullat (A)", "Modeli (B)", "Madeyski & Lewowski 2023"], [
+        [SMELL_SQ[s], f"{f['strategy'][s]['mcc']:.2f}", f"{f['best'][s]['mcc']:.2f}",
+         MADEYSKI_2023_DS1[s]] for s in smells
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Ata përdorën ndarje rastësore dhe modele të akorduara, që zakonisht japin numra më të "
+        "lartë. Ky punim i ndau sipas projektit dhe nuk i akordoi. Rezultatet janë në të njëjtin "
+        "rang."
+    )
+    _idea(doc, "Kufijtë e mësuar i mundin pragjet fikse, qartë te tri nga katër erërat.")
+    _check(doc, [
+        ("Kush gjen më shumë erëra, rregullat apo modelet?",
+         f"Modelet: {min(found):.0f}–{max(found):.0f} nga 100, kundrejt {lowest:.0f}–"
+         f"{highest:.0f} të rregullave."),
+        ("Cili është çmimi i modeleve?", "Zakonisht më shumë alarme të rreme."),
+        ("Te cila erë përmirësimi mund të jetë fat?", f"Te {_dhe(f['unsure'])}."),
     ])  # fmt: skip
 
-    # --- 12 ---
-    doc.add_heading("12. Pse disa erëra mbeten të vështira", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 11, "Kur as njerëzit nuk pajtohen",
+             "Në këtë kapitull mëson pse disa erëra mbeten të vështira për çdo detektor.")
     doc.add_paragraph(
-        "Te mostrat me më shumë se një rishikim, u krahasua çdo çift rishikimesh të së njëjtës "
-        "mostër: a thonë të dy «ka erë» apo jo. MCC mes rishikuesve:"
+        "Te mostrat me më shumë se një vlerësim, punimi krahasoi çdo çift vlerësimesh të së "
+        "njëjtës mostër: a thonë të dy «ka erë» apo jo? Pajtimi u mat me të njëjtën MCC."
     )
     _grid(doc, ["Era", "MCC mes dy rishikuesve", "Kuptimi"], [
         [SMELL_SQ[s], f"{f['reviewers'][s]:.2f}",
-         "sa hamendja" if s in f["chance"] else "pajtim mesatar"]
+         "sa hamendja" if s in f["chance"] else "pajtim i pjesshëm"]
         for s in smells
     ])  # fmt: skip
     doc.add_paragraph(
-        "Nëse mësuesit nuk pajtohen për çelësin e përgjigjeve, nxënësi nuk mund ta mësojë. "
-        "Kufiri nuk është vetëm algoritmi, por vetë përkufizimi i erës. Prandaj te "
-        f"{_dhe(f['unsure'])} modeli nuk i mund qartë rregullat."
+        "Nëse dy mësues nuk pajtohen për çelësin e përgjigjeve, nxënësi nuk mund ta mësojë "
+        "përgjigjen e saktë. Kufiri nuk është vetëm algoritmi: është vetë përkufizimi i erës. "
+        f"Prandaj te {_dhe(f['unsure'])} modeli nuk i mund qartë rregullat."
     )
+    _idea(doc, "Një erë që ekspertët nuk e njohin njësoj nuk mund të mësohet mirë nga asnjë mjet.")
+    _check(doc, [
+        ("Si u mat pajtimi i njerëzve?", "Me MCC mbi çiftet e vlerësimeve të së njëjtës mostër."),
+        ("Çka tregon −0.07 te Feature Envy?", "Që dy ekspertë pajtohen jo më shumë se me hamendje."),
+    ])  # fmt: skip
 
-    # --- 13 ---
-    doc.add_heading("13. Motori i refaktorimit", level=1)
-    doc.add_heading("Kodi si pemë", level=2)
+    # ------------------------------------------------------------------
+    _chapter(doc, 12, "Motori i refaktorimit: si e ndreq kodin pa e prishur",
+             "Në këtë kapitull mëson hapat e motorit, tri ndreqjet, pse refuzon, dhe si kontrollohet "
+             "çdo ndryshim.")
     doc.add_paragraph(
-        "Parseri tree-sitter e kthen tekstin e kodit në një pemë sintakse (AST), si analiza "
-        "gramatikore e një fjalie. «if (x > 0) { total += x; }» bëhet një nyje if me një "
-        "kusht dhe një bllok brenda. Motori punon mbi pemën, jo me «gjej dhe zëvendëso» mbi "
-        "tekst."
+        "Motori është pjesa e vetme e mjetit që mund ta prishë punën e dikujt, sepse e rishkruan "
+        "kodin. Prandaj ndjek rregullin «më mirë refuzo, se sa prish». Ai nuk përdor model "
+        "gjuhësor (LLM): ndreqjet janë transformime të caktuara të pemës, gjithmonë me të njëjtin "
+        "rezultat për të njëjtin kod. Një LLM mund të shkruajë kod që duket i saktë, por nuk e "
+        "vërteton dot sigurinë, dhe mund të japë përgjigje tjetër çdo herë."
     )
-    doc.add_heading("Pse jo një LLM", level=2)
-    doc.add_paragraph(
-        "Rishkrimet duhet të jenë deterministe (gjithmonë i njëjti rezultat), të vërtetueshme "
-        "dhe falas. Një LLM shkruan kod që duket i besueshëm, por nuk i vërteton dot kushtet, "
-        "dhe rezultati ndryshon nga njëri ekzekutim te tjetri. Ky vendim është i shënuar te "
-        "docs/DECISIONS.md."
-    )
+    doc.add_heading("Pesë hapat", level=2)
+    _list(doc, [
+        "Gjej vendin: ku ka një erë që një ndreqje mund ta heqë.",
+        "Kontrollo kushtet paraprake: a mund të vërtetohet nga pema që ndryshimi është i sigurt?",
+        "Llogarit ndryshimin nga pema: ku nis dhe ku mbaron çdo pjesë e kodit e thotë pema, jo "
+        "një kërkim «gjej dhe zëvendëso» në tekst.",
+        "Kontrollo me javac, kompajlerin e Java-s.",
+        "Shkruaj një skedar ndryshimesh (patch). Kodi origjinal nuk preket pa një zgjedhje të qartë.",
+    ])  # fmt: skip
     doc.add_heading("Tri ndreqjet", level=2)
     doc.add_paragraph("Guard Clauses, nga shembulli i vetë motorit:")
     _code(doc, [
@@ -2954,13 +3683,13 @@ def build_knowledge(f: dict) -> str:
     ])  # fmt: skip
     doc.add_paragraph(
         "Pranohet vetëm kjo formë: metodë void, i gjithë trupi një if, pa else. Kushti "
-        "mbështillet me !( … ) dhe nuk kthehet së prapthi me dorë, ndaj mbetet i saktë për "
-        "çdo kusht, edhe për numrat me presje (NaN)."
+        "mbështillet me !( … ) dhe nuk kthehet së prapthi me dorë, ndaj mbetet i saktë për çdo "
+        "kusht, edhe për numrat me presje (NaN), ku a > b dhe a <= b mund të jenë të dy të rremë."
     )
     doc.add_paragraph(
         "Extract Method (shembull ilustrues, jo dalja e saktë e motorit): një pjesë e metodës "
-        "kalon në një metodë të re, dhe hyrjet e saj bëhen parametra. Motori e quan metodën e "
-        "re «extracted»; emrin e mirë e zgjedh programuesi."
+        "kalon në një metodë të re, dhe hyrjet e saj bëhen parametra. Motori e quan metodën e re "
+        "«extracted»; emrin e mirë e zgjedh programuesi."
     )
     _code(doc, [
         "void report(List<Order> orders) {        void report(List<Order> orders) {",
@@ -2975,51 +3704,70 @@ def build_knowledge(f: dict) -> str:
         "Introduce Parameter Object (ilustrues): metoda(a, b, c, d, e, f) bëhet metoda(params), "
         "me një klasë të re që i mban të gjashtë."
     )
-    doc.add_heading("Kushtet paraprake dhe refuzimi", level=2)
+    doc.add_heading("Pse refuzon", level=2)
     doc.add_paragraph(
-        "Mendo për një kirurg: nëse nuk je i sigurt, mos opero. Çdo ndreqje ka kushte "
-        "paraprake. Nëse një kusht nuk vërtetohet dot nga pema, motori refuzon dhe thotë pse. "
-        f"Gjithsej u refuzuan {refused:,} vende ({_pct(f['refused'])}):"
+        "Mendo për një kirurg: nëse nuk je i sigurt, mos opero. Nëse një kusht nuk vërtetohet "
+        f"dot, motori refuzon dhe thotë pse. Gjithsej u refuzuan {refused:,} vende "
+        f"({_pct(f['refused'])}):"
     )
     _grid(doc, ["Arsyeja", "Vende", "Pjesa", "Çka do të thotë"], [
         [reason, f"{count:,}", _pct(count / detected), REASON_SQ.get(reason, "")]
         for reason, count in sorted(refactoring["refused_by_reason"].items(), key=lambda p: -p[1])
     ])  # fmt: skip
+    doc.add_paragraph(
+        "Pse një return e ndalon Extract Method: nëse pjesa që nxirret ka brenda një return, në "
+        "metodën e re ai return do të dilte vetëm nga metoda e re, jo nga metoda origjinale. "
+        "Programi do të vazhdonte aty ku më parë ndalej. Kjo do të ishte ndryshim sjelljeje."
+    )
     doc.add_heading("Kontrolli me javac", level=2)
     doc.add_paragraph(
-        "Meqë korpusi nuk ka skedarë ndërtimi, shumica e skedarëve nuk kompilohen të vetëm as "
-        "para ndryshimit: u mungojnë fqinjët. Prandaj kontrolli është: kompilo para dhe pas, "
-        f"dhe shiko nëse rishkrimi shtoi një lloj të ri gabimi. Nga {applied:,} rishkrimet:"
+        "Korpusi nuk ka skedarë ndërtimi, ndaj shumica e skedarëve nuk kompilohen të vetëm as "
+        "para ndryshimit: u mungojnë klasat fqinje. Prandaj kontrolli është: kompilo para dhe "
+        f"pas, dhe shiko nëse ndryshimi shtoi një lloj të ri gabimi. Nga {applied:,} ndryshimet:"
     )
-    _grid(doc, ["Rezultati", "Rishkrime", "Kuptimi"], [
+    _grid(doc, ["Rezultati", "Ndryshime", "Kuptimi"], [
         [verdict, f"{count:,}", VERDICT_SQ.get(verdict, "")]
         for verdict, count in sorted(refactoring["verdicts"].items(), key=lambda p: -p[1])
     ])  # fmt: skip
     inside = verify["compiled_in_project"]
     doc.add_paragraph(
-        f"Kur {verify['rewrites']} rishkrime u kompiluan brenda projektit të tyre, ato që "
+        f"Kur {verify['rewrites']} ndryshime u kompiluan brenda projektit të tyre, ato që "
         f"kompilohen plotësisht u rritën nga {verify['compiled_alone'].get('compiles', 0)} në "
-        f"{inside.get('compiles', 0)}, dhe {inside.get('new_errors', 0)} shtuan gabim të ri "
-        f"({inside.get('not_checked', 0)} nuk u kontrolluan dot). Pra shumica e rasteve «nuk "
-        "kompilohet» vjen nga skedarët e vetmuar, jo nga rishkrimi."
+        f"{inside.get('compiles', 0)}, dhe vetëm {inside.get('new_errors', 0)} shtuan gabim të ri. "
+        "Pra shumica e rasteve «nuk kompilohet» vjen nga skedarët e vetmuar, jo nga ndryshimi."
     )
-    doc.add_heading("Rezultatet e motorit", level=2)
+    _idea(doc, "Motori ndryshon vetëm atë që vërteton si të sigurt, dhe çdo ndryshim e kontrollon "
+               "me kompajlerin.")  # fmt: skip
+    _check(doc, [
+        ("Pse motori nuk përdor LLM?", "Sepse një LLM nuk e vërteton dot sigurinë dhe nuk jep "
+                                       "gjithmonë të njëjtin rezultat."),
+        ("Pse refuzimi është rezultat i mirë?", "Sepse është më mirë të mos ndryshosh kodin, se "
+                                                "sa ta prishësh."),
+        ("Çka do të thotë «nuk shton lloj të ri gabimi»?",
+         "Skedari mund të mos kompilohej as më parë, por ndryshimi nuk shtoi gabim tjetër."),
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 13, "Rezultatet e motorit",
+             "Në këtë kapitull sheh sa ndryshime bëri motori, sa erëra hoqi, dhe sa ishin të "
+             "pranueshme për një programues.")
     resolution = refactoring["resolution"]
     _list(doc, [
-        f"{detected:,} vende ku mund të zbatohej një ndreqje; {applied:,} u rishkruan "
-        f"({_pct(applied / detected)}): " + ", ".join(f"{_words(k)} {v:,}" for k, v in by_type.items()) + ".",
+        f"{detected:,} vende ku mund të zbatohej një ndreqje; {applied:,} u ndryshuan "
+        f"({_pct(applied / detected)}): " + ", ".join(f"{_words(k)} {v:,}" for k, v in by_type.items())
+        + ".",
         f"Era u zhduk në {resolution['resolved']:,} raste ({_pct(f['resolved'])}), mbeti në "
         f"{resolution['persists']:,}, dhe në {resolution.get('unknown', 0):,} nuk u mat dot.",
-        f"{sum(f['introduced'].values()):,} erëra të reja u shfaqën pas rishkrimit: "
+        f"{sum(f['introduced'].values()):,} erëra të reja u shfaqën: "
         + ", ".join(f"{_words(k)} {v}" for k, v in sorted(f["introduced"].items(), key=lambda p: -p[1]))
         + ". Më shpesh Long Parameter List, sepse metoda e nxjerrë i merr të gjitha hyrjet si "
         "parametra.",
     ])  # fmt: skip
     doc.add_heading("Rishikimi me dorë", level=2)
     doc.add_paragraph(
-        f"Lexove {quality['reviewed']} rishkrime, {quality['per_refactoring']} për çdo ndreqje, "
-        "dhe për secilin vendose: i pranueshëm siç është, i pranueshëm pas një ndreqjeje të "
-        "vogël, ose i refuzuar."
+        f"Autori lexoi {quality['reviewed']} ndryshime, {quality['per_refactoring']} për çdo "
+        "ndreqje, dhe për secilin vendosi: i pranueshëm siç është, i pranueshëm pas një "
+        "ndreqjeje të vogël, ose i refuzuar."
     )
     rows, weighted = [], []
     for name, entry in quality["by_refactoring"].items():
@@ -3028,155 +3776,216 @@ def build_knowledge(f: dict) -> str:
                      str(accept["after_edit"]), str(accept["reject"]), _pct(entry["acceptable"], 0),
                      str(entry["behaviour"]["changed"])])  # fmt: skip
         weighted.append(f"{entry['population']:,} × {entry['acceptable']:.2f}")
-    _grid(doc, ["Ndreqja", "Rishkrime gjithsej", "Siç është", "Pas ndreqjes", "Refuzuar",
+    _grid(doc, ["Ndreqja", "Ndryshime gjithsej", "Siç është", "Pas ndreqjes", "Refuzuar",
                 "E pranueshme", "Sjellja ndryshoi"], rows)  # fmt: skip
     doc.add_paragraph(
-        "Pse «e peshuar»: llojet nuk janë njësoj të shpeshta, ndaj përqindja e përgjithshme "
-        f"peshohet me sa rishkrime ka secili: ({' + '.join(weighted)}) / {applied:,} = "
-        f"{_pct(quality['acceptable_reweighted'])}."
+        "Pse përqindja e përgjithshme është «e peshuar»: llojet nuk janë njësoj të shpeshta. "
+        "Extract Method është shumica e ndryshimeve, ndaj numëron më shumë: "
+        f"({' + '.join(weighted)}) / {applied:,} = {_pct(quality['acceptable_reweighted'])}."
     )
     changed = {_words(name): e["behaviour"]["changed"]
                for name, e in quality["by_refactoring"].items() if e["behaviour"]["changed"]}  # fmt: skip
     doc.add_paragraph(
         "Dije këtë: në rishikim, sjellja dukej se ndryshonte te "
-        + _dhe([f"{count} {'rishkrim' if count == 1 else 'rishkrime'} {name}"
-                for name, count in changed.items()])  # fmt: skip
-        + ". Kjo është pikërisht arsyeja pse punimi thotë «kompilohet» dhe jo «sillet njësoj»."
-    )
-
-    # --- 14 ---
-    doc.add_heading("14. Krahasimet", level=1)
-    doc.add_heading(f"Me PMD {pmd['pmd_version']}", level=2)
-    doc.add_paragraph(
-        "PMD është një analizues statik falas dhe shumë i përdorur. U ekzekutua me pragjet e "
-        "veta, mbi të njëjtat mostra. Ndryshimi është yni minus i PMD-së."
-    )
-    _grid(doc, ["Era", "PMD MCC", "MCC ynë", "Ndryshimi, 95%"], [
-        [PMD_NAMES.get(key, key), f"{e['pmd']['mcc']:.2f}",
-         "–" if e.get("ours") is None else f"{e['ours']['mcc']:.2f}",
-         "–" if e.get("difference") is None
-         else f"{e['difference']['low']:+.2f} … {e['difference']['high']:+.2f}"]
-        for key, e in pmd["by_smell"].items()
-    ])  # fmt: skip
-    closer = [PMD_NAMES.get(key, key) for key, e in pmd["by_smell"].items()
-              if e.get("ours") and e["pmd"]["mcc"] > e["ours"]["mcc"]]  # fmt: skip
-    doc.add_paragraph(
-        ("Me intervalin e besimit, PMD nuk del kurrë përpara."
-         if not f["pmd_ahead"] else f"PMD del përpara te {_dhe(f['pmd_ahead'])}.")
-        + (f" Te {_dhe(closer)} PMD ka numër pak më të lartë, por intervali e përfshin zeron, "
-           "ndaj nuk mund të thuhet që është përpara." if closer else "")
-        + " PMD nuk ka rregull për Feature Envy; LawOfDemeter është më i afërti. Me SonarQube, "
-        "që është komercial, nuk u krahasua."
+        + _dhe([f"{count} {'ndryshim' if count == 1 else 'ndryshime'} {name}"
+                for name, count in changed.items()])
+        + ". Prandaj punimi thotë «kompilohet» dhe jo «sillet njësoj»."
     )  # fmt: skip
-    doc.add_heading("Me literaturën", level=2)
-    _grid(doc, ["Era", "Rregullat (A)", "Modeli (B)", "Madeyski & Lewowski 2023"], [
-        [SMELL_SQ[s], f"{f['strategy'][s]['mcc']:.2f}", f"{f['best'][s]['mcc']:.2f}",
-         MADEYSKI_2023_DS1[s]] for s in smells
-    ])  # fmt: skip
+    doc.add_heading("Shembulli i prezantimit", level=2)
     doc.add_paragraph(
-        "Ata përdorën ndarje rastësore në pesë pjesë dhe i akorduan modelet; ti i ndave sipas "
-        "projektit dhe nuk i akordove. Rezultatet janë në të njëjtin rang."
+        "Te sllajdi 9 i prezantimit është një ndryshim i vërtetë nga projekti Apache Geode, "
+        "metoda checkForLimitedOrNoAccess. E gjithë metoda ishte brenda një if-i të madh. Pas "
+        "Guard Clauses, kushti bëhet një dalje e hershme me return, dhe pjesa tjetër ngjitet një "
+        "nivel lart. Ndryshimi kompilohet, dhe në rishikim ishte i pranueshëm ashtu siç është."
     )
-
-    # --- 15 ---
-    doc.add_heading("15. Ndërfaqja, CLI-ja dhe siguria", level=1)
-    _list(doc, [
-        "Ndërfaqja web (React) tregon erërat, kushtet që i shkaktuan dhe rishkrimin e "
-        "propozuar, para se të preket ndonjë skedar.",
-        "Mënyra me gjuhë të thjeshtë, shqip, vjen nga një fjalor i vetëm që e përdorin edhe "
-        "CLI-ja (--thjeshte) edhe ndërfaqja, që të dyja të shpjegojnë njësoj.",
-        "Si parazgjedhje mjeti nuk shkruan mbi kodin origjinal: prodhon një skedar ndryshimesh "
-        "(patch). Shkrimi në vend kërkon një flamur të qartë.",
-        "Punon vetëm në kompjuterin tënd (localhost). Nuk pranon kërkesa nga faqe të huaja, dhe "
-        "çdo shteg analize mbyllet brenda një dosjeje të lejuar.",
-        "Niset me Nis-JavaSmell.bat ose me Docker. Licenca është MIT.",
+    _idea(doc, "Ndreqja automatike e sigurt është e mundshme, por vetëm për pak raste; Guard "
+               "Clauses del më e besueshmja, Introduce Parameter Object më pak e dobishmja.")  # fmt: skip
+    _check(doc, [
+        ("Sa vende u ndryshuan?", f"{applied:,} nga {detected:,}, pra {_pct(applied / detected)}."),
+        ("Pse Introduce Parameter Object merr 0%?",
+         "Sepse lista e gjatë e parametrave thjesht kalon në një klasë të re."),
+        ("Pse rishikimi është «i peshuar»?", "Sepse Extract Method është shumica e ndryshimeve, "
+                                             "ndaj numëron më shumë te totali."),
     ])  # fmt: skip
 
-    # --- 16 ---
-    doc.add_heading("16. Parimet e punimit", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 14, "Mjeti si sistem",
+             "Në këtë kapitull mëson nga cilat pjesë përbëhet mjeti, si lidhen, dhe si mbrohet.")
+    doc.add_paragraph(
+        "Mjeti është ndërtuar si një zinxhir pjesësh. Çdo pjesë përdor vetëm atë që vjen para "
+        "saj, kurrë atë që vjen pas. Kështu një ndryshim në ndërfaqe nuk mund ta prishë "
+        "matjen, dhe çdo pjesë provohet më vete."
+    )
+    _grid(doc, ["Pjesa", "Çka bën"], [
+        ["parsing", "E lexon kodin me tree-sitter dhe mbledh faktet e sintaksës."],
+        ["model", "Të dhëna të thjeshta: klasa, metoda, fusha. Pa logjikë."],
+        ["metrics", f"Llogarit {f['metrics']} metrikat, duke e lexuar çdo klasë një herë."],
+        ["detectors", "Rregullat. Çdo prag ndodhet në një skedar të vetëm, që të ndryshohet "
+                      "lehtë gjatë provave."],
+        ["ml", "Modelet e mësimit makinerik."],
+        ["refactor", "Motori i ndreqjeve."],
+        ["api", "Lidhja mes ndërfaqes dhe mjetit: vetëm kontroll dhe transport, pa logjikë."],
+        ["frontend", "Ndërfaqja web, në React."],
+        ["glossary", "Fjalori i thjeshtë shqip, një skedar i vetëm për ndërfaqen dhe për CLI-në."],
+    ])  # fmt: skip
     _list(doc, [
+        "Ndërfaqja web tregon erërat, kushtet që i shkaktuan dhe ndryshimin e propozuar, para se "
+        "të preket ndonjë skedar.",
+        "Mënyra me gjuhë të thjeshtë, shqip, vjen nga fjalori; e përdor edhe CLI-ja me "
+        "--thjeshte, që të dyja të shpjegojnë njësoj.",
+        "Mjeti punon vetëm në kompjuterin tënd (localhost). Nuk pranon kërkesa nga faqe të huaja, "
+        "dhe çdo dosje që analizohet duhet të jetë brenda një dosjeje të lejuar.",
+        "Niset me Nis-JavaSmell.bat ose me Docker. Licenca është MIT.",
+        "Ka një suitë të madhe testesh automatike: çdo detektor ka një shembull pozitiv, një "
+        "«gati por jo», dhe një rast të veçantë; çdo ndreqje provohet se zbatohet, se refuzon kur "
+        "duhet, dhe se rezultati kompilohet.",
+    ])  # fmt: skip
+    _idea(doc, "Pjesë të ndara, me një drejtim të vetëm varësie: secila provohet më vete.")
+    _check(doc, [
+        ("Pse pjesët varen vetëm nga ato para tyre?", "Që një ndryshim në një pjesë të mos prishë "
+                                                      "pjesët e tjera, dhe secila të provohet "
+                                                      "më vete."),
+        ("Pse fjalori është një skedar i vetëm?", "Që ndërfaqja dhe CLI-ja ta shpjegojnë çdo term "
+                                                  "njësoj."),
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 15, "Shkenca e mirë: pse rezultatet janë të besueshme",
+             "Në këtë kapitull mëson parimet që e bëjnë punimin të verifikueshëm nga dikush tjetër.")
+    _list(doc, [
+        "I riprodhueshëm: çdo numër prodhohet nga një skript dhe ruhet te data/results/. Një "
+        "anëtar i komisionit me një kopje të pastër mund t'i rikrijojë të gjitha tabelat.",
+        "Fara të fiksuara dhe versione të fiksuara të librarive: i njëjti ekzekutim jep të njëjtin "
+        "rezultat.",
         "Zero kosto: asnjë shërbim me pagesë; gjithçka punon në një laptop pa kartë grafike.",
-        "I riprodhueshëm: çdo numër prodhohet nga një skript te scripts/ dhe ruhet te "
-        "data/results/, me fara të fiksuara dhe versione të fiksuara.",
         "Pa LLM në produkt: ndreqjet janë transformime të pemës, jo tekst i gjeneruar.",
         "Çdo prag ka një burim, ose thuhet hapur që nuk ka.",
+        "Asnjë prag nuk ndryshohet që të kalojë një test: vlerat e pritura në teste llogariten "
+        "me dorë.",
+        "Pa rrjedhje të dhënash: ndarja sipas projektit në çdo provë.",
         "Rezultatet negative raportohen: Feature Envy, refuzimet, erërat e reja, Introduce "
         "Parameter Object.",
         "Vendimet shënohen kur merren, te docs/DECISIONS.md, secili me numrin e vet VD.",
     ])  # fmt: skip
+    _idea(doc, "Një rezultat që dikush tjetër nuk e rikrijon dot nuk hyn në punim.")
+    _check(doc, [
+        ("Çka do të thotë «i riprodhueshëm»?", "Që dikush tjetër, me një kopje të pastër, merr "
+                                               "të njëjtat numra me të njëjtat skripte."),
+        ("Pse raportohen rezultatet negative?", "Sepse fshehja e tyre do ta bënte punimin më pak "
+                                                "të ndershëm dhe më pak të dobishëm."),
+    ])  # fmt: skip
 
-    # --- 17 ---
-    doc.add_heading("17. Kufizimet dhe si t'i thuash", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 16, "Si u ndërtua punimi, hap pas hapi",
+             "Në këtë kapitull sheh rrugën e plotë nga projektet e shkarkuara te numrat e "
+             "prezantimit, dhe cili skript bën secilin hap.")
+    doc.add_paragraph(
+        "Çdo hap është një skript te dosja scripts/ dhe e shkruan rezultatin te data/results/. "
+        "Hapat varen nga njëri-tjetri me këtë radhë: pa korpus nuk ka mostra, pa mostra nuk ka "
+        "vlerësim, pa vlerësim nuk ka intervale."
+    )
+    _grid(doc, ["Hapi", "Skripti", "Çka bën", "Rezultati"], [
+        ["1", "fetch_corpus.py", "Shkarkon projektet që përmend MLCQ, vetëm skedarët .java",
+         "korpusi, jashtë git-it"],
+        ["2", "report_matching.py", "Kontrollon sa mostra të MLCQ-së gjenden në kod, dhe pse "
+         "humbasin të tjerat", "mlcq_matching.json"],
+        ["3", "build_dataset.py", "Ndërton tabelën: një rresht për mostër, me metrikat dhe "
+         "etiketat", "mlcq_dataset.json"],
+        ["4", "evaluate_rules.py", "Qasja A: rregullat mbi mostrat, krahasuar me njerëzit",
+         "rules_evaluation.json"],
+        ["5", "train_models.py", "Qasja B: modelet, me grupe sipas projektit",
+         "ml_evaluation.json"],
+        ["6", "bootstrap_intervals.py", "Intervalet e besimit, duke rizgjedhur projektet",
+         "bootstrap_intervals.json"],
+        ["7", "reviewer_agreement.py", "Sa pajtohen rishikuesit me njëri-tjetrin",
+         "reviewer_agreement.json"],
+        ["8", "fetch_pmd.py, compare_with_pmd.py", "Krahasimi me PMD-në mbi të njëjtat mostra",
+         "pmd_comparison.json"],
+        ["9", "sweep_thresholds.py, calibrate_thresholds.py", "Sa ndikojnë pragjet te "
+         "rezultatet", "threshold_sweep.json, threshold_calibration.json"],
+        ["10", "evaluate_refactorings.py", "Motori mbi gjithë korpusin, me kontroll nga javac",
+         "refactoring_evaluation.json"],
+        ["11", "verify_with_project.py", "Kompilimi i një mostre ndryshimesh brenda projektit",
+         "verify_with_project.json"],
+        ["12", "review_rewrites.py", "Rishikimi me dorë i një mostre ndryshimesh",
+         "rewrite_quality.json"],
+        ["13", "export_system_reference.py, build_figures.py", "Konfigurimi i sistemit dhe "
+         "figurat e punimit", "system_reference.json, figurat"],
+    ])  # fmt: skip
+    doc.add_paragraph(
+        "Në fund, ndërtuesit te docs/thesis/ i lexojnë këto skedarë dhe prodhojnë punimin, "
+        "prezantimin dhe këtë dokument. Asnjë numër nuk shkruhet me dorë: nëse ndryshon një "
+        "rezultat, ndryshon kudo njëkohësisht."
+    )
+    _idea(doc, "Çdo numër ka një skript që e prodhon dhe një skedar ku ruhet.")
+    _check(doc, [
+        ("Ku ruhen rezultatet?", "Te data/results/, si skedarë JSON ose CSV."),
+        ("Pse nuk shkruhet asnjë numër me dorë?", "Që punimi, prezantimi dhe dokumentet të "
+                                                  "thonë gjithmonë të njëjtin numër, dhe që "
+                                                  "dikush tjetër t'i rikrijojë."),
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 17, "Kufizimet dhe puna e ardhshme",
+             "Në këtë kapitull mëson çka nuk vërteton punimi, pse, dhe çka do të bëhej më pas.")
     doc.add_paragraph("Formula për çdo kufizim: pranoje → thuaj pse → thuaj çka do të bëje më pas.")
-    _grid(doc, ["Kufizimi", "Pse", "Çka do të bëje"], [
+    _grid(doc, ["Kufizimi", "Pse", "Çka do të bëhej"], [
         ["Kompilohet ≠ sillet njësoj", "Korpusi nuk ka skedarë ndërtimi, ndaj testet e "
-         "projekteve nuk u ekzekutuan", "Testet e projekteve pas çdo rishkrimi"],
-        ["Një bazë, katër erëra, vetëm Java", "Etiketat vijnë vetëm nga MLCQ, që ka katër erëra "
-         "dhe kod Java", "Baza të tjera dhe gjuhë të tjera; parseri tree-sitter i mbështet"],
+         "projekteve nuk u ekzekutuan", "Testet e projekteve pas çdo ndryshimi"],
+        ["Një bazë, katër erëra, vetëm Java", "Etiketat vijnë vetëm nga MLCQ", "Baza dhe gjuhë të "
+         "tjera; tree-sitter i mbështet"],
         ["Modeli më i mirë u zgjodh mbi të njëjtat parashikime", "Krahasimi bëhet mbi të njëjtat "
          "grupe", f"Raportohen të gjithë; edhe më i dobëti fiton te {f['weakest']} nga "
          f"{len(smells)}"],
         ["Disa pragje pa burim", "Literatura nuk jep vlerë", "U provuan me vlera të ndryshme"],
         ["Rishikimin me dorë e bëri vetëm autori", "Punim individual", "Rishikues të pavarur"],
         ["Etiketat e Feature Envy nuk janë të besueshme", "Njerëzit nuk pajtohen",
-         "Përkufizim më i qartë ose më shumë rishikues për mostër"],
+         "Përkufizim më i qartë ose më shumë rishikues"],
+        ["Emrat nuk zgjidhen në gjithë projektin", "Tree-sitter sheh vetëm sintaksën",
+         "Një zgjidhës i vogël emrash, për më shumë ndreqje"],
+    ])  # fmt: skip
+    _check(doc, [
+        ("Cili është kufizimi kryesor?", "Kompilimi nuk vërteton që sjellja mbetet e njëjtë, "
+                                         "sepse testet e projekteve nuk u ekzekutuan."),
+        ("Çka do të bëje më pas?", "Testet e projekteve pas çdo ndryshimi, një zgjidhës i vogël "
+                                   "emrash, dhe rishikues të pavarur."),
     ])  # fmt: skip
 
-    # --- 18 ---
-    doc.add_heading("18. Fjalorth", level=1)
+    # ------------------------------------------------------------------
+    _chapter(doc, 18, "Si lidhet me prezantimin",
+             "Në këtë kapitull sheh cili kapitull shpjegon secilin sllajd.")
+    _grid(doc, ["Sllajdi", "Kapitujt"], [
+        ["1 · Titulli", "–"],
+        ["2 · Problemi dhe tri pyetjet", "1, 2"],
+        ["3 · Katër erërat", "2"],
+        ["4 · JavaSmell", "4, 5, 6, 7, 12, 14"],
+        ["5 · Të dhënat dhe prova e drejtë", "8, 9"],
+        ["6 · Rregullat kundrejt modeleve", "6, 7, 9, 10"],
+        ["7 · Pajtimi i njerëzve", "11"],
+        ["8 · Motori i refaktorimit", "12, 13"],
+        ["9 · Shembulli nga Apache Geode", "12, 13"],
+        ["10 · Përgjigjet dhe kufijtë", "10, 13, 17"],
+    ])  # fmt: skip
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 19, "Pyetjet që mund të të bëjnë",
+             "Të gjitha pyetjet e mundshme të konferencës, nga më e thjeshta te më e vështira, "
+             "me përgjigjen shqip. Përgjigjet në anglisht janë te udhëzuesi i fjalimit.")
+    for level, (name, who) in LEVELS.items():
+        doc.add_heading(f"Niveli {level}: {name}", level=2)
+        paragraph = doc.add_paragraph()
+        paragraph.add_run(who).italic = True
+        _qa(doc, [(q.pyetja, q.pergjigjja) for q in _question_bank(f) if q.level == level])
+
+    # ------------------------------------------------------------------
+    _chapter(doc, 20, "Fjalorth", "Çdo term i punimit, me emrin shqip dhe një shpjegim të shkurtër.")
     _grid(doc, ["Termi", "Shqip", "Shpjegimi"], [list(row) for row in TERMS])
 
-    # --- 19 ---
-    doc.add_heading("19. Pyetje për vetëkontroll", level=1)
-    doc.add_paragraph(
-        "Mbuloje përgjigjen dhe thuaje me zë. Përgjigjet në anglisht për sallën janë te fleta "
-        "e përgatitjes."
-    )
-    _qa(doc, [
-        ("Çka është një erë e kodit, dhe pse nuk është gabim?",
-         "Shenjë që kodi është ndërtuar keq dhe ndryshohet me vështirësi. Programi punon, ndaj "
-         "nuk është gabim."),
-        ("Cilat janë katër erërat e vlerësuara, dhe pse vetëm këto?",
-         "Blob, Data Class, Feature Envy dhe Long Method: vetëm ato kanë etiketa në MLCQ."),
-        ("Çka bën qasja A, B dhe C?",
-         "A: rregulla të botuara mbi metrika. B: modele që mësojnë nga etiketat. C: ndreqje e "
-         "kodit vetëm kur kushtet vërtetohen, me kontroll nga javac."),
-        ("Pse MCC dhe jo saktësia?",
-         f"Te Feature Envy, «gjithmonë i pastër» del {majority:.1%} i saktë. MCC i jep 0."),
-        ("Çka është rrjedhja e të dhënave, dhe si u shmang?",
-         "Provimi mbi atë që modeli e ka parë. U shmang me ndarje sipas projektit."),
-        ("Çka tregon bootstrap-i?",
-         "Nëse ndryshimi model − rregulla është i vërtetë apo fat: nëse intervali 95% është i "
-         "gjithi mbi zero, është i vërtetë."),
-        ("Pse rregullat kanë precision të lartë, por recall të ulët?",
-         "Pragjet fikse janë të rrepta: alarmojnë rrallë, por kur alarmojnë kanë të drejtë."),
-        ("Pse Feature Envy është e vështirë?",
-         f"Dy ekspertë pajtohen sa me hamendje: MCC {f['reviewers']['feature envy']:.2f}."),
-        ("Çka është AST-ja?", "Kodi i kthyer në pemë, si analiza gramatikore e një fjalie."),
-        ("Pse motori refuzon kaq shpesh?",
-         "Sepse refuzon kur nuk vërteton dot një kusht. Refuzimi është rezultat i saktë."),
-        ("Pse një return brenda pjesës së nxjerrë e ndalon Extract Method?",
-         "Në metodën e re, return-i do të dilte vetëm nga ajo, jo nga metoda origjinale: "
-         "sjellja ndryshon."),
-        ("Çka do të thotë «nuk shton lloj të ri gabimi»?",
-         "Skedari nuk kompilohej as më parë, sepse i mungojnë fqinjët; rishkrimi nuk shtoi "
-         "gabim tjetër."),
-        ("Pse Introduce Parameter Object merr 0%?",
-         "Sepse vetëm e zhvendos listën e gjatë të parametrave në një klasë të re."),
-        ("Pse jo një LLM?",
-         "Nuk vërteton kushtet, nuk riprodhohet dhe nuk është deterministik; dhe kërkesa ishte "
-         "zero kosto."),
-        ("Çka do të bëje më pas?",
-         "Testet e projekteve pas çdo rishkrimi, një zgjidhës i vogël emrash për më shumë "
-         "ndreqje, dhe rishikues të pavarur."),
-    ])  # fmt: skip
-
-    # --- 20 ---
-    doc.add_heading("20. Burimet kryesore", level=1)
+    _chapter(doc, 21, "Burimet kryesore", "Librat dhe artikujt mbi të cilët mbështetet punimi.")
     _list(doc, SOURCES)
 
-    doc.save(KNOWLEDGE)
-    return KNOWLEDGE
+    doc.save(BOOK)
+    return BOOK
 
 
 def main() -> int:
@@ -3192,7 +4001,7 @@ def main() -> int:
     for path in (
         build_sheet(facts, script),
         build_speech_guide(facts, script, backups),
-        build_knowledge(facts),
+        build_book(facts),
     ):
         print(f"U gjenerua: {path}")
     return 0
