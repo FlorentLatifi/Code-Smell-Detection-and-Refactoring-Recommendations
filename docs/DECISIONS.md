@@ -6157,3 +6157,39 @@ Dy fjali u ndreqën: «nga ato të lexuara me dorë 62.9%» (të lexuarat e pran
 33 nga 60, pra 55%; 62.9% është vlerësimi i ripeshuar), dhe «nuk e provonte dot
 sigurinë», që bëhet «parakushtet». Fjalia e parë e 6.8 u rishkrua, sepse përsëriste
 fjalë për fjalë pyetjen me të cilën hapet abstrakti.
+
+### VD-153: Prezantimi i konferencës sipas vërejtjeve të mentores (23 tetor 2026)
+
+**Konteksti.** Mentorja e shqyrtoi prezantimin e UBT 2026 dhe kërkoi gjashtë gjëra: një
+sllajd për kontributin dhe çka e dallon nga studimet ekzistuese; një sllajd me referencat
+në APA ose IEEE; numrat e sllajdit 8, ku të rishkruarat dhe të refuzuarat nuk mblidheshin
+te vendet e detektuara; procesin e validimit, me thënien e qartë se kompilimi nuk e
+garanton sjelljen; sllajdin rezervë të verifikimit, që të kuptohet cilat rishkrime dolën
+mirë e cilat patën probleme; dhe përfundime me gjetjet, rëndësinë praktike dhe punën e
+ardhshme. Pastaj, që sllajdet të përputhen me punimin.
+
+**Vendimi.**
+- **Kontributi** (sllajdi 3) është tabela «Earlier studies → This work» e ndërtuar mbi
+  «Boshllëku në literaturë» (2.7) të punimit, me të njëjtat burime.
+- **Referencat** janë IEEE, si punimi pas VD-152, me tekstin e listës së punimit fjalë për
+  fjalë dhe numra sipas citimit të parë në sllajde. Sllajdi vjen pas përfundimeve, që
+  gjatë pyetjeve në ekran të mbetet mbyllja.
+- **Sllajdi i motorit** e shton vendet që nuk u gjetën dot sërish (16) dhe shumën e plotë
+  3532 + 12 252 + 16 = 15 800; poshtë, rishkrimet sipas ndreqjes dhe refuzimet sipas
+  arsyes. Ishte pikërisht rreshti «Të palokalizueshme» i Tabelës 10 që mungonte.
+- **Validimi** (sllajdi 10) i jep pesë hapat me rezultatin e secilit: parakushtet, javac,
+  rimatja e erës, mostra brenda projektit dhe leximi me dorë, dhe një kuti «Not verified»
+  për sjelljen.
+- **Mbyllja** thoshte «nothing that breaks compiling is written», që nuk është e saktë: dy
+  nga 201 rishkrimet shtojnë gabim brenda projektit, dhe leximi gjeti një që nuk kompilon.
+  Tani thotë «98% compile or add no new error, but behavior is not yet proven», dhe pikat
+  «Why it matters» e «Future research» janë ato të 6.5 dhe 6.7.
+- **Rezerva e verifikimit** është dy tabela: sipas ndreqjes (si Tabela 19, me rreshtin e
+  16 vendeve dhe totalin) dhe e njëjta mostër e kompiluar vetëm dhe brenda projektit.
+- Teksti folës u shkurtua që të dy versionet të mbeten brenda kohës: rreth 8:26 dhe 9:55
+  me ritëm të qetë.
+
+**Çfarë nuk u verifikua.** Çdo numër i sllajdeve u kërkua te teksti i punimit përfundimtar
+(kopja IEEE e 16 tetorit). Dy nuk janë aty: 92.8%, saktësia e klasifikuesit të shumicës te
+Feature Envy, që vjen nga `ml_evaluation.json` por punimi nuk e shkruan; dhe 427, shuma e
+tri arsyeve më të vogla të refuzimit, që punimi i jep veç e veç.

@@ -3,10 +3,11 @@
     PYTHONPATH=backend python docs/thesis/build_conference.py
 
 Shkruan te `docs/konferenca/`:
-- `UBT2026_Florent_Latifi.pptx`: nëntë sllajde, me tekstin folës anglisht te shënimet
-  (rreth shtatë minuta), dhe sllajde rezervë për pyetjet;
+- `UBT2026_Florent_Latifi.pptx`: dymbëdhjetë sllajde që thuhen dhe një me referencat IEEE,
+  me tekstin folës anglisht te shënimet (rreth tetë minuta e gjysmë), dhe sllajde rezervë
+  për pyetjet;
 - `UBT2026_Florent_Latifi_9min.pptx`: të njëjtat sllajde, me një tekst folës më të gjatë
-  (rreth nëntë minuta e gjysmë) për rastin kur kryesuesi jep vërtet dhjetë minuta;
+  (rreth dhjetë minuta) për rastin kur kryesuesi jep vërtet dhjetë minuta;
 - `UBT2026_pergatitja.docx`: koha për sllajd për të dy versionet, pyetjet e mundshme me
   përgjigje, shqiptimi i termave dhe lista për ditën e konferencës;
 - `UBT2026_cka_te_flas.docx`: udhëzuesi i fjalimit, sllajd për sllajd: çka shihet në
@@ -54,6 +55,7 @@ from chapters import (
     SMELL_SQ,
     _load,
     _repositories_in_dataset,
+    _rows_if_present,
     _significance,
 )
 from docx import Document
@@ -125,6 +127,61 @@ PMD_NAMES = {
 
 # Emrat e refaktorimeve siç thuhen me gojë, jo siç janë në kod.
 SPOKEN_REFACTORING = {"ReplaceNestedConditionalWithGuardClauses": "Guard Clauses"}
+
+# Burimet që citon prezantimi, në stilin IEEE që kërkoi mentorja për punimin (VD-152). Teksti
+# është ai i listës së punimit fjalë për fjalë (`references.py` në degën
+# claude/hungry-lederberg-3b72ba); vetëm numri ndryshon, sepse IEEE numëron sipas radhës së
+# citimit të parë, dhe këtu ajo radhë është e sllajdeve, jo e kapitujve.
+DECK_SOURCES = [
+    ("Fowler 2018",
+     "M. Fowler, *Refactoring: Improving the Design of Existing Code*, 2nd ed. Boston, MA, USA: "
+     "Addison-Wesley, 2018."),
+    ("Lanza & Marinescu 2006",
+     "M. Lanza and R. Marinescu, *Object-Oriented Metrics in Practice: Using Software Metrics to "
+     "Characterize, Evaluate, and Improve the Design of Object-Oriented Systems*. Berlin, Germany: "
+     "Springer, 2006, doi: 10.1007/3-540-39538-5."),
+    ("Madeyski & Lewowski 2020",
+     "L. Madeyski and T. Lewowski, “MLCQ: Industry-relevant code smell data set,” in *Proceedings "
+     "of the 24th International Conference on Evaluation and Assessment in Software Engineering "
+     "(EASE ’20)*, 2020, pp. 342–347, doi: 10.1145/3383219.3383264."),
+    ("Arcelli Fontana et al. 2016",
+     "F. Arcelli Fontana, M. V. Mäntylä, M. Zanoni, and A. Marino, “Comparing and experimenting "
+     "machine learning techniques for code smell detection,” *Empirical Software Engineering*, "
+     "vol. 21, no. 3, pp. 1143–1191, 2016, doi: 10.1007/s10664-015-9378-4."),
+    ("Di Nucci et al. 2018",
+     "D. Di Nucci, F. Palomba, D. A. Tamburri, A. Serebrenik, and A. De Lucia, “Detecting code "
+     "smells using machine learning techniques: Are we there yet?” in *Proceedings of the 25th "
+     "IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER "
+     "’18)*, 2018, pp. 612–621, doi: 10.1109/SANER.2018.8330266."),
+    ("Tsantalis & Chatzigeorgiou 2009",
+     "N. Tsantalis and A. Chatzigeorgiou, “Identification of Move Method refactoring "
+     "opportunities,” *IEEE Transactions on Software Engineering*, vol. 35, no. 3, pp. 347–367, "
+     "2009, doi: 10.1109/TSE.2009.1."),
+    ("Opdyke 1992",
+     "W. F. Opdyke, “Refactoring object-oriented frameworks,” Ph.D. dissertation, University of "
+     "Illinois at Urbana-Champaign, Urbana, IL, USA, 1992."),
+    ("Chidamber & Kemerer 1994",
+     "S. R. Chidamber and C. F. Kemerer, “A metrics suite for object oriented design,” *IEEE "
+     "Transactions on Software Engineering*, vol. 20, no. 6, pp. 476–493, 1994, doi: "
+     "10.1109/32.295895."),
+    ("Chicco & Jurman 2020",
+     "D. Chicco and G. Jurman, “The advantages of the Matthews correlation coefficient (MCC) over "
+     "F1 score and accuracy in binary classification evaluation,” *BMC Genomics*, vol. 21, no. 1, "
+     "Art. no. 6, 2020, doi: 10.1186/s12864-019-6413-7."),
+    ("PMD Team 2026",
+     "PMD Team, *PMD: An Extensible Cross-Language Static Code Analyzer*, version 7.27.0. (2026). "
+     "[Online]. Available: https://pmd.github.io/"),
+    ("Madeyski & Lewowski 2023",
+     "L. Madeyski and T. Lewowski, “Detecting code smells using industry-relevant data,” "
+     "*Information and Software Technology*, vol. 155, Art. no. 107112, 2023, doi: "
+     "10.1016/j.infsof.2022.107112."),
+]  # fmt: skip
+
+
+def _cite(*labels: str) -> str:
+    """`_cite("Opdyke 1992")` → «[7]»: numri vjen nga radha e listës, jo i shkruar me dorë."""
+    order = [label for label, _ in DECK_SOURCES]
+    return ", ".join(f"[{order.index(label) + 1}]" for label in labels)
 
 
 class Line(str):
@@ -356,7 +413,7 @@ def _example() -> tuple[list[str], set[int], list[str], set[int]] | None:
 
 
 def _script(f: dict) -> list[tuple]:
-    """Teksti folës i dhjetë sllajdeve kryesore, me radhë: emri i brendshëm dhe fjalitë.
+    """Teksti folës i sllajdeve kryesore, me radhë: emri i brendshëm dhe fjalitë.
 
     I ndarë nga paraqitja e sllajdeve, që një sllajd të rindërtohet pa e prekur tekstin
     që folësi e ka provuar. Fjalitë janë të shkurtra dhe me fjalë të përditshme: salla ka
@@ -366,16 +423,23 @@ def _script(f: dict) -> list[tuple]:
     applied, detected = f["applied"], f["detected"]
     moderate, chance = f["moderate"], f["chance"]
     pmd_ahead = f["pmd_ahead"]
-    introduced, always, never = f["introduced"], f["always"], f["never"]
     lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
     found_low, found_high = (bound(f["best"][s]["recall"] for s in f["smells"]) * 100
                              for bound in (min, max))  # fmt: skip
     shape = refactoring["refused_by_reason"]["shape_not_matched"] / detected * 100
-    newest = _words(max(introduced, key=introduced.get))
     majority = f["ml"]["per_smell"]["feature envy"]["models"]["majority"]["accuracy"] * 100
     limit = f["reference"]["thresholds"]["long_method_loc"]
-    resolved, broken = f["resolved"] * 100, f["broken"] * 100
+    resolved = f["resolved"] * 100
     acceptable = quality["acceptable_reweighted"] * 100
+    refused, missing = refactoring["refused"], refactoring["unlocatable"]
+    verdicts = refactoring["verdicts"]
+    new_errors = verdicts.get("new_errors", 0)
+    passed = (verdicts.get("compiles", 0) + verdicts.get("no_new_errors", 0)) / applied
+    verify = _load("verify_with_project.json")
+    in_project = verify["compiled_in_project"]
+    # Ato që kalonin të vetme dhe dështojnë brenda projektit: gabimi që izolimi e fshihte.
+    hidden = verify["moved"].get("no_new_errors -> new_errors", 0)
+    changed = sum(e["behaviour"]["changed"] for e in quality["by_refactoring"].values())
     pmd_sentence = (
         "It was never better than my rules" if not pmd_ahead
         else f"It was better for {_and(pmd_ahead)}"
@@ -420,6 +484,23 @@ def _script(f: dict) -> list[tuple]:
                  "Tre: a mund t'i ndreqë një mjet këto erëra automatikisht, pa e prishur kodin?"),
         ),
         (
+            "Contribution",
+            Line("What is new, compared with earlier studies? Three things.",
+                 "Çka është e re, krahasuar me studimet e mëparshme? Tri gjëra."),
+            Line("First, I measure the published rules against professional developers, instead "
+                 "of taking them as correct.",
+                 "E para, i mat rregullat e botuara kundrejt programuesve profesionistë, në vend "
+                 "që t'i marr si të sakta."),
+            Line("Second, rules and machine learning are compared on the same samples, with the "
+                 "same score and a split by project.",
+                 "E dyta, rregullat dhe mësimi makinerik krahasohen mbi të njëjtat mostra, me të "
+                 "njëjtën notë dhe me ndarje sipas projektit."),
+            Line("Third, one tool finds a smell, fixes it, checks it with the compiler, and "
+                 "measures it again.",
+                 "E treta, një mjet e gjen erën, e ndreq, e kontrollon me kompajlerin, dhe e mat "
+                 "sërish."),
+        ),
+        (
             "Four smells",
             Line("In this study I look at four smells.", "Në këtë studim shqyrtoj katër erëra."),
             Line("A Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
@@ -431,10 +512,6 @@ def _script(f: dict) -> list[tuple]:
                  "own.",
                  "Dhe Feature Envy është një metodë që punon më shumë me një klasë tjetër se me "
                  "klasën e vet."),
-            Extra("In the drawings, a box is a class, a blue line is a method, and a gray dot is a "
-                  "piece of data.",
-                  "Në vizatime, kutia është një klasë, vija blu një metodë, dhe pika gri një e "
-                  "dhënë."),
         ),
         (
             "What we built",
@@ -451,8 +528,6 @@ def _script(f: dict) -> list[tuple]:
             Line("Part C fixes the code, but only when it can prove that the change is safe.",
                  "Pjesa C e ndreq kodin, por vetëm kur mund ta vërtetojë që ndryshimi është i "
                  "sigurt."),
-            Line("Then the Java compiler checks the result.",
-                 "Pastaj kompajleri i Java-s e kontrollon rezultatin."),
             Extra(f"Every finding also says why, for example: this method has 53 lines, and the "
                   f"limit is {limit:g}.",
                   f"Çdo gjetje thotë edhe pse, për shembull: kjo metodë ka 53 rreshta, dhe kufiri "
@@ -538,8 +613,6 @@ def _script(f: dict) -> list[tuple]:
             Line("If experts do not agree on what a smell is, no tool can learn it well.",
                  "Nëse ekspertët nuk pajtohen se çka është një erë, asnjë mjet nuk mund ta mësojë "
                  "mirë."),
-            Line("For me, this is the most important lesson of the first part.",
-                 "Për mua, ky është mësimi më i rëndësishëm i pjesës së parë."),
         ),
         (
             "Automatic refactoring",
@@ -554,34 +627,50 @@ def _script(f: dict) -> list[tuple]:
                  "ndreqje."),
             Line(f"It changed {applied:,} of them, about {applied / detected * 100:.0f} percent.",
                  f"Ndryshoi {applied:,} prej tyre, rreth {applied / detected * 100:.0f} për qind."),
-            Line("It refused the rest, because it could not prove the change was safe, and it "
+            Line(f"It refused {refused:,}, because it could not prove the change was safe, and it "
                  "always says why.",
-                 "Të tjerat i refuzoi, sepse nuk mundi ta vërtetojë që ndryshimi ishte i sigurt, "
+                 f"Refuzoi {refused:,}, sepse nuk mundi ta vërtetojë që ndryshimi ishte i sigurt, "
                  "dhe gjithmonë thotë pse."),
+            Line(f"The other {missing} could not be found again in the file.",
+                 f"{missing} të tjerat nuk u gjetën dot sërish në skedar."),
             Line("For me, a refusal is a good result, not a failure.",
                  "Për mua, refuzimi është rezultat i mirë, jo dështim."),
             Extra(f"In {shape:.0f} percent of the places, the code simply does not have the right "
                   "shape for the fix.",
                   f"Në {shape:.0f} për qind të vendeve, kodi thjesht nuk ka formën e duhur për "
                   "ndreqjen."),
-            Line(f"After a change, the smell disappeared in {resolved:.0f} percent of the cases.",
-                 f"Pas një ndryshimi, era u zhduk në {resolved:.0f} për qind të rasteve."),
-            Line(f"Only {broken:.1f} percent of the changes added a new compile error, and those "
-                 "are never written to the code.",
-                 f"Vetëm {broken:.1f} për qind e ndryshimeve shtuan një gabim të ri kompilimi, dhe "
-                 "ato nuk shkruhen kurrë në kod."),
-            Line(f"By checking {quality['reviewed']} changes by hand, I estimate that about "
-                 f"{acceptable:.0f} percent would be acceptable to a developer.",
-                 f"Duke kontrolluar {quality['reviewed']} ndryshime me dorë, vlerësoj që rreth "
-                 f"{acceptable:.0f} për qind do të ishin të pranueshme për një programues."),
-            Extra(f"Fixes can also create new smells: {sum(introduced.values()):,} appeared, most "
-                  f"often {newest}.",
-                  f"Ndreqjet mund të krijojnë edhe erëra të reja: u shfaqën "
-                  f"{sum(introduced.values()):,}, më shpesh {newest}."),
-            Extra(f"{_and(always)} were always acceptable; {_and(never)} never, because it only "
-                  "moves the long list.",
-                  f"{_dhe(always)} ishin gjithmonë të pranueshme; {_dhe(never)} kurrë, sepse vetëm "
-                  "e zhvendos listën e gjatë."),
+        ),
+        (
+            "Validation",
+            Line("How do I know a rewrite is correct? I check it in steps.",
+                 "Si e di që një rishkrim është i saktë? E kontrolloj me hapa."),
+            Line("Before the change, the tool must prove its conditions on the syntax tree, or it "
+                 "refuses.",
+                 "Para ndryshimit, mjeti duhet t'i vërtetojë kushtet e veta mbi pemën e sintaksës, "
+                 "ose refuzon."),
+            Line(f"After the change, the compiler checks the file: {passed * 100:.0f} percent pass, "
+                 f"and the {new_errors} that fail are never written.",
+                 f"Pas ndryshimit, kompajleri e kontrollon skedarin: {passed * 100:.0f} për qind "
+                 f"kalojnë, dhe ato {new_errors} që dështojnë nuk shkruhen kurrë."),
+            Line(f"Then the smell is measured again: it is gone after {resolved:.0f} percent of "
+                 "the rewrites.",
+                 f"Pastaj era matet sërish: zhduket pas {resolved:.0f} për qind të rishkrimeve."),
+            Extra(f"On a sample of {verify['rewrites']} rewrites, I also compiled the whole "
+                  f"project: {in_project['compiles']} compiled fully, and {hidden} had an error "
+                  "that the single file had hidden.",
+                  f"Te një mostër prej {verify['rewrites']} rishkrimesh, kompilova edhe gjithë "
+                  f"projektin: {in_project['compiles']} u kompiluan plotësisht, dhe {hidden} "
+                  "kishin një gabim që skedari i vetëm e kishte fshehur."),
+            Line(f"Finally, I read {quality['reviewed']} rewrites by hand: about {acceptable:.0f} "
+                 f"percent were acceptable, and {_count_word(changed, quality['reviewed'])} changed "
+                 "the behavior.",
+                 f"Në fund, lexova {quality['reviewed']} rishkrime me dorë: rreth "
+                 f"{acceptable:.0f} për qind ishin të pranueshme, dhe {changed} e ndryshonte "
+                 "sjelljen."),
+            Line("So, to be clear: compiling does not guarantee the same behavior, because I could "
+                 "not run the projects' own tests.",
+                 "Pra, që të jetë e qartë: kompilimi nuk e garanton sjelljen e njëjtë, sepse nuk "
+                 "munda t'i ekzekutoj testet e vetë projekteve."),
         ),
         (
             "Example",
@@ -599,49 +688,44 @@ def _script(f: dict) -> list[tuple]:
                   "one if, without else.",
                   "Mjeti e bën këtë vetëm kur metoda nuk kthen asgjë dhe i gjithë trupi i saj është "
                   "një if, pa else."),
-            Extra("It writes the condition as “not” the original, so the meaning stays exactly "
-                  "the same.",
-                  "E shkruan kushtin si «jo» i origjinalit, ndaj kuptimi mbetet saktësisht i "
-                  "njëjtë."),
             Line("The result compiles, and in my review it was acceptable without any change.",
                  "Rezultati kompilohet, dhe në rishikimin tim ishte i pranueshëm pa asnjë "
                  "ndryshim."),
         ),
         (
-            "Limitations and takeaways",
-            Line("To be honest about the limits: code that compiles does not always behave the "
-                 "same.",
-                 "Për të qenë i sinqertë për kufijtë: kodi që kompilohet nuk sillet gjithmonë "
-                 "njësoj."),
-            Line("I could not run the projects' own tests, so checking the behavior is future work.",
-                 "Nuk munda t'i ekzekutoj testet e vetë projekteve, ndaj kontrolli i sjelljes "
-                 "mbetet për më vonë."),
-            Line("Also: one dataset, four smells, and only Java.",
-                 "Gjithashtu: një bazë të dhënash, katër erëra, dhe vetëm Java."),
-            Extra("And I picked the best model using the same results I report, so its numbers "
-                  "are a little optimistic.",
-                  "Dhe modelin më të mirë e zgjodha me të njëjtat rezultate që raportoj, ndaj "
-                  "numrat e tij janë pak optimistë."),
-            Extra("Next, I want to run the projects' tests after each change, and ask other "
-                  "developers to judge the changes.",
-                  "Më pas dua t'i ekzekutoj testet e projekteve pas çdo ndryshimi, dhe t'u kërkoj "
-                  "programuesve të tjerë t'i gjykojnë ndryshimet."),
+            "Conclusions",
             Line("So, the three answers.", "Pra, tri përgjigjet."),
             Line("One: the published rules are precise, but they miss most smells.",
                  "Një: rregullat e botuara janë të sakta, por i humbasin shumicën e erërave."),
             Line("Two: machine learning on the same numbers does better.",
                  "Dy: mësimi makinerik mbi të njëjtët numra bën më mirë."),
-            Line("Three: automatic fixing is possible and safe, but only for a small part of the "
-                 "code.",
-                 "Tre: ndreqja automatike është e mundshme dhe e sigurt, por vetëm për një pjesë "
-                 "të vogël të kodit."),
-            Line("Everything is open source, and every number here can be recreated with a "
-                 "script.",
-                 "Gjithçka është me burim të hapur, dhe çdo numër këtu mund të rikrijohet me një "
-                 "skript."),
+            Line("Three: about one place in four can be fixed automatically. The compiler checks "
+                 "every change, but the behavior is not yet proven.",
+                 "Tre: rreth një vend në katër mund të ndreqet automatikisht. Kompajleri e "
+                 "kontrollon çdo ndryshim, por sjellja ende nuk është vërtetuar."),
+            Line("In practice, published thresholds are a starting point, not a final answer, and "
+                 "an automatic fix is a proposal that a developer reviews.",
+                 "Në praktikë, pragjet e botuara janë pikënisje, jo përgjigje përfundimtare, dhe "
+                 "një ndreqje automatike është propozim që programuesi e rishikon."),
+            Line("Next, I want to run the projects' own tests, support more fixes, and ask other "
+                 "developers to judge the changes.",
+                 "Më pas dua t'i ekzekutoj testet e vetë projekteve, të shtoj më shumë ndreqje, "
+                 "dhe t'u kërkoj programuesve të tjerë t'i gjykojnë ndryshimet."),
+            Extra("The limits: one dataset, four smells, and only Java. And I picked the best "
+                  "model using the same results I report, so its numbers are a little "
+                  "optimistic.",
+                  "Kufijtë: një bazë të dhënash, katër erëra, dhe vetëm Java. Dhe modelin më të "
+                  "mirë e zgjodha me të njëjtat rezultate që raportoj, ndaj numrat e tij janë pak "
+                  "optimistë."),
+            Line("Everything is open source, every number can be recreated with a script, and "
+                 "the references are on the next slide.",
+                 "Gjithçka është me burim të hapur, çdo numër mund të rikrijohet me një skript, "
+                 "dhe referencat janë në sllajdin tjetër."),
             Line("Thank you. I am happy to answer your questions.",
                  "Faleminderit. Me kënaqësi u përgjigjem pyetjeve tuaja."),
         ),
+        # Referencat nuk thuhen: sllajdi është aty që salla dhe mentorja t'i gjejnë burimet.
+        ("References",),
     ]  # fmt: skip
 
 
@@ -685,6 +769,7 @@ STAT_HEIGHT = Inches(1.7)
 BAR_HEIGHT = Inches(0.09)
 # Kodi: rreshti më i gjatë i shembullit duhet të hyjë në dy të tretat e sllajdit.
 CODE_SIZE = Pt(13)
+TABLE_ROW = Inches(0.5)
 GAP = Inches(0.3)
 CONTENT = WIDTH - 2 * MARGIN
 # Titulli lë vend djathtas për hartën e pyetjeve, në çdo sllajd në të njëjtin vend.
@@ -908,10 +993,10 @@ def _diff(slide, label, lines, marked, tint, colour, left, top, width, size=CODE
     return Emu(int(top + height))
 
 
-def _data_table(slide, headers, rows, top=TOP, size=SIZE_CAPTION):
+def _data_table(slide, headers, rows, top=TOP, size=SIZE_CAPTION, row=TABLE_ROW):
     """Tabelat rezervë: koka me blu, rreshtat me një nuancë të lehtë në çdo të dytin."""
     shape = slide.shapes.add_table(len(rows) + 1, len(headers), MARGIN, top, CONTENT,
-                                   Inches(0.5 * (len(rows) + 1)))  # fmt: skip
+                                   Emu(int(row * (len(rows) + 1))))  # fmt: skip
     table = shape.table
     # Kolonat sipas tekstit më të gjatë të secilës: me gjerësi të barabarta, «Feature Envy»
     # dhe emrat e modeleve thyhen në dy rreshta ndërsa kolonat e numrave mbeten gjysmë bosh.
@@ -948,14 +1033,17 @@ def _headings(f: dict) -> list[str]:
     return [
         TITLE,
         "Code smells make every change expensive, and today's tools only point at them",
+        "What this work adds to earlier studies",
         "Four code smells, each a different design problem",
         f"JavaSmell measures {f['metrics']} metrics once and answers with three approaches",
         "Professional developers label the code; no model is tested on a project it saw",
         f"Learned models beat the rules on {count} smells",
         f"For {chance}, even two experts agree no better than chance",
         "The engine rewrites only what it can prove, and refuses the rest with a reason",
+        "Each rewrite is checked before and after, but compiling ≠ the same behavior",
         "Real code: the outer if becomes an early return",
-        "Three answers, and their limits",
+        "Key findings and what comes next",
+        "References",
     ]
 
 
@@ -979,10 +1067,11 @@ def _slide_title(slide, f, heading) -> None:
 
 
 def _slide_problem(slide, f, heading) -> None:
-    _heading(slide, heading, "Code smells are design problems, not bugs")
+    _heading(slide, heading, f"Code smells are design problems, not bugs {_cite('Fowler 2018')}")
     _bullet_list(slide, MARGIN, TOP, CONTENT, Inches(1.5), [
         "The program works, but every change costs more than it should.",
-        "Existing tools use fixed thresholds, calibrated on other code.",
+        f"Existing tools use fixed thresholds, calibrated on other code "
+        f"{_cite('Lanza & Marinescu 2006')}.",
         "They point at the problem, but rarely fix it.",
     ], after=8)  # fmt: skip
     questions = [
@@ -1005,6 +1094,52 @@ def _slide_problem(slide, f, heading) -> None:
         _badge(slide, Emu(int(left + Inches(0.25))), badge_top, letter, fill)
         _put(_frame(slide, Emu(int(left + Inches(0.72))), badge_top, Inches(2.6), Inches(0.36),
                     MSO_ANCHOR.MIDDLE), approach, SIZE_CAPTION, SOFT)  # fmt: skip
+
+
+def _slide_contribution(slide, f, heading) -> None:
+    """Çka e dallon punimin: secila mangësi e literaturës krah përgjigjes së punimit.
+
+    Rreshtat janë ata të «Boshllëku në literaturë» te punimi (2.7), me të njëjtat burime,
+    që mentorja dhe salla ta lidhin kontributin me studimet që ai i plotëson.
+    """
+    _heading(slide, heading, "Three gaps in earlier studies, and how this work addresses each")
+    earlier_w = Inches(5.0)
+    arrow_w = Inches(0.55)
+    ours_left = Emu(int(MARGIN + earlier_w + arrow_w))
+    ours_w = Emu(int(WIDTH - MARGIN - ours_left))
+    top = Inches(1.95)
+    _put(_frame(slide, MARGIN, top, earlier_w, Inches(0.3)), "Earlier studies", SIZE_SMALL, SOFT,
+         strong=True)  # fmt: skip
+    _put(_frame(slide, ours_left, top, ours_w, Inches(0.3)), "This work", SIZE_SMALL, ACCENT,
+         strong=True)  # fmt: skip
+    rows = [
+        (f"Published rules are taken as correct, with thresholds set on other systems "
+         f"{_cite('Lanza & Marinescu 2006')}.",
+         f"The rules are measured against 26 professional developers in MLCQ "
+         f"{_cite('Madeyski & Lewowski 2020')}."),
+        (f"Rules and machine learning are rarely compared on the same data, and scores depend on "
+         f"how the data are built {_cite('Arcelli Fontana et al. 2016', 'Di Nucci et al. 2018')}.",
+         f"Same {f['samples']:,} samples, same score (MCC), split by project, with 95% "
+         "intervals."),
+        (f"Finding and fixing are studied apart: a fix is proposed, and the decision is left to "
+         f"the developer {_cite('Tsantalis & Chatzigeorgiou 2009')}.",
+         f"One chain: find → rewrite → compile → measure again, with the preconditions proven "
+         f"first {_cite('Opdyke 1992')}."),
+    ]  # fmt: skip
+    top, height, gap = Inches(2.35), Inches(1.05), Inches(0.15)
+    for earlier, ours in rows:
+        for left, width, fill, text, colour in ((MARGIN, earlier_w, PANEL, earlier, RULE_TEXT),
+                                                (ours_left, ours_w, TINT, ours, INK)):  # fmt: skip
+            frame = _shape(slide, left, top, width, height, fill).text_frame
+            frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+            frame.margin_left = frame.margin_right = Inches(0.22)
+            _put(frame, text, SIZE_CAPTION, colour, strong=colour == INK)
+        _put(_frame(slide, Emu(int(MARGIN + earlier_w)), top, arrow_w, height, MSO_ANCHOR.MIDDLE),
+             "→", SIZE_LEAD, ACCENT, strong=True, align=PP_ALIGN.CENTER)  # fmt: skip
+        top = Emu(int(top + height + gap))
+    _put(_frame(slide, ours_left, Emu(int(top + Inches(0.05))), ours_w, Inches(0.6)),
+         "And an open tool: a plain-language interface in Albanian, and every number "
+         "regenerated by one script.", SIZE_CAPTION, ACCENT, strong=True)  # fmt: skip
 
 
 def _box(slide, left, top, width, height, fill=WHITE):
@@ -1089,7 +1224,9 @@ def _draw_feature_envy(slide, x, y) -> None:
 
 
 def _slide_smells(slide, f, heading) -> None:
-    _heading(slide, heading, "All four are labeled by professional developers in the MLCQ dataset")
+    _heading(slide, heading, f"Definitions after Fowler {_cite('Fowler 2018')}; all four are labeled "
+                             f"by professional developers in MLCQ "
+                             f"{_cite('Madeyski & Lewowski 2020')}")  # fmt: skip
     cards = [
         ("Blob", "A class that does too much.", _draw_blob),
         ("Data Class", "Only holds data; almost no behavior.", _draw_data_class),
@@ -1122,7 +1259,8 @@ def _slide_system(slide, f, heading) -> None:
     centre = Emu(int(left + width / 2))
     rows = [
         ("Java source code", None),
-        (f"{f['metrics']} metrics: lines, complexity, coupling, …", None),
+        (f"{f['metrics']} metrics: lines, complexity, coupling, … "
+         f"{_cite('Lanza & Marinescu 2006', 'Chidamber & Kemerer 1994')}", None),
         ("split", None),
         ("Smells, each with the conditions that fired", None),
         ("Refactoring engine: rewrites only what it can prove", "C"),
@@ -1164,8 +1302,8 @@ def _slide_system(slide, f, heading) -> None:
 
 
 def _slide_data(slide, f, heading) -> None:
-    _heading(slide, heading, "MLCQ (Madeyski & Lewowski, 2020): reviewed by 26 professional "
-                             "developers")  # fmt: skip
+    _heading(slide, heading, f"MLCQ {_cite('Madeyski & Lewowski 2020')}: reviewed by 26 "
+                             "professional developers")  # fmt: skip
     _map(slide, {1, 2}, "testing")
     _stat(slide, MARGIN, TOP, Inches(6.0), f"{f['samples']:,}",
           "pieces of code (classes or methods) judged by professional developers")  # fmt: skip
@@ -1198,7 +1336,8 @@ def _slide_data(slide, f, heading) -> None:
     _shape(slide, panel_left, top, panel_w, Inches(2.45), PANEL)
     frame = _frame(slide, Emu(int(panel_left + Inches(0.25))), Emu(int(top + Inches(0.2))),
                    Emu(int(panel_w - Inches(0.5))), Inches(2.1))  # fmt: skip
-    _put(frame, "Why the score is MCC, not accuracy", SIZE_CAPTION, INK, strong=True)
+    _put(frame, f"Why MCC, not accuracy {_cite('Chicco & Jurman 2020')}", SIZE_CAPTION, INK,
+         strong=True)  # fmt: skip
     _put(frame, f"{majority:.1%}", SIZE_STAT, CRITICAL, strong=True, new=True, before=2)
     _put(frame, "accuracy of a detector that always says “clean” on Feature Envy. Its MCC is 0, "
          "the same as guessing.", SIZE_CAPTION, INK, new=True, before=2)  # fmt: skip
@@ -1268,8 +1407,9 @@ def _slide_engine(slide, f, heading) -> None:
     _heading(slide, heading, "Three transformations: Extract Method · Guard Clauses · Introduce "
                              "Parameter Object")  # fmt: skip
     _map(slide, {3}, "answers")
-    applied, detected, quality = f["applied"], f["detected"], f["quality"]
-    refused = sum(f["refactoring"]["refused_by_reason"].values())
+    refactoring = f["refactoring"]
+    applied, detected = f["applied"], f["detected"]
+    refused, missing = refactoring["refused"], refactoring["unlocatable"]
     frame = _frame(slide, MARGIN, TOP, CONTENT, Inches(0.7), MSO_ANCHOR.BOTTOM)
     paragraph = frame.paragraphs[0]
     _run(paragraph, f"{detected:,}", SIZE_STAT, INK, strong=True)
@@ -1288,20 +1428,163 @@ def _slide_engine(slide, f, heading) -> None:
         frame.margin_top = frame.margin_bottom = Inches(0.04)
         _put(frame, label, SIZE_CAPTION, colour, strong=True)
         _put(frame, _pct(share), SIZE_CAPTION, colour, new=True)
-    _put(_frame(slide, MARGIN, Inches(3.95), CONTENT, Inches(0.3)),
-         f"What happened to the {applied:,} rewrites", SIZE_CAPTION, SOFT, strong=True)  # fmt: skip
-    width = Emu(int((CONTENT - 2 * GAP) / 3))
-    tiles = [
-        (_pct(f["resolved"]), "removed the smell they were made for"),
-        (_pct(f["broken"]), "added a new kind of compile error, so they are never written"),
-        (_pct(quality["acceptable_reweighted"]),
-         f"acceptable to a developer, in a manual review of {quality['reviewed']}"),
+    # Pjesa e tretë është shumë e hollë për shiritin, ndaj shuma shkruhet e plotë: pa të, dy
+    # numrat e shiritit nuk mblidhen te i pari (vërejtja e mentores, 23 tetor).
+    frame = _frame(slide, MARGIN, Inches(3.72), CONTENT, Inches(0.3))
+    paragraph = frame.paragraphs[0]
+    _run(paragraph, f"+ {missing} ({_pct(missing / detected)}) could not be found again in the "
+         "file, so no fix was tried", SIZE_SMALL, SOFT)  # fmt: skip
+    _run(paragraph, f"      {applied:,} + {refused:,} + {missing} = {detected:,}", SIZE_SMALL, INK,
+         strong=True)  # fmt: skip
+    column_w = Emu(int((CONTENT - Inches(0.6)) / 2))
+    reasons = sorted(refactoring["refused_by_reason"].items(), key=lambda pair: -pair[1])
+    reason_rows = [(REASON_EN[name], count) for name, count in reasons[:3]]
+    rest = reasons[3:]
+    reason_rows.append((f"{_count_word(len(rest), len(reasons)).capitalize()} other reasons",
+                        sum(count for _, count in rest)))  # fmt: skip
+    by_fix = sorted(refactoring["applied_by_refactoring"].items(), key=lambda pair: -pair[1])
+    for left, title, rows, total, colour in (
+        (MARGIN, f"The {applied:,} rewrites, by fix",
+         [(_words(name), count) for name, count in by_fix], applied, ACCENT),
+        (Emu(int(MARGIN + column_w + Inches(0.6))), f"Why the {refused:,} were refused", reason_rows,
+         refused, MUTED),
+    ):  # fmt: skip
+        _put(_frame(slide, left, Inches(4.3), column_w, Inches(0.3)), title, SIZE_CAPTION, SOFT,
+             strong=True)  # fmt: skip
+        _share_rows(slide, left, Inches(4.75), column_w, rows, total, colour)
+
+
+# Arsyet e refuzimit me fjalë sallë; kodet janë ato të motorit (`refactor/base.py`).
+REASON_EN = {
+    "shape_not_matched": "Code shape does not match the fix",
+    "control_flow_escapes": "A return, break or continue leaves the block",
+    "not_definitely_assigned": "An input value is not definitely assigned",
+    "multiple_outputs": "More than one value comes out",
+    "ambiguous_overload": "An overload cannot be told apart",
+    "unresolved_name": "A name cannot be resolved",
+}
+# Të njëjtat arsye me fjalët e Tabelës 11 të punimit, për udhëzuesin shqip.
+REASON_SQ_SHORT = {
+    "shape_not_matched": "forma e kodit nuk përputhet",
+    "control_flow_escapes": "rrjedha e kontrollit del nga blloku",
+    "not_definitely_assigned": "vlerë e pacaktuar me siguri",
+    "multiple_outputs": "më shumë se një vlerë dalëse",
+    "ambiguous_overload": "mbingarkesë e paqartë",
+    "unresolved_name": "emër i pazgjidhur",
+}
+
+
+def _per_fix(f: dict) -> dict[str, dict[str, int]]:
+    """Vendet, rishkrimet dhe verdiktet sipas ndreqjes, nga rreshti i çdo vendi.
+
+    Llogaritet si tabela «sipas transformimit» e punimit (`chapters._by_transformation`),
+    nga i njëjti skedar, që shumat të përkojnë me totalet e sllajdit të motorit. Skedari nuk
+    i mban vendet që nuk u gjetën dot sërish, ndaj vendet e tij janë totali pa to.
+    """
+    rows = _rows_if_present("refactoring_sites.csv") or []
+    out: dict[str, dict[str, int]] = {}
+    for row in rows:
+        entry = out.setdefault(row["refactoring"], dict.fromkeys(
+            ("sites", "applied", "passed", "new_errors", "resolved"), 0))  # fmt: skip
+        entry["sites"] += 1
+        if row["applied"] != "1":
+            continue
+        entry["applied"] += 1
+        entry["passed"] += row["verdict"] in ("compiles", "no_new_errors")
+        entry["new_errors"] += row["verdict"] == "new_errors"
+        entry["resolved"] += row["resolution"] == "resolved"
+    totals = {key: sum(entry[key] for entry in out.values()) for key in ("sites", "applied")}
+    expected = {"sites": f["detected"] - f["refactoring"]["unlocatable"], "applied": f["applied"]}
+    if totals != expected:
+        raise ValueError(f"refactoring_sites.csv nuk përkon me totalet: {totals}")
+    return out
+
+
+def _share_rows(slide, left, top, width, rows, total, colour) -> None:
+    """Emri, numri dhe një shirit sa pjesa e tij: renditja lexohet pa e lexuar numrin."""
+    pitch, bar_h = Inches(0.42), Inches(0.08)
+    count_w = Inches(1.0)
+    for label, count in rows:
+        _put(_frame(slide, left, top, Emu(int(width - count_w)), Inches(0.28)), label, SIZE_SMALL,
+             INK)  # fmt: skip
+        _put(_frame(slide, Emu(int(left + width - count_w)), top, count_w, Inches(0.28)),
+             f"{count:,}", SIZE_SMALL, INK, strong=True, align=PP_ALIGN.RIGHT)  # fmt: skip
+        _shape(slide, left, Emu(int(top + Inches(0.29))), width, bar_h, PANEL,
+               kind=MSO_SHAPE.RECTANGLE)  # fmt: skip
+        _shape(slide, left, Emu(int(top + Inches(0.29))),
+               Emu(max(int(width * count / total), int(Inches(0.04)))), bar_h, colour,
+               kind=MSO_SHAPE.RECTANGLE)  # fmt: skip
+        top = Emu(int(top + pitch))
+
+
+def _slide_validation(slide, f, heading) -> None:
+    """Si u kontrollua çdo rishkrim, hap pas hapi, dhe çka nuk e kontrollon asnjë hap.
+
+    Mentorja kërkoi që procesi i validimit të shpjegohej dhe që të thuhej qartë se
+    kompilimi nuk e garanton sjelljen; paneli djathtas e thotë këtë me shkronja të mëdha.
+    """
+    _heading(slide, heading, "How the rewrites were validated, from the syntax tree to a manual "
+                             "review")  # fmt: skip
+    _map(slide, {3}, "validates")
+    refactoring, quality = f["refactoring"], f["quality"]
+    applied = f["applied"]
+    verdicts, resolution = refactoring["verdicts"], refactoring["resolution"]
+    passed = verdicts.get("compiles", 0) + verdicts.get("no_new_errors", 0)
+    verify = _load("verify_with_project.json")
+    in_project = verify["compiled_in_project"]
+    changed = sum(e["behaviour"]["changed"] for e in quality["by_refactoring"].values())
+    steps = [
+        (f"Before: prove the preconditions {_cite('Opdyke 1992')}",
+         "on the syntax tree, or refuse with a reason",
+         f"{applied:,} rewritten", f"{refactoring['refused']:,} refused"),
+        ("After: compile with javac",
+         "the rewritten file may add no new kind of error",
+         f"{passed:,} pass ({_pct(passed / applied)})",
+         f"{verdicts.get('new_errors', 0)} fail, never written · {verdicts.get('parses', 0)} no "
+         "verdict"),
+        ("Measure the smell again",
+         "does the detector still fire on the new code?",
+         f"{resolution['resolved']:,} removed ({_pct(f['resolved'])})",
+         f"{resolution['persists']:,} remain · {resolution['unknown']} not identifiable"),
+        ("Sample: compile inside the project",
+         f"{verify['rewrites']} rewrites in {verify['files_checked']} files, with their neighbours",
+         f"{in_project['compiles']} compile fully",
+         f"{in_project['new_errors']} new errors · {in_project['not_checked']} no verdict"),
+        ("Read by hand",
+         f"{quality['reviewed']} rewrites: behavior, benefit, acceptance",
+         f"{_pct(quality['acceptable_reweighted'])} acceptable",
+         f"{changed} changed the behavior"),
     ]  # fmt: skip
-    for index, (number, caption) in enumerate(tiles):
-        left = Emu(int(MARGIN + index * (width + GAP)))
-        _shape(slide, left, Inches(4.4), width, Inches(1.8), PANEL)
-        _stat(slide, Emu(int(left + Inches(0.25))), Inches(4.6), Emu(int(width - Inches(0.5))),
-              number, caption, ACCENT, SIZE_STAT, INK)  # fmt: skip
+    width, height, pitch = Inches(8.0), Inches(0.8), Inches(0.9)
+    text_w, outcome_w = Inches(4.15), Inches(3.05)
+    top = Inches(1.95)
+    for index, (title, detail, outcome, cost) in enumerate(steps, 1):
+        _shape(slide, MARGIN, top, width, height, PANEL)
+        _badge(slide, Emu(int(MARGIN + Inches(0.16))), Emu(int(top + (height - Inches(0.36)) / 2)),
+               str(index), ACCENT)  # fmt: skip
+        frame = _frame(slide, Emu(int(MARGIN + Inches(0.66))), top, text_w, height,
+                       MSO_ANCHOR.MIDDLE)  # fmt: skip
+        _put(frame, title, SIZE_CAPTION, INK, strong=True)
+        _put(frame, detail, SIZE_SMALL, SOFT, new=True)
+        frame = _frame(slide, Emu(int(MARGIN + width - outcome_w - Inches(0.18))), top, outcome_w,
+                       height, MSO_ANCHOR.MIDDLE)  # fmt: skip
+        _put(frame, outcome, SIZE_CAPTION, ACCENT, strong=True, align=PP_ALIGN.RIGHT)
+        _put(frame, cost, SIZE_SMALL, CRITICAL if index > 1 else SOFT, new=True,
+             align=PP_ALIGN.RIGHT)  # fmt: skip
+        top = Emu(int(top + pitch))
+    left = Emu(int(MARGIN + width + Inches(0.35)))
+    panel_w = Emu(int(WIDTH - MARGIN - left))
+    panel_h = Emu(int(4 * pitch + height))
+    _shape(slide, left, Inches(1.95), panel_w, panel_h, REMOVED_TINT)
+    frame = _frame(slide, Emu(int(left + Inches(0.25))), Inches(2.15),
+                   Emu(int(panel_w - Inches(0.5))), Emu(int(panel_h - Inches(0.4))))  # fmt: skip
+    _put(frame, "Not verified", SIZE_CAPTION, CRITICAL, strong=True)
+    _put(frame, "Compiling ≠ the same behavior", SIZE_LEAD, INK, strong=True, new=True, before=4)
+    _put(frame, "No step runs the program. The projects' own tests were not run: the data keeps "
+         "only .java files, without build files or libraries.", SIZE_CAPTION, INK, new=True,
+         before=10)  # fmt: skip
+    _put(frame, "So the claim is: the rewrite compiles, or adds no new kind of error.",
+         SIZE_CAPTION, INK, strong=True, new=True, before=10)  # fmt: skip
 
 
 def _slide_example(slide, f, heading) -> None:
@@ -1337,51 +1620,97 @@ def _slide_example(slide, f, heading) -> None:
 
 
 def _slide_closing(slide, f, heading) -> None:
+    """Gjetjet, pse kanë rëndësi, dhe çka vjen më pas: tri pjesët që kërkoi mentorja.
+
+    Pikat «Why it matters» dhe «Next» janë ato të punimit (6.5 dhe 6.7), jo të reja.
+    """
     _background(slide, NAVY)
     _heading(slide, heading, dark=True)
     applied, detected = f["applied"], f["detected"]
     lowest, highest = min(f["recall"]) * 100, max(f["recall"]) * 100
     better = sum(f["best"][s]["mcc"] > f["strategy"][s]["mcc"] for s in f["smells"])
-    limits_w = Inches(4.6)
-    _put(_frame(slide, MARGIN, Inches(1.55), limits_w, Inches(0.45)), "Limitations", SIZE_LEAD,
-         DANGER_ON_DARK, strong=True)  # fmt: skip
-    _bullet_list(slide, MARGIN, Inches(2.15), limits_w, Inches(3.0), [
-        "Compiles ≠ behaves the same: project tests were not run.",
-        "One dataset, four smells, Java only.",
-        "Best model chosen on the same predictions: slightly optimistic.",
-    ], SIZE_CAPTION, ON_DARK, DANGER_ON_DARK)  # fmt: skip
-    left = Emu(int(MARGIN + limits_w + Inches(0.6)))
-    width = Emu(int(WIDTH - MARGIN - left))
-    _put(_frame(slide, left, Inches(1.55), width, Inches(0.45)), "Answers", SIZE_LEAD,
+    verdicts = f["refactoring"]["verdicts"]
+    passed = (verdicts.get("compiles", 0) + verdicts.get("no_new_errors", 0)) / applied
+    findings_w = Inches(5.6)
+    _put(_frame(slide, MARGIN, Inches(1.4), findings_w, Inches(0.45)), "Key findings", SIZE_LEAD,
          ACCENT_ON_DARK, strong=True)  # fmt: skip
     answers = [
         f"Rules are precise, but find only {lowest:.0f}–{highest:.0f} of every 100 smells.",
         f"Learned models do better on {_count_word(better, len(f['smells']))}, "
         f"clearly on {_count_word(len(f['sure']), len(f['smells']))}.",
-        f"Yes, for {applied / detected:.0%} of places, and nothing that breaks compiling is "
-        "written.",
+        f"Yes, for {applied / detected:.0%} of places; {passed:.0%} compile or add no new error, "
+        "but behavior is not yet proven.",
     ]
-    top = Inches(2.15)
+    top = Inches(1.95)
     pill_w, pill_h = Inches(0.62), Inches(0.36)
     for index, text in enumerate(answers, 1):
-        pill = _shape(slide, left, top, pill_w, pill_h, ACCENT_ON_DARK)
+        pill = _shape(slide, MARGIN, top, pill_w, pill_h, ACCENT_ON_DARK)
         pill.adjustments[0] = 0.5
         frame = pill.text_frame
         frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
         frame.vertical_anchor = MSO_ANCHOR.MIDDLE
         _put(frame, f"Q{index}", SIZE_SMALL, NAVY, strong=True, align=PP_ALIGN.CENTER)
-        _put(_frame(slide, Emu(int(left + pill_w + Inches(0.2))), Emu(int(top - Inches(0.02))),
-                    Emu(int(width - pill_w - Inches(0.2))), Inches(0.9)), text, SIZE_LEAD,
+        _put(_frame(slide, Emu(int(MARGIN + pill_w + Inches(0.2))), Emu(int(top - Inches(0.02))),
+                    Emu(int(findings_w - pill_w - Inches(0.2))), Inches(0.9)), text, Pt(18),
              ON_DARK)  # fmt: skip
         top = Emu(int(top + Inches(0.95)))
-    frame = _frame(slide, MARGIN, Inches(5.45), CONTENT, Inches(1.2))
-    _put(frame, "Thank you  ·  Questions?", Pt(40), ON_DARK, strong=True)
-    _put(frame, REPOSITORY.replace("https://", ""), SIZE_CAPTION, ON_DARK_SOFT, new=True, before=4)
+    frame = _frame(slide, MARGIN, Emu(int(top + Inches(0.05))), findings_w, Inches(0.6))
+    paragraph = frame.paragraphs[0]
+    _run(paragraph, "Limits: ", SIZE_SMALL, DANGER_ON_DARK, strong=True)
+    _run(paragraph, "one dataset, four smells, Java only; the best model was chosen on the same "
+         "predictions, so it is slightly optimistic.", SIZE_SMALL, ON_DARK_SOFT)  # fmt: skip
+    left = Emu(int(MARGIN + findings_w + Inches(0.55)))
+    width = Emu(int(WIDTH - MARGIN - left))
+    for top, title, lines in (
+        (Inches(1.4), "Why it matters", [
+            "Published thresholds are a starting point: calibrate or learn them for your own "
+            "code.",
+            "An automatic fix is a compiler-checked proposal that a developer reviews and tests.",
+        ]),
+        (Inches(3.3), "Future research", [
+            "Run the projects' own tests, to go from “compiles” to “behaves the same”.",
+            "Resolve names inside a project, to add Move Method and Encapsulate Field.",
+            "More smells beyond MLCQ, and reviewers other than the author.",
+        ]),
+    ):  # fmt: skip
+        _put(_frame(slide, left, top, width, Inches(0.45)), title, SIZE_LEAD, ACCENT_ON_DARK,
+             strong=True)  # fmt: skip
+        _bullet_list(slide, left, Emu(int(top + Inches(0.55))), width, Inches(1.5), lines,
+                     SIZE_CAPTION, ON_DARK, ACCENT_ON_DARK, after=6)  # fmt: skip
+    frame = _frame(slide, MARGIN, Inches(5.65), CONTENT, Inches(1.1))
+    _put(frame, "Thank you  ·  Questions?", Pt(36), ON_DARK, strong=True)
+    _put(frame, REPOSITORY.replace("https://", ""), SIZE_CAPTION, ON_DARK_SOFT, new=True, before=2)
 
 
-LAYOUTS = [_slide_title, _slide_problem, _slide_smells, _slide_system, _slide_data,
-           _slide_results, _slide_agreement, _slide_engine, _slide_example, _slide_closing]  # fmt: skip
-DARK = {0, len(LAYOUTS) - 1}
+def _slide_references(slide, f, heading) -> None:
+    """Burimet e cituara në sllajde, në IEEE, në dy kolona që të lexohen nga salla."""
+    _heading(slide, heading, "Cited on these slides, in IEEE style; the thesis lists all 45 "
+                             "sources")  # fmt: skip
+    half = (len(DECK_SOURCES) + 1) // 2
+    column_w = Emu(int((CONTENT - Inches(0.5)) / 2))
+    hang = int(Inches(0.42))
+    for column, entries in enumerate((DECK_SOURCES[:half], DECK_SOURCES[half:])):
+        left = Emu(int(MARGIN + column * (column_w + Inches(0.5))))
+        frame = _frame(slide, left, Inches(1.75), column_w, Inches(4.95))
+        for offset, (_, text) in enumerate(entries):
+            number = column * half + offset + 1
+            paragraph = frame.add_paragraph() if offset else frame.paragraphs[0]
+            paragraph.space_after = Pt(6)
+            properties = paragraph._p.get_or_add_pPr()
+            properties.set("marL", str(hang))
+            properties.set("indent", str(-hang))
+            _run(paragraph, f"[{number}]  ", SIZE_FOOT, ACCENT, strong=True)
+            # IEEE shkruan me të pjerrëta titullin e librit dhe emrin e revistës: `*...*`.
+            for part, piece in enumerate(text.split("*")):
+                if piece:
+                    _run(paragraph, piece, SIZE_FOOT, INK).font.italic = part % 2 == 1
+
+
+LAYOUTS = [_slide_title, _slide_problem, _slide_contribution, _slide_smells, _slide_system,
+           _slide_data, _slide_results, _slide_agreement, _slide_engine, _slide_validation,
+           _slide_example, _slide_closing, _slide_references]  # fmt: skip
+# Hapja dhe mbyllja me sfond të errët; referencat vijnë pas mbylljes, me sfond të çelët.
+DARK = {0, LAYOUTS.index(_slide_closing)}
 
 
 def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], list[str]]:
@@ -1405,6 +1734,7 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
             _footer(slide, index + 1, dark=index in DARK)
     main = len(deck.slides)
     refactoring, smells, detected, pmd = f["refactoring"], f["smells"], f["detected"], f["pmd"]
+    quality = f["quality"]
 
     # ------------------------------------------------------------------
     # Rezervë: vetëm për pyetjet, nuk thuhen në dhjetë minutat
@@ -1475,7 +1805,7 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     )  # fmt: skip
 
     names = PMD_NAMES
-    slide = backup("Comparison with PMD", f"PMD {pmd['pmd_version']} with its default thresholds, same samples",
+    slide = backup("Comparison with PMD", f"PMD {pmd['pmd_version']} {_cite('PMD Team 2026')} with its default thresholds, same samples",
                    "PMD is never ahead once the confidence interval is considered. PMD has no "
                    "Feature Envy rule.")  # fmt: skip
     _data_table(
@@ -1494,30 +1824,54 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     )  # fmt: skip
 
     verify = _load("verify_with_project.json")
-    reasons = sorted(refactoring["refused_by_reason"].items(), key=lambda pair: -pair[1])[:3]
-    reason_en = {"shape_not_matched": "Code shape does not match the transformation",
-                 "control_flow_escapes": "A return, break or continue leaves the block",
-                 "not_definitely_assigned": "An input value is not definitely assigned"}  # fmt: skip
-    slide = backup("Verification in detail", "Why sites were refused, and what compiling inside the project shows",
+    slide = backup("Verification in detail", "Which rewrites succeeded and which had problems, per fix and per check",
                    "Isolated files often cannot compile because their neighbours are missing; "
-                   "inside the project many more compile fully.")  # fmt: skip
-    _bullet_list(
+                   "inside the project many more compile fully, and 2 show an error the file "
+                   "alone hid.")  # fmt: skip
+    _put(_frame(slide, MARGIN, Inches(1.62), CONTENT, Inches(0.3)),
+         f"All {detected:,} places, by fix: “pass” = compiles, or adds no new kind of error",
+         SIZE_SMALL, SOFT, strong=True)  # fmt: skip
+    per_fix = _per_fix(f)
+    totals = {key: sum(entry[key] for entry in per_fix.values())
+              for key in ("sites", "applied", "passed", "new_errors", "resolved")}  # fmt: skip
+    _data_table(
         slide,
-        MARGIN,
-        TOP,
-        CONTENT,
-        Inches(4.6),
-        [f"{reason_en.get(name, name)}: {count:,} sites ({_pct(count / detected)})"
-         for name, count in reasons]
-        + [
-            f"Same {verify['rewrites']} rewrites compiled inside their project: "
-            f"{verify['compiled_alone'].get('compiles', 0)} → "
-            f"{verify['compiled_in_project'].get('compiles', 0)} compile fully, "
-            f"{verify['compiled_in_project'].get('new_errors', 0)} add a new error.",
-            f"After rewriting, {sum(refactoring['introduced_smells'].values()):,} new smells "
-            "appeared, mostly Long Parameter List from Extract Method.",
-        ],
+        ["Fix", "Places", "Rewritten", "Pass javac", "New error", "Smell removed", "Acceptable*"],
+        [
+            [_words(name), f"{e['sites']:,}", f"{e['applied']:,}",
+             f"{e['passed']:,} ({_pct(e['passed'] / e['applied'], 0)})", f"{e['new_errors']}",
+             f"{e['resolved']:,} ({_pct(e['resolved'] / e['applied'], 0)})",
+             f"{quality['by_refactoring'][name]['acceptable']:.0%}"]
+            for name, e in sorted(per_fix.items(), key=lambda pair: -pair[1]["applied"])
+        ]
+        + [["Not located again", f"{refactoring['unlocatable']}", "—", "—", "—", "—", "—"]]
+        + [["All", f"{totals['sites'] + refactoring['unlocatable']:,}", f"{totals['applied']:,}",
+            f"{totals['passed']:,} ({_pct(totals['passed'] / totals['applied'], 0)})",
+            f"{totals['new_errors']}",
+            f"{totals['resolved']:,} ({_pct(totals['resolved'] / totals['applied'], 0)})",
+            _pct(quality["acceptable_reweighted"])]],
+        top=Inches(1.95), size=SIZE_SMALL, row=Inches(0.4),
     )  # fmt: skip
+    alone, inside = verify["compiled_alone"], verify["compiled_in_project"]
+    _put(_frame(slide, MARGIN, Inches(4.55), CONTENT, Inches(0.3)),
+         f"The same {verify['rewrites']} rewrites ({verify['files_checked']} files), compiled two ways",
+         SIZE_SMALL, SOFT, strong=True)  # fmt: skip
+    _data_table(
+        slide,
+        ["Compiled", "Compile fully", "No new kind of error", "New error", "No verdict"],
+        [[label, str(counts.get("compiles", 0)), str(counts.get("no_new_errors", 0)),
+          str(counts.get("new_errors", 0)), str(counts.get("not_checked", 0))]
+         for label, counts in (("The file alone", alone), ("Inside its project", inside))],
+        top=Inches(4.88), size=SIZE_SMALL, row=Inches(0.4),
+    )  # fmt: skip
+    introduced = refactoring["introduced_smells"]
+    newest = max(introduced, key=introduced.get)
+    _put(_frame(slide, MARGIN, Inches(6.2), CONTENT, Inches(0.6)),
+         f"* Manual review of {quality['per_refactoring']} rewrites per fix; “All” is reweighted by "
+         f"how often each fix occurs. {refactoring['verdicts'].get('parses', 0)} rewrites got no javac "
+         f"verdict. After "
+         f"rewriting, {sum(introduced.values()):,} new smells appeared, most often {_words(newest)} "
+         f"({introduced[newest]}).", SIZE_SMALL, SOFT)  # fmt: skip
 
     slide = backup("Extract Method in the interface", "jsoup · NodeTraversor.traverse, preview before any file is touched",
                    "The extracted method is named 'extracted'; choosing a meaningful name is "
@@ -1527,7 +1881,7 @@ def build_deck(f: dict, long: bool) -> tuple[str, list[tuple[str, list[Line]]], 
     picture.line.color.rgb = FRAME
     picture.line.width = Pt(0.75)
 
-    slide = backup("Comparison with the literature", "Madeyski & Lewowski (2023), same MLCQ dataset, DS1",
+    slide = backup("Comparison with the literature", f"Madeyski & Lewowski {_cite('Madeyski & Lewowski 2023')}, same MLCQ dataset, DS1",
                    "They used random 5-fold cross-validation and tuned hyperparameters; we "
                    "grouped by repository and did not tune. Our results are in the same range.")  # fmt: skip
     _data_table(
@@ -1596,7 +1950,7 @@ CONFIDENCE = [
     "way» është plotësisht normale në një konferencë ndërkombëtare.",
     "Te pyetjet: dëgjoje deri në fund, ndalu dy sekonda, përgjigju me dy-tri fjali dhe "
     "ndalu. Përgjigja e shkurtër dhe e saktë duket më e sigurt se ajo e gjata.",
-    "Kufizimet i ke vetë te sllajdi 10. Kur dikush të pyet për to, nuk të ka kapur: ti i "
+    "Kufizimet i ke vetë te sllajdet 10 dhe 12. Kur dikush të pyet për to, nuk të ka kapur: ti i "
     "ke thënë i pari. Pranoje, thuaj pse, dhe çka do të bëje më pas.",
     "Kujto: e ndërtove vetë, dhe askush në sallë nuk e njeh këtë sistem më mirë se ti. "
     "Shumica e prezantuesve janë studentë, dhe salla dëshiron që të dalësh mirë.",
@@ -1607,15 +1961,15 @@ CHECKLIST = [
     "sallën.",
     "Merr të dy versionet në USB, si .pptx dhe si PDF, dhe dërgoji edhe me email vetes.",
     "Arrij te salla I-302 rreth 08:30, para se të fillojë seanca. Hape prezantimin në "
-    "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 9 duket njësoj (shkronja "
+    "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 11 duket njësoj (shkronja "
     "Consolas).",
     "Prezantohu te kryesuesi i seancës (Blerim Zylifu). Pyete sa minuta ka çdo prezantim "
     "dhe si ta sinjalizon kohën. Me 9 minuta ose më shumë merr versionin e gjatë; me më "
     "pak, të shkurtrin.",
     "Ujë pranë, telefoni pa zë, fleta e pyetjeve në xhep.",
     "Me versionin e shkurtër, kur vendi është 7 minuta: nëse në minutën e pestë je ende te "
-    "sllajdi 6, kalo sllajdin 9 (shembullin) me një fjali dhe mbyll me sllajdin 10.",
-    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 7, lëri të gjitha "
+    "sllajdi 7, kalo sllajdin 11 (shembullin) me një fjali dhe mbyll me sllajdin 12.",
+    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 9, lëri të gjitha "
     "fjalitë e gjelbra që mbeten dhe vazhdo me tekstin e shkurtër.",
 ]
 
@@ -1662,7 +2016,7 @@ def build_sheet(f: dict, script: list[tuple[str, list[str]]]) -> str:
     for line in [
         f"{os.path.basename(DECK)}: versioni i shkurtër, {words[False]} fjalë, rreth "
         f"{minutes(False, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur kryesuesi jep "
-        "7 minuta ose më pak.",
+        "7 deri 8 minuta.",
         f"{os.path.basename(DECK_LONG)}: versioni i gjatë, {words[True]} fjalë, rreth "
         f"{minutes(True, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur jep vërtet 10 "
         "minuta, siç thotë email-i.",
@@ -1942,7 +2296,7 @@ def _question_bank(f: dict) -> list[Question]:
                  "Yes, and it is free. It is open source on GitHub under the MIT license, and it "
                  "runs on a normal laptop.",
                  "Po, dhe është falas. Është me burim të hapur në GitHub, me licencën MIT, dhe "
-                 "punon në një laptop të zakonshëm.", "Limitations and takeaways"),
+                 "punon në një laptop të zakonshëm.", "Conclusions"),
         Question(1, "What surprised you the most?",
                  "Çka të befasoi më shumë?",
                  "That for Feature Envy even two experts agree no better than chance. So part of "
@@ -2119,7 +2473,7 @@ def _question_bank(f: dict) -> list[Question]:
                  "does not depend on the choice.",
                  f"Po, pak, dhe e them hapur. Prandaj i raportoj të gjithë algoritmet: edhe më i "
                  f"dobëti i mund rregullat te {f['weakest']} nga {n} erërat, ndaj përfundimi nuk "
-                 "varet nga zgjedhja.", "Limitations and takeaways", "Every algorithm"),
+                 "varet nga zgjedhja.", "Conclusions", "Every algorithm"),
         Question(4, "If reviewers disagree, are your labels reliable at all?",
                  "Nëse rishikuesit nuk pajtohen, a janë fare të besueshme etiketat?",
                  f"For Feature Envy, not really: the reviewers' MCC is {envy:.2f}, and I report that "
@@ -2139,7 +2493,7 @@ def _question_bank(f: dict) -> list[Question]:
                  f"vërtetohen në pemën e sintaksës, dhe rezultati nuk shton gabim të ri kompilimi. "
                  f"Në rishikimin tim {changed} ndryshim Extract Method dukej se e ndryshonte "
                  "sjelljen, dhe pikërisht prandaj nuk pretendoj më shumë.",
-                 "Limitations and takeaways"),
+                 "Conclusions"),
         Question(4, "Why tree-sitter, and not a compiler front end that resolves names?",
                  "Pse tree-sitter, dhe jo një pjesë kompajleri që i zgjidh emrat?",
                  "Tree-sitter is fast, it works on code that does not compile, and it needs no "
@@ -2192,7 +2546,7 @@ def _question_bank(f: dict) -> list[Question]:
                  "pinned versions, so a clean copy of the project can regenerate every table.",
                  "Po. Çdo numër vjen nga një skript dhe ruhet me fara të fiksuara të rastit dhe me "
                  "versione të fiksuara, ndaj një kopje e pastër e projektit mund ta rikrijojë çdo "
-                 "tabelë.", "Limitations and takeaways"),
+                 "tabelë.", "Conclusions"),
         Question(4, "Would this work on industrial code, not open source?",
                  "A do të punonte kjo për kod industrial, jo me burim të hapur?",
                  "Probably with recalibration: MLCQ is open-source code, so the thresholds and the "
@@ -2201,7 +2555,7 @@ def _question_bank(f: dict) -> list[Question]:
                  "Ndoshta, por me rikalibrim: MLCQ është kod me burim të hapur, ndaj pragjet dhe "
                  "modelet mund të kenë nevojë për të dhëna të reja. Këtë e them si kufizim, dhe "
                  "rrjedha është me skripte, ndaj mund të riekzekutohet mbi një bazë tjetër.",
-                 "Limitations and takeaways"),
+                 "Conclusions"),
     ]  # fmt: skip
 
 
@@ -2220,7 +2574,7 @@ class SlideGuide:
 
 
 def _slide_guides(f: dict) -> list[SlideGuide]:
-    """Një udhëzim për secilin nga nëntë sllajdet kryesore, me radhën e prezantimit.
+    """Një udhëzim për secilin sllajd kryesor, me radhën e prezantimit.
 
     Titujt vijnë nga `_headings`, të njëjtët që vë prezantimi, dhe «Çka shihet» përshkruan
     pamjen që vizatojnë funksionet `_slide_*`: kur ndryshon një sllajd, ndryshon edhe këtu.
@@ -2240,6 +2594,16 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
     quality = f["quality"]
     found_low, found_high = (bound(f["best"][s]["recall"] for s in smells) * 100
                              for bound in (min, max))  # fmt: skip
+    refactoring = f["refactoring"]
+    missing = refactoring["unlocatable"]
+    verdicts, resolution = refactoring["verdicts"], refactoring["resolution"]
+    passed = verdicts.get("compiles", 0) + verdicts.get("no_new_errors", 0)
+    verify = _load("verify_with_project.json")
+    in_project = verify["compiled_in_project"]
+    changed = sum(e["behaviour"]["changed"] for e in quality["by_refactoring"].values())
+    by_fix = sorted(refactoring["applied_by_refactoring"].items(), key=lambda pair: -pair[1])
+    reasons = sorted(refactoring["refused_by_reason"].items(), key=lambda pair: -pair[1])
+    references = len(DECK_SOURCES)
     return [
         SlideGuide(
             heading=titles[0],
@@ -2273,8 +2637,10 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "rregullat e botuara? Q2: a bën më mirë mësimi makinerik me të njëjtat metrika? "
                 "Q3: a mund të ndreqen automatikisht pa e prishur kompilimin?",
                 "Në fund të çdo karte, një rreth me shkronjë: A (gri) rregullat, B (blu) mësimi "
-                "makinerik, C (blu) motori. Janë të njëjtat shkronja që shfaqen te sllajdi 4.",
-                "Nga sllajdi 5 deri te 9, lart djathtas ka tri etiketa Q1 · Q2 · Q3. Ajo me blu "
+                "makinerik, C (blu) motori. Janë të njëjtat shkronja që shfaqen te sllajdi 5.",
+                "Numrat në kllapa katrore, si [1] te nëntitulli, janë referencat IEEE; lista është "
+                f"te sllajdi {len(titles)}. Nuk i lexon me zë.",
+                "Nga sllajdi 6 deri te 11, lart djathtas ka tri etiketa Q1 · Q2 · Q3. Ajo me blu "
                 "është pyetja për të cilën flet sllajdi, dhe poshtë tyre shkruan çka bën sllajdi "
                 "me të, p.sh. «answers Q1 · Q2»: kjo është harta e prezantimit.",
             ],
@@ -2287,6 +2653,35 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
         ),
         SlideGuide(
             heading=titles[2],
+            message="Çka e dallon punimin: tri mangësi të studimeve të mëparshme dhe si e trajton "
+            "secilën, plus një mjet i hapur.",
+            shows=[
+                "Dy kolona: majtas, me gri, «Earlier studies»; djathtas, me blu të çelët dhe "
+                "shkronja të trasha, «This work». Shigjeta mes tyre e lidh secilën mangësi me "
+                "përgjigjen e punimit.",
+                f"Rreshti 1: rregullat e botuara merren si të sakta, me pragje të vendosura mbi "
+                f"sisteme të tjera {_cite('Lanza & Marinescu 2006')} → këtu maten kundrejt 26 "
+                f"programuesve profesionistë të MLCQ-së {_cite('Madeyski & Lewowski 2020')}.",
+                "Rreshti 2: rregullat dhe mësimi makinerik rrallë krahasohen mbi të njëjtat të "
+                "dhëna, dhe notat varen nga mënyra si ndërtohen të dhënat "
+                f"{_cite('Arcelli Fontana et al. 2016', 'Di Nucci et al. 2018')} → këtu të "
+                f"njëjtat {f['samples']:,} mostra, e njëjta notë (MCC), ndarje sipas projektit, "
+                "me intervale 95%.",
+                "Rreshti 3: gjetja dhe ndreqja studiohen veç e veç; ndreqja propozohet dhe "
+                f"vendimi i lihet programuesit {_cite('Tsantalis & Chatzigeorgiou 2009')} → këtu "
+                "një zinxhir: gjej → rishkruaj → kompilo → mat sërish, me parakushtet të "
+                f"vërtetuara më parë {_cite('Opdyke 1992')}.",
+                "Poshtë djathtas, me blu: mjeti është i hapur, me ndërfaqe në shqip të thjeshtë, "
+                "dhe çdo numër rikrijohet me një skript.",
+            ],
+            point=[
+                "Te «First…», «Second…» dhe «Third…», trego rreshtin përkatës: fillo te kutia gri "
+                "majtas, pastaj kalo me dorë te kutia blu djathtas.",
+            ],
+            keywords="tri mangësi · rregullat maten · e njëjta provë · një zinxhir · mjet i hapur",
+        ),
+        SlideGuide(
+            heading=titles[3],
             message="Katër erërat që mat studimi, të vizatuara: salla e sheh çka është secila "
             "para se të dëgjojë një numër.",
             shows=[
@@ -2298,7 +2693,9 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "Data Class: një kuti vetëm me fusha, dhe një klasë tjetër me metodën që punon me "
                 "to. Long Method: një kolonë e gjatë rreshtash kodi. Feature Envy: një metodë në "
                 "klasën e vet («own class») që zgjatet me tri vija te fushat e një klase tjetër.",
-                "Nëntitulli: të katërat janë të etiketuara nga programues profesionistë në MLCQ.",
+                f"Nëntitulli: përkufizimet sipas Fowler-it {_cite('Fowler 2018')}, dhe të katërat "
+                "janë të etiketuara nga programues profesionistë në MLCQ "
+                f"{_cite('Madeyski & Lewowski 2020')}.",
             ],
             point=[
                 "Trego kartat me radhë, nga e majta në të djathtë, kur thua emrin e secilës.",
@@ -2308,7 +2705,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             "Feature Envy te klasa tjetër",
         ),
         SlideGuide(
-            heading=titles[3],
+            heading=titles[4],
             message=f"Një mjet, {f['metrics']} metrika, tri qasje: A rregulla, B modele, C një "
             "motor që ndreq dhe çdo ndreqje e kontrollon me javac.",
             shows=[
@@ -2333,7 +2730,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             "ndërfaqja",
         ),
         SlideGuide(
-            heading=titles[4],
+            heading=titles[5],
             message="Etiketat vijnë nga programues profesionistë (MLCQ), dhe prova bëhet e "
             "drejtë duke i ndarë të dhënat sipas projektit dhe duke përdorur MCC.",
             shows=[
@@ -2358,7 +2755,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             "· MCC",
         ),
         SlideGuide(
-            heading=titles[5],
+            heading=titles[6],
             message="Rregullat kanë të drejtë kur alarmojnë, por humbasin shumicën e rasteve; "
             f"modelet janë më të mira te të katër erërat, dhe qartë te {_dhe(f['sure'])}.",
             shows=[
@@ -2387,7 +2784,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             f"më mirë te të katërta · {_dhe(f['unsure'])} ndoshta rastësi",
         ),
         SlideGuide(
-            heading=titles[6],
+            heading=titles[7],
             message=f"Për {chance} edhe ekspertët nuk pajtohen me njëri-tjetrin; kufiri nuk është "
             "vetëm algoritmi, por vetë përkufizimi i erës.",
             shows=[
@@ -2410,10 +2807,10 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             "përkufizimi",
         ),
         SlideGuide(
-            heading=titles[7],
-            message=f"Motori ndreq vetëm kur është i sigurt: rishkruan {applied / detected:.0%} të "
-            f"vendeve, refuzon të tjerat me arsye, era zhduket në {f['resolved']:.0%}, dhe asnjë "
-            "rishkrim me gabim nuk shkruhet.",
+            heading=titles[8],
+            message=f"Motori ndreq vetëm kur mund ta vërtetojë: rishkruan {applied / detected:.0%} "
+            f"të vendeve, refuzon {refused / detected:.0%} me arsye, dhe {missing} vende nuk u "
+            f"gjetën dot sërish; të trija bashkë janë {detected:,}.",
             shows=[
                 f"Lart: {detected:,} vende në kod ku mund të zbatohej një ndreqje («places in the "
                 "code»).",
@@ -2421,29 +2818,68 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 f"({_pct(applied / detected)}), pjesa gri janë {refused:,} të refuzuarat "
                 f"({_pct(refused / detected)}), sepse nuk u vërtetuan të sigurta. Gjatësia e "
                 "secilës pjese është sa pjesa e saj.",
-                f"Tri kartat «What happened to the {applied:,} rewrites»: {_pct(f['resolved'])} e "
-                "hoqën erën; "
-                f"{_pct(f['broken'])} shtuan një lloj të ri gabimi kompilimi dhe nuk shkruhen "
-                f"kurrë; {_pct(quality['acceptable_reweighted'])} ishin të pranueshme në "
-                f"rishikimin me dorë të {quality['reviewed']} rishkrimeve.",
+                f"Nën shirit, me shkronja të vogla: {missing} vende ({_pct(missing / detected)}) "
+                "nuk u gjetën dot sërish në skedar, ndaj aty nuk u provua asnjë ndreqje; djathtas, "
+                f"shuma e plotë {applied:,} + {refused:,} + {missing} = {detected:,}, që salla ta "
+                "shohë se numrat mblidhen.",
+                f"Poshtë majtas, «The {applied:,} rewrites, by fix»: "
+                + "; ".join(f"{_words(name)} {count:,}" for name, count in by_fix)
+                + ", secila me një shirit sa pjesa e saj.",
+                f"Poshtë djathtas, «Why the {refused:,} were refused»: "
+                + "; ".join(f"{REASON_SQ_SHORT[name]} {count:,}" for name, count in reasons[:3])
+                + f"; tri arsye të tjera {sum(count for _, count in reasons[3:]):,}.",
                 "Tri ndreqjet, në nëntitull. Extract Method: një pjesë e metodës së gjatë kalon "
                 "në një metodë të re. Guard Clauses: if-i i madh që mbështjell gjithë metodën "
                 "bëhet dalje e hershme. Introduce Parameter Object: shumë parametra mblidhen në "
                 "një objekt.",
             ],
             point=[
-                "Te «it found … places», trego numrin e madh, pastaj pjesën blu të "
-                "shiritit.",
-                "Te «It refused the rest», trego pjesën gri. Te «For me, a refusal is a good "
-                "result», mos lëviz: thuaje duke parë sallën.",
-                "Te tri numrat e fundit, trego tri kartat me radhë.",
+                "Te «it found … places», trego numrin e madh, pastaj pjesën blu të shiritit.",
+                "Te «It refused …», trego pjesën gri, pastaj arsyet poshtë djathtas.",
+                f"Te «The other {missing}…», trego rreshtin e vogël nën shirit, me shumën.",
+                "Te «For me, a refusal is a good result», mos lëviz: thuaje duke parë sallën.",
             ],
-            keywords=f"tri ndreqje · {detected:,} → {applied:,} · refuzimi është i saktë · "
-            f"era zhduket {f['resolved']:.0%} · gabimet nuk shkruhen · "
-            f"{quality['acceptable_reweighted']:.0%} të pranueshme",
+            keywords=f"tri ndreqje · {applied:,} + {refused:,} + {missing} = {detected:,} · "
+            "refuzimi është i saktë · arsyet",
         ),
         SlideGuide(
-            heading=titles[8],
+            heading=titles[9],
+            message="Si u kontrollua çdo rishkrim, në pesë hapa, dhe çka nuk e kontrollon asnjë "
+            "hap: sjelljen e programit.",
+            shows=[
+                "Majtas, pesë hapa me numër, nga lart poshtë. Djathtas në secilin, me blu, sa e "
+                "kaluan hapin; poshtë tyre, me të kuqe, sa patën problem.",
+                f"1. Para: kushtet vërtetohen mbi pemën e sintaksës {_cite('Opdyke 1992')}: "
+                f"{applied:,} u rishkruan, {refused:,} u refuzuan.",
+                f"2. Pas: javac mbi skedarin e rishkruar, që nuk lejohet të shtojë lloj të ri "
+                f"gabimi: {passed:,} kaluan ({_pct(passed / applied)}); "
+                f"{verdicts.get('new_errors', 0)} dështuan dhe nuk shkruhen kurrë; "
+                f"{verdicts.get('parses', 0)} mbetën pa verdikt.",
+                f"3. Era matet sërish: u hoq te {resolution['resolved']:,} "
+                f"({_pct(f['resolved'])}); mbeti te {resolution['persists']:,}; te "
+                f"{resolution['unknown']} entiteti nuk u identifikua dot pa mëdyshje.",
+                f"4. Mostër: {verify['rewrites']} rishkrime në {verify['files_checked']} skedarë, "
+                f"të kompiluara brenda projektit të vet: {in_project['compiles']} kompilohen "
+                f"plotësisht, {in_project['new_errors']} kanë gabim të ri, "
+                f"{in_project['not_checked']} mbetën pa verdikt.",
+                f"5. Lexim me dorë i {quality['reviewed']} rishkrimeve: "
+                f"{_pct(quality['acceptable_reweighted'])} të pranueshme (të ripeshuara sipas "
+                f"ndreqjes); {changed} e ndryshonte sjelljen.",
+                "Djathtas, kutia rozë «Not verified»: kompilimi ≠ sjellja e njëjtë. Asnjë hap nuk "
+                "e ekzekuton programin; testet e projekteve nuk u ekzekutuan, sepse të dhënat kanë "
+                "vetëm skedarët .java. Prandaj pretendimi është: kompilohet, ose nuk shton lloj të "
+                "ri gabimi.",
+            ],
+            point=[
+                "Ndiq hapat me dorë nga 1 te 5, një hap për çdo fjali.",
+                "Te «So, to be clear…», trego kutinë rozë djathtas dhe thuaje ngadalë, duke parë "
+                "sallën.",
+            ],
+            keywords="provë para · javac pas · era rimatet · brenda projektit · me dorë · "
+            "kompilimi ≠ sjellja",
+        ),
+        SlideGuide(
+            heading=titles[10],
             message="Një shembull i vërtetë: if-i i madh bëhet dalje e hershme, kodi ngjitet një "
             "nivel lart, kompilohet dhe është i pranueshëm.",
             shows=[
@@ -2467,28 +2903,51 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             keywords="Apache Geode · if i madh → dalje e hershme · një nivel lart · kompilohet",
         ),
         SlideGuide(
-            heading=titles[9],
-            message="Kufizimet i thua vetë, para se të pyesin. Pastaj mbyll me dy mesazhe: "
-            "kufijtë e mësuar i mundin pragjet fikse, dhe ndreqja e sigurt është e mundshme, por "
-            "e ngushtë.",
+            heading=titles[11],
+            message="Tri përgjigjet, pse kanë rëndësi në praktikë, dhe çka vjen më pas; kufijtë "
+            "me një fjali.",
             shows=[
                 "Sfond blu i errët, si sllajdi i parë: salla e kupton që po mbyll.",
-                "Majtas, me të kuqe, «Limitations»: kompilohet ≠ sillet njësoj (testet e "
-                "projekteve nuk u ekzekutuan); një bazë të dhënash, katër erëra, vetëm Java; "
-                "modeli më i mirë u zgjodh mbi të njëjtat parashikime, ndaj është pak optimist.",
-                "Djathtas, me blu të çelët, «Answers»: përgjigjja e secilës pyetje në një fjali, "
-                "me etiketën Q1, Q2, Q3. Kështu salla largohet me tri përgjigje, jo me tri "
-                "pyetje.",
+                "Majtas, «Key findings»: përgjigjja e secilës pyetje në një fjali, me etiketën Q1, "
+                "Q2, Q3. Poshtë tyre, me të kuqe, «Limits»: një bazë të dhënash, katër erëra, "
+                "vetëm Java; modeli më i mirë u zgjodh mbi të njëjtat parashikime, ndaj është pak "
+                "optimist.",
+                "Djathtas lart, «Why it matters»: pragjet e botuara janë pikënisje dhe duhen "
+                "kalibruar ose mësuar për kodin tënd; një ndreqje automatike është propozim i "
+                "kontrolluar nga kompajleri, që programuesi e rishikon dhe e teston.",
+                "Djathtas poshtë, «Future research»: testet e vetë projekteve, që pretendimi të "
+                "ngrihet nga «kompilohet» te «sillet njësoj»; zgjidhja e emrave brenda projektit, "
+                "për Move Method dhe Encapsulate Field; më shumë erëra se ato të MLCQ-së, dhe "
+                "rishikues të tjerë përveç autorit. Të trija janë nga «Puna e ardhshme» e "
+                "punimit.",
                 "Poshtë: «Thank you · Questions?» dhe adresa e projektit në GitHub.",
             ],
             point=[
-                "Trego kolonën e kuqe kur flet për kufizimet, pastaj te «So, the three answers» trego "
-                "përgjigjet Q1, Q2 dhe Q3 me radhë.",
-                "Pas «I am happy to answer your questions», ndalu, buzëqesh dhe prit. Mos e mbyll "
-                "sllajdin: adresa e GitHub-it duhet të mbetet në ekran.",
+                "Te «So, the three answers», trego Q1, Q2 dhe Q3 me radhë.",
+                "Te «In practice…», trego «Why it matters»; te «Next…», «Future research».",
+                "Pas «I am happy to answer your questions», ndalu, buzëqesh dhe prit. Mos kalo te "
+                "referencat: ky sllajd, me adresën e GitHub-it, mbetet në ekran gjatë pyetjeve.",
             ],
-            keywords="kompilohet ≠ sillet njësoj · një bazë, katër erëra, Java · kufijtë e "
-            "mësuar · e sigurt, por e ngushtë · faleminderit",
+            keywords="tri përgjigjet · pragjet janë pikënisje · propozim i kontrolluar · testet "
+            "e projekteve · faleminderit",
+        ),
+        SlideGuide(
+            heading=titles[12],
+            message="Burimet e cituara në sllajde, në stilin IEEE. Nuk thuhet; e hap vetëm nëse "
+            "dikush pyet për një burim.",
+            shows=[
+                f"{references} referenca në dy kolona, me numrat [1]–[{references}] që dalin në "
+                "sllajde, sipas radhës së citimit të parë.",
+                "Teksti i secilës është ai i listës IEEE të punimit; punimi ka gjithsej 45 "
+                "burime.",
+            ],
+            point=[
+                "Nëse të pyesin nga vjen një rregull ose baza e të dhënave, kalo këtu: "
+                f"{', '.join(str(len(titles)))}, Enter.",
+            ],
+            keywords=f"IEEE · {_cite('Fowler 2018')} Fowler · {_cite('Lanza & Marinescu 2006')} "
+            f"Lanza & Marinescu · {_cite('Madeyski & Lewowski 2020')} MLCQ · "
+            f"{_cite('Opdyke 1992')} Opdyke",
         ),
     ]  # fmt: skip
 
@@ -2518,9 +2977,13 @@ def _backup_guides(f: dict) -> dict[str, tuple[str, str]]:
             "Kur pyesin si krahasohet me mjetet ekzistuese.",
         ),
         "Verification in detail": (
-            "Arsyet kryesore të refuzimit me numra, kompilimi brenda projektit, dhe erërat e "
-            "reja pas rishkrimit.",
-            "Kur pyesin pse u rishkrua kaq pak, ose çka do të thotë «kompilohet».",
+            "Dy tabela. E para, sipas ndreqjes: vende, rishkrime, sa e kaluan javac-un, sa "
+            "shtuan gabim të ri, te sa u hoq era, dhe sa ishin të pranueshme në rishikim; me "
+            "rreshtin e vendeve që nuk u gjetën dot sërish dhe totalin. E dyta: të njëjtat "
+            "rishkrime të mostrës, të kompiluara një herë vetëm skedari dhe një herë brenda "
+            "projektit. Poshtë: erërat e reja pas rishkrimit.",
+            "Kur pyesin cilat rishkrime dolën mirë e cilat patën probleme, ose çka do të thotë "
+            "«kompilohet».",
         ),
         "Extract Method in the interface": (
             "Foto e ndërfaqes që tregon një Extract Method te jsoup, para se të preket ndonjë "
@@ -2637,16 +3100,16 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         "vetëm hyrjen e mbylljen fjalë për fjalë (në fund të dokumentit).",
         "Lexoje një herë të gjithin me zë, me sllajdet hapur pranë, dhe trego me gisht atë që "
         "thotë «Ku të tregosh».",
-        "Lart djathtas, nga sllajdi 5 te 9, etiketat Q1 · Q2 · Q3 tregojnë për cilën pyetje "
+        "Lart djathtas, nga sllajdi 6 te 11, etiketat Q1 · Q2 · Q3 tregojnë për cilën pyetje "
         "flet sllajdi; ajo me blu është pyetja e tanishme. Nuk ke nevojë ta thuash: salla e "
         "sheh vetë.",
     ])  # fmt: skip
 
     doc.add_heading("Historia e prezantimit në një faqe", level=1)
     doc.add_paragraph(
-        "Prezantimi është një histori me katër pjesë: problemi dhe erërat (1–3), çka ndërtove "
-        "dhe si e provove (4–5), çka gjete (6–9), dhe përgjigjet me kufijtë (10). Nëse e kupton "
-        "këtë tabelë, e di prezantimin."
+        "Prezantimi është një histori me katër pjesë: problemi, kontributi dhe erërat (1–4), "
+        "çka ndërtove dhe si e provove (5–6), çka gjete dhe si e verifikove (7–11), dhe "
+        "përfundimet me referencat (12–13). Nëse e kupton këtë tabelë, e di prezantimin."
     )
     rows, totals = [], {False: 0, True: 0}
     for index, ((_, parts), guide) in enumerate(zip(script, guides, strict=True), 1):
@@ -2660,13 +3123,15 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
 
     doc.add_heading("Para se të fillosh", level=1)
     verification = len(script) + 1 + backups.index("Verification in detail")
+    keys = [key for key, _ in script]
+    closing = keys.index("Conclusions") + 1
     _list(doc, [
         "Nise prezantimin me pamjen e folësit: Alt+F5, ose Slide Show → Presenter View. Salla "
         "sheh sllajdin; ti sheh edhe shënimet dhe sllajdin e radhës.",
         "Përpara: shigjeta djathtas, hapësira ose klikuesi. Prapa: shigjeta majtas.",
         f"Për të hapur një sllajd rezervë, shtyp numrin e tij dhe Enter (p.sh. "
         f"{', '.join(str(verification))}, Enter për sllajdin {verification}). Për t'u kthyer "
-        f"te mbyllja: {len(script)}, Enter.",
+        f"te mbyllja: {', '.join(str(closing))}, Enter.",
         "Qëndro anash ekranit, jo para tij, me trup nga salla. Trego me dorë ose me laser, "
         "pastaj kthehu nga salla para se të flasësh.",
         "Shënimet në PowerPoint janë rrjetë sigurie: shiko fjalët kyçe, jo gjithë tekstin.",
@@ -2722,7 +3187,7 @@ def build_speech_guide(f: dict, script: list[tuple[str, list[Line]]], backups: l
         "Këto janë fjalitë e vetme që ia vlen t'i mësosh fjalë për fjalë: fillimi i sigurt e "
         "qetëson zërin, dhe mbyllja e sigurt lë përshtypjen e fundit."
     )
-    for line in script[0][1][:2] + script[-1][1][-2:]:
+    for line in script[0][1][:2] + script[closing - 1][1][-2:]:
         _say(doc, line)
 
     doc.save(SPEECH)
@@ -3794,7 +4259,7 @@ def build_book(f: dict) -> str:
     )  # fmt: skip
     doc.add_heading("Shembulli i prezantimit", level=2)
     doc.add_paragraph(
-        "Te sllajdi 9 i prezantimit është një ndryshim i vërtetë nga projekti Apache Geode, "
+        "Te sllajdi 11 i prezantimit është një ndryshim i vërtetë nga projekti Apache Geode, "
         "metoda checkForLimitedOrNoAccess. E gjithë metoda ishte brenda një if-i të madh. Pas "
         "Guard Clauses, kushti bëhet një dalje e hershme me return, dhe pjesa tjetër ngjitet një "
         "nivel lart. Ndryshimi kompilohet, dhe në rishikim ishte i pranueshëm ashtu siç është."
@@ -3958,14 +4423,17 @@ def build_book(f: dict) -> str:
     _grid(doc, ["Sllajdi", "Kapitujt"], [
         ["1 · Titulli", "–"],
         ["2 · Problemi dhe tri pyetjet", "1, 2"],
-        ["3 · Katër erërat", "2"],
-        ["4 · JavaSmell", "4, 5, 6, 7, 12, 14"],
-        ["5 · Të dhënat dhe prova e drejtë", "8, 9"],
-        ["6 · Rregullat kundrejt modeleve", "6, 7, 9, 10"],
-        ["7 · Pajtimi i njerëzve", "11"],
-        ["8 · Motori i refaktorimit", "12, 13"],
-        ["9 · Shembulli nga Apache Geode", "12, 13"],
-        ["10 · Përgjigjet dhe kufijtë", "10, 13, 17"],
+        ["3 · Çka shton punimi", "2, 15, 16"],
+        ["4 · Katër erërat", "2"],
+        ["5 · JavaSmell", "4, 5, 6, 7, 12, 14"],
+        ["6 · Të dhënat dhe prova e drejtë", "8, 9"],
+        ["7 · Rregullat kundrejt modeleve", "6, 7, 9, 10"],
+        ["8 · Pajtimi i njerëzve", "11"],
+        ["9 · Motori i refaktorimit", "12, 13"],
+        ["10 · Si u verifikuan rishkrimet", "12, 13, 17"],
+        ["11 · Shembulli nga Apache Geode", "12, 13"],
+        ["12 · Gjetjet dhe çka vjen më pas", "10, 13, 17"],
+        ["13 · Referencat", "21"],
     ])  # fmt: skip
 
     # ------------------------------------------------------------------
@@ -4249,7 +4717,7 @@ def _deep_questions(f: dict) -> list[DeepQuestion]:
                      "Që kompilimi nuk është njësoj si sjellja e njëjtë. Projektet vijnë pa "
                      "skedarët e ndërtimit, ndaj nuk munda t'i ekzekutoj testet e tyre pas çdo "
                      "ndryshimi. Kjo është gjëja e parë që do ta shtoja.",
-                     "Limitations and takeaways"),
+                     "Conclusions"),
             [
                 "Një ndryshim që kompilohet mund ta ndryshojë prapë sjelljen, p.sh. nëse e "
                 "ndryshon radhën e dy veprimeve. Testet e projektit do ta kapnin këtë, por "
