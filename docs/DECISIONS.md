@@ -6187,7 +6187,10 @@ ardhshme. Pastaj, që sllajdet të përputhen me punimin.
 - **Rezerva e verifikimit** është dy tabela: sipas ndreqjes (si Tabela 19, me rreshtin e
   16 vendeve dhe totalin) dhe e njëjta mostër e kompiluar vetëm dhe brenda projektit.
 - Teksti folës u shkurtua që të dy versionet të mbeten brenda kohës: rreth 8:26 dhe 9:55
-  me ritëm të qetë.
+  me ritëm të qetë. Po atë ditë autori kërkoi që teksti të rridhte më mirë nga një sllajd
+  te tjetri, edhe me kosto kohe: çdo sllajd tani nis me një fjali që e lidh me të
+  mëparshmin, dhe versionet zgjasin rreth 9:53 dhe 11:24 me ritëm të qetë, 7:50 dhe
+  9:02 me ritmin e shpejtë të autorit.
 
 **Çfarë nuk u verifikua.** Çdo numër i sllajdeve u kërkua te teksti i punimit përfundimtar
 (kopja IEEE e 16 tetorit). Dy nuk janë aty: 92.8%, saktësia e klasifikuesit të shumicës te

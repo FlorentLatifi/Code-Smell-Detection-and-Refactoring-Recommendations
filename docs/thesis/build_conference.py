@@ -4,10 +4,11 @@
 
 Shkruan te `docs/konferenca/`:
 - `UBT2026_Florent_Latifi.pptx`: dymbëdhjetë sllajde që thuhen dhe një me referencat IEEE,
-  me tekstin folës anglisht te shënimet (rreth tetë minuta e gjysmë), dhe sllajde rezervë
-  për pyetjet;
+  me tekstin folës anglisht te shënimet (rreth dhjetë minuta me ritëm të qetë, tetë kur
+  flitet shpejt), dhe sllajde rezervë për pyetjet;
 - `UBT2026_Florent_Latifi_9min.pptx`: të njëjtat sllajde, me një tekst folës më të gjatë
-  (rreth dhjetë minuta) për rastin kur kryesuesi jep vërtet dhjetë minuta;
+  (rreth nëntë minuta kur flitet shpejt) për rastin kur kryesuesi jep vërtet dhjetë
+  minuta;
 - `UBT2026_pergatitja.docx`: koha për sllajd për të dy versionet, pyetjet e mundshme me
   përgjigje, shqiptimi i termave dhe lista për ditën e konferencës;
 - `UBT2026_cka_te_flas.docx`: udhëzuesi i fjalimit, sllajd për sllajd: çka shihet në
@@ -450,6 +451,8 @@ def _script(f: dict) -> list[tuple]:
     )  # fmt: skip
     pmd_sq = "Nuk doli kurrë më i mirë se rregullat e mia" if not pmd_ahead else (
         f"Doli më i mirë për {_dhe(pmd_ahead)}")  # fmt: skip
+    # Çdo sllajd nis me një fjali që e lidh me të mëparshmin, që salla ta ndjekë historinë
+    # e jo një listë sllajdesh; fjalitë mbeten të shkurtra, për një folës jo-amtar.
     return [
         (
             "Title",
@@ -458,27 +461,31 @@ def _script(f: dict) -> list[tuple]:
                  "Altina Salihu.",
                  "Unë quhem Florent Latifi. Kjo është teza ime e bachelorit në UBT, me mentoren "
                  "time Altina Salihu."),
-            Line("In the next minutes I will show three things: how a tool can find design "
-                 "problems in Java code, how accurate it is, and whether it can also fix them.",
-                 "Në minutat në vijim do të tregoj tri gjëra: si mund t'i gjejë një mjet problemet "
-                 "e ndërtimit në kodin Java, sa i saktë është, dhe a mund t'i ndreqë edhe vetë."),
+            Line("Today I want to show you three things: how a tool can find design problems in "
+                 "Java code, how accurate it is, and whether it can also fix them.",
+                 "Sot dua t'ju tregoj tri gjëra: si mund t'i gjejë një mjet problemet e ndërtimit "
+                 "në kodin Java, sa i saktë është, dhe a mund t'i ndreqë edhe vetë."),
         ),
         (
             "The problem",
-            Line("Every developer knows the class that nobody wants to touch.",
-                 "Çdo programues e njeh klasën që askush nuk do ta prekë."),
+            Line("Let me start with a problem that every developer knows.",
+                 "Po filloj me një problem që e njeh çdo programues."),
+            Line("There is always one class that nobody wants to touch.",
+                 "Gjithmonë ka një klasë që askush nuk do ta prekë."),
             Line("The program works, but every small change takes too long.",
                  "Programi punon, por çdo ndryshim i vogël zgjat shumë."),
             Line("We call these design problems code smells.",
                  "Këto probleme të ndërtimit i quajmë erëra të kodit."),
-            Line("They are not bugs. They make the code expensive to change.",
-                 "Nuk janë gabime. E bëjnë kodin të shtrenjtë për t'u ndryshuar."),
-            Line(f"Most tools use fixed numbers: if a method has more than {limit:g} lines, it is "
-                 "a Long Method.",
-                 f"Shumica e mjeteve përdorin numra fiksë: nëse një metodë ka më shumë se "
-                 f"{limit:g} rreshta, ajo është Long Method."),
-            Line("But these numbers come from other projects, and the tools do not fix anything.",
-                 "Por këta numra vijnë nga projekte të tjera, dhe mjetet nuk ndreqin asgjë."),
+            Line("They are not bugs. They just make the code expensive to change.",
+                 "Nuk janë gabime. Thjesht e bëjnë kodin të shtrenjtë për t'u ndryshuar."),
+            Line(f"Most tools find them with fixed numbers. For example: if a method has more than "
+                 f"{limit:g} lines, it is a Long Method.",
+                 f"Shumica e mjeteve i gjejnë me numra fiksë. Për shembull: nëse një metodë ka më "
+                 f"shumë se {limit:g} rreshta, ajo është Long Method."),
+            Line("But these numbers come from other projects, and the tools only point at the "
+                 "problem. They do not fix it.",
+                 "Por këta numra vijnë nga projekte të tjera, dhe mjetet vetëm e tregojnë "
+                 "problemin. Nuk e ndreqin."),
             Line("So I asked three questions.", "Prandaj bëra tri pyetje."),
             Line("One: how accurate are the published rules?",
                  "Një: sa të sakta janë rregullat e botuara?"),
@@ -489,27 +496,30 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Contribution",
-            Line("What is new, compared with earlier studies? Three things.",
-                 "Çka është e re, krahasuar me studimet e mëparshme? Tri gjëra."),
-            Line("First, I measure the published rules against professional developers, instead "
-                 "of taking them as correct.",
-                 "E para, i mat rregullat e botuara kundrejt programuesve profesionistë, në vend "
-                 "që t'i marr si të sakta."),
-            Line("Second, rules and machine learning are compared on the same samples, with the "
-                 "same score and a split by project.",
-                 "E dyta, rregullat dhe mësimi makinerik krahasohen mbi të njëjtat mostra, me të "
-                 "njëjtën notë dhe me ndarje sipas projektit."),
-            Line("Third, one tool finds a smell, fixes it, checks it with the compiler, and "
-                 "measures it again.",
-                 "E treta, një mjet e gjen erën, e ndreq, e kontrollon me kompajlerin, dhe e mat "
-                 "sërish."),
+            Line("Other researchers have worked on these questions before. So what is new in my "
+                 "work? Three things.",
+                 "Studiues të tjerë janë marrë me këto pyetje edhe më parë. Atëherë, çka është e re "
+                 "në punën time? Tri gjëra."),
+            Line("First, earlier studies take the published rules as correct. I measure them "
+                 "against professional developers.",
+                 "E para, studimet e mëparshme i marrin rregullat e botuara si të sakta. Unë i mat "
+                 "kundrejt programuesve profesionistë."),
+            Line("Second, I compare rules and machine learning in a fair way: on the same samples, "
+                 "with the same score, and with a split by project.",
+                 "E dyta, i krahasoj rregullat dhe mësimin makinerik në mënyrë të drejtë: mbi të "
+                 "njëjtat mostra, me të njëjtën notë, dhe me ndarje sipas projektit."),
+            Line("Third, earlier tools only suggest a fix. Mine finds a smell, fixes it, checks it "
+                 "with the compiler, and measures it again.",
+                 "E treta, mjetet e mëparshme vetëm sugjerojnë një ndreqje. Imi e gjen erën, e "
+                 "ndreq, e kontrollon me kompajlerin, dhe e mat sërish."),
         ),
         (
             "Four smells",
-            Line("In this study I look at four smells.", "Në këtë studim shqyrtoj katër erëra."),
+            Line("Before the results, let me show you the four smells I studied.",
+                 "Para rezultateve, po ju tregoj katër erërat që studiova."),
             Line("A Blob is a class that does too much.", "Blob është një klasë që bën shumë gjëra."),
-            Line("A Data Class only holds data and does almost nothing with it.",
-                 "Data Class vetëm mban të dhëna dhe nuk bën pothuajse asgjë me to."),
+            Line("A Data Class only holds data, and does almost nothing with it.",
+                 "Data Class vetëm mban të dhëna, dhe nuk bën pothuajse asgjë me to."),
             Line("A Long Method is a method that has grown too long.",
                  "Long Method është një metodë që është zgjatur shumë."),
             Line("And Feature Envy is a method that works more with another class than with its "
@@ -519,51 +529,56 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "What we built",
-            Line("To answer the three questions, I built a tool called JavaSmell.",
-                 "Për t'iu përgjigjur tri pyetjeve, ndërtova një mjet që quhet JavaSmell."),
-            Line(f"It reads Java code and measures {f['metrics']} numbers for every class and "
-                 "method, like the number of lines or how complex the code is.",
-                 f"E lexon kodin Java dhe mat {f['metrics']} numra për çdo klasë dhe metodë, si "
-                 "numri i rreshtave ose sa i ndërlikuar është kodi."),
+            Line("To find these smells, and to fix them, I built a tool called JavaSmell.",
+                 "Për t'i gjetur këto erëra, dhe për t'i ndrequr, ndërtova një mjet që quhet "
+                 "JavaSmell."),
+            Line(f"First, it reads the Java code and measures {f['metrics']} numbers for every "
+                 "class and method, like the number of lines, or how complex the code is.",
+                 f"Së pari, e lexon kodin Java dhe mat {f['metrics']} numra për çdo klasë dhe "
+                 "metodë, si numri i rreshtave, ose sa i ndërlikuar është kodi."),
+            Line("Then it uses these numbers in three ways.",
+                 "Pastaj këta numra i përdor në tri mënyra."),
             Line(f"Part A uses {f['strategies']} rules from well-known books and papers.",
                  f"Pjesa A përdor {f['strategies']} rregulla nga libra dhe artikuj të njohur."),
             Line("Part B uses machine learning on the same numbers.",
                  "Pjesa B përdor mësimin makinerik mbi të njëjtët numra."),
-            Line("Part C fixes the code, but only when it can prove that the change is safe.",
-                 "Pjesa C e ndreq kodin, por vetëm kur mund ta vërtetojë që ndryshimi është i "
+            Line("And Part C fixes the code, but only when it can prove that the change is safe.",
+                 "Dhe pjesa C e ndreq kodin, por vetëm kur mund ta vërtetojë që ndryshimi është i "
                  "sigurt."),
-            Extra(f"Every finding also says why, for example: this method has 53 lines, and the "
+            Extra(f"Every finding also says why. For example: this method has 53 lines, and the "
                   f"limit is {limit:g}.",
-                  f"Çdo gjetje thotë edhe pse, për shembull: kjo metodë ka 53 rreshta, dhe kufiri "
+                  f"Çdo gjetje thotë edhe pse. Për shembull: kjo metodë ka 53 rreshta, dhe kufiri "
                   f"është {limit:g}."),
-            Line("On the right you see the web interface, in plain Albanian, for people who are "
-                 "not experts.",
-                 "Djathtas shihni ndërfaqen web, në shqip të thjeshtë, për njerëzit që nuk janë "
-                 "ekspertë."),
+            Line("On the right you see the web interface. It explains everything in plain "
+                 "Albanian, so you do not need to be an expert.",
+                 "Djathtas shihni ndërfaqen web. Gjithçka e shpjegon në shqip të thjeshtë, ndaj "
+                 "nuk ke nevojë të jesh ekspert."),
         ),
         (
             "Data and evaluation",
-            Line("To test the tool fairly, I need answers from real people.",
-                 "Për ta provuar mjetin në mënyrë të drejtë, më duhen përgjigje nga njerëz të "
-                 "vërtetë."),
-            Line("I used MLCQ, a public dataset where professional developers judged real Java "
+            Line("But a tool is only useful if its answers are right. To check that, I need "
+                 "answers from real people.",
+                 "Por një mjet vlen vetëm nëse përgjigjet e tij janë të sakta. Për ta kontrolluar "
+                 "këtë, më duhen përgjigje nga njerëz të vërtetë."),
+            Line("So I used MLCQ, a public dataset where professional developers judged real Java "
                  "code.",
-                 "Përdora MLCQ, një bazë publike të dhënash ku programues profesionistë gjykuan "
-                 "kod të vërtetë Java."),
-            Line(f"In total I have {f['samples']:,} pieces of code from {f['repositories']} "
+                 "Prandaj përdora MLCQ, një bazë publike të dhënash ku programues profesionistë "
+                 "gjykuan kod të vërtetë Java."),
+            Line(f"In total, I have {f['samples']:,} pieces of code from {f['repositories']} "
                  "open-source projects.",
                  f"Gjithsej kam {f['samples']:,} copa kodi nga {f['repositories']} projekte me "
                  "burim të hapur."),
-            Line("A model is never tested on a project it has already seen: it learns from four "
-                 "groups of projects and is tested on the fifth.",
-                 "Një model nuk provohet kurrë mbi një projekt që e ka parë: mëson nga katër grupe "
-                 "projektesh dhe provohet te i pesti."),
-            Extra("Code from the same project looks very similar, so testing on a project it has "
-                  "seen would be like an exam where you already know the answers.",
-                  "Kodi i të njëjtit projekt ngjan shumë, ndaj provimi mbi një projekt të parë do "
-                  "të ishte si një provim ku i di përgjigjet që më parë."),
-            Line("To score the results I use MCC, not simple accuracy.",
-                 "Për t'i vlerësuar rezultatet përdor MCC-në, jo saktësinë e thjeshtë."),
+            Line("And the test is fair: a model is never tested on a project it has already seen. "
+                 "It learns from four groups of projects, and it is tested on the fifth.",
+                 "Dhe prova është e drejtë: një model nuk provohet kurrë mbi një projekt që e ka "
+                 "parë. Mëson nga katër grupe projektesh, dhe provohet te i pesti."),
+            Extra("This matters, because code from the same project looks very similar. Testing "
+                  "on a project it has seen would be like an exam where you already know the "
+                  "answers.",
+                  "Kjo ka rëndësi, sepse kodi i të njëjtit projekt ngjan shumë. Provimi mbi një "
+                  "projekt të parë do të ishte si një provim ku i di përgjigjet që më parë."),
+            Line("To score the results, I use MCC, not simple accuracy. Here is why.",
+                 "Për t'i vlerësuar rezultatet, përdor MCC-në, jo saktësinë e thjeshtë. Ja pse."),
             Line(f"On Feature Envy, a detector that always says “clean” is {majority:.0f} percent "
                  "accurate, but it is useless. Its MCC is zero.",
                  f"Te Feature Envy, një detektor që thotë gjithmonë «i pastër» është {majority:.0f} "
@@ -571,15 +586,19 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Rules vs. machine learning",
-            Line("Here are the main results.", "Ja rezultatet kryesore."),
+            Line("So, how good are the rules, and can machine learning do better? Here are the "
+                 "main results.",
+                 "Pra, sa të mira janë rregullat, dhe a bën më mirë mësimi makinerik? Ja "
+                 "rezultatet kryesore."),
             Line("Gray is the published rules, blue is machine learning.",
                  "Gria janë rregullat e botuara, bluja është mësimi makinerik."),
-            Line("Higher is better: zero means guessing, one means perfect.",
-                 "Sa më lart, aq më mirë: zero do të thotë hamendje, një do të thotë përsosmëri."),
-            Line(f"The rules are usually right when they raise an alarm, but out of every 100 real "
+            Line("Higher is better: zero means guessing, and one means perfect.",
+                 "Sa më lart, aq më mirë: zero do të thotë hamendje, dhe një do të thotë "
+                 "përsosmëri."),
+            Line(f"The rules are usually right when they raise an alarm. But out of every 100 real "
                  f"smells, they find only {lowest:.0f} to {highest:.0f}.",
-                 f"Rregullat zakonisht kanë të drejtë kur alarmojnë, por nga çdo 100 erëra të "
-                 f"vërteta gjejnë vetëm {lowest:.0f} deri {highest:.0f}."),
+                 f"Rregullat zakonisht kanë të drejtë kur alarmojnë. Por nga çdo 100 erëra të "
+                 f"vërteta, gjejnë vetëm {lowest:.0f} deri {highest:.0f}."),
             Line(f"Machine learning is better on all four smells. It finds {found_low:.0f} to "
                  f"{found_high:.0f} out of 100, but usually with more false alarms.",
                  f"Mësimi makinerik është më i mirë te të katër erërat. Gjen {found_low:.0f} deri "
@@ -599,9 +618,14 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Human agreement",
-            Line("Why is Feature Envy so hard?", "Pse është Feature Envy kaq e vështirë?"),
-            Line("I looked at code that two developers judged, and checked how often they agree.",
-                 "Shikova kodin që e gjykuan dy programues, dhe kontrollova sa shpesh pajtohen."),
+            Line(f"You may ask: why is {_and([SMELL_SQ[s] for s in chance])} so hard, even for "
+                 "machine learning?",
+                 f"Mund të pyesni: pse është {_dhe([SMELL_SQ[s] for s in chance])} kaq e vështirë, "
+                 "edhe për mësimin makinerik?"),
+            Line("To find out, I looked at code that two developers judged, and checked how often "
+                 "they agree.",
+                 "Për ta gjetur, shikova kodin që e gjykuan dy programues, dhe kontrollova sa shpesh "
+                 "pajtohen."),
             Line(f"For {_and([SMELL_SQ[s] for s in moderate])}, they agree only partly.",
                  f"Për {_dhe([SMELL_SQ[s] for s in moderate])}, pajtohen vetëm pjesërisht."),
             Line(f"For {_and([SMELL_SQ[s] for s in chance])}, they agree no more than a coin flip.",
@@ -620,25 +644,31 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Automatic refactoring",
-            Line("Now the third question: can we fix smells automatically?",
-                 "Tani pyetja e tretë: a mund t'i ndreqim erërat automatikisht?"),
-            Line("The tool knows three fixes: split a long method, turn a big if into an early "
-                 "exit, and group many parameters into one object.",
-                 "Mjeti di tri ndreqje: ndan një metodë të gjatë, kthen një if të madh në një "
-                 "dalje të hershme, dhe mbledh shumë parametra në një objekt."),
+            Line("So much for finding smells. Now the third question: once we find a smell, can "
+                 "the tool fix it?",
+                 "Kaq për gjetjen e erërave. Tani pyetja e tretë: kur e gjejmë një erë, a mund ta "
+                 "ndreqë mjeti?"),
+            Line("The tool knows three fixes: it can split a long method, turn a big if into an "
+                 "early exit, or group many parameters into one object.",
+                 "Mjeti di tri ndreqje: mund ta ndajë një metodë të gjatë, ta kthejë një if të "
+                 "madh në një dalje të hershme, ose t'i mbledhë shumë parametra në një objekt."),
             Line(f"In all the projects, it found {detected:,} places where a fix could apply.",
                  f"Në të gjitha projektet, gjeti {detected:,} vende ku mund të zbatohej një "
                  "ndreqje."),
             Line(f"It changed {applied:,} of them, about {applied / detected * 100:.0f} percent.",
                  f"Ndryshoi {applied:,} prej tyre, rreth {applied / detected * 100:.0f} për qind."),
-            Line(f"It refused {refused:,}, because it could not prove the change was safe, and it "
-                 "always says why.",
-                 f"Refuzoi {refused:,}, sepse nuk mundi ta vërtetojë që ndryshimi ishte i sigurt, "
-                 "dhe gjithmonë thotë pse."),
-            Line(f"The other {missing} could not be found again in the file.",
-                 f"{missing} të tjerat nuk u gjetën dot sërish në skedar."),
-            Line("For me, a refusal is a good result, not a failure.",
-                 "Për mua, refuzimi është rezultat i mirë, jo dështim."),
+            Line(f"It refused {refused:,}, because it could not prove that the change was safe. "
+                 "And it always says why.",
+                 f"Refuzoi {refused:,}, sepse nuk mundi ta vërtetojë që ndryshimi ishte i sigurt. "
+                 "Dhe gjithmonë thotë pse."),
+            Line(f"The last {missing} could not be found again in the file. Together, that makes "
+                 f"{detected:,}.",
+                 f"{missing} të fundit nuk u gjetën dot sërish në skedar. Bashkë, bëjnë "
+                 f"{detected:,}."),
+            Line("For me, a refusal is a good result, not a failure. It is better to refuse than "
+                 "to break someone's code.",
+                 "Për mua, refuzimi është rezultat i mirë, jo dështim. Më mirë të refuzosh, se sa "
+                 "ta prishësh kodin e dikujt."),
             Extra(f"In {shape:.0f} percent of the places, the code simply does not have the right "
                   "shape for the fix.",
                   f"Në {shape:.0f} për qind të vendeve, kodi thjesht nuk ka formën e duhur për "
@@ -646,29 +676,32 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Validation",
-            Line("How do I know a rewrite is correct? I check it in steps.",
-                 "Si e di që një rishkrim është i saktë? E kontrolloj me hapa."),
-            Line("Before the change, the tool must prove its conditions on the syntax tree, or it "
-                 "refuses.",
-                 "Para ndryshimit, mjeti duhet t'i vërtetojë kushtet e veta mbi pemën e sintaksës, "
-                 "ose refuzon."),
-            Line(f"After the change, the compiler checks the file: {passed * 100:.0f} percent pass, "
-                 f"and the {new_errors} that fail are never written.",
-                 f"Pas ndryshimit, kompajleri e kontrollon skedarin: {passed * 100:.0f} për qind "
-                 f"kalojnë, dhe ato {new_errors} që dështojnë nuk shkruhen kurrë."),
-            Line(f"Then the smell is measured again: it is gone after {resolved:.0f} percent of "
+            Line("But a rewrite is only useful if it is correct. So how do I check that? Step by "
+                 "step.",
+                 "Por një rishkrim vlen vetëm nëse është i saktë. Atëherë, si e kontrolloj? Hap pas "
+                 "hapi."),
+            Line("First, before the change, the tool must prove its conditions on the syntax "
+                 "tree. If it cannot, it refuses.",
+                 "Së pari, para ndryshimit, mjeti duhet t'i vërtetojë kushtet e veta mbi pemën e "
+                 "sintaksës. Nëse nuk mundet, refuzon."),
+            Line(f"Second, after the change, the compiler checks the file. {passed * 100:.0f} "
+                 f"percent pass, and the {new_errors} that fail are never written.",
+                 f"Së dyti, pas ndryshimit, kompajleri e kontrollon skedarin. {passed * 100:.0f} për "
+                 f"qind kalojnë, dhe ato {new_errors} që dështojnë nuk shkruhen kurrë."),
+            Line(f"Third, the smell is measured again. It is gone after {resolved:.0f} percent of "
                  "the rewrites.",
-                 f"Pastaj era matet sërish: zhduket pas {resolved:.0f} për qind të rishkrimeve."),
-            Extra(f"On a sample of {verify['rewrites']} rewrites, I also compiled the whole "
+                 f"Së treti, era matet sërish. Zhduket pas {resolved:.0f} për qind të "
+                 "rishkrimeve."),
+            Extra(f"I also took a sample of {verify['rewrites']} rewrites and compiled the whole "
                   f"project: {in_project['compiles']} compiled fully, and {hidden} had an error "
                   "that the single file had hidden.",
-                  f"Te një mostër prej {verify['rewrites']} rishkrimesh, kompilova edhe gjithë "
+                  f"Mora edhe një mostër prej {verify['rewrites']} rishkrimesh dhe kompilova gjithë "
                   f"projektin: {in_project['compiles']} u kompiluan plotësisht, dhe {hidden} "
                   "kishin një gabim që skedari i vetëm e kishte fshehur."),
-            Line(f"Finally, I read {quality['reviewed']} rewrites by hand: about {acceptable:.0f} "
+            Line(f"Finally, I read {quality['reviewed']} rewrites by hand. About {acceptable:.0f} "
                  f"percent were acceptable, and {_count_word(changed, quality['reviewed'])} changed "
                  "the behavior.",
-                 f"Në fund, lexova {quality['reviewed']} rishkrime me dorë: rreth "
+                 f"Në fund, lexova {quality['reviewed']} rishkrime me dorë. Rreth "
                  f"{acceptable:.0f} për qind ishin të pranueshme, dhe {changed} e ndryshonte "
                  "sjelljen."),
             Line("So, to be clear: compiling does not guarantee the same behavior, because I could "
@@ -678,8 +711,10 @@ def _script(f: dict) -> list[tuple]:
         ),
         (
             "Example",
-            Line("Here is one real example, from the Apache Geode project.",
-                 "Ja një shembull i vërtetë, nga projekti Apache Geode."),
+            Line("Let me show you what one of these rewrites looks like. This is real code, from "
+                 "the Apache Geode project.",
+                 "Po ju tregoj si duket një nga këto rishkrime. Ky është kod i vërtetë, nga "
+                 "projekti Apache Geode."),
             Line("Before: the whole method is inside one big if, so all the code is pushed to the "
                  "right.",
                  "Më parë: e gjithë metoda është brenda një if-i të madh, ndaj i gjithë kodi "
@@ -688,17 +723,18 @@ def _script(f: dict) -> list[tuple]:
                  "level up.",
                  "Më pas: kushti bëhet një dalje e hershme, dhe pjesa tjetër e kodit ngjitet një "
                  "nivel lart."),
-            Extra("The tool only does this when the method returns nothing and its whole body is "
+            Extra("The tool only does this when the method returns nothing, and its whole body is "
                   "one if, without else.",
-                  "Mjeti e bën këtë vetëm kur metoda nuk kthen asgjë dhe i gjithë trupi i saj është "
-                  "një if, pa else."),
+                  "Mjeti e bën këtë vetëm kur metoda nuk kthen asgjë, dhe i gjithë trupi i saj "
+                  "është një if, pa else."),
             Line("The result compiles, and in my review it was acceptable without any change.",
                  "Rezultati kompilohet, dhe në rishikimin tim ishte i pranueshëm pa asnjë "
                  "ndryshim."),
         ),
         (
             "Conclusions",
-            Line("So, the three answers.", "Pra, tri përgjigjet."),
+            Line("Let me bring it all together. My three questions have three answers.",
+                 "Po i bashkoj të gjitha. Tri pyetjet e mia kanë tri përgjigje."),
             Line("One: the published rules are precise, but they miss most smells.",
                  "Një: rregullat e botuara janë të sakta, por i humbasin shumicën e erërave."),
             Line("Two: machine learning on the same numbers does better.",
@@ -707,14 +743,16 @@ def _script(f: dict) -> list[tuple]:
                  "every change, but the behavior is not yet proven.",
                  "Tre: rreth një vend në katër mund të ndreqet automatikisht. Kompajleri e "
                  "kontrollon çdo ndryshim, por sjellja ende nuk është vërtetuar."),
-            Line("In practice, published thresholds are a starting point, not a final answer, and "
-                 "an automatic fix is a proposal that a developer reviews.",
-                 "Në praktikë, pragjet e botuara janë pikënisje, jo përgjigje përfundimtare, dhe "
-                 "një ndreqje automatike është propozim që programuesi e rishikon."),
-            Line("Next, I want to run the projects' own tests, support more fixes, and ask other "
-                 "developers to judge the changes.",
-                 "Më pas dua t'i ekzekutoj testet e vetë projekteve, të shtoj më shumë ndreqje, "
-                 "dhe t'u kërkoj programuesve të tjerë t'i gjykojnë ndryshimet."),
+            Line("Why does this matter in practice? Published thresholds are a starting point, not "
+                 "a final answer. And an automatic fix is a proposal that a developer still "
+                 "reviews.",
+                 "Pse ka rëndësi kjo në praktikë? Pragjet e botuara janë pikënisje, jo përgjigje "
+                 "përfundimtare. Dhe një ndreqje automatike është propozim që programuesi e "
+                 "rishikon prapë."),
+            Line("And what comes next? I want to run the projects' own tests, support more fixes, "
+                 "and ask other developers to judge the changes.",
+                 "Dhe çka vjen më pas? Dua t'i ekzekutoj testet e vetë projekteve, të shtoj më "
+                 "shumë ndreqje, dhe t'u kërkoj programuesve të tjerë t'i gjykojnë ndryshimet."),
             Extra("The limits: one dataset, four smells, and only Java. And I picked the best "
                   "model using the same results I report, so its numbers are a little "
                   "optimistic.",
@@ -1688,8 +1726,8 @@ def _slide_closing(slide, f, heading) -> None:
 
 def _slide_references(slide, f, heading) -> None:
     """Burimet e cituara në sllajde, në IEEE, në dy kolona që të lexohen nga salla."""
-    _heading(slide, heading, "Cited on these slides, in IEEE style; the thesis lists all 45 "
-                             "sources")  # fmt: skip
+    # Pa nëntitull: autori e hoqi vetë në PowerPoint (23 tetor), dhe ndërtuesi e ndjek.
+    _heading(slide, heading)
     half = (len(DECK_SOURCES) + 1) // 2
     column_w = Emu(int((CONTENT - Inches(0.5)) / 2))
     hang = int(Inches(0.42))
@@ -1968,12 +2006,12 @@ CHECKLIST = [
     "kompjuterin e sallës dhe kontrollo që kodi në sllajdin 11 duket njësoj (shkronja "
     "Consolas).",
     "Prezantohu te kryesuesi i seancës (Blerim Zylifu). Pyete sa minuta ka çdo prezantim "
-    "dhe si ta sinjalizon kohën. Me 9 minuta ose më shumë merr versionin e gjatë; me më "
+    "dhe si ta sinjalizon kohën. Me 10 minuta merr versionin e gjatë; me më "
     "pak, të shkurtrin.",
     "Ujë pranë, telefoni pa zë, fleta e pyetjeve në xhep.",
     "Me versionin e shkurtër, kur vendi është 7 minuta: nëse në minutën e pestë je ende te "
     "sllajdi 7, kalo sllajdin 11 (shembullin) me një fjali dhe mbyll me sllajdin 12.",
-    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 9, lëri të gjitha "
+    "Me versionin e gjatë: nëse në minutën e shtatë je ende te sllajdi 8, lëri të gjitha "
     "fjalitë e gjelbra që mbeten dhe vazhdo me tekstin e shkurtër.",
 ]
 
@@ -2020,7 +2058,7 @@ def build_sheet(f: dict, script: list[tuple[str, list[str]]]) -> str:
     for line in [
         f"{os.path.basename(DECK)}: versioni i shkurtër, {words[False]} fjalë, rreth "
         f"{minutes(False, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur kryesuesi jep "
-        "7 deri 8 minuta.",
+        "8 deri 9 minuta.",
         f"{os.path.basename(DECK_LONG)}: versioni i gjatë, {words[True]} fjalë, rreth "
         f"{minutes(True, WORDS_PER_MINUTE)} me ritëm të qetë. Për rastin kur jep vërtet 10 "
         "minuta, siç thotë email-i.",
@@ -2840,7 +2878,7 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
             point=[
                 "Te «it found … places», trego numrin e madh, pastaj pjesën blu të shiritit.",
                 "Te «It refused …», trego pjesën gri, pastaj arsyet poshtë djathtas.",
-                f"Te «The other {missing}…», trego rreshtin e vogël nën shirit, me shumën.",
+                f"Te «The last {missing}…», trego rreshtin e vogël nën shirit, me shumën.",
                 "Te «For me, a refusal is a good result», mos lëviz: thuaje duke parë sallën.",
             ],
             keywords=f"tri ndreqje · {applied:,} + {refused:,} + {missing} = {detected:,} · "
@@ -2927,8 +2965,9 @@ def _slide_guides(f: dict) -> list[SlideGuide]:
                 "Poshtë: «Thank you · Questions?» dhe adresa e projektit në GitHub.",
             ],
             point=[
-                "Te «So, the three answers», trego Q1, Q2 dhe Q3 me radhë.",
-                "Te «In practice…», trego «Why it matters»; te «Next…», «Future research».",
+                "Te «My three questions have three answers», trego Q1, Q2 dhe Q3 me radhë.",
+                "Te «Why does this matter in practice?», trego «Why it matters»; te «And what "
+                "comes next?», «Future research».",
                 "Pas «I am happy to answer your questions», ndalu, buzëqesh dhe prit. Mos kalo te "
                 "referencat: ky sllajd, me adresën e GitHub-it, mbetet në ekran gjatë pyetjeve.",
             ],
