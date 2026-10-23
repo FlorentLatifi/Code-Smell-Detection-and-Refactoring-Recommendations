@@ -14,7 +14,9 @@ Shkruan te `docs/konferenca/`:
   sllajd, ku të tregohet, dhe çdo fjali angleze me kuptimin e saj shqip;
 - `Punimi_nga_e_para.docx`: gjithë punimi i shpjeguar si një libër, për një lexues që nuk
   di asgjë për programimin, me shembuj të matur nga vetë mjeti dhe me të njëjtat shifra si
-  sllajdet.
+  sllajdet;
+- `UBT2026_teksti_qe_flas.docx` dhe `UBT2026_teksti_qe_flas_9min.docx`: vetëm fjalitë
+  angleze që thuhen, sllajd për sllajd, për secilin version.
 
 Dy versionet ndërtohen nga i njëjti tekst: i gjati është i shkurtri plus disa fjali
 shtesë, që pjesa e provuar të mbetet e njëjtë dhe shtesat të mund të lihen jashtë në
@@ -82,6 +84,8 @@ SHEET = os.path.join(OUT_DIR, "UBT2026_pergatitja.docx")
 SPEECH = os.path.join(OUT_DIR, "UBT2026_cka_te_flas.docx")
 BOOK = os.path.join(OUT_DIR, "Punimi_nga_e_para.docx")
 QUESTIONS = os.path.join(OUT_DIR, "UBT2026_pyetjet_e_shpjeguara.docx")
+SPOKEN = os.path.join(OUT_DIR, "UBT2026_teksti_qe_flas.docx")
+SPOKEN_LONG = os.path.join(OUT_DIR, "UBT2026_teksti_qe_flas_9min.docx")
 
 TITLE = (
     "Automated Code Smell Detection and Refactoring Recommendations "
@@ -4943,6 +4947,43 @@ def build_questions(f: dict, backups: list[str], main: int) -> str:
     return QUESTIONS
 
 
+def build_spoken_text(script: list[tuple[str, list[Line]]], long: bool) -> str:
+    """Vetëm fjalitë angleze që thuhen, sllajd për sllajd, pa përkthim e pa udhëzime.
+
+    Për t'u mbajtur në dorë ose për t'u lexuar në provë: udhëzuesi i fjalimit ka gjithçka
+    tjetër. Çdo fjali në rresht të vet, që syri ta gjejë vendin pas një pauze, dhe çdo
+    sllajd i mbajtur në një faqe.
+    """
+    doc = _document()
+    words = sum(_word_count(_spoken(parts, long)) for _, parts in script)
+    version = "9-minute version" if long else "short version"
+    paragraph = doc.add_paragraph()
+    run = paragraph.add_run(f"UBT 2026 · {version} · about "
+                            f"{_clock(round(words / WORDS_PER_MINUTE * 60))} at a calm pace")  # fmt: skip
+    run.font.size = DocPt(10)
+    run.font.color.rgb = DocRGB(*SOFT)
+    for index, (key, parts) in enumerate(script, 1):
+        lines = _spoken(parts, long)
+        if not lines:
+            continue
+        heading = doc.add_paragraph()
+        heading.paragraph_format.space_before = DocPt(14)
+        heading.paragraph_format.space_after = DocPt(4)
+        heading.paragraph_format.keep_with_next = True
+        run = heading.add_run(f"Slide {index} · {key}")
+        run.bold = True
+        run.font.size = DocPt(11)
+        run.font.color.rgb = DocRGB(*ACCENT)
+        for position, line in enumerate(lines):
+            sentence = doc.add_paragraph()
+            sentence.paragraph_format.space_after = DocPt(5)
+            sentence.paragraph_format.keep_with_next = position < len(lines) - 1
+            sentence.add_run(str(line)).font.size = DocPt(14)
+    path = SPOKEN_LONG if long else SPOKEN
+    doc.save(path)
+    return path
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -4958,6 +4999,8 @@ def main() -> int:
         build_speech_guide(facts, script, backups),
         build_book(facts),
         build_questions(facts, backups, len(script)),
+        build_spoken_text(script, long=False),
+        build_spoken_text(script, long=True),
     ):
         print(f"U gjenerua: {path}")
     return 0
