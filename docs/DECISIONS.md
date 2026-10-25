@@ -6289,6 +6289,8 @@ cilësisë dhe `rewrite_quality.json`. Po ashtu teksti që i përshkruan: 4.7 i 
 parametra «ato që blloku i lexon», 6.1 e jep EM01 si rishkrim që nuk kompilon, 6.7 e
 ka ndreqjen ndër drejtimet e ardhshme, dhe shënimi i folësit te sllajdi «A ia vlejnë
 rishkrimet?» e përmend. Ky tekst ndryshon bashkë me numrat, jo para tyre.
+Efekti i ndreqjes mbi rezultatet e rishkrimeve nuk u rimat, dhe numrat e punimit
+i përkasin `v1.0.0`-s, versionit të vlerësuar.
 
 **Që numrat ta pasqyrojnë ndreqjen.**
 1. Hapi 7 (`evaluate_refactorings.py`) mbi gjithë korpusin, me `--no-resume` dhe pasi
@@ -6309,3 +6311,29 @@ rritur kurrë. Etiketa `v1.0.0` nuk u zhvendos për ta ndrequr: një version i p
 nuk ndryshon nën të njëjtin emër. Ndreqja hyn te `v1.0.1`, me `API_VERSION = "1.0.1"`
 dhe një test te `test_api.py` që e pret `"1.0.1"` të shkruar me dorë, jo të lexuar nga
 konstanta, përndryshe testi nuk mund të dështonte kurrë.
+
+### VD-156: Imazhi niset dhe provohet para se të publikohet (25 tetor 2026)
+
+**Konteksti.** `docker.yml` e ndërtonte imazhin dhe e publikonte, por nuk e nisi
+kurrë. Që `v1.0.0` punonte u provua me dorë te kompjuteri i autorit: serveri,
+modelet, javac-u dhe roja. Po ajo provë gjeti që `/api/health` raportonte "0.1.0",
+sepse `API_VERSION` nuk ishte rritur kurrë (VD-155). Asnjë hap automatik nuk do ta
+kishte kapur asnjërën. Puna e Docker-it përdorte ende `ubuntu-latest`, e njëjta
+zhvendosje që e prishi e2e-në (VD-154).
+
+**Vendimi.**
+- `tools/prova-imazhit.sh` e nis imazhin me fiksturat e testeve të montuara vetëm për
+  lexim dhe kontrollon: `/api/health`, faqen, analizën me modelet e Qasjes B, patch-in
+  e verifikuar me javac, dhe tri refuzimet e rojës (Host i huaj, POST nga faqe e huaj,
+  shteg jashtë rrënjës). Kontrollon që çdo pjesë përgjigjet, jo numrat: ata u
+  përkasin testeve të njësive, me vlera të nxjerra me dorë.
+- Te një etiketë `vN`, `/api/health` duhet të raportojë `N`. Kjo vlen nga v1.0.1:
+  një rindërtim i `v1.0.0` do të dështonte, dhe kjo është e saktë, sepse ajo
+  version e raporton gabim.
+- `docker.yml` e ndërton imazhin një herë me `load`, e provon, dhe vetëm pastaj e
+  publikon, me shtresat nga cache-i. Te pull request-et provohet pa u publikuar.
+- Runner-i fiksohet te `ubuntu-24.04`.
+
+**Verifikimi.** Skripti u nis lokalisht mbi imazhin e publikuar `v1.0.0`: pa version
+kaloi të dhjetë kontrollet; me `v1.0.0` dështoi te versioni, siç duhej. Kontejneri u
+hoq në të dyja rastet. Puna te GitHub verifikohet te pull request-i.
