@@ -6310,7 +6310,9 @@ Edhe 19% e rishkrimeve mbi pragun e Long Parameter List, te docstring-u i `_note
 rritur kurrë. Etiketa `v1.0.0` nuk u zhvendos për ta ndrequr: një version i publikuar
 nuk ndryshon nën të njëjtin emër. Ndreqja hyn te `v1.0.1`, me `API_VERSION = "1.0.1"`
 dhe një test te `test_api.py` që e pret `"1.0.1"` të shkruar me dorë, jo të lexuar nga
-konstanta, përndryshe testi nuk mund të dështonte kurrë.
+konstanta, përndryshe testi nuk mund të dështonte kurrë. Edhe `frontend/package.json` dhe
+`package-lock.json` kalojnë nga `0.1.0` në `1.0.1`, që ndërfaqja, API-ja dhe etiketa
+ta thonë të njëjtin version.
 
 ### VD-156: Imazhi niset dhe provohet para se të publikohet (25 tetor 2026)
 
