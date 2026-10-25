@@ -142,7 +142,12 @@ def _check_body(doc: Document) -> list[str]:
         if CAPTION.match(paragraph.text) or paragraph.alignment == WD_ALIGN_PARAGRAPH.CENTER:
             continue  # përshkrimet dhe kopertina kontrollohen veç
         excerpt = paragraph.text[:40]
-        if paragraph.alignment not in (None, WD_ALIGN_PARAGRAPH.JUSTIFY):
+        # Hyrjet e referencave, të njohura nga dhëmbëzimi i varur, janë majtas me
+        # qëllim: APA-ja nuk e do justifikimin, dhe një DOI i gjatë në fund të rreshtit
+        # i hap fjalët para tij me boshllëqe të mëdha.
+        first_line = paragraph.paragraph_format.first_line_indent
+        hanging = first_line is not None and first_line < 0
+        if paragraph.alignment not in (None, WD_ALIGN_PARAGRAPH.JUSTIFY) and not hanging:
             problems.append(f"paragraf i pa-drejtuar te «{excerpt}»")
         spacing = paragraph.paragraph_format.line_spacing
         if spacing is not None and spacing < MIN_LINE_SPACING:

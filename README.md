@@ -56,7 +56,7 @@ the published numbers can be reproduced.
 ---
 
 Punim diplome Bachelor, Shkenca Kompjuterike dhe Inxhinieri, UBT.
-Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2025/2026 · Dorëzimi: 2026
+Autor: Florent Latifi · Mentore: Altina Salihu · Viti akademik 2023/2024 (viti i regjistrimit) · Dorëzimi: nëntor 2026
 
 Sistem që analizon projekte **Java**, detekton *code smells* me tri qasje të pavarura
 dhe gjeneron rekomandime refaktorimi të verifikueshme.
@@ -139,7 +139,9 @@ E njëjta gjë me `docker compose`, që i mban mend depot e importuara mes nisje
 PROJEKTET=/shtegu/i/projekteve docker compose up
 ```
 
-Imazhi publikohet nga CI-ja te çdo push në `main`. Për ta ndërtuar vetë:
+Imazhi publikohet nga CI-ja te çdo push në `main` si `latest`, dhe te çdo etiketë
+`vN` me emrin e saj. Për ta riprodhuar saktësisht versionin e dorëzuar, përdoret
+`...recommendations:v1.0.0` në vend të emrit pa etiketë (VD-154). Për ta ndërtuar vetë:
 `docker build -t javasmell .` (rreth 5 minuta, sepse modelet trajnohen gjatë ndërtimit).
 
 Dy shënime:

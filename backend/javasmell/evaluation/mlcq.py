@@ -179,26 +179,41 @@ def load_reviews(csv_path: str | Path) -> Iterator[tuple[Review, dict[str, str]]
             yield review, row
 
 
-def load_samples(csv_path: str | Path) -> list[Sample]:
-    """Every reviewed sample, with its reviews gathered.
+def sample_key(mlcq_id: str, smell: str) -> str:
+    """The identifier of one entity judged for one smell: ``5786929/data_class``.
 
-    A ``sample_id`` identifies one entity reviewed for one smell, so grouping
-    by it is what turns 14739 review rows into 4770 labelled samples.
+    MLCQ's own ``sample_id`` names the code entity, not the judgement. A class
+    is usually reviewed for both Blob and Data Class under one id (4747 of the
+    4770 ids carry two smells), so the id alone cannot key a label.
     """
-    grouped: dict[str, list[Review]] = defaultdict(list)
-    first_row: dict[str, dict[str, str]] = {}
+    return f"{mlcq_id}/{smell.replace(' ', '_')}"
+
+
+def load_samples(csv_path: str | Path) -> list[Sample]:
+    """Every (entity, smell) pair that was reviewed, with its reviews gathered.
+
+    Grouping is by the MLCQ id *and* the smell. Grouping by the id alone, as
+    this function did until VD-150, averaged a class's Blob reviews together
+    with its Data Class reviews and labelled the result with whichever smell
+    came first in the file; 14739 reviews became 4770 samples instead of the
+    9517 (entity, smell) pairs they actually describe. It is also how Madeyski
+    & Lewowski (2023) read the data: select one smell, then group by id.
+    """
+    grouped: dict[tuple[str, str], list[Review]] = defaultdict(list)
+    first_row: dict[tuple[str, str], dict[str, str]] = {}
 
     for review, row in load_reviews(csv_path):
-        grouped[review.sample_id].append(review)
-        first_row.setdefault(review.sample_id, row)
+        key = (review.sample_id, review.smell)
+        grouped[key].append(review)
+        first_row.setdefault(key, row)
 
     samples = []
-    for sample_id, reviews in grouped.items():
-        row = first_row[sample_id]
+    for (mlcq_id, smell), reviews in grouped.items():
+        row = first_row[(mlcq_id, smell)]
         samples.append(
             Sample(
-                sample_id=sample_id,
-                smell=row["smell"],
+                sample_id=sample_key(mlcq_id, smell),
+                smell=smell,
                 entity_type=row["type"],
                 code_name=row["code_name"],
                 repository=row["repository"],

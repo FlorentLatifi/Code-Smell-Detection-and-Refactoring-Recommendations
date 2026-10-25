@@ -1,45 +1,45 @@
 {
   "aggregation": "mean",
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "42e021057612c480ded29e3d0c350caaccc516e3",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "per_variant": {
     "strategy": {
       "below_negative_median": {
-        "CLOC": 65,
-        "NOM": 74,
-        "WMC": 74
+        "CLOC": 4,
+        "NOM": 62,
+        "WMC": 20
       },
       "quartiles": {
         "AMW": {
           "caught": [
-            2.94,
-            3.6429,
-            5.6667
+            2.1667,
+            3.3913,
+            4.9474
           ],
           "missed": [
-            1.0,
-            1.4286,
-            2.4615
+            1.5,
+            2.4444,
+            3.9167
           ],
           "negative": [
             1.0,
-            1.25,
+            1.1481,
             2.0
           ]
         },
         "ATFD": {
           "caught": [
             15.0,
-            26.0,
-            61.0
+            24.0,
+            60.0
           ],
           "missed": [
-            0.0,
             1.0,
-            6.0
+            4.0,
+            10.0
           ],
           "negative": [
             0.0,
@@ -49,43 +49,43 @@
         },
         "CBO": {
           "caught": [
-            15.0,
-            30.0,
-            52.0
+            16.0,
+            29.0,
+            47.0
           ],
           "missed": [
-            2.0,
             6.0,
-            15.0
+            12.0,
+            20.0
           ],
           "negative": [
             2.0,
             4.0,
-            8.0
+            7.0
           ]
         },
         "CLOC": {
           "caught": [
-            261.0,
-            285.0,
-            746.0
+            264.0,
+            323.0,
+            736.0
           ],
           "missed": [
-            24.0,
-            55.0,
-            123.0
+            60.0,
+            104.0,
+            182.0
           ],
           "negative": [
-            9.0,
+            10.0,
             21.0,
-            45.0
+            42.0
           ]
         },
         "DIT": {
           "caught": [
             0.0,
             1.0,
-            1.0
+            2.0
           ],
           "missed": [
             0.0,
@@ -100,48 +100,48 @@
         },
         "LCOM": {
           "caught": [
-            64.0,
-            184.0,
-            573.0
+            89.0,
+            300.0,
+            689.0
           ],
           "missed": [
-            0.0,
-            10.0,
-            65.0
+            1.0,
+            16.0,
+            85.0
           ],
           "negative": [
             0.0,
             1.0,
-            6.0
+            8.0
           ]
         },
         "LCOM3": {
           "caught": [
-            0.8824,
-            0.9432,
-            0.9729
+            0.8842,
+            0.943,
+            0.9722
           ],
           "missed": [
-            0.5,
-            0.8438,
-            0.9516
+            0.6667,
+            0.873,
+            0.9608
           ],
           "negative": [
             0.0,
-            -0.0,
-            0.8
+            0.0,
+            0.8333
           ]
         },
         "MAXCC": {
           "caught": [
-            10.0,
-            15.0,
+            11.0,
+            20.0,
             30.0
           ],
           "missed": [
-            1.0,
             3.0,
-            7.0
+            7.0,
+            12.0
           ],
           "negative": [
             1.0,
@@ -152,18 +152,18 @@
         "NOAM": {
           "caught": [
             1.0,
-            3.0,
-            9.0
+            5.0,
+            13.0
           ],
           "missed": [
             0.0,
-            2.0,
-            6.0
+            1.0,
+            3.0
           ],
           "negative": [
             0.0,
             0.0,
-            1.0
+            2.0
           ]
         },
         "NOC": {
@@ -186,13 +186,13 @@
         "NOF": {
           "caught": [
             6.0,
-            13.0,
-            24.0
+            12.0,
+            22.0
           ],
           "missed": [
             2.0,
             4.0,
-            7.0
+            9.0
           ],
           "negative": [
             0.0,
@@ -202,14 +202,14 @@
         },
         "NOM": {
           "caught": [
-            17.0,
-            25.0,
+            18.0,
+            28.0,
             46.0
           ],
           "missed": [
             4.0,
-            8.0,
-            14.0
+            9.0,
+            17.0
           ],
           "negative": [
             1.0,
@@ -236,48 +236,48 @@
         },
         "RFC": {
           "caught": [
-            84.0,
-            115.0,
-            226.0
+            89.0,
+            140.0,
+            256.0
           ],
           "missed": [
-            10.0,
-            24.0,
-            51.0
+            25.0,
+            44.0,
+            70.0
           ],
           "negative": [
-            5.0,
+            4.0,
             10.0,
-            22.0
+            21.0
           ]
         },
         "TCC": {
           "caught": [
-            0.0473,
-            0.1579,
-            0.2667
+            0.0233,
+            0.1071,
+            0.2
           ],
           "missed": [
-            0.1404,
-            0.3788,
+            0.1366,
+            0.5556,
             1.0
           ],
           "negative": [
-            0.1667,
+            0.1538,
             1.0,
             1.0
           ]
         },
         "WMC": {
           "caught": [
-            55.0,
-            81.0,
-            156.0
+            60.0,
+            102.0,
+            164.0
           ],
           "missed": [
-            7.0,
-            15.0,
-            29.0
+            14.0,
+            26.0,
+            41.0
           ],
           "negative": [
             3.0,
@@ -287,17 +287,17 @@
         },
         "WOC": {
           "caught": [
-            0.625,
+            0.5,
             0.8,
-            0.9167
+            0.9091
           ],
           "missed": [
-            0.1429,
-            0.6111,
+            0.6,
+            0.9756,
             1.0
           ],
           "negative": [
-            0.6667,
+            0.5,
             1.0,
             1.0
           ]
@@ -306,94 +306,99 @@
       "recall_by_severity": {
         "max": {
           "critical": {
-            "caught": 21,
-            "recall": 0.1591,
-            "support": 132
+            "caught": 41,
+            "recall": 0.3905,
+            "support": 105
           },
           "major": {
-            "caught": 13,
-            "recall": 0.0714,
-            "support": 182
+            "caught": 18,
+            "recall": 0.1118,
+            "support": 161
           },
           "minor": {
-            "caught": 1,
-            "recall": 0.007,
-            "support": 143
+            "caught": 3,
+            "recall": 0.0143,
+            "support": 210
           }
         },
         "mean": {
+          "critical": {
+            "caught": 4,
+            "recall": 0.4,
+            "support": 10
+          },
           "major": {
-            "caught": 1,
-            "recall": 0.05,
-            "support": 20
+            "caught": 24,
+            "recall": 0.2927,
+            "support": 82
           },
           "minor": {
             "caught": 34,
-            "recall": 0.103,
-            "support": 330
+            "recall": 0.1283,
+            "support": 265
           }
         }
       },
       "separation": {
-        "AMW": 0.5508,
-        "ATFD": 0.5783,
-        "CBO": 0.5619,
-        "CLOC": 0.7351,
-        "DIT": 0.454,
-        "LCOM": 0.6744,
-        "LCOM3": 0.701,
-        "MAXCC": 0.6036,
-        "NOAM": 0.7286,
-        "NOC": 0.5016,
-        "NOF": 0.7729,
-        "NOM": 0.7444,
-        "NOPA": 0.5052,
-        "RFC": 0.6799,
-        "TCC": 0.4086,
-        "WMC": 0.7247,
-        "WOC": 0.3223
+        "AMW": 0.7523,
+        "ATFD": 0.7396,
+        "CBO": 0.7974,
+        "CLOC": 0.8988,
+        "DIT": 0.493,
+        "LCOM": 0.7136,
+        "LCOM3": 0.7097,
+        "MAXCC": 0.8055,
+        "NOAM": 0.581,
+        "NOC": 0.5106,
+        "NOF": 0.7459,
+        "NOM": 0.7708,
+        "NOPA": 0.5065,
+        "RFC": 0.8553,
+        "TCC": 0.4518,
+        "WMC": 0.8532,
+        "WOC": 0.4849
       },
       "support": {
-        "caught": 35,
-        "missed": 315,
-        "negative": 1049,
-        "spurious": 8
+        "caught": 62,
+        "missed": 295,
+        "negative": 1852,
+        "spurious": 14
       }
     },
     "with_size": {
       "below_negative_median": {
-        "CLOC": 58,
-        "NOM": 71,
-        "WMC": 63
+        "CLOC": 4,
+        "NOM": 57,
+        "WMC": 17
       },
       "quartiles": {
         "AMW": {
           "caught": [
-            1.5357,
-            3.0556,
-            4.4412
+            1.8235,
+            2.9697,
+            4.375
           ],
           "missed": [
-            1.0,
-            1.3333,
-            2.2
+            1.5,
+            2.4545,
+            3.5
           ],
           "negative": [
             1.0,
-            1.25,
+            1.1429,
             2.0
           ]
         },
         "ATFD": {
           "caught": [
-            3.0,
+            5.0,
             15.0,
-            36.0
+            38.0
           ],
           "missed": [
-            0.0,
-            0.0,
-            5.0
+            1.0,
+            4.0,
+            8.0
           ],
           "negative": [
             0.0,
@@ -403,36 +408,36 @@
         },
         "CBO": {
           "caught": [
-            13.0,
-            21.0,
-            39.0
+            15.0,
+            22.0,
+            35.0
           ],
           "missed": [
-            1.0,
-            4.0,
-            10.0
+            6.0,
+            10.0,
+            16.0
           ],
           "negative": [
             2.0,
             4.0,
-            8.0
+            7.0
           ]
         },
         "CLOC": {
           "caught": [
-            194.0,
-            276.0,
+            206.0,
+            285.0,
             470.0
           ],
           "missed": [
-            22.0,
-            48.0,
-            81.0
+            52.0,
+            81.0,
+            122.0
           ],
           "negative": [
-            9.0,
+            10.0,
             19.0,
-            41.0
+            40.0
           ]
         },
         "DIT": {
@@ -454,14 +459,14 @@
         },
         "LCOM": {
           "caught": [
-            54.0,
-            186.0,
-            516.0
+            60.0,
+            175.0,
+            514.0
           ],
           "missed": [
-            0.0,
-            4.0,
-            35.0
+            1.0,
+            7.0,
+            37.0
           ],
           "negative": [
             0.0,
@@ -472,30 +477,30 @@
         "LCOM3": {
           "caught": [
             0.8583,
-            0.9474,
-            0.9768
+            0.943,
+            0.976
           ],
           "missed": [
-            0.4,
-            0.8,
-            0.9259
+            0.4103,
+            0.8333,
+            0.9444
           ],
           "negative": [
             0.0,
-            0.0,
-            0.8
+            -0.0,
+            0.8125
           ]
         },
         "MAXCC": {
           "caught": [
-            5.0,
-            10.0,
+            7.0,
+            12.0,
             22.0
           ],
           "missed": [
-            1.0,
-            2.0,
-            6.0
+            3.0,
+            6.0,
+            11.0
           ],
           "negative": [
             1.0,
@@ -507,17 +512,17 @@
           "caught": [
             1.0,
             3.0,
-            9.0
+            10.0
           ],
           "missed": [
             0.0,
-            2.0,
-            6.0
+            1.0,
+            3.0
           ],
           "negative": [
             0.0,
             0.0,
-            1.0
+            2.0
           ]
         },
         "NOC": {
@@ -540,11 +545,11 @@
         "NOF": {
           "caught": [
             5.0,
-            11.0,
-            21.0
+            10.0,
+            20.0
           ],
           "missed": [
-            2.0,
+            1.0,
             3.0,
             6.0
           ],
@@ -556,9 +561,9 @@
         },
         "NOM": {
           "caught": [
-            15.0,
-            25.0,
-            35.0
+            16.0,
+            24.0,
+            37.0
           ],
           "missed": [
             3.0,
@@ -568,7 +573,7 @@
           "negative": [
             1.0,
             3.0,
-            5.0
+            6.0
           ]
         },
         "NOPA": {
@@ -590,30 +595,30 @@
         },
         "RFC": {
           "caught": [
-            62.0,
-            104.0,
-            174.0
+            70.0,
+            107.0,
+            185.0
           ],
           "missed": [
-            8.0,
-            18.0,
-            35.0
+            20.0,
+            33.0,
+            53.0
           ],
           "negative": [
             4.0,
-            10.0,
-            21.0
+            9.0,
+            19.0
           ]
         },
         "TCC": {
           "caught": [
-            0.0711,
-            0.2632,
-            0.8225
+            0.0606,
+            0.219,
+            1.0
           ],
           "missed": [
-            0.1429,
-            0.359,
+            0.1333,
+            0.5385,
             1.0
           ],
           "negative": [
@@ -624,14 +629,14 @@
         },
         "WMC": {
           "caught": [
-            43.0,
-            62.0,
-            130.0
+            46.0,
+            65.0,
+            134.0
           ],
           "missed": [
-            6.0,
             12.0,
-            21.0
+            19.0,
+            27.0
           ],
           "negative": [
             3.0,
@@ -641,17 +646,17 @@
         },
         "WOC": {
           "caught": [
-            0.5758,
+            0.6,
             0.8571,
             1.0
           ],
           "missed": [
-            0.1429,
-            0.5,
+            0.5714,
+            1.0,
             1.0
           ],
           "negative": [
-            0.6667,
+            0.5,
             1.0,
             1.0
           ]
@@ -660,86 +665,102 @@
       "recall_by_severity": {
         "max": {
           "critical": {
-            "caught": 55,
-            "recall": 0.4167,
-            "support": 132
+            "caught": 84,
+            "recall": 0.8,
+            "support": 105
           },
           "major": {
-            "caught": 32,
-            "recall": 0.1758,
-            "support": 182
+            "caught": 56,
+            "recall": 0.3478,
+            "support": 161
           },
           "minor": {
-            "caught": 5,
-            "recall": 0.035,
-            "support": 143
+            "caught": 19,
+            "recall": 0.0905,
+            "support": 210
           }
         },
         "mean": {
+          "critical": {
+            "caught": 9,
+            "recall": 0.9,
+            "support": 10
+          },
           "major": {
-            "caught": 12,
-            "recall": 0.6,
-            "support": 20
+            "caught": 60,
+            "recall": 0.7317,
+            "support": 82
           },
           "minor": {
-            "caught": 78,
-            "recall": 0.2364,
-            "support": 330
+            "caught": 79,
+            "recall": 0.2981,
+            "support": 265
           }
         }
       },
       "separation": {
-        "AMW": 0.5194,
-        "ATFD": 0.5451,
-        "CBO": 0.505,
-        "CLOC": 0.6993,
-        "DIT": 0.4551,
-        "LCOM": 0.6403,
-        "LCOM3": 0.6812,
-        "MAXCC": 0.5656,
-        "NOAM": 0.7364,
-        "NOC": 0.4952,
-        "NOF": 0.7508,
-        "NOM": 0.7182,
-        "NOPA": 0.5074,
-        "RFC": 0.6375,
-        "TCC": 0.4017,
-        "WMC": 0.6933,
-        "WOC": 0.3054
+        "AMW": 0.7531,
+        "ATFD": 0.7204,
+        "CBO": 0.7646,
+        "CLOC": 0.8831,
+        "DIT": 0.4991,
+        "LCOM": 0.6784,
+        "LCOM3": 0.6817,
+        "MAXCC": 0.7972,
+        "NOAM": 0.5574,
+        "NOC": 0.509,
+        "NOF": 0.7029,
+        "NOM": 0.7273,
+        "NOPA": 0.5038,
+        "RFC": 0.8304,
+        "TCC": 0.4437,
+        "WMC": 0.8315,
+        "WOC": 0.4909
       },
       "support": {
-        "caught": 90,
-        "missed": 260,
-        "negative": 1022,
-        "spurious": 35
+        "caught": 148,
+        "missed": 209,
+        "negative": 1801,
+        "spurious": 65
       }
     }
   },
   "saturated_cohesion": {
-    "checked": 19,
+    "checked": 30,
     "classes": [
       "FormatParser",
       "GenericsUtils",
+      "PeriodFormatterData",
       "PipelineOptionsFactory",
       "BaseScriptEvalUtil",
+      "Files",
       "MetadataTableUtil",
       "PhTypeUtil",
+      "Cel4rreg",
       "Strings",
+      "JavaConventions",
       "TezClientUtils",
+      "Sync",
       "WireAdminImpl",
+      "JmxSupport",
       "ImportsAwareClipboardAction",
       "OgnlHelper",
       "CheckstyleViolationCheckMojo",
+      "AppInfoCollector",
       "AbstractPmdReport",
       "CayenneGeneratorMojo",
+      "SearchFirstStringNode",
       "ConstraintBasePanel",
       "MRBaseForCommonInstructions",
+      "PostgreSQLDatabaseFunctions",
       "EndpointDiscoverer",
+      "Plc4XEtherNetIpProtocol",
       "MemoryConsumptionTestClient",
-      "DockerRunDialog"
+      "DockerRunDialog",
+      "ElementParser"
     ],
-    "confirmed_undefined": 17,
-    "count": 19,
+    "confirmed_undefined": 26,
+    "count": 30,
     "largest": [
       {
         "CLOC": 968.0,
@@ -760,6 +781,15 @@
         "public_instance_methods": 0
       },
       {
+        "CLOC": 370.0,
+        "NOF": 10.0,
+        "NOM": 14.0,
+        "WMC": 197.0,
+        "class_name": "PeriodFormatterData",
+        "failed": "TCC",
+        "public_instance_methods": 13
+      },
+      {
         "CLOC": 1031.0,
         "NOF": 12.0,
         "NOM": 39.0,
@@ -778,6 +808,15 @@
         "public_instance_methods": 0
       },
       {
+        "CLOC": 627.0,
+        "NOF": 4.0,
+        "NOM": 78.0,
+        "WMC": 174.0,
+        "class_name": "Files",
+        "failed": "TCC",
+        "public_instance_methods": 0
+      },
+      {
         "CLOC": 668.0,
         "NOF": 5.0,
         "NOM": 52.0,
@@ -792,24 +831,6 @@
         "NOM": 35.0,
         "WMC": 142.0,
         "class_name": "PhTypeUtil",
-        "failed": "TCC",
-        "public_instance_methods": 0
-      },
-      {
-        "CLOC": 241.0,
-        "NOF": 4.0,
-        "NOM": 33.0,
-        "WMC": 98.0,
-        "class_name": "Strings",
-        "failed": "TCC ATFD",
-        "public_instance_methods": 0
-      },
-      {
-        "CLOC": 470.0,
-        "NOF": 2.0,
-        "NOM": 16.0,
-        "WMC": 93.0,
-        "class_name": "TezClientUtils",
         "failed": "TCC",
         "public_instance_methods": 0
       }

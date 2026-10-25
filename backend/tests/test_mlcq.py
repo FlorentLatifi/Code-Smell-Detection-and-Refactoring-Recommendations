@@ -17,6 +17,7 @@ from javasmell.evaluation.mlcq import (
     Aggregation,
     load_samples,
     repositories_by_sample_count,
+    sample_key,
 )
 
 HEADER = (
@@ -58,10 +59,10 @@ FIXTURE = {
 }
 
 
-def _write_csv(tmp_path: Path) -> Path:
+def _write_csv(tmp_path: Path, fixture: dict | None = None) -> Path:
     lines = [HEADER]
     row_id = 0
-    for sample_id, (smell, kind, name, repo, reviews) in FIXTURE.items():
+    for sample_id, (smell, kind, name, repo, reviews) in (fixture or FIXTURE).items():
         for reviewer, severity in reviews:
             row_id += 1
             lines.append(
@@ -76,7 +77,9 @@ def _write_csv(tmp_path: Path) -> Path:
 
 
 def _by_id(tmp_path: Path):
-    return {s.sample_id: s for s in load_samples(_write_csv(tmp_path))}
+    # Every fixture id above carries a single smell, so the MLCQ id still names
+    # one sample; the key the reader assigns is checked separately below.
+    return {s.sample_id.partition("/")[0]: s for s in load_samples(_write_csv(tmp_path))}
 
 
 def test_reviews_are_grouped_into_samples(tmp_path):
@@ -86,6 +89,46 @@ def test_reviews_are_grouped_into_samples(tmp_path):
     assert len(samples) == 5
     assert len(samples["3"].reviews) == 3
     assert len(samples["4"].reviews) == 2
+
+
+# One class reviewed for two smells under one MLCQ id: sample 5827650 of the
+# published file, reduced to its six reviews.
+TWO_SMELLS = [
+    ("data class", "a", "minor"),
+    ("data class", "b", "none"),
+    ("data class", "c", "none"),
+    ("blob", "a", "none"),
+    ("blob", "b", "major"),
+    ("blob", "c", "none"),
+]
+
+
+def test_one_id_reviewed_for_two_smells_gives_two_samples(tmp_path):
+    lines = [HEADER]
+    for row_id, (smell, reviewer, severity) in enumerate(TWO_SMELLS, start=1):
+        lines.append(
+            f"{row_id};{reviewer};6;{smell};{severity};2019-03-27 10:34:53.041496;class;"
+            "com.acme.LabelProvider;git@github.com:apache/gamma.git;deadbeef;"
+            "/src/main/java/Acme.java;10;42;https://example.org;1"
+        )
+    path = tmp_path / "MLCQCodeSmellSamples.csv"
+    path.write_text(chr(10).join(lines), encoding="utf-8")
+
+    samples = {s.sample_id: s for s in load_samples(path)}
+
+    # 6 rows, one id, two smells -> two samples, three reviews each.
+    assert set(samples) == {sample_key("6", "data class"), sample_key("6", "blob")}
+    data_class = samples["6/data_class"]
+    blob = samples["6/blob"]
+    assert [r.smell for r in data_class.reviews] == ["data class"] * 3
+    assert [r.smell for r in blob.reviews] == ["blob"] * 3
+    # Data Class: minor(1) + none + none -> 1/3 = 0.33 -> half up -> 0 = none.
+    assert data_class.severity_label() == "none"
+    assert data_class.is_smelly() is False
+    # Blob: none + major(2) + none -> 2/3 = 0.67 -> half up -> 1 = minor.
+    assert blob.severity_label() == "minor"
+    # Pooled the old way, the six ranks 1,0,0,0,2,0 average 0.5 and round up to
+    # minor: the class would have been labelled a Data Class it is not.
 
 
 def test_sample_carries_the_location_fields(tmp_path):
@@ -189,7 +232,10 @@ def test_published_data_set_has_its_documented_shape():
     """
     samples = load_samples(REAL)
 
-    assert len(samples) == 4770
+    # 9517 (entity, smell) pairs over 4770 MLCQ ids: 4747 ids carry two smells,
+    # 23 carry one (4747 * 2 + 23 = 9517), as the raw file shows.
+    assert len(samples) == 9517
+    assert len({s.sample_id.partition("/")[0] for s in samples}) == 4770
     assert sum(len(s.reviews) for s in samples) == 14739
     assert len({s.repository for s in samples}) == 522
     assert {s.smell for s in samples} == {"blob", "data class", "long method", "feature envy"}

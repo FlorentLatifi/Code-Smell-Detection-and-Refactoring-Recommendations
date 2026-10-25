@@ -188,7 +188,7 @@ def _plan(method: Node, statement: Node, source: bytes) -> Plan | Note:
     # declare the name, and a parameter is the declaration that also carries the
     # value in -- which matters whenever only some paths through the block assign
     # it. Taking only the names read left it undeclared: `cannot find symbol` in
-    # Resolve.resolveMemberReference, found by the rewrite review (VD-148).
+    # Resolve.resolveMemberReference, found by the rewrite review (VD-155).
     #
     # Sorted, not in order of appearance: the parameter order has to be fixed by
     # something, and sorting is the only rule that cannot depend on how the tree

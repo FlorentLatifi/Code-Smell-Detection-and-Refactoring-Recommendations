@@ -125,7 +125,7 @@ def test_a_value_assigned_on_some_paths_is_passed_in_as_well():
     to start from the value it held -- which means taking it as a parameter even
     though the block never reads it. Without that the new method assigns and
     returns a name it never declares, and the default `"none"` is lost. This is
-    EM01 of the rewrite quality sample (VD-148), where javac reported
+    EM01 of the rewrite quality sample (VD-155), where javac reported
     `cannot find symbol: variable unboundRes`.
     """
     outcome = transform(CONDITIONAL_OUTPUT)

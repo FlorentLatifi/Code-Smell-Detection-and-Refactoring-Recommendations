@@ -5949,7 +5949,279 @@ Sllajdi i ri nuk u renderua dot këtu, sepse LibreOffice-i i makinës nuk e ka
 Impress-in. Pozicionet e elementeve u kontrolluan me python-pptx: figura dhe pikat
 nuk mbivendosen dhe rrinë brenda sllajdit.
 
-### VD-148: Extract Method i kalon si parametra edhe variablat që blloku vetëm i cakton
+### VD-148: Kontrolli përfundimtar kundrejt shabllonit, mentores dhe një teme të pranuar
+
+**Konteksti.** Autori kërkoi një kontroll të fundit para dorëzimit te mentorja: a është
+punimi i plotë sipas udhëzuesit të UBT-së për anën përmbajtësore, shënimeve të mentores
+dhe temës së pranuar të Isa Bilallit (vlerësuar me 10), dhe a ka gabime drejtshkrimore
+ose fjali që lexohen mekanikisht. Abstrakti dhe mirënjohja mbeten të autorit.
+
+**Çfarë u gjet.**
+- **Kopertina.** Shablloni shkruan «Viti akademik XXXX-YYYY (VITI I REGJISTRIMIT)».
+  Punimi kishte 2025 – 2026, viti i dorëzimit; autori u regjistrua më 2023, dhe tema e
+  pranuar e të njëjtit vit shkruan 2023-2024. VD-112 e kishte marrë vizën e shabllonit
+  por jo kuptimin e vitit. Data shtypej «Nëntor / 2026», pra vija e pjerrët e
+  vendmbajtësit «Muaji / Viti».
+- **Hyrja** zinte dy faqe të plota në renderimin e Word-it, ndërsa mentorja kërkon
+  1–1.5. Dy paragrafët e shtuar te VD-141 (kontributi, transformimi i sigurt) e kishin
+  zgjatur.
+- **Kalke terminologjike.** «Hendeku» (gap; udhëzuesi thotë «boshllëk»), «matrica
+  konfuze» (confusion matrix), «fshirja» për threshold sweep, «akordim» për tuning,
+  «mostër e mbjellë» për seeded sample, «ri-ekzekutuan», disa «çka» si përemër lidhor,
+  dhe katër viza të gjata në prozë.
+- **Kapitulli 5** kishte shumë paragrafë njëfjalësh, disa që nisnin me shifër («26
+  rishkrime…», «27 rishkrime…»), dhe pesë nënkapituj që hapeshin me «Ky nënkapitull…».
+  Lexohej si listë, jo si tekst.
+- «, ndaj» si lidhëz përfundimi dilte 48 herë në kapitujt 1–6, gjithmonë në të njëjtën
+  strukturë fjalie.
+- Shtojca 8.5 thoshte «interpretuesi dhe platforma janë të njëjtë për të gjithë» dhe
+  pastaj listonte dy versione Python-i dhe dy platforma.
+- `check_repetition.py` dështonte edhe në HEAD: fjalia e cilësisë te 6.4 përsëriste atë
+  të abstraktit (0.57). Ishte dështim i mëparshëm, jo i këtij ndryshimi.
+
+**Vendimi.**
+- Viti akademik 2023 – 2024, data «Nëntor 2026»; README-ja po ashtu.
+- Hyrja rishkruhet më ngjeshur: problemi i përgjithshëm (Lehman, erërat, borxhi teknik,
+  pse gjetja me dorë nuk shkallëzohet, tri mangësitë e mjeteve) mbetet i plotë, ndërsa
+  kontributi dhe përkufizimi i transformimit të sigurt bashkohen në një paragraf. E matur
+  me Word: një faqe e plotë dhe gjysmë faqe.
+- Termat: «Boshllëku në literaturë», «matrica e konfuzionit», «analiza e ndjeshmërisë» /
+  «zhvendosja e pragjeve», «optimizim i hiperparametrave», «mostër e zgjedhur me farë»,
+  «riekzekutuan», «gjë që» / «çfarë», presje në vend të vizave të gjata.
+- `_paragraph` dhe `_flow` te `chapters.py` i bashkojnë fjalitë e njëpasnjëshme të
+  Kapitullit 5 në paragrafë, me `_BREAK` aty ku ndërrohet tema. Asnjë fjali nuk ndryshoi
+  përmbajtje dhe asnjë numër nuk shkruhet më me dorë; përmendjet «(Tabela N)» mbeten te
+  paragrafi para elementit. Hapjet e nënkapitujve ndryshojnë, dhe fjalitë nuk nisin më me
+  shifër.
+- Rreth gjysma e «, ndaj» u bë «prandaj», «kështu që», «Meqë…» ose «dhe», sipas fjalisë.
+- Fjalia e mjedisit te 8.5 degëzohet: njëjës kur ka një interpretues e një platformë,
+  shumës kur ka më shumë.
+- Fjalia e 6.4 riformulohet; kontrolli i përsëritjeve kalon (784 fjali).
+- **Referencat**, me kërkesën «kritike» të mentores, u rikontrolluan të 44 te Crossref
+  (titulli, autori i parë, viti, revista, vëllimi, faqet): të gjitha ekzistojnë dhe
+  përputhen. Dallimet e vetme janë vitet e botimit online para atij të shtypit (Arcelli
+  Fontana 2015/2016, Khomh 2011/2012, Palomba 2017/2018), ku punimi citon vitin e
+  vëllimit.
+
+**Çfarë nuk prek.** Abstraktin dhe mirënjohjen, që i shkruan autori; prezantimin.
+
+**Verifikimi.** Kalojnë `check_citations` (44/44), `check_reproduction` (22 hapa),
+`check_format`, `check_repetition`, `build_slides` dhe `check_slides`. Renderimi me Word:
+93 faqe; hyrja 1.5 faqe.
+
+**Çfarë nuk u verifikua.**
+- Korrektura drejtshkrimore u bë me lexim dhe me kontrolle të synuara (diakritikë që
+  mungojnë, fjalë të dyfishta, thonjëza, viza, kalke). Word-i i makinës nuk ka fjalor
+  shqip, ndaj asnjë kontrollues automatik drejtshkrimi nuk u përdor.
+- Abstrakti, me 345 fjalë, del ende në dy faqe te renderimi (fjalët kyçe kalojnë në faqen
+  II). Kufiri prej 360 fjalësh i `check_format` është pra shumë i butë; autori duhet ta
+  mbajë abstraktin e ri rreth 280 fjalë bashkë me fjalët kyçe.
+
+### VD-149: Referencat e verifikuara fushë për fushë, dhe një defekt në etiketat e MLCQ-së
+
+**Konteksti.** Autori kërkoi siguri të plotë se të 44 referencat ekzistojnë dhe janë të
+sakta. Kontrolli u bë në dy nivele: të dhënat bibliografike, dhe ajo që punimi u
+atribuon burimeve.
+
+**Bibliografia.** 37 hyrje me DOI u krahasuan me Crossref fushë për fushë (titulli,
+autorët, viti, revista, vëllimi, numri, faqet). Faqet e Brown et al. dhe Friedman, që
+Crossref nuk i ka, u konfirmuan te Semantic Scholar. Librat u konfirmuan me ISBN te Open
+Library ose te faqja e botuesit (Fowler 2018, Efron & Tibshirani 1993, Henderson-Sellers
+1996, Lanza & Marinescu 2006, Wohlin et al. 2012); Pedregosa et al. te faqja e JMLR-së
+(12, 2825-2830); PMD 7.27.0 te lëshimet e GitHub-it (28 gusht 2026); tree-sitter te depoja
+e projektit; teza e Opdyke-s nga faqja e saj e titullit (UIUC, 1992). Të gjitha
+ekzistojnë. E vetmja mangësi ishte numri i revistës te Palomba et al. 2018, që u shtua:
+23(3).
+
+**Atribuimet.** U krahasuan me abstraktin ose me tekstin e plotë. Tri nuk qëndronin:
+- Murphy-Hill et al. (2012): «mbi trembëdhjetë mijë zhvillues» është shifra e versionit
+  të ICSE 2009; artikulli i cituar (TSE 2012) thotë «more than 39,000». U ndreq.
+- Tufano et al. (2015): «rreth katër të pestat mbijetojnë» vjen nga versioni i zgjeruar
+  i TSE 2017, jo nga artikulli i cituar. Fraza u hoq.
+- Madeyski & Lewowski (2023): DS1 përdor mesoren e ashpërsive, jo mesataren e
+  rrumbullakosur; «me të njëjtin kriter» ishte i pasaktë dhe referonte 4.9 në vend të
+  4.3. Fjalia thotë tani se dy kriteret përkojnë vetëm me një ose dy rishikime. Edhe
+  «erën më të vështirë» u bë «era me performancën më të ulët», siç e thonë autorët.
+Shifrat e tjera u konfirmuan: Khomh (13 antimodele, 54 versione, 4 sisteme), Palomba 2018
+(395 versione, 30 projekte, 17 350 raste), Sjøberg (6 zhvillues, 4 sisteme, 12 erëra),
+Yamashita (85), Arcelli Fontana (16 algoritme, 74 sisteme, 1986 mostra), Di Nucci («up to
+90%» në F-measure, nga teksti i plotë), Azeem (15 nga 2456), Bavota (42% dhe 7%), MLCQ
+(14 739 rishikime, 4770 mostra, 26 zhvillues), dhe MCC-të e Tabelës 25 për DS1.
+
+**Defekt i gjetur gjatë kontrollit, ende i pandrequr.** `load_samples` te
+`evaluation/mlcq.py` grupon rishikimet vetëm sipas `sample_id`, me supozimin se një id
+është «një entitet i rishikuar për një erë». Në skedarin e MLCQ-së 4747 nga 4770 id-të
+kanë rishikime për dy erëra (Blob dhe Data Class për klasat, Feature Envy dhe Long Method
+për metodat), gjithsej 9517 çifte mostër-erë. Pasojat:
+- çdo mostër merr erën e rreshtit të parë dhe mesataren e rishikimeve të të dyja erërave;
+- mbi 4534 mostrat e vlerësuara ndryshojnë etiketat: Blob 182, Data Class 106, Feature Envy
+  53, Long Method 38; pozitivët bëhen 226, 142, 39 dhe 198 në vend të 350, 186, 72 dhe 216;
+- 4512 çifte mostër-erë të etiketuara mbeten jashtë vlerësimit;
+- pajtimi mes rishikuesve krahason gjykime për erëra të ndryshme: i grupuar sipas mostrës
+  dhe erës, MCC-ja del 0.312, 0.396, -0.071 dhe 0.567 në vend të 0.022, 0.031, 0.238 dhe
+  0.189.
+Prekur janë të gjitha shifrat e Qasjeve A dhe B, krahasimi, intervalet, krahasimi me
+PMD-në, pajtimi i rishikuesve dhe ashpërsia, pra Kapitujt 5 e 6, abstrakti dhe
+prezantimi. Qasja C (motori mbi korpusin) dhe fleta e cilësisë nuk varen nga etiketat.
+Ndreqja pret vendimin e autorit, sepse rihap rezultatet katër javë para dorëzimit.
+
+### VD-150: Etiketat e MLCQ-së sipas mostrës dhe erës, dhe komentet e mentores për kapitujt 1-5
+
+**Konteksti.** VD-149 gjeti se `load_samples` i grupon rishikimet vetëm sipas
+`sample_id`. Mentorja, pasi lexoi kapitujt 1-5, kërkoi të rishikohej konsistenca e të
+dhënave në tabela, të sqaroheshin kufizimet e sistemit dhe rezultatet e refaktorimit,
+dhe uniformiteti i citimeve, i terminologjisë dhe i formatimit, edhe për Kapitullin 6.
+
+**Vendimi.**
+- **Lexuesi** grupon sipas `(sample_id, erë)`; identifikuesi i mostrës bëhet
+  `id/erë`, që çdo skript që e përdor si çelës të mbetet i saktë. Testi i ri ndërton një
+  mostër me rishikime për dy erëra (rasti real 5827650) dhe i llogarit të dy etiketat me
+  dorë; testi mbi skedarin real pret 9517 çifte mbi 4770 id.
+- **Rimatja.** U riekzekutuan hapat 2, 3, 4, 5, 6, 8, 9, 10, 13, 15, 19, 20, 21 dhe 22.
+  Tabela e veçorive ka 9046 rreshta në vend të 4534. Qasja C dhe fleta e cilësisë nuk
+  lexojnë etiketa dhe nuk u prekën.
+- **Çfarë ndryshoi në rezultate.** MCC e rregullave: Blob 0.336, Data Class 0.367,
+  Feature Envy 0.243, Long Method 0.617. MCC e modelit: 0.539, 0.473, 0.321, 0.723.
+  Përparësia e modelit mbetet mbi zero te Blob, Data Class dhe Long Method, por jo te
+  Feature Envy, ku vlera e vjetër 0.696 ishte artefakt i përzierjes. Pajtimi mes
+  rishikuesve është 0.312, 0.396, -0.071 dhe 0.567, jo 0.02-0.24. Parashikimi i
+  Shtojcës 8.6, se kalibrimi do të ndihmonte aty ku mospërputhjet janë afër pragjeve,
+  nuk konfirmohet më dhe teksti e thotë.
+- **Teksti.** Fjalitë e gjeneruara që pohonin «pa përjashtim», «pranë njëri-tjetrit»,
+  «një rezervë e vetme», «drejtim i kundërt» ose «pajtim i ulët» u kthyen në degëzime që
+  lexohen nga të dhënat. Përgjigjja e PK2 bëhet «Po, por jo te çdo erë»; Feature Envy
+  kundrejt Madeyski & Lewowski (2023) del në të njëjtin nivel, me shpjegimin te pajtimi
+  i munguar i rishikuesve. Kapitulli 4.3 e përkufizon njësinë e vlerësimit si çift
+  mostër-erë; Shtojca 8.5 e raporton defektin.
+- **Komentet e mentores.** `check_tables.py` provon që tabelat përputhen me njëra-tjetrën
+  dhe hyn në CI. Kufizimet e sistemit marrin një tabelë te 6.6; rezultati i refaktorimit
+  sipas transformimit merr një tabelë te 5.4 dhe një paragraf te 6.1. Citimet me
+  prapashtesë («Fowler-it», «Lanza & Marinescu-t») bëhen «Autori (viti)»; tree-sitter
+  merr vit; «mësim makine» bëhet «mësim i makinës»; fjalori merr «Mostër», «Rishkrim» dhe
+  «Vend».
+
+**Çfarë nuk u verifikua.** Pohimet cilësore të 6.5 («i moderuar te tri erëra») janë
+shkruar me dorë mbi këto të dhëna dhe nuk lëvizin vetë po të rimaten.
+
+### VD-151: Komentet përfundimtare të mentores (15 tetor 2026)
+
+**Konteksti.** Mentorja e quajti punimin në fazën përfundimtare dhe kërkoi pesë gjëra para
+dorëzimit: (1) të ndahet qartë verifikimi i kompilimit nga ruajtja e sjelljes, dhe rastet
+kur refaktorimi solli gabime të dalin edhe te diskutimi e përfundimet; (2) të pajtohet
+pragu i Long Method, që dilte 30 te metodologjia dhe 35 te 4.8; (3) një sqarim për
+zgjedhjen e modelit më të mirë dhe ndikimin e saj; (4) referenca e citime në APA;
+(5) pamje nga ndërfaqja dhe një shembull kodi Java para dhe pas refaktorimit.
+
+**Vendimi.**
+- **Siguria e refaktorimit.** «I sigurt» përkufizohet që në hyrje si parakushte të
+  provuara plus kompilim, «jo provë se sjellja e programit ruhet». Objektivi i 3.2,
+  kriteri i PK3 te 3.3, 4.1, 4.7, 4.10, 6.1, 6.5 dhe 6.8 u rishkruan në të njëjtin kuptim.
+  6.6 merr një paragraf për rishkrimet që sollën gabim (58 me gabim të ri, dy që kalojnë
+  izolimin por jo projektin, një që kalon kontrollin dhe nuk kompilon), dhe 6.8 një
+  paragraf për kufirin e kontributit të dytë; numrat lexohen nga rezultatet.
+- **Pragu.** Long Method ka një prag, 30. Numri 35 ishte klauzola MLOC e Brain Method
+  (HIGH_METHOD_LOC/2), që shembulli i 4.8 e merrte nga ekrani i një gjetjeje Brain
+  Method. Shembulli tani është klauzola e Long Method, dhe 4.5 i vë të dy numrat përballë.
+- **Zgjedhja e modelit.** 4.6 thotë se algoritmi zgjidhet mbi të njëjtat parashikime
+  mbi të cilat raportohet (Cawley & Talbot, 2010). 5.2 merr tabelën e MCC-së së çdo
+  algoritmi, dhe 6.6 e kufizon animin: me algoritmin më të dobët, të caktuar
+  paraprakisht, MCC-ja do të ishte 0.023 deri 0.080 më e ulët dhe fitimi mbi rregullin
+  mbetet te tri erëra; te Feature Envy, ku dallimi nuk ndahej nga zeroja, bie në nivelin
+  e rregullit. Përfundimi i PK2 nuk varet nga zgjedhja.
+- **APA 7.** Lista nuk numërohet, ka dhëmbëzim të varur, shkronja të pjerrëta për
+  revistën, vëllimin dhe librin, dhe DOI për çdo burim që e ka. 37 DOI u verifikuan
+  te Crossref më 15 tetor 2026. Citimet narrative me dy autorë marrin «dhe», ato në
+  kllapa «&». Elementet bibliografike janë shqip («Në», «f.», «bot.», «[Softuer]»).
+  Referencat janë të rreshtuara majtas, si e do APA; `check_format` i njeh nga
+  dhëmbëzimi i varur.
+- **Implementimi praktik.** 4.7 merr si figurë një rishkrim të vërtetë të Guard Clauses
+  mbi korpus (Apache Geode, i pranuar ashtu si është te leximi), të vizatuar nga
+  `build_code_example.py` me motorin. 4.8 merr dy pamje të ndërfaqes mbi jsoup, të
+  nxjerra nga `capture_screens.cjs`: paneli në mënyrën e thjeshtë dhe diff-i i Extract
+  Method. Shembulli i kodit vizatohet si figurë sepse dokumenti lejon vetëm Times New
+  Roman.
+- **Të tjera.** Mirënjohja nuk mbetet «[PLOTËSO]»: hyn një draft që autori mund ta
+  ndryshojë. Dyshemeja e precizionit të prerjes shkruhet me tri shifra (0.655 dilte
+  «të paktën 0.66»). Pikat nën /refactor janë pesë dhe tani emërtohen të pesta.
+
+**Çfarë nuk u verifikua.** Pamjet e ndërfaqes varen nga projekti jsoup i dosjes së
+demonstrimit, që nuk është në depo. Dy fjali të vetë ndërfaqes («mjeti e rishkruan
+kodin vetëm kur mund ta provojë që rishkrimi nuk e prish programin») flasin ende më
+fort se punimi; nuk u prekën, sepse janë kod produkti dhe nuk hyjnë në pamjet e punimit.
+
+**Pas shqyrtimit (po atë ditë).** Autori e redaktoi `.docx`-in në Word: abstrakt i ri,
+mirënjohje e vetja, data «Tetor 2026», «2023-2024» dhe «Prishtinë» te faqja e
+brendshme. Të gjitha u sollën te `build_thesis.py` dhe `chapters.py`, sepse një
+rindërtim do t'i fshinte. Shifrat e abstraktit të ri lexohen nga rezultatet si më parë.
+Dy fjali u ndreqën: «nga ato të lexuara me dorë 62.9%» (të lexuarat e pranueshme janë
+33 nga 60, pra 55%; 62.9% është vlerësimi i ripeshuar), dhe «nuk e provonte dot
+sigurinë», që bëhet «parakushtet». Fjalia e parë e 6.8 u rishkrua, sepse përsëriste
+fjalë për fjalë pyetjen me të cilën hapet abstrakti.
+
+### VD-153: Prezantimi i konferencës sipas vërejtjeve të mentores (23 tetor 2026)
+
+**Konteksti.** Mentorja e shqyrtoi prezantimin e UBT 2026 dhe kërkoi gjashtë gjëra: një
+sllajd për kontributin dhe çka e dallon nga studimet ekzistuese; një sllajd me referencat
+në APA ose IEEE; numrat e sllajdit 8, ku të rishkruarat dhe të refuzuarat nuk mblidheshin
+te vendet e detektuara; procesin e validimit, me thënien e qartë se kompilimi nuk e
+garanton sjelljen; sllajdin rezervë të verifikimit, që të kuptohet cilat rishkrime dolën
+mirë e cilat patën probleme; dhe përfundime me gjetjet, rëndësinë praktike dhe punën e
+ardhshme. Pastaj, që sllajdet të përputhen me punimin.
+
+**Vendimi.**
+- **Kontributi** (sllajdi 3) është tabela «Earlier studies → This work» e ndërtuar mbi
+  «Boshllëku në literaturë» (2.7) të punimit, me të njëjtat burime.
+- **Referencat** janë IEEE, si punimi pas VD-152, me tekstin e listës së punimit fjalë për
+  fjalë dhe numra sipas citimit të parë në sllajde. Sllajdi vjen pas përfundimeve, që
+  gjatë pyetjeve në ekran të mbetet mbyllja.
+- **Sllajdi i motorit** e shton vendet që nuk u gjetën dot sërish (16) dhe shumën e plotë
+  3532 + 12 252 + 16 = 15 800; poshtë, rishkrimet sipas ndreqjes dhe refuzimet sipas
+  arsyes. Ishte pikërisht rreshti «Të palokalizueshme» i Tabelës 10 që mungonte.
+- **Validimi** (sllajdi 10) i jep pesë hapat me rezultatin e secilit: parakushtet, javac,
+  rimatja e erës, mostra brenda projektit dhe leximi me dorë, dhe një kuti «Not verified»
+  për sjelljen.
+- **Mbyllja** thoshte «nothing that breaks compiling is written», që nuk është e saktë: dy
+  nga 201 rishkrimet shtojnë gabim brenda projektit, dhe leximi gjeti një që nuk kompilon.
+  Tani thotë «98% compile or add no new error, but behavior is not yet proven», dhe pikat
+  «Why it matters» e «Future research» janë ato të 6.5 dhe 6.7.
+- **Rezerva e verifikimit** është dy tabela: sipas ndreqjes (si Tabela 19, me rreshtin e
+  16 vendeve dhe totalin) dhe e njëjta mostër e kompiluar vetëm dhe brenda projektit.
+- Teksti folës u shkurtua që të dy versionet të mbeten brenda kohës: rreth 8:26 dhe 9:55
+  me ritëm të qetë. Po atë ditë autori kërkoi që teksti të rridhte më mirë nga një sllajd
+  te tjetri, edhe me kosto kohe: çdo sllajd tani nis me një fjali që e lidh me të
+  mëparshmin, dhe versionet zgjasin rreth 9:53 dhe 11:24 me ritëm të qetë, 7:50 dhe
+  9:02 me ritmin e shpejtë të autorit.
+
+**Çfarë nuk u verifikua.** Çdo numër i sllajdeve u kërkua te teksti i punimit përfundimtar
+(kopja IEEE e 16 tetorit). Dy nuk janë aty: 92.8%, saktësia e klasifikuesit të shumicës te
+Feature Envy, që vjen nga `ml_evaluation.json` por punimi nuk e shkruan; dhe 427, shuma e
+tri arsyeve më të vogla të refuzimit, që punimi i jep veç e veç.
+
+### VD-154: Versioni i parë i fiksuar, `v1.0.0`, dhe runner-i i fiksuar i e2e-së (25 tetor 2026)
+
+**Konteksti.** Autori kërkoi që mjeti të lansohet si mjet lokal. Imazhi ekzistonte që nga
+VD-142, por publikohej vetëm si `latest`: kushdo që do ta riprodhonte mjetin e dorëzuar
+merrte atë që ishte në `main` atë ditë, jo atë që u vlerësua. Për më tepër, tri shtytjet e
+fundit kishin CI të kuqe, vetëm te puna end-to-end: `ubuntu-latest` kishte kaluar te Ubuntu
+26.04, ku Playwright 1.56.1 nuk e instalon Chromium-in («does not support chromium on
+ubuntu26.04-x64»). Asnjë rresht kodi nuk kishte ndryshuar.
+
+**Vendimi.**
+- Puna `e2e` te `ci.yml` fiksohet te `ubuntu-24.04`. Vetëm ajo, sepse vetëm ajo varet nga
+  një binar i ndërtuar për një version të caktuar të sistemit; punët e tjera kaluan te
+  26.04. Përditësimi i Playwright-it ishte alternativa, por do të ndryshonte një varësi
+  disa javë para dorëzimit për të ndrequr një problem të mjedisit.
+- Dega `rishikimi-perfundimtar` bashkohet te `main` dhe `main` merr etiketën `v1.0.0`.
+  `docker.yml` e publikon tashmë çdo etiketë `v*` me emrin e saj (`type=ref,event=tag`),
+  ndaj nuk u desh asnjë ndryshim aty. README-ja e tregon etiketën për riprodhim.
+- Modeli i sigurisë nuk ndryshon: mjet lokal, porti vetëm te `127.0.0.1`, pa
+  autentikim. Shërbimi publik mbetet jashtë fushës, si te VD-142.
+
+**Verifikimi.** Para ndryshimit, lokalisht: dy portat e ruff-it, mypy mbi paketën dhe
+`scripts/`, 798 teste backend (1 i kapërcyer), 173 teste vitest, typecheck dhe ndërtimi i
+ndërfaqes kaluan. CI-ja dhe publikimi i imazhit verifikohen te GitHub pas shtytjes.
+
+### VD-155: Extract Method i kalon si parametra edhe variablat që blloku vetëm i cakton
 
 **Konteksti.** EM01 i fletës së cilësisë (VD-146) nuk kompilonte. Te
 `Resolve.resolveMemberReference` i SapMachine-it, `unboundRes` merr vlerën

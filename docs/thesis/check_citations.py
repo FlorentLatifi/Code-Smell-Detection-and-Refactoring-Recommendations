@@ -44,8 +44,10 @@ from chapters import (
 from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 
 # Një mbiemër: fillon me shkronjë të madhe dhe mund të jetë i përbërë
-# («Di Nucci», «Arcelli Fontana», «Henderson-Sellers»), i lidhur me «&» ose i
-# ndjekur nga «et al.». Apostrofi tipografik hyn si escape sepse ndryshe nuk
+# («Di Nucci», «Arcelli Fontana», «Henderson-Sellers»), i lidhur me «&» ose me «dhe»,
+# ose i ndjekur nga «et al.». APA-ja e do «&» brenda kllapave dhe lidhëzën e gjuhës
+# së tekstit jashtë tyre: «(Lanza & Marinescu, 2006)», por «Lanza dhe Marinescu
+# (2006)». Apostrofi tipografik hyn si escape sepse ndryshe nuk
 # dallohet nga apostrofi ASCII që qëndron pranë tij në të njëjtën klasë.
 #
 # Hapësira brenda një emri nuk e kalon rreshtin. Vargjet e kapitujve bashkohen me
@@ -54,22 +56,23 @@ from references import PAGES_UNVERIFIED, PAGES_VERIFIED, all_references
 # Marinescu» (VD-129).
 GAP = r"[^\S\n]+"
 WORD = r"[A-ZÇË][\w\u2019'\-]*"
-NAME = rf"{WORD}(?:{GAP}(?:&{GAP})?(?:et{GAP}al\.|{WORD}))*"
+NAME = rf"{WORD}(?:{GAP}(?:(?:&|dhe){GAP})?(?:et{GAP}al\.|{WORD}))*"
 
-# Dy format që lejon shablloni: «Fowler (2018)» dhe «(Fowler, 2018)».
+# Dy format e APA-s: «Fowler (2018)» dhe «(Fowler, 2018)».
 NARRATIVE = re.compile(rf"({NAME})\s+\((\d{{4}})\)")
 PARENTHETICAL = re.compile(rf"\(({NAME}),\s*(\d{{4}})\)")
 
 # Ndarësit pas të cilëve nuk ka më mbiemër: gjithçka para tyre është autori i parë.
-COAUTHOR_MARKERS = ("&", "et")
+COAUTHOR_MARKERS = ("&", "dhe", "et")
 
 # Sa gjatë mund të jetë një mbaresë shqipe e ngjitur me vizë te një mbiemër i huaj
 # («Fowler-i», «Cohen-it», «Marinescu-t»). Kufiri e ndan mbaresën nga mbiemri i
 # përbërë: «Henderson-Sellers» nuk shkurtohet, «Henderson-Sellers-it» po.
 MAX_SUFFIX = 3
 
-# Fraza pas së cilës një vit është datë qasjeje, jo vit botimi.
-ACCESS_DATE = "data e qasjes"
+# Një varg faqesh në listë: APA i lidh me vizë të mesme («1143–1191»), ndërsa DOI-të
+# përdorin vizë të shkurtër, ndaj një DOI nuk ngatërrohet me faqe.
+PAGE_RANGE = re.compile(r"\d+–\d+")
 
 
 def _fold(text: str) -> str:
@@ -136,21 +139,23 @@ def citations(text: str) -> set[tuple[str, str]]:
 def listed() -> dict[tuple[str, str], str]:
     """Çiftet (mbiemri, viti) të listës së referencave, te referenca e plotë.
 
-    Viti është numri i parë katërshifror i hyrjes, sepse formati i shabllonit e vë
-    vitin menjëherë pas autorëve. Burimet elektronike pa vit mbeten me vit bosh dhe
-    krahasohen vetëm me mbiemrin.
-
-    Data e qasjes pritet para kërkimit: ajo mban një vit që nuk është vit botimi,
-    dhe i lexuar si i tillë do të kërkonte një citim «(Autori, 2026)» që askush nuk
-    e shkruan — pra kontrolli do të ankohej përgjithmonë për një burim të saktë.
+    APA e vë vitin në kllapë menjëherë pas autorëve, ndaj çelësi lexohet që andej e
+    jo nga numri i parë katërshifror i hyrjes. Një burim pa vit mbetet me vit bosh
+    dhe krahasohet vetëm me mbiemrin.
     """
-    entries = {}
-    for reference in all_references():
-        author = _first_author(reference.split(",")[0])
-        published = reference.split(ACCESS_DATE)[0]
-        year = re.search(r"\b(?:19|20)\d{2}\b", published)
-        entries[(author, year.group() if year else "")] = reference
-    return entries
+    return {reference_key(reference): reference for reference in all_references()}
+
+
+def reference_key(reference: str) -> tuple[str, str]:
+    """(Mbiemri i autorit të parë, viti) i një hyrjeje në stilin APA.
+
+    Autori është gjithçka para kllapës së vitit, deri te presja e parë: «Lanza, M.,
+    & Marinescu, R. (2006)» jep «lanza», ndërsa autori kolektiv «PMD Team. (2026)»
+    nuk ka presje dhe jep «pmd team». Viti është ai brenda kllapës së parë.
+    """
+    author, _, rest = reference.partition(" (")
+    year = re.match(r"(\d{4})", rest)
+    return _first_author(author.split(",")[0].rstrip(".")), year.group(1) if year else ""
 
 
 def _undeclined(author: str, known: set[str]) -> str:
@@ -192,7 +197,7 @@ def _check_page_audit(references: dict[tuple[str, str], str]) -> list[str]:
         audited[key] = name
 
     for key, reference in sorted(references.items()):
-        if "pp. " in reference and key not in audited:
+        if PAGE_RANGE.search(reference) and key not in audited:
             problems.append(f"  referencë me faqe jashtë auditimit: {reference[:70]}")
     return problems
 

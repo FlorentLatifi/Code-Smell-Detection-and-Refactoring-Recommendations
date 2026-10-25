@@ -15,7 +15,6 @@ rerunning this script overwrites the file.
 from __future__ import annotations
 
 import os
-import re
 from dataclasses import dataclass
 
 from docx import Document
@@ -295,6 +294,21 @@ def body(doc: Document, text: str) -> None:
             _set_font(paragraph.add_run(piece), bold=index % 2 == 1)
 
 
+def signature(doc: Document, lines: list[str]) -> None:
+    """Emri dhe vendi nën mirënjohjen, pa dhëmbëzim, secili rresht paragraf më vete.
+
+    Dy paragrafë e jo një me ndërprerje rreshti: në një paragraf të justifikuar Word-i
+    e shtrin rreshtin që mbaron me ndërprerje, dhe «Florent Latifi» do të dilte i
+    hapur nëpër gjithë gjerësinë e faqes.
+    """
+    for index, line in enumerate(lines):
+        paragraph = doc.add_paragraph()
+        paragraph.paragraph_format.line_spacing = LINE_SPACING
+        paragraph.paragraph_format.space_before = Pt(12 if index == 0 else 0)
+        paragraph.paragraph_format.space_after = Pt(0)
+        _set_font(paragraph.add_run(line))
+
+
 def unnumbered_heading(doc: Document, text: str, *, new_page: bool = True) -> None:
     """A front-matter heading: same look as a chapter title, but no number.
 
@@ -355,15 +369,22 @@ class Numbering:
     equation: int = 0
 
 
-def figure(doc: Document, path: str, text: str, numbering: Numbering) -> None:
-    """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni."""
+def figure(
+    doc: Document, path: str, text: str, numbering: Numbering, width: float = 5.6
+) -> None:
+    """Një figurë me përshkrimin poshtë saj, siç e kërkon shablloni.
+
+    `width` është në inç. Shembulli i kodit dhe diff-i i ndërfaqes futen me gjithë
+    gjerësinë e tekstit, sepse shkronjat e tyre janë llogaritur për atë gjerësi dhe
+    me 5.6 inç do të dilnin më të vogla se sa lexohen në letër.
+    """
     holder = doc.add_paragraph()
     holder.alignment = WD_ALIGN_PARAGRAPH.CENTER
     # Pa këtë, një figurë në fund të faqes e linte përshkrimin vetëm në krye të
     # faqes pasardhëse, siç ndodhi me Figurën 1 (VD-134).
     holder.paragraph_format.keep_with_next = True
     if os.path.exists(path):
-        holder.add_run().add_picture(path, width=Inches(5.6))
+        holder.add_run().add_picture(path, width=Inches(width))
     else:
         _set_font(holder.add_run(f"{TODO}: mungon figura {os.path.basename(path)}"))
     numbering.figure += 1
@@ -476,6 +497,9 @@ def build_inner_page(doc: Document) -> None:
     centered(doc, f"Mentore: {SUPERVISOR}", size=TITLE_SIZE, bold=True)
     blank(doc, 5)
     centered(doc, SUBMISSION_DATE, size=TITLE_SIZE)
+    # Vendi i shtoi autori në Word më 15 tetor 2026, që faqja e brendshme ta mbyllë
+    # datën si kopertina.
+    centered(doc, "Prishtinë", size=TITLE_SIZE)
     blank(doc, 3)
     centered(
         doc,
@@ -490,10 +514,12 @@ def build_front_matter(doc: Document, figures: list[str], tables: list[str]) -> 
     for paragraph in abstract():
         body(doc, paragraph)
     blank(doc)
-    body(doc, f"Fjalë kyçe: {KEYWORDS}")
+    body(doc, f"**Fjalë kyçe:** {KEYWORDS}")
 
     front_title(doc, "Mirënjohje")
-    body(doc, ACKNOWLEDGEMENTS)
+    for paragraph in ACKNOWLEDGEMENTS:
+        body(doc, paragraph)
+    signature(doc, SIGNATURE)
 
     front_title(doc, "Përmbajtja")
     toc = doc.add_paragraph()
@@ -576,7 +602,7 @@ def render_sections(doc: Document, sections: list, numbering: Numbering) -> None
             elif item[0] == "bullet":
                 bullet(doc, item[1])
             elif item[0] == "figure":
-                figure(doc, item[1], item[2], numbering)
+                figure(doc, item[1], item[2], numbering, *item[3:])
             elif item[0] == "equation":
                 equation(doc, item[1], numbering)
             elif item[0] == "table":
@@ -614,23 +640,33 @@ def build_introduction(doc: Document, numbering: Numbering) -> None:
 
 
 def build_references(doc: Document, only_cited_in: str | None = None) -> None:
-    """Chapter 7, numbered and alphabetical, in the template's own format.
+    """Chapter 7, alphabetical and unnumbered, in APA style.
 
     Only cited sources belong here; anything read but not cited goes under
     Bibliografia. The list is rendered from references.py rather than typed into
     the document, so a citation added to the text and a citation added to the
     list cannot drift apart.
+
+    APA wants a hanging indent and no numbers, and it sets book titles and journal
+    names in italics. The list marks those spans with single asterisks; odd pieces
+    of a split are the italic ones, the same convention `body()` uses for bold.
+    The paragraph is left-aligned rather than justified, because a justified line
+    that ends in a long DOI opens wide gaps between the words before it.
     """
     references = all_references()
     if only_cited_in is not None:
         references = _cited_in(only_cited_in, references)
-    for number, reference in enumerate(references, 1):
+    for reference in references:
         paragraph = doc.add_paragraph()
-        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         paragraph.paragraph_format.line_spacing = LINE_SPACING
         paragraph.paragraph_format.left_indent = Inches(0.5)
         paragraph.paragraph_format.first_line_indent = Inches(-0.5)
-        _set_font(paragraph.add_run(f"[{number}]	{reference}"))
+        for index, piece in enumerate(reference.split("*")):
+            if piece:
+                run = paragraph.add_run(piece)
+                _set_font(run)
+                run.font.italic = index % 2 == 1
 
 
 def _cited_in(text: str, references: list[str]) -> list[str]:
@@ -640,13 +676,9 @@ def _cited_in(text: str, references: list[str]) -> list[str]:
     «Referencat» vetëm burimet e cituara. Krahasimi merret nga `check_citations`,
     që lista e pjesshme dhe kontrolli i plotë të mos kenë dy rregulla të ndryshme.
     """
-    from check_citations import ACCESS_DATE, _first_author, _fold, _undeclined, citations
+    from check_citations import _fold, _undeclined, citations, reference_key
 
-    keys = {}
-    for reference in references:
-        published = reference.split(ACCESS_DATE)[0]
-        year = re.search(r"\b(?:19|20)\d{2}\b", published)
-        keys[reference] = (_first_author(reference.split(",")[0]), year.group() if year else "")
+    keys = {reference: reference_key(reference) for reference in references}
     known = {author for author, _ in keys.values()}
     cited = {(_undeclined(author, known), year) for author, year in citations(text)}
     folded = _fold(text)
@@ -758,17 +790,44 @@ TITLE_SQ = "Detektimi i code smells dhe rekomandimet për refaktorim"
 AUTHOR = "Florent Latifi"
 # Shablloni: «Mentori: Titulli. Emri dhe Mbiemri». Titulli u dha nga autori (VD-115).
 SUPERVISOR = "MSc. Altina Salihu"
-ACADEMIC_YEAR = "2025 – 2026"
-SUBMISSION_DATE = "Nëntor / 2026"
+# Shablloni: «Viti akademik XXXX-YYYY (VITI I REGJISTRIMIT)», pra viti kur autori
+# u regjistrua (2023), jo viti i dorëzimit. «Muaji / Viti» te kopertina është vend
+# për muajin dhe vitin, jo një vijë e pjerrët që shtypet (VD-148).
+# Vizë e shkurtër dhe tetor, ashtu si i ndreqi autori në Word më 15 tetor 2026: punimi
+# dorëzohet në tetor, jo në nëntor siç ishte planifikuar.
+ACADEMIC_YEAR = "2023-2024"
+SUBMISSION_DATE = "Tetor 2026"
 KEYWORDS = (
     "code smells, refaktorim, metrika softuerike, cilësia e kodit, "
     "mësim i makinës, analizë statike, Java"
 )
 
-ACKNOWLEDGEMENTS = (
-    f"{TODO}: Falënderimet shkruhen me fjalët e tua. Zakonisht përfshihen mentorja, "
-    "profesorët e programit, familja dhe kushdo që ka kontribuar në këtë punim."
-)
+# Teksti i autorit, i shkruar në Word më 15 tetor 2026 dhe i sjellë këtu që një
+# rindërtim i dokumentit të mos e fshijë. Çdo paragraf është paragraf më vete.
+ACKNOWLEDGEMENTS = [
+    "Ky punim është përfundimi i disa viteve studimi, dhe asnjë prej tyre nuk e kalova "
+    "vetëm. Pas faqeve të tij qëndrojnë njerëz që nuk përmenden në asnjë kapitull, por pa "
+    "të cilët ai nuk do të ishte shkruar.",
+    "Falënderimi im i parë shkon për mentoren time, MSc. Altina Salihu, për udhëzimet, për "
+    "kohën dhe për mbështetjen gjatë gjithë punës në këtë temë. Vërejtjet e saj, kapitull "
+    "pas kapitulli, më mësuan të shkruaj më qartë, të mos e marr asnjë shifër si të "
+    "mirëqenë dhe të pyes gjithmonë pse një rezultat ka dalë ashtu. Falë saj, punimi është "
+    "më i saktë. Mënyrën e të menduarit që mësova gjatë kësaj pune do ta marr me vete edhe "
+    "më tej.",
+    "Falënderoj profesorët dhe stafin e Programit për Shkenca Kompjuterike dhe "
+    "Inxhinierisë në UBT. Njohuritë që mora në ligjërata dhe në projekte gjatë këtyre "
+    "viteve janë themeli mbi të cilin u ndërtua ky punim.",
+    "Familjes sime i detyrohem më shumë nga sa mund të shkruhet në një faqe. Që nga dita e "
+    "parë e studimeve e deri te kjo faqe, ajo më mbështeti pa kushte, më dha qetësinë të "
+    "mësoj dhe besimin se do t’ia dal, edhe në çastet kur vetë nuk isha i sigurt.",
+    "Shokëve dhe kolegëve të mi u jam mirënjohës për bisedat, për ndihmën kur ngecja dhe "
+    "për shoqërinë që i bëri vitet e studimeve më të lehta dhe më të bukura. Falënderoj "
+    "edhe këdo tjetër që, me një fjalë apo me një gjest, më ndihmoi të arrij deri këtu.",
+    "Në fund, këtë punim ia kushtoj kujtimit të gjyshit dhe të gjyshes sime, dhe të nipit "
+    "tim, Omerit. Asnjëri prej tyre nuk është më me ne për ta parë këtë ditë, por të tre "
+    "mbeten pjesë e saj.",
+]
+SIGNATURE = [AUTHOR, f"Prishtinë, {SUBMISSION_DATE}"]
 
 GLOSSARY = [
     "AST - Abstract Syntax Tree, pema e sintaksës abstrakte",
@@ -805,7 +864,7 @@ GLOSSARY = [
     "NOPA - Number of Public Attributes, numri i atributeve publike",
     "NP - Number of Parameters, numri i parametrave",
     "κ - kappa e Cohen-it, pajtimi mes dy vlerësuesve përtej rastësisë",
-    "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al.",
+    "DECOR - metoda e specifikimit dhe e detektimit të code smells nga Moha et al. (2010)",
     "PMD - mjet i hapur i analizës statike, i përdorur si krahasim i jashtëm",
     # Termat e huaj që teksti i përdor pa i përkthyer, dhe dy shkurtesat e vetë
     # punimit. Një lexues që nuk i njeh duhet t'i gjejë këtu, jo t'i hamendësojë.
@@ -819,6 +878,10 @@ GLOSSARY = [
     "PK - pyetje kërkimore",
     "Precizion - pjesa e rasteve të shënuara që janë vërtet pozitive",
     "Recall - pjesa e rasteve pozitive që detektori i gjen",
+    # Njësitë e matjes, që teksti i përdor si terma (VD-150).
+    "Mostër - një entitet i MLCQ-së i rishikuar për një erë të caktuar (çift mostër-erë)",
+    "Rishkrim - një transformim i aplikuar mbi një vend të caktuar të kodit",
+    "Vend - një entitet ku detektori ndez dhe motori ka një transformim për të",
 ]
 
 # Hyrja është një tekst i vetëm, pa nënkapituj, 1 deri 1.5 faqe, dhe e shtron
@@ -830,78 +893,64 @@ INTRODUCTION = [
         "",
         [
             "Zhvillimi i një sistemi softuerik nuk përfundon me lëshimin e versionit "
-            "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje, ku kodi "
-            "lexohet dhe ndryshohet vazhdimisht nga zhvillues të ndryshëm, shpesh vite "
-            "pasi u shkrua dhe nga njerëz që nuk e shkruan vetë. Lehman (1980) e "
-            "formuloi këtë si ligj: një sistem që përdoret në një mjedis real duhet të "
-            "ndryshojë vazhdimisht, përndryshe bëhet gradualisht më pak i dobishëm. Po "
-            "ai vuri re se me çdo ndryshim kompleksiteti i sistemit rritet, përveç kur "
-            "dikush punon qëllimisht për ta ulur. Prandaj sa lehtë ndryshohet kodi "
-            "është kosto e përditshme për çdo ekip, dhe ajo kosto rritet me moshën e "
-            "sistemit.",
-            "Një burim i madh i kësaj vështirësie janë code smells, që në vijim quhen "
-            "edhe erëra të kodit, ose shkurt erëra. Termi është i Kent Beck-ut dhe u "
-            "përhap me librin Refactoring të Martin Fowler-it, botimi i dytë i të "
-            "cilit (Fowler, 2018) përdoret në këtë punim. Një erë nuk është gabim, "
-            "sepse programi kompilohet dhe punon saktë. Është shenjë e një problemi "
-            "dizajni: një klasë me shumë përgjegjësi të palidhura, një metodë qindra "
-            "rreshta e gjatë, ose një klasë që mban vetëm të dhëna. Cunningham (1992) "
-            "e quajti efektin e tyre të grumbulluar borxh teknik: çdo kompromis i "
-            "vogël në strukturë paguhet me interes në çdo ndryshim të mëvonshëm. "
-            "Studimet empirike e lidhin këtë metaforë me kosto reale, sepse kodi me "
+            "të parë. Pjesa më e madhe e jetës së tij kalon në mirëmbajtje, kur kodi "
+            "lexohet dhe ndryshohet vazhdimisht, shpesh vite më vonë dhe nga njerëz që "
+            "nuk e kanë shkruar vetë. Lehman (1980) e formuloi këtë si ligj: një sistem "
+            "që përdoret në një mjedis real duhet të ndryshojë vazhdimisht, përndryshe "
+            "bëhet gradualisht më pak i dobishëm, dhe me çdo ndryshim kompleksiteti i "
+            "tij rritet, përveç kur dikush punon qëllimisht për ta ulur. Sa lehtë "
+            "ndryshohet kodi është prandaj një kosto e përditshme për çdo ekip, dhe kjo "
+            "kosto rritet bashkë me moshën e sistemit.",
+            "Një burim i rëndësishëm i kësaj vështirësie janë code smells (Fowler, "
+            "2018), të cilat në vijim quhen edhe erëra të kodit, ose shkurt erëra. Një "
+            "erë nuk është gabim, sepse programi kompilohet dhe punon saktë, por shenjë "
+            "e një problemi dizajni: një klasë me shumë përgjegjësi të palidhura, një "
+            "metodë qindra rreshta e gjatë, ose një klasë që mban vetëm të dhëna. "
+            "Cunningham (1992) efektin e grumbulluar të këtyre kompromiseve e quajti "
+            "borxh teknik, sepse çdo shkurtim në strukturë paguhet me interes në çdo "
+            "ndryshim të mëvonshëm. Metafora ka edhe mbështetje empirike: kodi me "
             "erëra ka më shumë gjasë të ndryshojë dhe të përmbajë defekte (Palomba et "
             "al., 2018).",
-            "Zgjidhja e zakonshme është refaktorimi, të cilin Fowler (2018) e "
-            "përkufizon si ndryshim të strukturës së brendshme të kodit pa ndryshuar "
-            "sjelljen e tij të jashtme. Por që të refaktorohet, problemi duhet gjetur "
-            "më parë, dhe duhet ditur cili transformim e heq pa e prishur programin. "
-            "Në një sistem me qindra klasa kjo nuk bëhet dot me dorë në mënyrë "
-            "sistematike. Rishikimi i kodit e kap një erë vetëm kur dikush e sheh dhe "
-            "ka kohë ta ndreqë, dy shqyrtues shpesh nuk pajtohen se çfarë është "
-            "problem, dhe një rishkrim me dorë mund ta prishë programin pikërisht aty "
-            "ku synonte ta përmirësonte. Problemi pra nuk është mungesa e një "
-            "përkufizimi, por mungesa e një mënyre të përsëritshme për ta zbatuar atë "
+            "Zgjidhja e zakonshme është refaktorimi, që Fowler (2018) e përkufizon si "
+            "ndryshim të strukturës së brendshme të kodit pa ndryshuar sjelljen e tij "
+            "të jashtme. Por që një erë të ndreqet, ajo duhet gjetur më parë, dhe "
+            "duhet ditur cili transformim e heq pa e prishur programin. Në një sistem "
+            "me qindra klasa kjo nuk bëhet dot me dorë në mënyrë sistematike: "
+            "rishikimi i kodit e kap një erë vetëm kur dikush e vëren, dy shqyrtues "
+            "shpesh nuk pajtohen se çfarë është problem, dhe një rishkrim me dorë mund "
+            "ta prishë programin aty ku synonte ta përmirësonte. Ajo që mungon, pra, "
+            "nuk është përkufizimi, por një mënyrë e përsëritshme për ta zbatuar atë "
             "mbi kod real.",
             "Mjetet e analizës statike e automatizojnë një pjesë të kësaj pune, por "
-            "mbeten tri probleme. Strategjitë me metrika, si ato të Lanza & Marinescu "
-            "(2006), përdorin pragje fikse të nxjerra nga një korpus tjetër, dhe "
-            "rrallë dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim "
-            "makine premton më shumë, por rezultatet e tij varen shumë nga mënyra si "
-            "ndërtohen dhe ndahen të dhënat, dhe rrallë krahasohet me rregullat mbi "
-            "të njëjtat mostra. Shumica e mjeteve, për më tepër, ndalen te njoftimi: "
-            "e thonë ku është problemi, por jo çfarë duhet bërë. Qasjet që propozojnë "
-            "edhe refaktorimin, si ajo e Tsantalis & Chatzigeorgiou (2009) për Move "
-            "Method, janë më të rralla dhe mbulojnë pak raste.",
+            "lënë tri mangësi. Strategjitë me metrika, si ato të Lanza dhe Marinescu "
+            "(2006), përdorin pragje fikse të nxjerra nga sisteme të tjera, dhe rrallë "
+            "dihet sa pajtohen me gjykimin e zhvilluesve. Detektimi me mësim të makinës "
+            "premton më shumë, por rezultatet e tij varen nga mënyra si ndërtohen dhe "
+            "ndahen të dhënat, dhe rrallë krahasohet me rregullat mbi të njëjtat "
+            "mostra. Së fundi, shumica e mjeteve ndalen te njoftimi: tregojnë ku është "
+            "problemi, por jo si ndreqet, dhe qasjet që propozojnë edhe refaktorimin, "
+            "si ajo e Tsantalis dhe Chatzigeorgiou (2009) për Move Method, mbulojnë pak "
+            "raste.",
+            # Kontributi dhe «transformimi i sigurt» i kërkoi mentorja te komentet mbi
+            # kapitujt 1-3 (VD-141); këtu janë në një paragraf, që hyrja të mbetet
+            # brenda 1.5 faqeve (VD-148).
             "Ky punim merret me hapësirën mes gjetjes së problemit dhe ndreqjes së "
-            "tij, për gjuhën Java. Kontributi i tij kryesor është një zinxhir i "
-            "vetëm që i lidh tre hapa që literatura zakonisht i trajton veç e veç: "
-            "detektimin e erës, rishkrimin e kodit dhe verifikimin e rishkrimit. "
-            "Konkretisht, punimi sjell tri gjëra. E para, një krahasim të "
-            "drejtpërdrejtë të dy qasjeve të detektimit, strategjive me metrika dhe "
-            "një klasifikuesi të trajnuar mbi të njëjtat metrika, mbi të njëjtin "
-            "dataset publik të etiketuar nga zhvillues profesionistë, me të njëjtën "
-            "ndarje të të dhënave dhe me të njëjtën mënyrë pikëzimi. E dyta, një "
-            "motor refaktorimi që nuk ndalet te njoftimi: e rishkruan kodin kur "
-            "transformimi është i sigurt, dhe kur nuk është, e refuzon dhe e "
-            "shënon arsyen. E treta, matjen e asaj që ndodh pas rishkrimit, pra "
-            "nëse kodi kompilon ende dhe nëse era u hoq vërtet. I gjithë "
-            "eksperimenti riprodhohet me komanda të dokumentuara.",
-            "Një transformim quhet këtu i sigurt kur plotëson dy kushte. Para "
-            "aplikimit duhet të provohen parakushtet e tij, në kuptimin e Opdyke "
-            "(1992): për shembull, Extract Method refuzohet kur nga blloku që do të "
-            "nxirret del një return, break ose continue, sepse metoda e re do ta "
-            "ndryshonte rrjedhën e programit. Ky kontroll bëhet mbi pemën sintaksore "
-            "të kodit, jo mbi tekstin e tij. Pas aplikimit, rishkrimi kontrollohet "
-            "në tri mënyra: skedari duhet të parsohet sërish, kompilatori javac nuk "
-            "duhet të japë asnjë lloj të ri gabimi krahasuar me versionin para "
-            "rishkrimit, dhe klasa matet sërish me të njëjtët detektorë për të parë "
-            "nëse era u hoq. Siguria në këtë punim do të thotë pra se kodi mbetet "
-            "i vlefshëm dhe se era hiqet. Që programi të sillet njësoj edhe kur "
-            "ekzekutohet do të ishte garanci më e fortë, por ky punim nuk e jep "
-            "(Nënkapitulli 3.4).",
-            "Kapitulli 2 shqyrton literaturën, Kapitulli 3 shtron problemin dhe "
-            "pyetjet kërkimore, Kapitulli 4 përshkruan metodologjinë, ndërsa "
-            "Kapitujt 5 dhe 6 paraqesin dhe diskutojnë rezultatet.",
+            "tij, për gjuhën Java. Kontributi kryesor është një zinxhir i vetëm që "
+            "lidh detektimin, rishkrimin dhe verifikimin, hapa që literatura i "
+            "trajton veç e veç. Dy qasje "
+            "detektimi, strategjitë me metrika dhe një klasifikues i trajnuar mbi të "
+            "njëjtat metrika, krahasohen mbi të njëjtin dataset të etiketuar nga "
+            "zhvillues profesionistë, dhe një motor refaktorimi e rishkruan kodin "
+            "vetëm kur transformimi është i sigurt në një kuptim të ngushtë e të "
+            "matshëm. Parakushtet e tij, në kuptimin e Opdyke (1992), provohen mbi "
+            "pemën sintaksore para aplikimit, përndryshe ai refuzohet me arsye; pas "
+            "tij skedari parsohet sërish, kompilatori javac nuk duhet të japë lloj të "
+            "ri gabimi, dhe klasa rimatet për të parë nëse era u hoq. Kjo është "
+            "verifikim i kompilimit, jo provë se sjellja e programit ruhet: sjelljen "
+            "gjatë ekzekutimit punimi nuk e verifikon, dhe rishkrimet që sollën "
+            "gabime të reja raportohen veç (Nënkapitujt 3.4 dhe 5.4).",
+            "Kapitujt në vijim trajtojnë me radhë literaturën, problemin, "
+            "metodologjinë, rezultatet dhe diskutimin e tyre.",
         ],
     ),
 ]

@@ -1,13 +1,13 @@
 {
   "by_entity_type": {
-    "class": 2228,
-    "function": 2306
+    "class": 4449,
+    "function": 4597
   },
   "by_smell": {
-    "blob": 1407,
-    "data class": 821,
-    "feature envy": 823,
-    "long method": 1483
+    "blob": 2223,
+    "data class": 2226,
+    "feature envy": 2291,
+    "long method": 2306
   },
   "columns": [
     "sample_id",
@@ -61,17 +61,17 @@
     "m_NP"
   ],
   "environment": {
-    "commit": "b9db342476091cdff30bf7390a4b0e36c98a3821",
+    "commit": "42e021057612c480ded29e3d0c350caaccc516e3",
     "platform": "Windows-11-10.0.26200-SP0",
     "python": "3.13.1"
   },
   "repositories": 522,
-  "rows": 4534,
-  "samples_considered": 4770,
+  "rows": 9046,
+  "samples_considered": 9517,
   "unreached": {
-    "no_entity": 8,
-    "no_file": 226,
-    "span_mismatch": 1,
-    "syntax_errors": 1
+    "no_entity": 16,
+    "no_file": 451,
+    "span_mismatch": 2,
+    "syntax_errors": 2
   }
 }
