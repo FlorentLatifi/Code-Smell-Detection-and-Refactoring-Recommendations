@@ -6196,3 +6196,27 @@ ardhshme. Pastaj, që sllajdet të përputhen me punimin.
 (kopja IEEE e 16 tetorit). Dy nuk janë aty: 92.8%, saktësia e klasifikuesit të shumicës te
 Feature Envy, që vjen nga `ml_evaluation.json` por punimi nuk e shkruan; dhe 427, shuma e
 tri arsyeve më të vogla të refuzimit, që punimi i jep veç e veç.
+
+### VD-154: Versioni i parë i fiksuar, `v1.0.0`, dhe runner-i i fiksuar i e2e-së (25 tetor 2026)
+
+**Konteksti.** Autori kërkoi që mjeti të lansohet si mjet lokal. Imazhi ekzistonte që nga
+VD-142, por publikohej vetëm si `latest`: kushdo që do ta riprodhonte mjetin e dorëzuar
+merrte atë që ishte në `main` atë ditë, jo atë që u vlerësua. Për më tepër, tri shtytjet e
+fundit kishin CI të kuqe, vetëm te puna end-to-end: `ubuntu-latest` kishte kaluar te Ubuntu
+26.04, ku Playwright 1.56.1 nuk e instalon Chromium-in («does not support chromium on
+ubuntu26.04-x64»). Asnjë rresht kodi nuk kishte ndryshuar.
+
+**Vendimi.**
+- Puna `e2e` te `ci.yml` fiksohet te `ubuntu-24.04`. Vetëm ajo, sepse vetëm ajo varet nga
+  një binar i ndërtuar për një version të caktuar të sistemit; punët e tjera kaluan te
+  26.04. Përditësimi i Playwright-it ishte alternativa, por do të ndryshonte një varësi
+  disa javë para dorëzimit për të ndrequr një problem të mjedisit.
+- Dega `rishikimi-perfundimtar` bashkohet te `main` dhe `main` merr etiketën `v1.0.0`.
+  `docker.yml` e publikon tashmë çdo etiketë `v*` me emrin e saj (`type=ref,event=tag`),
+  ndaj nuk u desh asnjë ndryshim aty. README-ja e tregon etiketën për riprodhim.
+- Modeli i sigurisë nuk ndryshon: mjet lokal, porti vetëm te `127.0.0.1`, pa
+  autentikim. Shërbimi publik mbetet jashtë fushës, si te VD-142.
+
+**Verifikimi.** Para ndryshimit, lokalisht: dy portat e ruff-it, mypy mbi paketën dhe
+`scripts/`, 798 teste backend (1 i kapërcyer), 173 teste vitest, typecheck dhe ndërtimi i
+ndërfaqes kaluan. CI-ja dhe publikimi i imazhit verifikohen te GitHub pas shtytjes.

@@ -175,7 +175,10 @@ jobs:
   # cdo gje tjeter qe kjo depo mat (VD-87).
   e2e:
     name: End-to-end (nderfaqja e ndertuar)
-    runs-on: ubuntu-latest
+    # E fiksuar, jo `ubuntu-latest`: kur ky emer kaloi te Ubuntu 26.04, Playwright
+    # 1.56.1 nuk e instalonte dot Chromium-in dhe puna deshtonte pa asnje ndryshim
+    # ne kod (VD-154). Levizet bashke me versionin e Playwright-it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
