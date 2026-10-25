@@ -1,8 +1,8 @@
 name: Docker
 
 # Imazhi publikohet te GitHub Container Registry, që përdoruesi ta nisë me një
-# komandë pa ndërtuar asgjë (VD-142). Te pull request-et vetëm ndërtohet: kështu
-# një Dockerfile i prishur kapet para se të bashkohet, pa publikuar asgjë.
+# komandë pa ndërtuar asgjë (VD-142). Te pull request-et ndërtohet dhe provohet pa
+# u publikuar: kështu një imazh i prishur kapet para se të bashkohet (VD-156).
 on:
   push:
     branches: [main]
@@ -17,7 +17,8 @@ permissions:
 jobs:
   image:
     name: Ndërto dhe publiko imazhin
-    runs-on: ubuntu-latest
+    # E fiksuar për të njëjtën arsye si puna e2e te `ci.yml` (VD-154, VD-156).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -42,10 +43,32 @@ jobs:
             type=ref,event=tag
             type=sha,format=short
 
-      - uses: docker/build-push-action@v6
+      # Imazhi ndërtohet një herë lokalisht dhe niset para se të publikohet: një
+      # imazh që ndërtohet por nuk niset nuk duhet të arrijë te ghcr.io (VD-156).
+      - name: Ndërto imazhin për provë
+        uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          load: true
+          tags: javasmell:prova
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Te një etiketë `vN`, `/api/health` duhet ta raportojë atë version.
+      # Etiketa kalon nga mjedisi dhe jo brenda komandës, që emri të mos lexohet
+      # si kod shell-i.
+      - name: Provo imazhin e ndezur
+        env:
+          EXPECTED_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: bash tools/prova-imazhit.sh javasmell:prova "$EXPECTED_VERSION"
+
+      # Shtresat vijnë nga cache-i i hapit të parë, ndaj ky ndërtim nuk përsëritet.
+      - name: Publiko imazhin
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
