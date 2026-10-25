@@ -103,6 +103,18 @@ def test_health_reports_ready():
     assert response.json()["status"] == "ok"
 
 
+def test_health_reports_the_tagged_release():
+    """Versioni shkruhet këtu me dorë, jo i lexuar nga `API_VERSION`.
+
+    Imazhi `v1.0.0` u publikua duke raportuar "0.1.0", sepse konstanta nuk ishte
+    rritur kurrë (VD-155). Një test që e krahason konstantën me vetveten nuk do ta
+    kishte kapur.
+    """
+    app = create_app(Settings(root=Path().resolve()))
+    response = TestClient(app, base_url="http://localhost").get("/health")
+    assert response.json()["version"] == "1.0.1"
+
+
 # ----------------------------------------------------------------------
 # Zgjedhja e dosjes pa shkruar shteg (VD-126)
 # ----------------------------------------------------------------------

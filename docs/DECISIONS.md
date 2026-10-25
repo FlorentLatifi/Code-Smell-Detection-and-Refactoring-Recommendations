@@ -6302,3 +6302,10 @@ Pritet që disa vende të Extract Method të kalojnë nga të aplikuara te
 `not_definitely_assigned`, dhe që disa rishkrime të marrin një parametër më shumë.
 Edhe 19% e rishkrimeve mbi pragun e Long Parameter List, te docstring-u i `_notes`,
 është matur para ndreqjes.
+
+**Versioni që raporton API-ja.** Imazhi `v1.0.0` u publikua duke raportuar
+`"version": "0.1.0"` te `/api/health`, sepse `API_VERSION` te `api/app.py` nuk ishte
+rritur kurrë. Etiketa `v1.0.0` nuk u zhvendos për ta ndrequr: një version i publikuar
+nuk ndryshon nën të njëjtin emër. Ndreqja hyn te `v1.0.1`, me `API_VERSION = "1.0.1"`
+dhe një test te `test_api.py` që e pret `"1.0.1"` të shkruar me dorë, jo të lexuar nga
+konstanta, përndryshe testi nuk mund të dështonte kurrë.
