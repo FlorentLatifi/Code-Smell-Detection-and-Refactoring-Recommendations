@@ -1,0 +1,28 @@
+JavaSmell
+Copyright (c) 2026 Florent Latifi
+The source code in this repository is licensed under the MIT License (see LICENSE).
+
+This product includes data derived from a third-party dataset under its own licence:
+
+MLCQ: Industry-relevant code smell data set
+  Authors:  Lech Madeyski, Tomasz Lewowski
+  Source:   https://doi.org/10.5281/zenodo.3666840 (version 1.1)
+  Paper:    L. Madeyski and T. Lewowski, "MLCQ: Industry-Relevant Code Smell Data Set",
+            EASE 2020, https://doi.org/10.1145/3383219.3383264
+  Licence:  Creative Commons Attribution 4.0 International (CC BY 4.0)
+            https://creativecommons.org/licenses/by/4.0/
+
+Where it is used:
+  - data/results/mlcq_dataset.csv, in this repository and in the Docker image.
+  - The machine-learning models in the Docker image, which are trained on that file.
+
+Changes made to the original data:
+  - Reviews were aggregated per sample and smell (mean, maximum, minimum, unanimity).
+  - Samples whose source could not be located in the referenced repository were dropped.
+  - Metrics computed by this tool were added as new columns.
+
+The MIT License above does not apply to this data. The CC BY 4.0 licence does, and it
+requires this attribution to be kept when the data or the models are redistributed.
+
+The Java repositories that MLCQ refers to are not included. Projects you analyse, or
+import from GitHub through the interface, remain under their own licences.

@@ -64,6 +64,11 @@ if [ -n "$expected" ]; then
     check "$work/health.json" "d['version'] == '$expected'" "/api/health raporton versionin $expected"
 fi
 
+# Atribuimi i MLCQ-së është detyrim i licencës CC BY 4.0, jo zbukurim (VD-157).
+docker exec "$name" test -s NOTICE || fail "NOTICE mungon në imazh"
+docker exec "$name" test -s LICENSE || fail "LICENSE mungon në imazh"
+echo "ok: LICENSE dhe NOTICE janë në imazh"
+
 [ "$(status_of "$base/")" = 200 ] || fail "faqja nuk u hap"
 echo "ok: faqja hapet"
 

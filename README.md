@@ -17,9 +17,31 @@ approaches, and proposes refactorings that are verified before they are offered.
 
 Everything runs locally on open-source tools; no paid service is involved.
 
-**Quick start.** With Docker installed, nothing else is needed:
-`docker run --rm -p 127.0.0.1:8000:8000 -v "<your projects>:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations`,
-then open `http://localhost:8000`. Public GitHub repositories can be analysed from a link.
+### Quick start
+
+You only need [Docker](https://www.docker.com/products/docker-desktop/). The image
+contains Python, the interface, the models and a JDK.
+
+```bash
+docker run --rm -p 127.0.0.1:8000:8000 -v "/path/to/your/projects:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations:v1.0.1
+```
+
+Then open `http://localhost:8000`. The folder after `-v` is the only one the tool
+can read. *Apply* writes to it only when the target is a clean git repository, so
+`git restore .` always undoes a rewrite. Public GitHub repositories can also be
+analysed from a link, without mounting anything.
+
+- **Keep `127.0.0.1` in `-p`.** The tool has no login. Without that address, anyone
+  on your network can reach it.
+- **On Windows**, write the path as `C:\Users\you\Projects`.
+- **On Linux**, the container runs as user 1000. If *Apply* cannot write, add
+  `--user "$(id -u)"`.
+- **On Apple Silicon Macs**, the image is `linux/amd64` for now and runs under
+  emulation, so it is slower.
+- **Port 8000 already in use?** Use `-p 127.0.0.1:8080:8000` and open port 8080.
+
+Changes are listed in [`CHANGELOG.md`](CHANGELOG.md). To report a security problem,
+see [`SECURITY.md`](SECURITY.md).
 
 **Results.** All three approaches are evaluated on 4,534 samples from 512 Java
 repositories, with ground truth from professional reviewers (MLCQ). Splits are grouped
@@ -361,6 +383,9 @@ Kodi publikohet nën licencën MIT: lejohet përdorimi, ndryshimi dhe shpërndar
 me kusht që njoftimi i të drejtës së autorit të mbetet. Teksti i plotë është te
 [`LICENSE`](LICENSE).
 
-Licenca mbulon kodin e këtij depoje. Dataset-i MLCQ, depot Java të korpusit dhe
-depot e importuara nga ndërfaqja mbeten nën licencat e veta, dhe asnjëra prej tyre
-nuk shpërndahet bashkë me këtë kod.
+Licenca MIT mbulon kodin e këtij depoje, jo të dhënat e MLCQ-së.
+`data/results/mlcq_dataset.csv` rrjedh nga dataset-i MLCQ (Madeyski & Lewowski), që
+publikohet nën **CC BY 4.0**. Ai skedar shpërndahet me depon dhe me imazhin Docker, dhe
+mbi të trajnohen modelet që imazhi mban. Atribuimi dhe ndryshimet e bëra mbi të dhënat
+janë te [`NOTICE`](NOTICE) (VD-157). Depot Java të korpusit dhe ato të importuara nga
+ndërfaqja nuk shpërndahen, dhe mbeten nën licencat e veta.

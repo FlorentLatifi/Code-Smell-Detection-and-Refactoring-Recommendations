@@ -6339,3 +6339,41 @@ zhvendosje që e prishi e2e-në (VD-154).
 **Verifikimi.** Skripti u nis lokalisht mbi imazhin e publikuar `v1.0.0`: pa version
 kaloi të dhjetë kontrollet; me `v1.0.0` dështoi te versioni, siç duhej. Kontejneri u
 hoq në të dyja rastet. Puna te GitHub verifikohet te pull request-i.
+
+### VD-157: Nga punimi te produkti, dhe atribuimi i MLCQ-së (26 tetor 2026)
+
+**Konteksti.** Pas `v1.0.1` autori kërkoi që sistemi të trajtohet si produkt për
+përdorues të vërtetë dhe jo vetëm si artefakt i punimit, dhe la zgjedhjen e rrugës te
+rekomandimi. Rruga e zgjedhur: mjet që zhvilluesi e nis vetë (Docker ose CLI), më pas
+i lidhur me CI-në e tyre. Shërbimi publik në internet mbetet jashtë, për arsyet e
+VD-142.
+
+**Çfarë ndryshon dhe çfarë jo.**
+- `v1.0.0` mbetet versioni i vlerësuar në punim, dhe numrat e punimit i përkasin atij.
+  Çdo version pas tij është produkt dhe nuk i prek ato numra.
+- Rregullat e `ENGINEERING.md` vlejnë edhe për produktin: shtresat, refuzimi në vend
+  të prishjes, verifikimi me `javac`, roja lokale dhe kosto zero.
+- Versionet ndjekin Semantic Versioning, dhe çdo ndryshim i dukshëm shënohet te
+  `CHANGELOG.md`.
+
+**Gjetja: atribuimi i MLCQ-së mungonte.** README-ja thoshte se asnjë e dhënë e
+MLCQ-së nuk shpërndahet me kodin. Kjo nuk ishte e vërtetë: `mlcq_dataset.csv` rrjedh
+nga MLCQ, është i komituar dhe kopjohet në imazh, dhe modelet e imazhit trajnohen mbi
+të. MLCQ publikohet nën CC BY 4.0 (regjistri Zenodo 3666840, fusha e licencës).
+Licenca e lejon shpërndarjen, edhe për qëllime tregtare, por kërkon atribuim dhe
+shënimin e ndryshimeve. Prandaj:
+- `NOTICE` jep autorët, burimin, licencën, ku përdoren të dhënat dhe çfarë u ndryshua
+  (rishikimet u grumbulluan sipas mostrës dhe erës, mostrat pa kod të gjetur u hoqën,
+  u shtuan metrikat).
+- README-ja e ndreq pohimin dhe e lidh me `NOTICE`.
+- `LICENSE` dhe `NOTICE` kopjohen në imazh, dhe `tools/prova-imazhit.sh` dështon nëse
+  mungojnë. Imazhet `v1.0.0` dhe `v1.0.1` u publikuan pa to. Ato nuk zhvendosen, për
+  të njëjtën arsye si te VD-155; ndreqja vjen me versionin tjetër.
+
+**Shtuar gjithashtu.** `CHANGELOG.md`, `SECURITY.md` (versionet e mbështetura, modeli i
+kërcënimeve në gjuhë të thjeshtë, raportimi privat) dhe një nisje e shpejtë në anglisht
+te README-ja, me shënimet për Windows, Linux, Mac-ët me Apple Silicon dhe portin e zënë.
+
+**Çfarë mbetet.** Imazhi është vetëm `linux/amd64` dhe 1.19 GB. Nuk ka dalje SARIF,
+GitHub Action, heshtje të gjetjeve, Dependabot apo skanim të imazhit. Raportimi privat
+i dobësive te GitHub nuk ishte i aktivizuar në kohën e këtij vendimi.
