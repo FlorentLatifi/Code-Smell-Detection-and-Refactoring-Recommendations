@@ -36,8 +36,9 @@ analysed from a link, without mounting anything.
 - **On Windows**, write the path as `C:\Users\you\Projects`.
 - **On Linux**, the container runs as user 1000. If *Apply* cannot write, add
   `--user "$(id -u)"`.
-- **On Apple Silicon Macs**, the image is `linux/amd64` for now and runs under
-  emulation, so it is slower.
+- **On Apple Silicon Macs**, `:latest` and every release after 1.0.1 run natively
+  (`linux/arm64`). The 1.0.x images are `linux/amd64` only and run under emulation,
+  so they are slower.
 - **Port 8000 already in use?** Use `-p 127.0.0.1:8080:8000` and open port 8080.
 
 Changes are listed in [`CHANGELOG.md`](CHANGELOG.md). To report a security problem,

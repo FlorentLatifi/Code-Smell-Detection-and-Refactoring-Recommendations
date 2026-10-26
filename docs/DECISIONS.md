@@ -6377,3 +6377,45 @@ te README-ja, me shënimet për Windows, Linux, Mac-ët me Apple Silicon dhe por
 **Çfarë mbetet.** Imazhi është vetëm `linux/amd64` dhe 1.19 GB. Nuk ka dalje SARIF,
 GitHub Action, heshtje të gjetjeve, Dependabot apo skanim të imazhit. Raportimi privat
 i dobësive te GitHub nuk ishte i aktivizuar në kohën e këtij vendimi.
+
+### VD-158: Imazh për amd64 dhe arm64, më i vogël, i skanuar, me varësi që përditësohen (26 tetor 2026)
+
+**Konteksti.** Hapi i dytë drejt produktit (VD-157). Imazhi ishte vetëm `linux/amd64`
+dhe 1.19 GB, ndaj në Mac-ët me Apple Silicon punonte me emulim. Imazhet bazë ishin
+etiketa që lëvizin (`python:3.13-slim`), ndaj i njëjti Dockerfile ndërtonte imazhe të
+ndryshme nga java në javë. Asgjë nuk kontrollonte për dobësi të njohura, dhe varësitë
+e pinuara nuk përditësoheshin kurrë.
+
+**Ku shkonte madhësia.** Matur shtresë për shtresë te `v1.0.1`: JDK-ja 308 MB, paketat
+Python 306 MB, git-i 105 MB, sistemi bazë rreth 130 MB.
+
+**Vendimi.**
+- **Më i vogël, me të njëjtin verdikt.** Hiqen `jmods/` e JDK-së (83 MB, i duhet vetëm
+  jlink-ut), dosjet `tests` të bibliotekave Python (rreth 60 MB) dhe pip-i nga imazhi
+  përfundimtar. Imazhi bie nga 1.19 GB në 943 MB. JDK-ja nuk ngushtohet me jlink:
+  kjo do të ndryshonte cilat API i sheh javac-u, pra edhe verdiktet.
+- **Imazhet bazë me digest.** `node`, `python` dhe `eclipse-temurin` fiksohen me
+  digest-in e listës për shumë arkitektura.
+- **amd64 dhe arm64, secila në makinën e vet.** Runner-i `ubuntu-24.04-arm` është
+  falas për depot publike, ndaj trajnimi i modelit nuk bëhet me emulim QEMU.
+  Secila arkitekturë ndërtohet, provohet me `tools/prova-imazhit.sh` dhe skanohet veç;
+  publikohet sipas digest-it, dhe vetëm kur të dyja kanë kaluar bashkohen nën
+  etiketat `latest`, `vN` dhe `sha`. Çdo varësi Python e përpiluar ka wheel `aarch64`
+  për Python 3.13, ndaj asgjë nuk përpilohet nga burimi.
+- **Trivy si portë.** Publikimi ndalet për çdo dobësi HIGH ose CRITICAL që ka ndreqje.
+  Ato pa ndreqje nuk ndalin, sepse kjo depo nuk mund t'i ndreqë, dhe një portë që
+  bllokon çdo publikim do të injorohej. Trivy nis si imazh i fiksuar me digest
+  (0.75.0) dhe jo me `trivy-action`, që më 19 mars 2026 u rishkrua me kod keqdashës
+  (CVE-2026-33634).
+- **Dependabot** çdo javë për pip, npm, GitHub Actions dhe imazhet bazë. Bibliotekat
+  e modelit kanë grupin e tyre, sepse përditësimi i tyre ndryshon atë që modeli thotë.
+
+**Gjetja e skanimit.** Skanimi i `v1.0.1` gjeti katër dobësi HIGH me ndreqje, në
+`urllib3`, `msgpack` dhe `pkg_resources`. Të gjitha ishin kopje të brendshme të
+pip-it (`pip/_vendor`), që mjeti nuk i thërret kurrë. Pa pip-in, skanimi del i pastër.
+
+**Verifikimi.** Imazhi i ri u ndërtua lokalisht (amd64). Ai kaloi 12 kontrollet e
+`prova-imazhit.sh` me versionin `v1.0.1`, dhe skanimi me Trivy doli me kod 0. Përgjigjet e `/api/refactor/patch`
+dhe të `/api/analyze` me modelin, mbi fiksturat, janë identike me ato të `v1.0.1`:
+të njëjtat rishkrime, të njëjtat verdikte të javac-ut, të njëjtat probabilitete.
+Ndërtimi arm64 verifikohet te GitHub, te pull request-i.

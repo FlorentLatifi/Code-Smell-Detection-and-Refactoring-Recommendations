@@ -6,9 +6,14 @@
 #   docker run --rm -p 127.0.0.1:8000:8000 -v "/shtegu/i/projekteve:/projekte" javasmell
 #
 # Pastaj hapet http://localhost:8000.
+#
+# Imazhet bazë fiksohen me digest dhe jo vetëm me etiketë: një etiketë si `3.13-slim`
+# lëviz çdo javë, dhe i njëjti Dockerfile ndërtonte imazhe të ndryshme pa asnjë
+# ndryshim në depo. Dependabot i përditëson digest-et me pull request (VD-158).
+# Secili digest është i një liste për disa arkitektura, ndaj vlen për amd64 dhe arm64.
 
 # --- 1. Ndërfaqja: Node duhet vetëm për ta ndërtuar ------------------------------
-FROM node:22-slim AS interface
+FROM node:22-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS interface
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -20,10 +25,23 @@ COPY backend/javasmell/glossary/plain_sq.json /app/backend/javasmell/glossary/
 RUN npm run build
 
 # --- 2. Varësitë Python, të përbashkëta për trajnimin dhe për imazhin ------------
-FROM python:3.13-slim AS python
+FROM python:3.13-slim@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962 AS python
 WORKDIR /app
 COPY backend/requirements.txt backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+# Dosjet `tests` të bibliotekave (rreth 60 MB, kryesisht të SciPy-së) nuk importohen
+# kurrë gjatë punës; janë testet e vetë bibliotekave. Hiqen në të njëjtin hap, sepse
+# një `rm` në shtresë tjetër nuk e zvogëlon imazhin.
+RUN pip install --no-cache-dir -r backend/requirements.txt \
+    && find /usr/local/lib/python3.13/site-packages -depth -type d -name tests \
+        -exec rm -rf {} +
+
+# --- JDK-ja, pa pjesët që javac-u nuk i lexon ------------------------------------
+# `jmods/` (rreth 80 MB) i duhet vetëm jlink-ut. javac-u lexon `lib/modules` dhe
+# `lib/ct.sym`, që mbeten të paprekura: verdikti i kompilimit nuk ndryshon. Një JDK
+# i ngushtuar me jlink do të ishte më i vogël, por do të ndryshonte cilat API i
+# sheh javac-u, pra edhe verdiktet (VD-158).
+FROM eclipse-temurin:21-jdk@sha256:23cc5734ff46e776f51ce66eb9ee08444fd47caabec0a95b7eb6e94be2d3696d AS jdk
+RUN rm -rf /opt/java/openjdk/jmods /opt/java/openjdk/man /opt/java/openjdk/lib/src.zip
 
 # --- 3. Modelet: trajnohen nga tabela e komituar, si te README-ja ----------------
 # `data/models/` nuk komitohet, sepse një estimator i ruajtur me pickle nuk është i
@@ -42,7 +60,7 @@ FROM python
 # por çdo verdikt del «i pakontrolluar». JDK-ja merret nga imazhi zyrtar i Temurin-it
 # dhe jo nga apt, që versioni të jetë i njëjtë kudo ku ndërtohet imazhi.
 # `verify.javac_command` e gjen te JAVA_HOME (VD-139).
-COPY --from=eclipse-temurin:21-jdk /opt/java/openjdk /opt/java/openjdk
+COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
 ENV JAVA_HOME=/opt/java/openjdk \
     PATH=/opt/java/openjdk/bin:$PATH
 
@@ -55,7 +73,11 @@ ENV JAVA_HOME=/opt/java/openjdk \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/* \
-    && git config --system --add safe.directory '*'
+    && git config --system --add safe.directory '*' \
+    && pip uninstall --yes pip
+# pip-i i duhet vetëm ndërtimit. Kopjet e tij të brendshme të urllib3-it dhe
+# msgpack-ut kishin dobësi të njohura që skaneri i raportonte, edhe pse mjeti nuk i
+# përdor kurrë; pa pip-in, imazhi nuk mban kod që askush nuk e thërret (VD-158).
 
 COPY backend/javasmell backend/javasmell
 COPY data/results/mlcq_dataset.csv data/results/mlcq_dataset.csv
