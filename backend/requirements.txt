@@ -10,11 +10,11 @@ tree-sitter-java==0.23.5
 # ourselves would be substantial: grouped cross-validation, the two tree
 # ensembles, permutation importance, and the metrics. The rest are its own
 # transitive pins, listed so the environment is fully determined.
-scikit-learn==1.9.0
-numpy==2.5.2
+scikit-learn==1.9.1
+numpy==2.5.4
 scipy==1.18.1
-joblib==1.5.3
-threadpoolctl==3.6.0
+joblib==1.6.0
+threadpoolctl==3.7.0
 
 # Shtresa web. Vetem transport: validim, serializim dhe hartë gabimesh.
 fastapi==0.161.1
