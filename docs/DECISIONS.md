@@ -6457,3 +6457,25 @@ të sigurta. Dy ishin migrime të maskuara si përditësime:
 nuk niset te pull request-et, ndaj artifact v7/v8 dhe metadata-action v6 provohen për
 herë të parë te `main`. Një dështim atje nuk prek asnjë imazh të publikuar: etiketat
 vendosen vetëm në hapin e fundit.
+
+### VD-160: Bibliotekat e modelit përditësohen pasi matet efekti (26 tetor 2026)
+
+**Konteksti.** PR-ja #14 e Dependabot-it kalonte scikit-learn 1.9.0 → 1.9.1, numpy
+2.5.2 → 2.5.4, joblib 1.5.3 → 1.6.0 dhe threadpoolctl 3.6.0 → 3.7.0. Ndryshe nga
+përditësimet e tjera, këto mund të ndryshojnë atë që modeli parashikon, jo vetëm si
+punon kodi (VD-158 i vuri në grup më vete për këtë arsye).
+
+**Matja.** `scripts/train_models.py` u nis dy herë, në kontejnerë të pastër me të
+njëjtin imazh `python:3.13-slim` të fiksuar me digest: një herë me versionet e vjetra,
+një herë me të rejat. Të dhënat, fara dhe ndarja e grupuar sipas depos ishin të njëjta.
+Të dy skedarët `ml_evaluation.json` dolën identikë bajt për bajt, për të katër erërat
+dhe të dy modelet, dhe të dy përputhen saktësisht me `data/results/ml_evaluation.json`
+të komituar.
+
+**Vendimi.** Përditësimi pranohet, si commit i autorit (VD-159).
+
+**Një boshllëk që doli nga matja.** `environment` te `ml_evaluation.json` mban
+Python-in dhe platformën, por jo versionet e bibliotekave. Prandaj dy skedarët mund të
+ishin identikë bajt për bajt, edhe pse u prodhuan me biblioteka të ndryshme.
+ENGINEERING.md §3.5 kërkon mjedis të regjistruar; versionet e bibliotekave duhen
+shtuar te `evaluation/provenance.py`.
