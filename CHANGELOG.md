@@ -11,6 +11,17 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 - `NOTICE` with the CC BY 4.0 attribution for the MLCQ dataset that the models are
   trained on. It also ships inside the Docker image, together with `LICENSE` (VD-157).
 - `SECURITY.md`, this changelog, and an English quick start in the README (VD-157).
+- **Native image for Apple Silicon and other arm64 machines.** One tag now serves both
+  `linux/amd64` and `linux/arm64`, and each is tested before it is published (VD-158).
+- Every image is scanned with Trivy. Publishing stops on any HIGH or CRITICAL
+  vulnerability that has a fix (VD-158).
+- Dependabot opens weekly update PRs for Python, npm, GitHub Actions and the base
+  images (VD-158).
+
+### Changed
+- **The image is 943 MB instead of 1.19 GB.** Analysis results and `javac` verdicts are
+  unchanged. Base images are pinned by digest, and pip is no longer in the final
+  image (VD-158).
 
 ## [1.0.1] - 2026-10-26
 

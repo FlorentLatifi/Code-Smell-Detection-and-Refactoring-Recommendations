@@ -1,0 +1,43 @@
+# Përditësimet e varësive vijnë si pull request, një herë në javë (VD-158). Çdo PR
+# kalon nga e njëjta CI dhe nga e njëjta provë e imazhit si çdo ndryshim tjetër, dhe
+# asnjë nuk bashkohet vetë.
+version: 2
+updates:
+  # Bibliotekat që e prodhojnë ose e lexojnë modelin kanë grupin e tyre: një
+  # përditësim i tyre ndryshon atë që modeli thotë, jo vetëm kodin, ndaj rishikohet
+  # veç. Të tjerat vijnë bashkë, që java të mos sjellë njëzet PR.
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      modeli:
+        patterns: ["scikit-learn", "numpy", "scipy", "joblib", "threadpoolctl"]
+      python:
+        patterns: ["*"]
+        exclude-patterns: ["scikit-learn", "numpy", "scipy", "joblib", "threadpoolctl"]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      nderfaqja:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      aksionet:
+        patterns: ["*"]
+
+  # Përditëson digest-et e imazheve bazë te Dockerfile.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      imazhet-baze:
+        patterns: ["*"]

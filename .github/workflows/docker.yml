@@ -3,6 +3,12 @@ name: Docker
 # Imazhi publikohet te GitHub Container Registry, që përdoruesi ta nisë me një
 # komandë pa ndërtuar asgjë (VD-142). Te pull request-et ndërtohet dhe provohet pa
 # u publikuar: kështu një imazh i prishur kapet para se të bashkohet (VD-156).
+#
+# Dy arkitektura, secila e ndërtuar në makinën e vet dhe jo me emulim (VD-158).
+# Mac-ët me Apple Silicon e nisnin imazhin amd64 me emulim, më ngadalë. Një imazh
+# arm64 i ndërtuar me QEMU do ta trajnonte edhe modelin me emulim; runner-i arm64 i
+# GitHub-it është falas për depot publike dhe e shmang këtë. Secila arkitekturë
+# provohet dhe skanohet veç, dhe vetëm pastaj të dyja bashkohen nën një etiketë.
 on:
   push:
     branches: [main]
@@ -14,34 +20,34 @@ permissions:
   contents: read
   packages: write
 
+env:
+  # Trivy thirret si imazh i fiksuar me digest, jo nëpërmjet `trivy-action`: më
+  # 19 mars 2026 76 nga 77 etiketat e atij aksioni u rishkruan me kod keqdashës
+  # (CVE-2026-33634). Një digest nuk mund të rishkruhet. Përditësohet me dorë.
+  TRIVY_IMAGE: ghcr.io/aquasecurity/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
+
 jobs:
   image:
-    name: Ndërto dhe publiko imazhin
+    name: Ndërto, provo dhe skano (${{ matrix.arch }})
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     # E fiksuar për të njëjtën arsye si puna e2e te `ci.yml` (VD-154, VD-156).
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Hyrja te ghcr.io
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       # Emri i imazhit në ghcr.io duhet me shkronja të vogla, ndërsa emri i depos
-      # nuk është; metadata-action e bën këtë dhe shton etiketat `latest` dhe vN.
-      - id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=tag
-            type=sha,format=short
+      # nuk është.
+      - name: Emri i imazhit
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
 
       # Imazhi ndërtohet një herë lokalisht dhe niset para se të publikohet: një
       # imazh që ndërtohet por nuk niset nuk duhet të arrijë te ghcr.io (VD-156).
@@ -49,10 +55,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/${{ matrix.arch }}
           load: true
           tags: javasmell:prova
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,scope=${{ matrix.arch }},mode=max
 
       # Te një etiketë `vN`, `/api/health` duhet ta raportojë atë version.
       # Etiketa kalon nga mjedisi dhe jo brenda komandës, që emri të mos lexohet
@@ -62,14 +69,97 @@ jobs:
           EXPECTED_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: bash tools/prova-imazhit.sh javasmell:prova "$EXPECTED_VERSION"
 
-      # Shtresat vijnë nga cache-i i hapit të parë, ndaj ky ndërtim nuk përsëritet.
-      - name: Publiko imazhin
+      # Ndalet vetëm për dobësitë HIGH dhe CRITICAL që kanë ndreqje. Një dobësi pa
+      # ndreqje nuk ka çfarë t'i bëhet në këtë depo, dhe bllokimi i çdo publikimi
+      # për të do ta bënte portën të injorueshme (VD-158).
+      - name: Skano imazhin për dobësi
+        run: >-
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock "$TRIVY_IMAGE"
+          image --scanners vuln --severity HIGH,CRITICAL --ignore-unfixed
+          --exit-code 1 --no-progress javasmell:prova
+
+      - name: Hyrja te ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Publikohet pa etiketë, vetëm sipas digest-it. Etiketat i vendos puna
+      # tjetër, kur të dyja arkitekturat kanë kaluar. Shtresat vijnë nga cache-i i
+      # hapit të parë, ndaj ky ndërtim nuk përsëritet.
+      - name: Publiko sipas digest-it
+        id: push
         if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          platforms: linux/${{ matrix.arch }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.arch }}
+
+      - name: Ruaj digest-in
+        if: github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: digest-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publiko imazhin (amd64 + arm64)
+    needs: image
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+
+      - name: Emri i imazhit
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Hyrja te ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+            type=sha,format=short
+
+      # Një listë manifestesh me të dyja digest-et, nën çdo etiketë: `docker pull`
+      # zgjedh vetë arkitekturën e kompjuterit.
+      - name: Bashko arkitekturat nën etiketat
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf "$IMAGE@sha256:%s " *)
+
+      - name: Kontrollo që të dyja arkitekturat janë aty
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker buildx imagetools inspect "$IMAGE:$VERSION" --raw \
+            | jq -e '[.manifests[].platform.architecture] | contains(["amd64", "arm64"])'
