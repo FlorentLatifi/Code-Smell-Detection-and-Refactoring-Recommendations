@@ -1,6 +1,11 @@
 # Përditësimet e varësive vijnë si pull request, një herë në javë (VD-158). Çdo PR
 # kalon nga e njëjta CI dhe nga e njëjta provë e imazhit si çdo ndryshim tjetër, dhe
 # asnjë nuk bashkohet vetë.
+#
+# Versionet kryesore nuk vijnë nga këtu (VD-159). Java e parë solli React 18 → 19,
+# TypeScript 5 → 7 dhe Vite 6 → 8 në një PR që nuk ndërtohej, dhe JDK 21 → 25, që
+# është javac-u që gjykon çdo rishkrim. Secila prej tyre është migrim më vete, i
+# bërë me vetëdije. Përditësimet e sigurisë nuk preken nga `ignore`.
 version: 2
 updates:
   # Bibliotekat që e prodhojnë ose e lexojnë modelin kanë grupin e tyre: një
@@ -10,6 +15,9 @@ updates:
     directory: /backend
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       modeli:
         patterns: ["scikit-learn", "numpy", "scipy", "joblib", "threadpoolctl"]
@@ -21,6 +29,9 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       nderfaqja:
         patterns: ["*"]
@@ -29,6 +40,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       aksionet:
         patterns: ["*"]
@@ -38,6 +52,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Edhe versionet e vogla: `python:3.13` → `3.14` ndryshon interpretuesin dhe
+    # wheel-et. Mbeten digest-et e reja të të njëjtit version, pra arnimet e sigurisë.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       imazhet-baze:
         patterns: ["*"]

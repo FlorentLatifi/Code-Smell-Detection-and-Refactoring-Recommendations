@@ -6419,3 +6419,41 @@ pip-it (`pip/_vendor`), që mjeti nuk i thërret kurrë. Pa pip-in, skanimi del 
 dhe të `/api/analyze` me modelin, mbi fiksturat, janë identike me ato të `v1.0.1`:
 të njëjtat rishkrime, të njëjtat verdikte të javac-ut, të njëjtat probabilitete.
 Ndërtimi arm64 verifikohet te GitHub, te pull request-i.
+
+### VD-159: Si pranohen përditësimet e Dependabot-it (26 tetor 2026)
+
+**Konteksti.** Java e parë e Dependabot-it (VD-158) solli pesë PR. Tre prej tyre ishin
+të sigurta. Dy ishin migrime të maskuara si përditësime:
+- **#13** kalonte JDK-në 21 → 25 dhe Node-in 22 → 26. JDK-ja është javac-u që gjykon
+  çdo rishkrim, ndaj një version i ri mund t'i ndryshojë verdiktet; CI-ja dhe
+  dokumentimi supozojnë JDK 21.
+- **#18** sillte React 18 → 19, Recharts 2 → 3, lucide-react 0 → 1, TypeScript 5 → 7,
+  Vite 6 → 8 dhe Vitest 4 → 5 në një PR të vetëm. Ndërtimi, e2e-ja dhe të dy imazhet
+  dështonin.
+
+**Vendimi.**
+- **Pa versione kryesore nga Dependabot-i.** Për pip, npm dhe GitHub Actions ai
+  propozon vetëm versione të vogla dhe arnime; për imazhet bazë vetëm digest-e të reja
+  të të njëjtit version, sepse `python:3.13` → `3.14` ndryshon interpretuesin. Një
+  version kryesor bëhet migrim më vete, me vetëdije. Përditësimet e sigurisë nuk
+  preken nga këto rregulla.
+- **Autorësia mbetet e autorit.** `ENGINEERING.md` §9 do një autor të vetëm për çdo
+  commit, dhe VD-157 e mbajti këtë rregull për produktin. Bashkimi i një PR të
+  Dependabot-it do të vendoste `dependabot[bot]` si autor në `main`. Prandaj
+  ndryshimet e një PR të pranuar aplikohen tel-për-tel në një commit të autorit, dhe
+  PR-ja e bot-it mbyllet me lidhje te ai commit.
+- **#16** (GitHub Actions: checkout v7, artifact v7/v8, setup-java v6, aksionet e
+  Docker-it v4/v6/v7) dhe **#17** (fastapi 0.161, uvicorn 0.54, pydantic 2.14,
+  starlette 1.9, anyio 4.15.1, ruff 0.17, mypy 2.4) pranohen. Ndryshimet thyese të
+  aksioneve (Node 24, hyrje të hequra, Adopt i hequr nga setup-java, kontrolli i
+  hash-it te download-artifact) nuk prekin asnjë hyrje që përdorim. anyio 4.15 e
+  kishte prishur CI-në më 3 shtator (koment te `requirements.txt`); me starlette 1.9
+  suita kalon nën `filterwarnings = error`.
+- **#13 dhe #18** mbyllen.
+- **#14** (scikit-learn, numpy, joblib, threadpoolctl) pret, sepse ndryshon atë që
+  modeli thotë; efekti matet para se të pranohet.
+
+**Çfarë nuk verifikohet te PR-ja.** Puna që i bashkon arkitekturat dhe i publikon
+nuk niset te pull request-et, ndaj artifact v7/v8 dhe metadata-action v6 provohen për
+herë të parë te `main`. Një dështim atje nuk prek asnjë imazh të publikuar: etiketat
+vendosen vetëm në hapin e fundit.
