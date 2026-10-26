@@ -112,7 +112,7 @@ def test_health_reports_the_tagged_release():
     """
     app = create_app(Settings(root=Path().resolve()))
     response = TestClient(app, base_url="http://localhost").get("/health")
-    assert response.json()["version"] == "1.0.1"
+    assert response.json()["version"] == "1.1.0"
 
 
 # ----------------------------------------------------------------------

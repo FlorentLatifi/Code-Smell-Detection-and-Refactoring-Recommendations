@@ -7,6 +7,8 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-26
+
 ### Added
 - `NOTICE` with the CC BY 4.0 attribution for the MLCQ dataset that the models are
   trained on. It also ships inside the Docker image, together with `LICENSE` (VD-157).
@@ -59,6 +61,7 @@ First release, and the version evaluated in the bachelor thesis (VD-154).
   to preserve behaviour.
 - Extract Method can produce code that does not compile in one case. Fixed in 1.0.1.
 
-[Unreleased]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/releases/tag/v1.0.0

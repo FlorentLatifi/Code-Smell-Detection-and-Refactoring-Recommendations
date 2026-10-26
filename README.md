@@ -23,7 +23,7 @@ You only need [Docker](https://www.docker.com/products/docker-desktop/). The ima
 contains Python, the interface, the models and a JDK.
 
 ```bash
-docker run --rm -p 127.0.0.1:8000:8000 -v "/path/to/your/projects:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations:v1.0.1
+docker run --rm -p 127.0.0.1:8000:8000 -v "/path/to/your/projects:/projekte" ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations:v1.1.0
 ```
 
 Then open `http://localhost:8000`. The folder after `-v` is the only one the tool
