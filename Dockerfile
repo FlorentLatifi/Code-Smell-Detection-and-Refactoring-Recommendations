@@ -59,6 +59,9 @@ RUN apt-get update \
 
 COPY backend/javasmell backend/javasmell
 COPY data/results/mlcq_dataset.csv data/results/mlcq_dataset.csv
+# Tabela dhe modelet rrjedhin nga MLCQ (CC BY 4.0), që kërkon atribuimin kudo ku
+# shpërndahen; imazhi është një shpërndarje e tillë (VD-157).
+COPY LICENSE NOTICE ./
 COPY --from=models /app/data/models data/models
 COPY --from=interface /app/frontend/dist frontend/dist
 

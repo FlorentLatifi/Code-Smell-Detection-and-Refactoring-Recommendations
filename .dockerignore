@@ -1,6 +1,8 @@
 # Konteksti i imazhit mban vetëm atë që Dockerfile kopjon. Pa këtë, `docker build`
 # do të dërgonte korpusin, node_modules dhe punimin te daemon-i.
 *
+!LICENSE
+!NOTICE
 !backend/javasmell/
 !backend/requirements.txt
 !frontend/
