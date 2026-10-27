@@ -7,6 +7,8 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-27
+
 ### Added
 - **SARIF output** (`--format sarif`) for GitHub code scanning and other CI tools
   (VD-163).
@@ -78,7 +80,8 @@ First release, and the version evaluated in the bachelor thesis (VD-154).
   to preserve behaviour.
 - Extract Method can produce code that does not compile in one case. Fixed in 1.0.1.
 
-[Unreleased]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations/releases/tag/v1.0.0
