@@ -32,6 +32,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
+from javasmell import __version__
 from javasmell.analysis import analyze_path
 from javasmell.api.guard import LocalOnly
 from javasmell.api.paths import (
@@ -64,7 +65,7 @@ from javasmell.refactor.patch import Plan, Progress, iter_plan, plan, unified
 from javasmell.refactor.registry import ADVISORY_ONLY, for_smell
 
 API_TITLE = "JavaSmell"
-API_VERSION = "1.1.0"
+API_VERSION = __version__
 
 # A finding spans a class or a method, not a file. The cap is generous enough for
 # the largest God Class in the corpus and small enough that no single response

@@ -7,6 +7,7 @@ scriptable entry point that does not depend on the API being up.
     python -m javasmell path/to/java/project
     python -m javasmell path/to/project --format csv --out smells.csv
     python -m javasmell path/to/project --format patch --out fixes.patch
+    python -m javasmell path/to/project --format sarif --out javasmell.sarif
 
 The patch format is the only one that proposes a change rather than describing
 one. It still writes nothing: the diff goes to stdout or to ``--out``, and
@@ -30,6 +31,13 @@ smells is otherwise a success, because reporting is what this command is for
 names; the default report stays in the technical vocabulary that scripts and the
 thesis use (VD-144).
 
+``--format sarif`` is for code scanning: GitHub shows each finding on the pull
+request that introduced it (VD-163). Every format hides what a team has already
+decided about: a declaration that carries ``@SuppressWarnings("javasmell")`` or a
+``// javasmell:ignore`` comment, and, with ``--baseline``, every finding recorded
+by an earlier ``--write-baseline``. ``--fail-on`` counts only what is left, so a
+gate fails on new findings rather than on the ones a team accepted.
+
 ``--apply`` is the one option that changes the author's files, and it is the only
 one that can produce 4. A refusal there is an ordinary outcome -- the tree was
 not clean, the path is not a repository -- but a script that asked for a write
@@ -50,7 +58,7 @@ from dataclasses import fields
 from pathlib import Path
 from typing import TextIO
 
-from javasmell import glossary
+from javasmell import __version__, glossary, sarif
 from javasmell.analysis import analyze_path
 from javasmell.detectors.base import Smell
 from javasmell.detectors.rules import REFACTORINGS, detect_all
@@ -59,6 +67,13 @@ from javasmell.detectors.thresholds import (
     ThresholdError,
     Thresholds,
     with_overrides,
+)
+from javasmell.findings import (
+    BaselineError,
+    baseline_document,
+    fingerprint,
+    load_baseline,
+    suppressed_in_source,
 )
 from javasmell.metrics.calculator import metric_names
 from javasmell.model.entities import ProjectModel, posix
@@ -83,10 +98,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("path", help="Directory or .java file to analyse")
     parser.add_argument(
         "--format",
-        choices=("text", "json", "csv", "metrics", "patch"),
+        choices=("text", "json", "csv", "metrics", "patch", "sarif"),
         default="text",
         help="text: readable report; metrics: the per-class feature matrix; "
-        "patch: a unified diff of what the engine would rewrite",
+        "patch: a unified diff of what the engine would rewrite; "
+        "sarif: SARIF 2.1.0 for GitHub code scanning",
     )
     parser.add_argument("--out", help="Write to this file instead of stdout")
     parser.add_argument(
@@ -118,6 +134,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--thjeshte",
         action="store_true",
         help="Raport i thjeshtë në shqip, ku çdo term shpjegohet. Vlen vetëm me --format text",
+    )
+    parser.add_argument(
+        "--baseline",
+        metavar="FILE",
+        help="Hide every finding recorded in this baseline, so only new ones are "
+        "reported and counted by --fail-on",
+    )
+    parser.add_argument(
+        "--write-baseline",
+        metavar="FILE",
+        help="Record the current findings in FILE and exit 0. Later runs with "
+        "--baseline FILE report only findings that are not in it",
     )
     parser.add_argument(
         "--thresholds",
@@ -183,6 +211,27 @@ def main(argv: list[str] | None = None) -> int:
         wanted = set(args.smell)
         smells = [s for s in smells if s.smell_type in wanted]
 
+    before = len(smells)
+    sources: dict[str, list[str] | None] = {}
+    smells = [s for s in smells if not _suppressed(s, sources)]
+    in_source = before - len(smells)
+
+    if args.write_baseline:
+        _write_baseline(Path(args.write_baseline), smells)
+        return 0
+
+    in_baseline = 0
+    if args.baseline:
+        try:
+            accepted = load_baseline(Path(args.baseline))
+        except BaselineError as error:
+            print(error, file=sys.stderr)
+            return 2
+        before = len(smells)
+        smells = [s for s in smells if fingerprint(s) not in accepted]
+        in_baseline = before - len(smells)
+    _announce_hidden(in_source, in_baseline)
+
     # Planifikuar nje here dhe ndare: `--apply` shkruan pikerisht ate qe diff-i
     # pershkruan, e jo nje plan te dyte qe mund te ndryshoje.
     planned = _planned(Path(project.root), smells, shutil.which("javac")) if args.apply else None
@@ -209,6 +258,37 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 3
     return 0
+
+
+def _suppressed(smell: Smell, sources: dict[str, list[str] | None]) -> bool:
+    """Whether the source marks this finding as already decided about.
+
+    ``sources`` holds each file's lines for this run only, so a file with several
+    findings is read once. A file that cannot be read keeps its findings: failing
+    to read a suppression must never hide one.
+    """
+    if smell.file_path not in sources:
+        try:
+            text = Path(smell.file_path).read_text(encoding="utf-8", errors="replace")
+            sources[smell.file_path] = text.splitlines()
+        except OSError:
+            sources[smell.file_path] = None
+    lines = sources[smell.file_path]
+    return lines is not None and suppressed_in_source(smell, lines)
+
+
+def _write_baseline(path: Path, smells: list[Smell]) -> None:
+    path.write_text(json.dumps(baseline_document(smells), indent=2) + "\n", encoding="utf-8")
+    count = len({fingerprint(s) for s in smells})
+    print(f"Wrote baseline {posix(str(path))} with {count} finding(s).", file=sys.stderr)
+
+
+def _announce_hidden(in_source: int, in_baseline: int) -> None:
+    """Say what was hidden, so a clean report is never mistaken for clean code."""
+    if in_source:
+        print(f"{in_source} finding(s) suppressed in source.", file=sys.stderr)
+    if in_baseline:
+        print(f"{in_baseline} finding(s) hidden by the baseline.", file=sys.stderr)
 
 
 def _load_thresholds(path: str) -> Thresholds | str:
@@ -261,6 +341,8 @@ def _emit(
 ) -> None:
     if fmt == "json":
         json.dump([s.to_dict() for s in smells], stream, indent=2)
+    elif fmt == "sarif":
+        json.dump(sarif.document(smells, __version__), stream, indent=2)
     elif fmt == "csv":
         _write_smell_csv(stream, smells)
     elif fmt == "metrics":

@@ -7,6 +7,16 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 
 ## [Unreleased]
 
+### Added
+- **SARIF output** (`--format sarif`) for GitHub code scanning and other CI tools
+  (VD-163).
+- **GitHub Action** (`action.yml`): findings show up in code scanning and on pull
+  requests. It runs the Docker image of its own version (VD-163).
+- **Hiding findings you have decided about**: `@SuppressWarnings("javasmell")`,
+  `@SuppressWarnings("javasmell:LongMethod")` or `// javasmell:ignore` on a
+  declaration, and a baseline file (`--write-baseline`, `--baseline`) so only new
+  findings are reported and counted by `--fail-on` (VD-163).
+
 ### Changed
 - Result files under `data/results/` now record the version of every library that can
   change a number: the parser, scikit-learn, numpy, scipy, joblib and threadpoolctl

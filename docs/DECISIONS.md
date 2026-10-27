@@ -6502,3 +6502,50 @@ tree-sitter, tree-sitter-java, scikit-learn, numpy, scipy, joblib dhe threadpool
 Shtresa web lihet jashtë, sepse asnjë rezultat nuk kalon nga ajo. Një bibliotekë që
 mungon shënohet "", si commit-i që mungon. Skedarët e komituar nuk rigjenerohen për
 këtë: fusha shfaqet te rezultati i ardhshëm i secilit skript.
+
+### VD-163: SARIF, GitHub Action dhe fshehja e gjetjeve të pranuara (27 tetor 2026)
+
+**Konteksti.** Hapat 3 dhe 4 drejt produktit (VD-157). Mjeti lexohej vetëm në
+ndërfaqe ose si raport tekst. Zhvilluesit i shohin gjetjet aty ku punojnë: te pull
+request-i. Dhe një detektor me saktësinë e këtij (MCC 0.49–0.72 për Qasjen B, më pak
+për rregullat) jep gjetje me të cilat lexuesi nuk pajtohet; pa një mënyrë për t'i
+pranuar, e njëjta gjetje kthehet çdo herë, dhe një portë me `--fail-on` ose dështon
+përgjithmonë ose çaktivizohet.
+
+**Vendimi.**
+- **`--format sarif`** (SARIF 2.1.0), modul i vetin `javasmell/sarif.py`. Ashpërsia e
+  MLCQ-së shkon te tri nivelet e SARIF-it pa bashkim (critical → error, major →
+  warning, minor → note). Mesazhi është arsyetimi që detektori e jep tashmë, me
+  vlerat e matura, plus refaktorimet e sugjeruara.
+- **Gjurma e gjetjes** (`javasmell/findings.py`): SHA-256 e llojit, paketës, klasës dhe
+  nënshkrimit të metodës, pa rreshtin dhe pa skedarin. Një gjetje që lëviz sepse
+  kodi sipër ndryshoi mbetet e njëjta; mbingarkesat mbeten veç. SARIF-i dhe baseline-i
+  përdorin të njëjtën gjurmë, ndaj «e njëjta gjetje» do të thotë e njëjta gjë kudo.
+- **Fshehja në burim**: `@SuppressWarnings("javasmell")` ose `"javasmell:Lloji"`, që
+  Java e ka tashmë për pikërisht këtë, ose `// javasmell:ignore [Llojet]` në bllokun e
+  komenteve drejt sipër deklaratës. Vlen për deklaratën që e mban, jo për ato brenda
+  saj. Përputhja është tekstuale, si faktet e parser-it: pa zgjidhje simbolesh.
+- **Baseline**: `--write-baseline FILE` i regjistron gjetjet e sotme; `--baseline FILE`
+  raporton vetëm të rejat, dhe `--fail-on` numëron vetëm ato. Skedari renditet, që
+  të lexohet pastër në rishikim.
+- **Fshehja vjen pas detektimit, kurrë brenda tij.** Një gjetje e fshehur u detektua
+  dhe numërohet në çdo vlerësim; fshihet vetëm nga një raport. Raporti thotë sa u
+  fshehën, që një raport i pastër të mos ngatërrohet me kod të pastër.
+- **`action.yml`**: GitHub Action i përbërë që nis imazhin e versionit të vet
+  (`@v1.2.0` → `:v1.2.0`) me përdoruesin e runner-it, që SARIF-i të shkruhet në
+  workspace. Ngarkimi te code scanning mbetet hap i përdoruesit
+  (`github/codeql-action/upload-sarif`), që leja `security-events: write` të jetë e
+  dukshme te workflow-i i tyre dhe jo e fshehur brenda aksionit.
+- **Versioni ka një burim të vetëm**, `javasmell/__init__.py`. CLI-ja nuk mund ta
+  importonte nga `api/`, dhe një kopje e dytë do të ndahej nga e para.
+
+**Verifikimi.** 22 teste për fshehjen dhe baseline-in, me raste afër-goditjeje
+(anotim te një variabël lokale, koment mbi një anëtar të mëparshëm, anotim i një mjeti
+tjetër); tre mutacione te `findings.py` u kapën secili nga të paktën një test. 12 teste
+për SARIF-in dhe CLI-në, ku SARIF-i krahasohet me formatin JSON të të njëjtit
+ekzekutim. `docker.yml` e nis Action-in mbi imazhin e sapondërtuar në të dyja
+arkitekturat, kontrollon SARIF-in dhe provon që `fail-on` e ndal hapin.
+
+**Çfarë nuk bën.** Ndërfaqja web nuk i lexon ende fshehjet as baseline-in. Një
+`@SuppressWarnings` mbi klasë nuk i fsheh gjetjet e metodave të saj. Action-i nuk
+punon në runner-a Windows ose macOS.
