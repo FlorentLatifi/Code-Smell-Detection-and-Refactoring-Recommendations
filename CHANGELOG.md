@@ -7,6 +7,10 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 
 ## [Unreleased]
 
+### Changed
+- The frontend declares Node 22.19 or newer. npm now warns on an older Node, where three
+  test files could not start (VD-161).
+
 ## [1.1.0] - 2026-10-26
 
 ### Added
