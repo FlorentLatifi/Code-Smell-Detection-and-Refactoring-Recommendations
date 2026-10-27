@@ -6493,3 +6493,12 @@ CI-ja dhe imazhi përdorin Node 22 më të fundit, ndaj atje nuk shihej.
 `"engines": { "node": ">=22.19" }`. npm-i paralajmëron me `EBADENGINE` dhe instalon
 gjithsesi: një paralajmërim i qartë mjafton, dhe një bllokim do ta ndalte edhe atë që
 do vetëm të ndërtojë. U provua me Node 22.14: `npm ci` jep paralajmërimin dhe del me 0.
+
+### VD-162: Skedarët e rezultateve mbajnë versionet e bibliotekave (27 tetor 2026)
+
+Mbyll boshllëkun që gjeti VD-160. `environment()` shton fushën `libraries`, me versionin
+e instaluar të çdo biblioteke që mund të ndryshojë një numër te `data/results/`:
+tree-sitter, tree-sitter-java, scikit-learn, numpy, scipy, joblib dhe threadpoolctl.
+Shtresa web lihet jashtë, sepse asnjë rezultat nuk kalon nga ajo. Një bibliotekë që
+mungon shënohet "", si commit-i që mungon. Skedarët e komituar nuk rigjenerohen për
+këtë: fusha shfaqet te rezultati i ardhshëm i secilit skript.

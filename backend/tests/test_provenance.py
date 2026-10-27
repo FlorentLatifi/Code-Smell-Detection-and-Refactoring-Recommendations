@@ -17,16 +17,17 @@ from __future__ import annotations
 
 import re
 import subprocess
+from importlib import metadata
 
 from javasmell.evaluation import provenance
 
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 
-def test_the_block_carries_the_three_fields_a_reader_needs():
+def test_the_block_carries_the_four_fields_a_reader_needs():
     recorded = provenance.environment()
 
-    assert set(recorded) == {"python", "platform", "commit"}
+    assert set(recorded) == {"python", "platform", "commit", "libraries"}
     assert recorded["python"], "an interpreter version is always knowable"
     assert recorded["platform"], "a platform is always knowable"
 
@@ -96,3 +97,28 @@ def test_a_missing_compiler_is_recorded_as_empty(monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", absent)
     assert provenance.javac_version() == ""
+
+
+def test_the_libraries_that_shape_a_result_are_recorded_with_their_versions():
+    """VD-160: scikit-learn 1.9.0 and 1.9.1 wrote the same file; now they cannot.
+
+    The expected values are read from the installed distributions, not from the
+    function under test, so a wrong name in ``RESULT_LIBRARIES`` fails here.
+    """
+    recorded = provenance.library_versions()
+
+    assert list(recorded) == list(provenance.RESULT_LIBRARIES)
+    assert recorded["scikit-learn"] == metadata.version("scikit-learn")
+    assert recorded["numpy"] == metadata.version("numpy")
+    assert recorded["tree-sitter-java"] == metadata.version("tree-sitter-java")
+
+
+def test_a_library_that_is_not_installed_is_recorded_as_empty(monkeypatch):
+    """Same convention as a missing commit: the run still writes its result."""
+
+    def missing(_name):
+        raise metadata.PackageNotFoundError
+
+    monkeypatch.setattr(metadata, "version", missing)
+
+    assert set(provenance.library_versions().values()) == {""}

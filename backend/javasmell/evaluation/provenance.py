@@ -10,8 +10,22 @@ from __future__ import annotations
 
 import platform
 import subprocess
+from importlib import metadata
 
 GIT_TIMEOUT_S = 10
+
+# The libraries whose version can change a number in ``data/results/``: the parser
+# that produces the model, and everything that trains or evaluates a classifier.
+# The web layer is left out because no result passes through it.
+RESULT_LIBRARIES = (
+    "tree-sitter",
+    "tree-sitter-java",
+    "scikit-learn",
+    "numpy",
+    "scipy",
+    "joblib",
+    "threadpoolctl",
+)
 
 
 def git_commit() -> str:
@@ -52,9 +66,27 @@ def javac_version() -> str:
     return reported.splitlines()[0].strip() if reported else ""
 
 
-def environment() -> dict[str, str]:
+def library_versions() -> dict[str, str]:
+    """The installed version of every library in ``RESULT_LIBRARIES``.
+
+    Without this, two runs with different scikit-learn releases wrote
+    byte-identical files, so a reader could not tell whether a matching number
+    had been reproduced or merely copied (VD-160). A library that is not installed
+    is recorded as "", the same convention as a missing commit.
+    """
+    versions: dict[str, str] = {}
+    for name in RESULT_LIBRARIES:
+        try:
+            versions[name] = metadata.version(name)
+        except metadata.PackageNotFoundError:
+            versions[name] = ""
+    return versions
+
+
+def environment() -> dict[str, str | dict[str, str]]:
     return {
         "python": platform.python_version(),
         "platform": platform.platform(),
         "commit": git_commit(),
+        "libraries": library_versions(),
     }

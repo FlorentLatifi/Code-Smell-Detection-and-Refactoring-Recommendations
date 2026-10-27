@@ -8,6 +8,9 @@ Entries name the decision record (`VD-n` in `docs/DECISIONS.md`) that explains t
 ## [Unreleased]
 
 ### Changed
+- Result files under `data/results/` now record the version of every library that can
+  change a number: the parser, scikit-learn, numpy, scipy, joblib and threadpoolctl
+  (VD-162).
 - The frontend declares Node 22.19 or newer. npm now warns on an older Node, where three
   test files could not start (VD-161).
 
