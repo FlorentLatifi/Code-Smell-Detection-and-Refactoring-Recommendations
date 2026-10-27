@@ -72,6 +72,70 @@ git apply --check fixes.patch
 As a build gate, `--fail-on major` exits with code 3 when a finding at or above that
 severity remains.
 
+### In GitHub Actions
+
+Findings appear in the repository's **Security → Code scanning** tab and as
+annotations on the pull request that introduced them. It runs on Linux runners.
+
+```yaml
+name: JavaSmell
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  security-events: write   # lets the upload step publish to code scanning
+
+jobs:
+  smells:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: FlorentLatifi/Code-Smell-Detection-and-Refactoring-Recommendations@v1.2.0
+        with:
+          path: src/main/java
+          # fail-on: major          # fail the job on new findings at or above major
+          # baseline: .javasmell-baseline.json
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always()             # upload even when fail-on stopped the step
+        with:
+          sarif_file: javasmell.sarif
+```
+
+The action runs the Docker image of its own version, so `@v1.2.0` always analyses
+with 1.2.0. For the command line, `--format sarif --out javasmell.sarif` writes the
+same file.
+
+### Hiding findings you have decided about
+
+Every detector has false positives. Two ways to say "seen, and accepted":
+
+- **On one declaration**, with the annotation Java already uses for this, or a comment
+  directly above it (above or below its Javadoc):
+
+  ```java
+  @SuppressWarnings("javasmell")             // every smell on this declaration
+  @SuppressWarnings("javasmell:LongMethod")  // only this one
+
+  // javasmell:ignore LongMethod, DeepNesting
+  public double priceOrder(...) { ... }
+  ```
+
+  A suppression covers the declaration that carries it, not the members inside it.
+
+- **On a whole codebase**, with a baseline. Record today's findings once, commit the
+  file, and from then on only new findings are reported and counted by `--fail-on`:
+
+  ```bash
+  python -m javasmell src --write-baseline .javasmell-baseline.json
+  python -m javasmell src --baseline .javasmell-baseline.json --fail-on major
+  ```
+
+  A finding is identified by its type, class and method signature, not its line, so
+  editing code above it does not bring it back.
+
+The report always says how many findings were hidden, so a clean report is never
+mistaken for clean code.
+
 **Stack.** Python 3.13, tree-sitter, scikit-learn, FastAPI, React and TypeScript.
 CI runs ruff, mypy (strict) and pytest on every push, and dependencies are pinned so
 the published numbers can be reproduced.

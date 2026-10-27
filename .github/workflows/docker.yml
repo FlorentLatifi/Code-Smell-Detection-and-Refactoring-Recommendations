@@ -69,6 +69,48 @@ jobs:
           EXPECTED_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
         run: bash tools/prova-imazhit.sh javasmell:prova "$EXPECTED_VERSION"
 
+      # GitHub Action-i i depos (`action.yml`), mbi imazhin që sapo u ndërtua: një
+      # aksion që nuk nis imazhin e vet, ose që shkruan SARIF të pavlefshëm, kapet
+      # para se të publikohet (VD-163).
+      - name: Provo GitHub Action-in
+        uses: ./
+        with:
+          path: backend/tests/fixtures
+          sarif-file: prova.sarif
+          image: javasmell:prova
+
+      - name: Kontrollo SARIF-in e Action-it
+        run: |
+          python3 - <<'EOF'
+          import json
+          log = json.load(open("prova.sarif", encoding="utf-8"))
+          run = log["runs"][0]
+          assert log["version"] == "2.1.0", log["version"]
+          assert run["results"], "no results"
+          uris = {r["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] for r in run["results"]}
+          assert all(u.startswith("backend/tests/fixtures/") for u in uris), uris
+          print(f"ok: {len(run['results'])} gjetje, {len(uris)} skedarë")
+          EOF
+
+      # `fail-on` duhet ta dështojë hapin, përndryshe porta e build-it nuk ndalon asgjë.
+      - name: Provo që fail-on e ndal hapin
+        id: gate
+        continue-on-error: true
+        uses: ./
+        with:
+          path: backend/tests/fixtures
+          sarif-file: prova-gate.sarif
+          fail-on: minor
+          image: javasmell:prova
+
+      - name: Kontrollo që porta u ndal
+        env:
+          OUTCOME: ${{ steps.gate.outcome }}
+        run: |
+          test "$OUTCOME" = failure
+          test -s prova-gate.sarif
+          echo "ok: fail-on e ndali hapin dhe SARIF-i u shkrua gjithsesi"
+
       # Ndalet vetëm për dobësitë HIGH dhe CRITICAL që kanë ndreqje. Një dobësi pa
       # ndreqje nuk ka çfarë t'i bëhet në këtë depo, dhe bllokimi i çdo publikimi
       # për të do ta bënte portën të injorueshme (VD-158).

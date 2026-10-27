@@ -1,0 +1,78 @@
+# JavaSmell si GitHub Action (VD-163). Gjetjet dalin te «Code scanning» dhe si
+# shënime te pull request-i që i solli, në vend të një raporti që askush nuk e hap.
+#
+# Nis imazhin Docker të të njëjtit version si aksioni: `uses: ...@v1.2.0` nis
+# `:v1.2.0`, që aksioni dhe analiza të mos ndryshojnë veç e veç. Imazhi niset me
+# përdoruesin e runner-it, që SARIF-i të shkruhet në workspace pa probleme pronësie.
+# Kërkon runner Linux, sepse runner-at Windows dhe macOS të GitHub-it nuk nisin
+# kontejnerë Linux.
+name: JavaSmell
+description: Find code smells in Java and report them to GitHub code scanning as SARIF.
+author: Florent Latifi
+branding:
+  icon: search
+  color: green
+
+inputs:
+  path:
+    description: Directory or .java file to analyse, relative to the repository root.
+    default: "."
+  sarif-file:
+    description: Where to write the SARIF report, relative to the repository root.
+    default: javasmell.sarif
+  baseline:
+    description: >-
+      A baseline written by `--write-baseline`. Findings recorded in it are not
+      reported, so only new ones reach code scanning and `fail-on`.
+    default: ""
+  min-severity:
+    description: Hide findings below this severity (minor, major or critical).
+    default: minor
+  fail-on:
+    description: >-
+      Fail the step when a finding at or above this severity remains (minor, major
+      or critical). Empty never fails. The SARIF file is written either way.
+    default: ""
+  image:
+    description: The Docker image to run. Empty uses the image of this action's version.
+    default: ""
+
+outputs:
+  sarif-file:
+    description: The path of the SARIF report.
+    value: ${{ inputs.sarif-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run JavaSmell
+      shell: bash
+      # Hyrjet kalojnë nga mjedisi dhe jo brenda skriptit, që një vlerë si
+      # `"; rm -rf ~` të mbetet tekst dhe të mos lexohet si kod shell-i.
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_SARIF: ${{ inputs.sarif-file }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_MIN_SEVERITY: ${{ inputs.min-severity }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_IMAGE: ${{ inputs.image }}
+        ACTION_REF: ${{ github.action_ref }}
+      run: |
+        image="$INPUT_IMAGE"
+        if [ -z "$image" ]; then
+          case "$ACTION_REF" in
+            v[0-9]*) tag="$ACTION_REF" ;;
+            *) tag="latest" ;;
+          esac
+          image="ghcr.io/florentlatifi/code-smell-detection-and-refactoring-recommendations:$tag"
+        fi
+        args=("$INPUT_PATH" --format sarif --out "$INPUT_SARIF" --min-severity "$INPUT_MIN_SEVERITY")
+        if [ -n "$INPUT_BASELINE" ]; then args+=(--baseline "$INPUT_BASELINE"); fi
+        if [ -n "$INPUT_FAIL_ON" ]; then args+=(--fail-on "$INPUT_FAIL_ON"); fi
+        docker run --rm \
+          --user "$(id -u):$(id -g)" \
+          --volume "$GITHUB_WORKSPACE:/work" \
+          --workdir /work \
+          --env PYTHONPATH=/app/backend \
+          --entrypoint python \
+          "$image" -m javasmell "${args[@]}"
