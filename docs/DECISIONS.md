@@ -6479,3 +6479,17 @@ Python-in dhe platformën, por jo versionet e bibliotekave. Prandaj dy skedarët
 ishin identikë bajt për bajt, edhe pse u prodhuan me biblioteka të ndryshme.
 ENGINEERING.md §3.5 kërkon mjedis të regjistruar; versionet e bibliotekave duhen
 shtuar te `evaluation/provenance.py`.
+
+### VD-161: Ndërfaqja deklaron Node 22.19 ose më të ri (27 tetor 2026)
+
+**Konteksti.** Gjatë rishikimit të #20, tre skedarët e testeve DOM nuk niseshin në një
+kompjuter me Node 22.14: `undici`, që e sjell jsdom-i, thërret
+`zlib.createZstdDecompress`, që mungon para Node 22.19. Vitest-i raportonte vetëm
+«Failed to start forks worker», dhe suita dukej sikur kalonte me 89 nga 173 testet.
+`undici` e kërkonte tashmë `>=22.19.0` edhe te `main`; asgjë te projekti nuk e thoshte.
+CI-ja dhe imazhi përdorin Node 22 më të fundit, ndaj atje nuk shihej.
+
+**Vendimi.** `frontend/package.json` dhe rrënja e `package-lock.json` deklarojnë
+`"engines": { "node": ">=22.19" }`. npm-i paralajmëron me `EBADENGINE` dhe instalon
+gjithsesi: një paralajmërim i qartë mjafton, dhe një bllokim do ta ndalte edhe atë që
+do vetëm të ndërtojë. U provua me Node 22.14: `npm ci` jep paralajmërimin dhe del me 0.
