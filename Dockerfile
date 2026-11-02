@@ -13,7 +13,7 @@
 # Secili digest është i një liste për disa arkitektura, ndaj vlen për amd64 dhe arm64.
 
 # --- 1. Ndërfaqja: Node duhet vetëm për ta ndërtuar ------------------------------
-FROM node:22-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS interface
+FROM node:22-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS interface
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -40,7 +40,7 @@ RUN pip install --no-cache-dir -r backend/requirements.txt \
 # `lib/ct.sym`, që mbeten të paprekura: verdikti i kompilimit nuk ndryshon. Një JDK
 # i ngushtuar me jlink do të ishte më i vogël, por do të ndryshonte cilat API i
 # sheh javac-u, pra edhe verdiktet (VD-158).
-FROM eclipse-temurin:21-jdk@sha256:23cc5734ff46e776f51ce66eb9ee08444fd47caabec0a95b7eb6e94be2d3696d AS jdk
+FROM eclipse-temurin:21-jdk@sha256:ebfbb18d11ff163ee83b21258acf12248af48d22a0fdfdc68fa1a1516c05976a AS jdk
 RUN rm -rf /opt/java/openjdk/jmods /opt/java/openjdk/man /opt/java/openjdk/lib/src.zip
 
 # --- 3. Modelet: trajnohen nga tabela e komituar, si te README-ja ----------------
