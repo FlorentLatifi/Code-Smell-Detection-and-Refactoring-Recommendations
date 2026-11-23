@@ -13,7 +13,7 @@
 # Secili digest është i një liste për disa arkitektura, ndaj vlen për amd64 dhe arm64.
 
 # --- 1. Ndërfaqja: Node duhet vetëm për ta ndërtuar ------------------------------
-FROM node:22-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS interface
+FROM node:22-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee AS interface
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -25,7 +25,7 @@ COPY backend/javasmell/glossary/plain_sq.json /app/backend/javasmell/glossary/
 RUN npm run build
 
 # --- 2. Varësitë Python, të përbashkëta për trajnimin dhe për imazhin ------------
-FROM python:3.13-slim@sha256:d98cc29d3266e535dd9da1099688d9cb3ca4753813571e071763d17725460962 AS python
+FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90 AS python
 WORKDIR /app
 COPY backend/requirements.txt backend/requirements.txt
 # Dosjet `tests` të bibliotekave (rreth 60 MB, kryesisht të SciPy-së) nuk importohen
